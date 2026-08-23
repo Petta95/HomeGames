@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chi Si Conosce Meglio — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+
+<style>
+  .teams-setup{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .team-row{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .team-row input{
+    flex: 1;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+  }
+  .team-row input:focus{ outline: none; border-color: var(--accent); }
+  .team-row button{
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+  .team-row button:hover{ color: #ff2d55; border-color: #ff2d55; }
+  #addTeamBtn{
+    align-self: center;
+    background: var(--glass-bg);
+    border: 1px dashed var(--accent);
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body class="theme-blue">
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>💞 Chi Si Conosce Meglio</span>
+  <span class="nav-counter" id="counter" style="display:none;">Domanda 1/50</span>
+</nav>
+
+<!-- ============ SCHERMATA DI SETUP ============ -->
+<main class="stage" id="setupView">
+  <h2 class="question-text">Che tipo di sfida giocate stasera?</h2>
+
+  <div class="mode-grid">
+    <div class="mode-card" data-mode="amore">💑 Coppie Innamorate</div>
+    <div class="mode-card" data-mode="amici">🧑‍🤝‍🧑 Coppie di Amici</div>
+  </div>
+
+  <div class="teams-setup" id="teamsSetup">
+    <div class="team-row"><input type="text" value="Coppia 1" maxlength="24"><button type="button" class="removeTeam">✕</button></div>
+    <div class="team-row"><input type="text" value="Coppia 2" maxlength="24"><button type="button" class="removeTeam">✕</button></div>
+  </div>
+  <button id="addTeamBtn" type="button">+ Aggiungi Coppia</button>
+
+  <button class="btn btn-primary" id="startBtn">INIZIA IL GIOCO ▶</button>
+</main>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage" id="gameView" style="display:none;">
+  <div class="question-card">
+    <div class="question-eyebrow" id="modeLabel">Chi si conosce meglio?</div>
+    <p class="question-text" id="questionText">Caricamento...</p>
+  </div>
+
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <div class="actions-row">
+    <button class="btn btn-outline" id="restartBtn">🔄 Nuova Partita</button>
+    <button class="btn btn-primary" id="nextBtn">PROSSIMA DOMANDA ▶</button>
+  </div>
+</main>
+
+<script>
+  /* =========================================================
+     DATABASE DOMANDE — aggiungi voci a questo array per
+     ampliare il gioco senza toccare il resto del codice.
+     ========================================================= */
+  const QUESTIONS = [
+    "Qual è il suo cibo preferito?",
+    "Che numero di scarpe porta?",
+    "Qual è il suo film preferito?",
+    "Qual è il suo colore preferito?",
+    "Qual è il suo libro preferito?",
+    "Qual è il suo ristorante preferito?",
+    "Qual è il suo profumo preferito?",
+    "Qual è il suo cantante o gruppo musicale preferito?",
+    "Dove vivrebbe se potesse scegliere ovunque nel mondo?",
+    "Qual è stato il suo primo lavoro?",
+    "Che sezione ha fatto alle scuole medie?",
+    "Che voto ha preso alla maturità?",
+    "Qual è il suo animale preferito?",
+    "Qual è il suo gusto di gelato preferito?",
+    "Qual è il suo gusto di pizza preferito?",
+    "Qual è il suo segno zodiacale?",
+    "Qual è il suo salume preferito?",
+    "Dove è andato/a in vacanza la scorsa estate?",
+    "Chi era il suo migliore amico o amica alle elementari?",
+    "Mare o montagna?",
+    "Qual è la sua canzone del cuore?",
+    "Qual è il suo sport preferito?",
+    "Qual è l'app che usa di più sul telefono?",
+    "Qual è la sua paura più grande?",
+    "Che voto si darebbe come partner o amico/a, da 1 a 10?",
+    "Qual è il suo giorno della settimana preferito?",
+    "Quale supereroe vorrebbe essere?",
+    "Qual è il suo social network preferito?",
+    "Che lavoro farebbe se non facesse quello che fa ora?",
+    "Qual è il suo dolce preferito?",
+    "Qual è la sua serie TV preferita?",
+    "Qual è il suo hobby preferito?",
+    "Qual è la sua bevanda preferita?",
+    "Qual è il suo videogioco preferito?",
+    "Qual è la sua materia scolastica preferita?",
+    "Qual è il suo peggior difetto, secondo lui/lei stesso/a?",
+    "Qual è la sua più grande qualità?",
+    "Qual è il suo sogno nel cassetto?",
+    "Quanti fratelli o sorelle ha?",
+    "Qual è la sua marca di auto preferita?",
+    "Qual è il suo attore o la sua attrice preferito/a?",
+    "Quale festività dell'anno preferisce?",
+    "Qual è il piatto che odia di più?",
+    "A che età vorrebbe tornare, se potesse?",
+    "Qual è il suo motto o la sua frase preferita?",
+    "Quale personaggio storico vorrebbe incontrare?",
+    "Qual è il social che guarda di più prima di dormire?",
+    "Qual è il suo modo preferito per rilassarsi dopo una giornata stressante?",
+    "Se potesse avere un superpotere, quale sceglierebbe?"
+  ];
+
+  function shuffle(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let selectedMode = null;
+  let teams = [];
+  let order = [];
+  let index = 0;
+
+  /* ---- Elementi DOM ---- */
+  const setupView = document.getElementById("setupView");
+  const gameView = document.getElementById("gameView");
+  const teamsSetup = document.getElementById("teamsSetup");
+  const addTeamBtn = document.getElementById("addTeamBtn");
+  const startBtn = document.getElementById("startBtn");
+  const modeCards = document.querySelectorAll(".mode-card");
+  const scoreGrid = document.getElementById("scoreGrid");
+  const questionText = document.getElementById("questionText");
+  const modeLabel = document.getElementById("modeLabel");
+  const counter = document.getElementById("counter");
+  const nextBtn = document.getElementById("nextBtn");
+  const restartBtn = document.getElementById("restartBtn");
+
+  /* ---- Selezione modalità ---- */
+  modeCards.forEach(card => {
+    card.addEventListener("click", () => {
+      modeCards.forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      selectedMode = card.dataset.mode;
+    });
+  });
+
+  /* ---- Gestione righe squadre (min 2, max 6) ---- */
+  function addTeamRow(defaultName){
+    const rows = teamsSetup.querySelectorAll(".team-row");
+    if (rows.length >= 6) return;
+    const row = document.createElement("div");
+    row.className = "team-row";
+    row.innerHTML = `<input type="text" value="${defaultName}" maxlength="24"><button type="button" class="removeTeam">✕</button>`;
+    teamsSetup.appendChild(row);
+  }
+  addTeamBtn.addEventListener("click", () => {
+    const count = teamsSetup.querySelectorAll(".team-row").length + 1;
+    addTeamRow(`Coppia ${count}`);
+  });
+  teamsSetup.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("removeTeam")) return;
+    const rows = teamsSetup.querySelectorAll(".team-row");
+    if (rows.length <= 2) return; // minimo 2 squadre in gioco
+    e.target.closest(".team-row").remove();
+  });
+
+  /* ---- Avvio partita ---- */
+  startBtn.addEventListener("click", () => {
+    if (!selectedMode){
+      alert("Seleziona prima una modalità: Coppie Innamorate o Coppie di Amici!");
+      return;
+    }
+    const inputs = teamsSetup.querySelectorAll("input");
+    teams = Array.from(inputs).map((input, i) => ({
+      name: input.value.trim() || `Coppia ${i + 1}`,
+      score: 0
+    }));
+
+    modeLabel.textContent = selectedMode === "amore"
+      ? "💑 Quanto si conoscono le coppie innamorate?"
+      : "🧑‍🤝‍🧑 Quanto si conoscono le coppie di amici?";
+
+    order = shuffle([...QUESTIONS]);
+    index = 0;
+
+    renderScoreboard();
+    showQuestion();
+
+    setupView.style.display = "none";
+    gameView.style.display = "flex";
+    counter.style.display = "inline-block";
+  });
+
+  /* ---- Tabellone punteggi ---- */
+  function renderScoreboard(){
+    scoreGrid.innerHTML = "";
+    teams.forEach((team, i) => {
+      const card = document.createElement("div");
+      card.className = "score-card";
+      card.innerHTML = `
+        <input class="team-name" type="text" value="${team.name}" data-index="${i}" maxlength="24">
+        <div class="score-value" id="score-${i}">${team.score}</div>
+        <button class="score-btn" data-index="${i}">+1 Punto</button>
+      `;
+      scoreGrid.appendChild(card);
+    });
+  }
+
+  scoreGrid.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("score-btn")) return;
+    const i = Number(e.target.dataset.index);
+    teams[i].score++;
+    document.getElementById(`score-${i}`).textContent = teams[i].score;
+  });
+
+  scoreGrid.addEventListener("change", (e) => {
+    if (!e.target.classList.contains("team-name")) return;
+    const i = Number(e.target.dataset.index);
+    teams[i].name = e.target.value.trim() || `Coppia ${i + 1}`;
+  });
+
+  /* ---- Navigazione domande ---- */
+  function showQuestion(){
+    questionText.textContent = order[index];
+    counter.textContent = `Domanda ${index + 1}/${order.length}`;
+  }
+
+  nextBtn.addEventListener("click", () => {
+    index++;
+    if (index >= order.length){
+      order = shuffle([...QUESTIONS]);
+      index = 0;
+    }
+    showQuestion();
+  });
+
+  /* ---- Nuova partita: torna al setup mantenendo i nomi inseriti ---- */
+  restartBtn.addEventListener("click", () => {
+    gameView.style.display = "none";
+    counter.style.display = "none";
+    setupView.style.display = "flex";
+  });
+</script>
+
+</body>
+</html>

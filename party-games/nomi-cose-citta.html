@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nomi Cose Città Speed — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+
+<style>
+  .letter-card{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+</style>
+</head>
+<body class="theme-yellow">
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🔤 Nomi Cose Città Speed</span>
+  <span class="nav-counter" id="counter">Lettera: —</span>
+</nav>
+
+<main class="stage">
+
+  <!-- Tabellone punteggi -->
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <!-- Estrazione lettera -->
+  <div class="letter-card">
+    <div class="question-eyebrow">Lettera in gioco</div>
+    <div class="big-letter-display" id="letterDisplay">?</div>
+    <button class="btn btn-primary" id="drawLetterBtn">🎲 ESTRAI LETTERA</button>
+  </div>
+
+  <!-- Argomento corrente -->
+  <div class="question-card">
+    <div class="question-eyebrow">Argomento</div>
+    <p class="question-text" id="topicText">Estrai una lettera per iniziare!</p>
+  </div>
+  <span class="round-badge" id="roundBadge">Argomento —/5</span>
+
+  <div class="actions-row">
+    <button class="btn btn-outline" id="nextTopicBtn" disabled>PROSSIMO ARGOMENTO ▶</button>
+    <button class="btn btn-outline" id="restartBtn">🔄 Nuova Partita</button>
+  </div>
+</main>
+
+<!-- Overlay vincitore -->
+<div class="timer-overlay" id="winnerOverlay">
+  <div class="timer-number" id="winnerText" style="font-size: clamp(2rem,7vw,4.5rem);">🏆</div>
+  <div class="timer-label" id="winnerLabel">Vincitore!</div>
+  <button class="btn btn-primary" id="winnerRestartBtn" style="margin-top: 20px;">🔄 Nuova Partita</button>
+</div>
+
+<script>
+  /* =========================================================
+     DATABASE ARGOMENTI — aggiungi nuove voci a questo array
+     per espandere il gioco, non serve toccare altro codice.
+     ========================================================= */
+  const TOPICS = [
+    "Cose che si trovano su una scrivania",
+    "Mammiferi",
+    "Città italiane",
+    "Marche di vestiti",
+    "Canzoni",
+    "Insetti",
+    "Primi piatti",
+    "Capitali",
+    "Cose che si trovano in mare",
+    "Animali",
+    "Cose che si trovano in un bar",
+    "Nomi femminili",
+    "Mestieri",
+    "Squadre di calcio",
+    "Nazioni",
+    "Medicinali",
+    "Nomi maschili",
+    "Cose che si trovano a scuola",
+    "Cose che si possono comprare online",
+    "Film drammatici o romantici",
+    "Drink da aperitivo",
+    "Marche di auto",
+    "Nomi di uccelli",
+    "Piatti costosi",
+    "Cantanti",
+    "Dolci",
+    "Marche italiane",
+    "Cose che si trovano in palestra o alla spa",
+    "Giochi all'aperto",
+    "Fiori",
+    "Cose appiccicose",
+    "Cose che si trovano in cucina",
+    "Cibi da colazione",
+    "Cose rotonde",
+    "Tipi di pizza",
+    "Gruppi musicali",
+    "Pesci",
+    "Cose luminose",
+    "Cose che si trovano in spiaggia",
+    "Colori",
+    "Coppie famose",
+    "Cose verdi",
+    "Pokémon",
+    "Supereroi",
+    "Malattie",
+    "Cose estinte",
+    "Allergie",
+    "Razze di cane",
+    "Cose tipiche italiane",
+    "Mezzi di trasporto",
+    "Mostri o cattivi dei film",
+    "Titoli di film",
+    "Generi musicali",
+    "Secondi piatti",
+    "Attori",
+    "Sport",
+    "Elementi chimici",
+    "Lingue",
+    "Frutti",
+    "Città americane",
+    "Rettili",
+    "Termini culinari",
+    "Cose che si trovano in ospedale",
+    "Materie scolastiche",
+    "Parole inglesi",
+    "Cose puzzolenti",
+    "Personaggi Disney o Pixar",
+    "Parti del corpo",
+    "Cose che si rompono",
+    "Componenti di un'auto",
+    "Piante",
+    "Minerali",
+    "Strumenti musicali",
+    "Monumenti",
+    "Vie di Modena",
+    "Opere d'arte",
+    "Calciatori",
+    "Cocktail",
+    "Formaggi",
+    "Gusti di gelato",
+    "Cose rumorose",
+    "Cose che non dovrebbero esistere",
+    "Cose romantiche",
+    "Cose rosse",
+    "Cose che si perdono facilmente",
+    "Marche di telefoni",
+    "Personaggi Marvel",
+    "Cose che metti in valigia",
+    "Discipline olimpiche",
+    "Cose fredde",
+    "Cose calde",
+    "Marche di profumi",
+    "Social network",
+    "Videogiochi famosi",
+    "Cose che si trovano in un ufficio",
+    "Bevande analcoliche",
+    "Cose a righe",
+    "Cose che fanno rumore quando si rompono",
+    "Personaggi delle fiabe",
+    "Cose che si trovano in un aeroporto"
+  ];
+
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const WIN_SCORE = 25;
+  const MAX_ROUNDS_PER_LETTER = 5;
+
+  function shuffle(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let teams = [
+    { name: "Squadra A", score: 0 },
+    { name: "Squadra B", score: 0 }
+  ];
+  let topicOrder = shuffle([...TOPICS]);
+  let topicIndex = 0;
+  let currentLetter = null;
+  let roundCount = 0;
+
+  /* ---- Elementi DOM ---- */
+  const scoreGrid = document.getElementById("scoreGrid");
+  const letterDisplay = document.getElementById("letterDisplay");
+  const drawLetterBtn = document.getElementById("drawLetterBtn");
+  const topicText = document.getElementById("topicText");
+  const roundBadge = document.getElementById("roundBadge");
+  const nextTopicBtn = document.getElementById("nextTopicBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const counter = document.getElementById("counter");
+  const winnerOverlay = document.getElementById("winnerOverlay");
+  const winnerLabel = document.getElementById("winnerLabel");
+  const winnerRestartBtn = document.getElementById("winnerRestartBtn");
+
+  /* ---- Tabellone punteggi ---- */
+  function renderScoreboard(){
+    scoreGrid.innerHTML = "";
+    teams.forEach((team, i) => {
+      const card = document.createElement("div");
+      card.className = "score-card";
+      card.innerHTML = `
+        <input class="team-name" type="text" value="${team.name}" data-index="${i}" maxlength="24">
+        <div class="score-value" id="score-${i}">${team.score}</div>
+        <button class="score-btn" data-index="${i}">+1 Punto</button>
+      `;
+      scoreGrid.appendChild(card);
+    });
+  }
+
+  scoreGrid.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("score-btn")) return;
+    const i = Number(e.target.dataset.index);
+    teams[i].score++;
+    document.getElementById(`score-${i}`).textContent = teams[i].score;
+    checkWinner();
+  });
+
+  scoreGrid.addEventListener("change", (e) => {
+    if (!e.target.classList.contains("team-name")) return;
+    const i = Number(e.target.dataset.index);
+    teams[i].name = e.target.value.trim() || `Squadra ${i === 0 ? "A" : "B"}`;
+  });
+
+  function checkWinner(){
+    const winner = teams.find(t => t.score >= WIN_SCORE);
+    if (winner){
+      winnerLabel.textContent = `🏆 ${winner.name} VINCE LA PARTITA!`;
+      winnerOverlay.classList.add("active");
+    }
+  }
+
+  /* ---- Estrazione lettera ---- */
+  function nextTopic(){
+    topicIndex++;
+    if (topicIndex >= topicOrder.length){
+      topicOrder = shuffle([...TOPICS]);
+      topicIndex = 0;
+    }
+    topicText.textContent = topicOrder[topicIndex];
+  }
+
+  drawLetterBtn.addEventListener("click", () => {
+    let letter;
+    do {
+      letter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+    } while (letter === currentLetter && LETTERS.length > 1);
+
+    currentLetter = letter;
+    letterDisplay.textContent = letter;
+    counter.textContent = `Lettera: ${letter}`;
+    roundCount = 1;
+    nextTopic();
+    roundBadge.textContent = `Argomento ${roundCount}/${MAX_ROUNDS_PER_LETTER}`;
+    roundBadge.classList.remove("warn");
+    nextTopicBtn.disabled = false;
+  });
+
+  /* ---- Prossimo argomento (stessa lettera) ---- */
+  nextTopicBtn.addEventListener("click", () => {
+    if (roundCount >= MAX_ROUNDS_PER_LETTER) return;
+    roundCount++;
+    nextTopic();
+    roundBadge.textContent = `Argomento ${roundCount}/${MAX_ROUNDS_PER_LETTER}`;
+
+    if (roundCount >= MAX_ROUNDS_PER_LETTER){
+      roundBadge.textContent = `Argomento ${roundCount}/${MAX_ROUNDS_PER_LETTER} — Cambia lettera! 🔄`;
+      roundBadge.classList.add("warn");
+      nextTopicBtn.disabled = true;
+    }
+  });
+
+  /* ---- Nuova partita ---- */
+  function resetGame(){
+    teams = [
+      { name: "Squadra A", score: 0 },
+      { name: "Squadra B", score: 0 }
+    ];
+    topicOrder = shuffle([...TOPICS]);
+    topicIndex = 0;
+    currentLetter = null;
+    roundCount = 0;
+
+    renderScoreboard();
+    letterDisplay.textContent = "?";
+    counter.textContent = "Lettera: —";
+    topicText.textContent = "Estrai una lettera per iniziare!";
+    roundBadge.textContent = "Argomento —/5";
+    roundBadge.classList.remove("warn");
+    nextTopicBtn.disabled = true;
+    winnerOverlay.classList.remove("active");
+  }
+
+  restartBtn.addEventListener("click", resetGame);
+  winnerRestartBtn.addEventListener("click", resetGame);
+
+  renderScoreboard();
+</script>
+
+</body>
+</html>

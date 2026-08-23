@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dilemmi Morali — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body class="theme-red">
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>⚖️ Dilemmi Morali</span>
+  <span class="nav-counter" id="counter">Dilemma 1/50</span>
+</nav>
+
+<main class="stage">
+  <div class="question-card">
+    <div class="question-eyebrow">Dilemma morale</div>
+    <p class="question-text" id="questionText">Caricamento...</p>
+  </div>
+
+  <div class="dilemma-grid">
+    <div class="dilemma-option" id="optionA">A</div>
+    <div class="dilemma-vs">VS</div>
+    <div class="dilemma-option" id="optionB">B</div>
+  </div>
+
+  <div class="info-box">
+    💬 Nessuna risposta giusta o sbagliata: ognuno espone la propria scelta e la motiva al gruppo. Vince chi convince di più!
+  </div>
+
+  <div id="timerSection" style="display:flex; flex-direction:column; align-items:center; gap:10px; width:100%;">
+    <div class="timer-bar-track"><div class="timer-bar-fill" id="timerFill"></div></div>
+    <span id="timerText" style="font-weight:600; color: var(--text-muted);">Pronti per la discussione</span>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-outline" id="discussBtn">🗣 INIZIA DISCUSSIONE (20s)</button>
+    <button class="btn btn-primary" id="nextBtn">PROSSIMO DILEMMA ▶</button>
+  </div>
+</main>
+
+<script>
+  /* =========================================================
+     DATABASE DILEMMI — ogni voce ha un testo e due opzioni.
+     Aggiungi nuovi oggetti qui per espandere il gioco.
+     ========================================================= */
+  const DILEMMAS = [
+    { q: "Un treno sta per investire il tuo animale domestico e uno sconosciuto: chi salvi?", a: "Salvo il mio animale", b: "Salvo lo sconosciuto" },
+    { q: "Riveleresti un segreto del tuo migliore amico per salvare la tua carriera?", a: "Rivelo il segreto", b: "Sacrifico la carriera" },
+    { q: "Vivere per sempre da solo su un'isola paradisiaca o una vita normale ma breve con chi ami?", a: "Isola da solo per sempre", b: "Vita breve ma con chi amo" },
+    { q: "Diresti una bugia pietosa per non ferire una persona cara o diresti sempre la verità anche se fa male?", a: "Dico una bugia pietosa", b: "Dico sempre la verità" },
+    { q: "Accetteresti 1 milione di euro sapendo che uno sconosciuto lontano morirà senza dolore in cambio?", a: "Accetto il milione", b: "Rifiuto l'offerta" },
+    { q: "Torneresti indietro a cambiare il passato, sapendo che potresti non incontrare le persone che ami oggi?", a: "Cambio il passato", b: "Lascio tutto com'è" },
+    { q: "Tradiresti un amico per evitare una punizione ingiusta che ricadrebbe su di te?", a: "Lo tradisco", b: "Accetto la punizione" },
+    { q: "Sacrificheresti un'ora della tua vita ogni giorno per garantire la pace nel mondo?", a: "Sacrifico un'ora al giorno", b: "Tengo il mio tempo" },
+    { q: "Preferiresti essere invisibile per sempre o leggere nel pensiero di chiunque per sempre?", a: "Invisibilità", b: "Leggere il pensiero" },
+    { q: "Rinunceresti ai social media per sempre in cambio di 500.000 euro?", a: "Rinuncio ai social", b: "Tengo i social" },
+    { q: "Denunceresti un tuo familiare se scoprissi che ha commesso un crimine grave?", a: "Lo denuncio", b: "Lo proteggo" },
+    { q: "Preferiresti sapere il giorno esatto della tua morte o vivere nell'incertezza?", a: "Voglio saperlo", b: "Preferisco l'incertezza" },
+    { q: "Cancelleresti tutti i ricordi brutti della tua vita, sapendo che perderesti anche quelli belli legati ad essi?", a: "Cancello tutto", b: "Tengo tutti i ricordi" },
+    { q: "Lasceresti il lavoro dei sogni per stare vicino alla tua famiglia in un'altra città?", a: "Lascio il lavoro", b: "Resto per la carriera" },
+    { q: "Diresti a un amico che il partner lo sta tradendo, rischiando di distruggere la vostra amicizia?", a: "Glielo dico subito", b: "Non mi intrometto" },
+    { q: "Azioneresti una leva per salvare 5 sconosciuti, sapendo che ne ucciderebbe 1?", a: "Aziono la leva", b: "Non faccio nulla" },
+    { q: "Vivresti un anno intero senza internet o per sempre senza il tuo cibo preferito?", a: "Niente internet per un anno", b: "Niente cibo preferito per sempre" },
+    { q: "Accetteresti fama e ricchezza per 5 anni, sapendo che dopo perderai tutto?", a: "Accetto 5 anni da star", b: "Vita stabile e anonima" },
+    { q: "Perdoneresti un tradimento se la persona ti amasse davvero e chiedesse una seconda possibilità?", a: "Perdono e ricomincio", b: "Chiudo per sempre" },
+    { q: "Diresti a un amico la verità su un difetto grave che tutti notano ma nessuno gli dice?", a: "Gli dico la verità", b: "Sto zitto per non ferirlo" },
+    { q: "Denunceresti il tuo migliore amico se lo vedessi rubare in un negozio?", a: "Lo denuncio", b: "Faccio finta di niente" },
+    { q: "Accetteresti l'immortalità sapendo che vedrai morire tutte le persone che ami?", a: "Accetto l'immortalità", b: "Preferisco una vita normale" },
+    { q: "Rinunceresti al tuo lavoro per seguire il partner in un altro paese?", a: "Rinuncio al lavoro", b: "Resto per la carriera" },
+    { q: "Diresti a un collega che il suo capo parla male di lui alle spalle?", a: "Glielo dico", b: "Sto zitto" },
+    { q: "Preferiresti essere ricco e infelice o povero e felice?", a: "Ricco e infelice", b: "Povero e felice" },
+    { q: "Accetteresti di perdere un braccio per salvare la vita di uno sconosciuto?", a: "Accetto il sacrificio", b: "Rifiuto" },
+    { q: "Torneresti con un ex sapendo che potrebbe farti di nuovo del male?", a: "Ci riprovo", b: "Volto pagina" },
+    { q: "Riveleresti ai tuoi amici di aver vinto alla lotteria, sapendo che cambierebbe tutto tra voi?", a: "Lo rivelo subito", b: "Lo tengo segreto" },
+    { q: "Accetteresti un lavoro pagato benissimo ma che detesti, o uno modesto che ami?", a: "Ben pagato ma odiato", b: "Modesto ma amato" },
+    { q: "Diresti a un amico la verità su un tradimento del partner, anche se rischia di distruggere la sua famiglia?", a: "Glielo dico", b: "Sto zitto" },
+    { q: "Vivresti senza mai più poter dire una bugia, nemmeno bianca, per il resto della vita?", a: "Accetto, sempre sincero", b: "Rifiuto, mi servono le bugie bianche" },
+    { q: "Sacrificheresti le tue vacanze annuali per aiutare economicamente un amico in difficoltà?", a: "Rinuncio alle vacanze", b: "Tengo le mie vacanze" },
+    { q: "Accetteresti di non invecchiare mai fisicamente, vedendo però invecchiare tutti gli altri?", a: "Accetto l'eterna giovinezza", b: "Preferisco invecchiare con gli altri" },
+    { q: "Diresti a un amico che la sua nuova idea imprenditoriale è destinata a fallire?", a: "Glielo dico", b: "Lo lascio provare in silenzio" },
+    { q: "Rinunceresti a un anno di stipendio per avere sempre ragione in ogni discussione?", a: "Rinuncio allo stipendio", b: "Tengo i soldi" },
+    { q: "Cancelleresti per sempre il tuo più grande rimpianto, sapendo che cambierebbe chi sei oggi?", a: "Lo cancello", b: "Lo tengo, fa parte di me" },
+    { q: "Rinunceresti a una promozione sapendo che andrebbe a un collega che ne ha più bisogno ma la merita meno?", a: "Rinuncio alla promozione", b: "La prendo comunque" },
+    { q: "Sveleresti un segreto di famiglia per proteggere una persona che ami?", a: "Lo svelo", b: "Lo tengo nascosto" },
+    { q: "Vivresti in un mondo dove tutti dicono sempre quello che pensano davvero di te?", a: "Sì, voglio la verità sempre", b: "No, preferisco l'ipocrisia gentile" },
+    { q: "Rinunceresti allo smartphone per un anno intero in cambio di 50.000 euro?", a: "Rinuncio allo smartphone", b: "Tengo il telefono" },
+    { q: "Diresti a un amico che il suo comportamento sta allontanando tutti, rischiando l'amicizia?", a: "Glielo dico", b: "Sto zitto per non litigare" },
+    { q: "Vorresti sapere in anticipo ogni brutta notizia della tua vita, per essere sempre preparato?", a: "Voglio saperlo prima", b: "Preferisco essere sorpreso" },
+    { q: "Lasceresti che un tuo errore venga attribuito a un collega innocente per salvare il tuo lavoro?", a: "Lo lascio credere", b: "Confesso l'errore" },
+    { q: "Cancelleresti per sempre tutte le tue foto e video digitali in cambio di 10.000 euro?", a: "Cancello tutto", b: "Tengo i miei ricordi" },
+    { q: "Diresti a un amico che il suo partner non ti piace, se te lo chiedesse sinceramente?", a: "Dico la verità", b: "Evito e resto vago" },
+    { q: "Rinunceresti al sogno di una vita per garantire la felicità di una persona che ami?", a: "Rinuncio al mio sogno", b: "Realizzo il mio sogno" },
+    { q: "Accetteresti di essere sempre in perfetta salute, ma perdendo per sempre il senso del gusto?", a: "Accetto il patto", b: "Rifiuto, il gusto vale troppo" },
+    { q: "Confesseresti un tuo grave errore sul lavoro, anche rischiando il licenziamento?", a: "Confesso subito", b: "Nascondo l'errore" },
+    { q: "Vivresti isolato dal mondo per 10 anni per garantire 10 milioni di euro alla tua famiglia?", a: "Accetto l'isolamento", b: "Rifiuto l'offerta" },
+    { q: "Dimenticheresti per sempre una persona che ti ha fatto soffrire, insieme a tutti i bei ricordi con lei?", a: "Dimentico tutto", b: "Tengo anche i bei ricordi" }
+  ];
+
+  function shuffle(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let order = shuffle([...DILEMMAS]);
+  let index = 0;
+  let discussTimer = null;
+
+  const questionText = document.getElementById("questionText");
+  const optionA = document.getElementById("optionA");
+  const optionB = document.getElementById("optionB");
+  const counter = document.getElementById("counter");
+  const nextBtn = document.getElementById("nextBtn");
+  const discussBtn = document.getElementById("discussBtn");
+  const timerFill = document.getElementById("timerFill");
+  const timerText = document.getElementById("timerText");
+
+  function resetTimerBar(){
+    if (discussTimer) clearInterval(discussTimer);
+    timerFill.style.transition = "none";
+    timerFill.style.width = "100%";
+    timerText.textContent = "Pronti per la discussione";
+    discussBtn.disabled = false;
+    // Forza il reflow per riabilitare la transizione al prossimo avvio
+    void timerFill.offsetWidth;
+    timerFill.style.transition = "width 1s linear";
+  }
+
+  function showDilemma(){
+    const d = order[index];
+    questionText.textContent = d.q;
+    optionA.textContent = "A) " + d.a;
+    optionB.textContent = "B) " + d.b;
+    counter.textContent = `Dilemma ${index + 1}/${order.length}`;
+    resetTimerBar();
+  }
+
+  nextBtn.addEventListener("click", () => {
+    index++;
+    if (index >= order.length){
+      order = shuffle([...DILEMMAS]);
+      index = 0;
+    }
+    showDilemma();
+  });
+
+  discussBtn.addEventListener("click", () => {
+    discussBtn.disabled = true;
+    let secondsLeft = 20;
+    timerText.textContent = `Discussione in corso... ${secondsLeft}s`;
+    timerFill.style.width = "0%";
+
+    discussTimer = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft > 0){
+        timerText.textContent = `Discussione in corso... ${secondsLeft}s`;
+      } else {
+        clearInterval(discussTimer);
+        timerText.textContent = "⏰ Tempo scaduto! Rivelate la scelta.";
+        discussBtn.disabled = false;
+      }
+    }, 1000);
+  });
+
+  showDilemma();
+</script>
+
+</body>
+</html>

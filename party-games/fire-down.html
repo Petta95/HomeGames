@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fire Down — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+
+<style>
+  /* Righe di inserimento giocatori nella schermata di setup */
+  .players-setup{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .player-row{ display: flex; gap: 10px; align-items: center; }
+  .player-row input{
+    flex: 1;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+  }
+  .player-row input:focus{ outline: none; border-color: var(--accent); }
+  .player-row button{
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+  .player-row button:hover{ color: #ff2d55; border-color: #ff2d55; }
+  #addPlayerBtn{
+    align-self: center;
+    background: var(--glass-bg);
+    border: 1px dashed var(--accent);
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .timer-hint{ color: var(--text-muted); font-size: 0.95rem; }
+</style>
+</head>
+<body class="theme-green">
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🔥 Fire Down</span>
+  <span class="nav-counter" id="counter" style="display:none;">Giocatori: 0</span>
+</nav>
+
+<!-- ============ SCHERMATA DI SETUP GIOCATORI ============ -->
+<main class="stage" id="setupView">
+  <h2 class="question-text">Chi partecipa a Fire Down?</h2>
+  <p class="timer-hint">Aggiungi tutti i giocatori: verranno eliminati uno a uno durante la partita.</p>
+
+  <div class="players-setup" id="playersSetup">
+    <div class="player-row"><input type="text" value="Giocatore 1" maxlength="24"><button type="button" class="removePlayer">✕</button></div>
+    <div class="player-row"><input type="text" value="Giocatore 2" maxlength="24"><button type="button" class="removePlayer">✕</button></div>
+    <div class="player-row"><input type="text" value="Giocatore 3" maxlength="24"><button type="button" class="removePlayer">✕</button></div>
+  </div>
+  <button id="addPlayerBtn" type="button">+ Aggiungi Giocatore</button>
+
+  <button class="btn btn-primary" id="startBtn">INIZIA IL GIOCO ▶</button>
+</main>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage" id="gameView" style="display:none;">
+  <div class="question-card">
+    <div class="question-eyebrow">Categoria</div>
+    <p class="question-text" id="categoryText">Caricamento...</p>
+  </div>
+
+  <div class="fire-timer-circle" id="timerCircle">5</div>
+
+  <div class="chip-grid" id="playersGrid"></div>
+
+  <div class="info-box">
+    👆 Clicca sul nome di un giocatore per segnarlo come <strong>ELIMINATO</strong> (ri-clicca per riportarlo in gioco).
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-outline" id="timerBtn">⏱ START TIMER (5s)</button>
+    <button class="btn btn-primary" id="nextCategoryBtn">PROSSIMA CATEGORIA ▶</button>
+  </div>
+
+  <button class="btn btn-outline" id="restartBtn">🔄 Nuova Partita</button>
+</main>
+
+<!-- Overlay vincitore -->
+<div class="timer-overlay" id="winnerOverlay">
+  <div class="timer-number" id="winnerText" style="font-size: clamp(2rem,7vw,4.5rem);">🏆</div>
+  <div class="timer-label" id="winnerLabel">Vincitore!</div>
+  <button class="btn btn-primary" id="winnerRestartBtn" style="margin-top: 20px;">🔄 Nuova Partita</button>
+</div>
+
+<script>
+  /* =========================================================
+     DATABASE CATEGORIE — aggiungi nuove voci per espandere
+     il gioco, non serve toccare il resto del codice.
+     ========================================================= */
+  const CATEGORIES = [
+    "Paesi africani",
+    "Piatti italiani",
+    "Verdure",
+    "Animali che iniziano per \"L\"",
+    "Parole che fanno rima con \"cosa\"",
+    "Canzoni di Michael Jackson o Justin Bieber",
+    "Film di Will Smith",
+    "Celebrità italiane",
+    "Cose che rompi facilmente",
+    "Ragioni per cui sei in ritardo a lavoro",
+    "Cose che vanno sempre in coppia",
+    "Cose che piacciono a Petta da mangiare",
+    "Compagni delle superiori di Petta",
+    "Sport",
+    "Ragioni per cui potresti finire in prigione",
+    "Cose che si trovano in un astuccio",
+    "Razze di cane",
+    "Stati asiatici",
+    "Scuole di Modena",
+    "Principesse Disney",
+    "Marche di scarpe",
+    "Marche di acqua in bottiglia",
+    "Stati che iniziano con una vocale",
+    "Film di Leonardo Di Caprio",
+    "Pianeti del sistema solare",
+    "Biscotti",
+    "Rapper famosi",
+    "Sinonimi di \"casa\"",
+    "Persone (famose e non) che si chiamano Andrea",
+    "Proverbi italiani",
+    "Strumenti musicali",
+    "Cose che ti metti in bocca",
+    "Città americane",
+    "Città in provincia di Modena",
+    "Città in Emilia Romagna",
+    "Giostre da Luna Park",
+    "Superpoteri",
+    "Cose con la zip",
+    "Cose rotonde",
+    "Posizioni (a scelta del gruppo!)",
+    "Linguaggi di programmazione",
+    "Numeri primi",
+    "Alberi",
+    "Formaggi",
+    "Insetti",
+    "Cose da non fare mai a un matrimonio",
+    "Nomi femminili italiani",
+    "Nomi maschili italiani",
+    "Nomi per un cane",
+    "Cose luminose",
+    "Vie di Modena",
+    "Colori",
+    "Lavori in ambito sanitario",
+    "Stati europei",
+    "Anime o serie TV che piacciono a Petta",
+    "Frutti",
+    "Cocktail",
+    "Scuse per non uscire stasera",
+    "Cose che trovi nel frigo di uno studente fuori sede",
+    "Nomi assurdi da dare a un gatto",
+    "Cose che diresti a un primo appuntamento",
+    "Marche di birra",
+    "Personaggi dei cartoni animati",
+    "Cose che fai quando sei annoiato",
+    "Parole in dialetto modenese",
+    "Cose che porti sempre in vacanza",
+    "Cose che direbbe un Game Master durante una serata di giochi"
+  ];
+
+  function shuffle(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let players = [];        // [{ name, eliminated }]
+  let catOrder = [];
+  let catIndex = 0;
+  let timerInterval = null;
+
+  /* ---- Elementi DOM ---- */
+  const setupView = document.getElementById("setupView");
+  const gameView = document.getElementById("gameView");
+  const playersSetup = document.getElementById("playersSetup");
+  const addPlayerBtn = document.getElementById("addPlayerBtn");
+  const startBtn = document.getElementById("startBtn");
+  const categoryText = document.getElementById("categoryText");
+  const playersGrid = document.getElementById("playersGrid");
+  const counter = document.getElementById("counter");
+  const timerBtn = document.getElementById("timerBtn");
+  const timerCircle = document.getElementById("timerCircle");
+  const nextCategoryBtn = document.getElementById("nextCategoryBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const winnerOverlay = document.getElementById("winnerOverlay");
+  const winnerLabel = document.getElementById("winnerLabel");
+  const winnerRestartBtn = document.getElementById("winnerRestartBtn");
+
+  /* ---- Gestione righe giocatori (min 2, max 14) ---- */
+  function addPlayerRow(defaultName){
+    const rows = playersSetup.querySelectorAll(".player-row");
+    if (rows.length >= 14) return;
+    const row = document.createElement("div");
+    row.className = "player-row";
+    row.innerHTML = `<input type="text" value="${defaultName}" maxlength="24"><button type="button" class="removePlayer">✕</button>`;
+    playersSetup.appendChild(row);
+  }
+  addPlayerBtn.addEventListener("click", () => {
+    const count = playersSetup.querySelectorAll(".player-row").length + 1;
+    addPlayerRow(`Giocatore ${count}`);
+  });
+  playersSetup.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("removePlayer")) return;
+    const rows = playersSetup.querySelectorAll(".player-row");
+    if (rows.length <= 2) return;
+    e.target.closest(".player-row").remove();
+  });
+
+  /* ---- Avvio partita ---- */
+  startBtn.addEventListener("click", () => {
+    const inputs = playersSetup.querySelectorAll("input");
+    players = Array.from(inputs).map((input, i) => ({
+      name: input.value.trim() || `Giocatore ${i + 1}`,
+      eliminated: false
+    }));
+
+    catOrder = shuffle([...CATEGORIES]);
+    catIndex = 0;
+
+    renderPlayers();
+    showCategory();
+    resetTimerDisplay();
+
+    setupView.style.display = "none";
+    gameView.style.display = "flex";
+    counter.style.display = "inline-block";
+  });
+
+  /* ---- Griglia giocatori con toggle eliminazione ---- */
+  function renderPlayers(){
+    playersGrid.innerHTML = "";
+    players.forEach((p, i) => {
+      const chip = document.createElement("div");
+      chip.className = "player-chip" + (p.eliminated ? " eliminated" : "");
+      chip.textContent = p.eliminated ? `${p.name} ❌` : p.name;
+      chip.dataset.index = i;
+      playersGrid.appendChild(chip);
+    });
+    const remaining = players.filter(p => !p.eliminated).length;
+    counter.textContent = `Giocatori rimasti: ${remaining}/${players.length}`;
+    checkWinner(remaining);
+  }
+
+  playersGrid.addEventListener("click", (e) => {
+    const chip = e.target.closest(".player-chip");
+    if (!chip) return;
+    const i = Number(chip.dataset.index);
+    players[i].eliminated = !players[i].eliminated;
+    renderPlayers();
+  });
+
+  function checkWinner(remaining){
+    if (players.length >= 2 && remaining === 1){
+      const winner = players.find(p => !p.eliminated);
+      winnerLabel.textContent = `🏆 ${winner.name} VINCE LA PARTITA!`;
+      winnerOverlay.classList.add("active");
+    }
+  }
+
+  /* ---- Navigazione categorie ---- */
+  function showCategory(){
+    categoryText.textContent = catOrder[catIndex];
+  }
+  nextCategoryBtn.addEventListener("click", () => {
+    catIndex++;
+    if (catIndex >= catOrder.length){
+      catOrder = shuffle([...CATEGORIES]);
+      catIndex = 0;
+    }
+    showCategory();
+    resetTimerDisplay();
+  });
+
+  /* =========================================================
+     TIMER 5 SECONDI con cambio colore e beep
+     ========================================================= */
+  function beep(freq, duration){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+
+  function resetTimerDisplay(){
+    if (timerInterval) clearInterval(timerInterval);
+    timerCircle.textContent = "5";
+    timerCircle.classList.remove("warn", "danger");
+    timerBtn.disabled = false;
+  }
+
+  timerBtn.addEventListener("click", () => {
+    timerBtn.disabled = true;
+    let secondsLeft = 5;
+    timerCircle.classList.remove("warn", "danger");
+    timerCircle.textContent = secondsLeft;
+    beep(523, 0.15);
+
+    timerInterval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft > 0){
+        timerCircle.textContent = secondsLeft;
+        if (secondsLeft <= 2){ timerCircle.classList.add("danger"); timerCircle.classList.remove("warn"); }
+        else if (secondsLeft <= 3){ timerCircle.classList.add("warn"); }
+        beep(secondsLeft <= 2 ? 660 : 523, 0.15);
+      } else {
+        clearInterval(timerInterval);
+        timerCircle.textContent = "🔥";
+        timerCircle.classList.add("danger");
+        beep(220, 0.4);
+        setTimeout(() => {
+          timerBtn.disabled = false;
+        }, 800);
+      }
+    }, 1000);
+  });
+
+  /* ---- Nuova partita ---- */
+  function goToSetup(){
+    if (timerInterval) clearInterval(timerInterval);
+    winnerOverlay.classList.remove("active");
+    gameView.style.display = "none";
+    counter.style.display = "none";
+    setupView.style.display = "flex";
+  }
+  restartBtn.addEventListener("click", goToSetup);
+  winnerRestartBtn.addEventListener("click", goToSetup);
+</script>
+
+</body>
+</html>

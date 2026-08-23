@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Più Probabile — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body class="theme-orange">
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🍻 Il Più Probabile</span>
+  <span class="nav-counter" id="counter">Domanda 1/50</span>
+</nav>
+
+<main class="stage">
+  <div class="question-card">
+    <div class="question-eyebrow">Chi è più propenso a...</div>
+    <p class="question-text" id="questionText">Caricamento...</p>
+  </div>
+
+  <div class="info-box">
+    🍻 <strong>Penitenza:</strong> chi riceve più voti beve tanti sorsi quanti sono i voti ricevuti!
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-outline" id="voteBtn">⏱ MOSTRA TIMER / VOTA</button>
+    <button class="btn btn-primary" id="nextBtn">PROSSIMA DOMANDA ▶</button>
+  </div>
+</main>
+
+<!-- Overlay countdown per il voto -->
+<div class="timer-overlay" id="timerOverlay">
+  <div class="timer-number" id="timerNumber">3</div>
+  <div class="timer-label" id="timerLabel">Preparatevi a indicare...</div>
+</div>
+
+<script>
+  /* =========================================================
+     DATABASE DOMANDE — aggiungi nuove voci a questo array
+     per espandere il gioco, non serve toccare altro codice.
+     ========================================================= */
+  const QUESTIONS = [
+    "Chi è il più alcolizzato?",
+    "Chi vincerebbe in una gara a chi mangia di più?",
+    "Chi è il tipo da farsi un tatuaggio di cui si pentirà?",
+    "Chi è il più tirchio?",
+    "Chi farebbe il bagno nudo da sbronzo?",
+    "Chi piangerebbe per un film?",
+    "Chi direbbe ti amo troppo presto?",
+    "Chi chiamerei se avessi bisogno di aiuto per qualcosa di illegale?",
+    "Chi avrebbe il funerale con il minor numero di partecipanti?",
+    "Chi ha più probabilità di tradire?",
+    "Se fossimo tutti stand-up comici, chi riceverebbe il minor numero di risate?",
+    "Chi viene pagato troppo per ciò che fa?",
+    "Se fossimo tutti autostoppisti, chi sarebbe l'ultima persona a farsi prendere?",
+    "Chi tende a finire friendzonato?",
+    "Chi incolperebbe il proprio segno zodiacale per il suo carattere di merda?",
+    "Chi si presenterebbe ubriaco a un funerale?",
+    "Chi sarebbe il peggior operatore per una hotline erotica?",
+    "Per quelli che non fumano, chi potrebbe iniziare a fumare?",
+    "Chi darebbe in adozione i propri figli se fossero brutti?",
+    "Chi adotterebbe se non potesse avere figli?",
+    "Chi non sa mantenere i segreti?",
+    "Chi parla troppo quando beve?",
+    "Chi sarebbe il primo a scappare in caso di apocalisse zombie?",
+    "Chi finirebbe per sposarsi a Las Vegas per errore?",
+    "Chi ruberebbe il WiFi del vicino senza pensarci due volte?",
+    "Chi si perderebbe anche con il navigatore acceso?",
+    "Chi diventerebbe famoso sui social per sbaglio?",
+    "Chi finirebbe a un reality show in TV?",
+    "Chi mangerebbe qualcosa caduto per terra senza pensarci?",
+    "Chi si addormenterebbe durante un film al cinema?",
+    "Chi spenderebbe tutto lo stipendio in un solo giorno?",
+    "Chi organizzerebbe la festa più assurda della propria vita?",
+    "Chi si farebbe convincere a fare bungee jumping senza esitare?",
+    "Chi diventerebbe vegano per una settimana e poi mollerebbe tutto?",
+    "Chi litigherebbe con uno sconosciuto per un parcheggio?",
+    "Chi manderebbe un messaggio alla persona sbagliata per errore?",
+    "Chi si offrirebbe volontario per un esperimento scientifico strano?",
+    "Chi finirebbe per adottare troppi animali?",
+    "Chi diventerebbe un influencer di fitness dal nulla?",
+    "Chi si sposerebbe con la prima persona conosciuta su un'app di incontri?",
+    "Chi perderebbe un volo per fare tardi al trucco o dal parrucchiere?",
+    "Chi litigherebbe con un cartello stradale... da sobrio?",
+    "Chi venderebbe la propria auto per andare a un concerto all'estero?",
+    "Chi si farebbe un selfie anche durante un terremoto?",
+    "Chi convincerebbe tutti a fare un viaggio last minute senza pensarci?",
+    "Chi si dimenticherebbe il proprio compleanno?",
+    "Chi finirebbe per innamorarsi di un collega di lavoro?",
+    "Chi accetterebbe una sfida imbarazzante solo per soldi facili?",
+    "Chi chiamerebbe l'ex a tarda notte dopo qualche bicchiere di troppo?",
+    "Chi vincerebbe un premio per il peggior senso dell'orientamento?"
+  ];
+
+  /** Mescola l'array in place (Fisher-Yates) */
+  function shuffle(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let order = shuffle([...QUESTIONS]);
+  let index = 0;
+
+  const questionText = document.getElementById("questionText");
+  const counter = document.getElementById("counter");
+  const nextBtn = document.getElementById("nextBtn");
+  const voteBtn = document.getElementById("voteBtn");
+
+  function showQuestion(){
+    questionText.textContent = order[index];
+    counter.textContent = `Domanda ${index + 1}/${order.length}`;
+  }
+
+  nextBtn.addEventListener("click", () => {
+    index++;
+    if (index >= order.length){
+      // Fine del mazzo: rimescola e ricomincia
+      order = shuffle([...QUESTIONS]);
+      index = 0;
+    }
+    showQuestion();
+  });
+
+  /* =========================================================
+     TIMER DI VOTO: countdown 3-2-1 con beep, poi "INDICA!"
+     ========================================================= */
+  const overlay = document.getElementById("timerOverlay");
+  const timerNumber = document.getElementById("timerNumber");
+  const timerLabel = document.getElementById("timerLabel");
+
+  // Beep generato via Web Audio API: nessun file audio esterno necessario
+  function beep(freq, duration){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+
+  voteBtn.addEventListener("click", () => {
+    voteBtn.disabled = true;
+    let count = 3;
+    overlay.classList.add("active");
+    timerNumber.textContent = count;
+    timerLabel.textContent = "Preparatevi a indicare...";
+    beep(440, 0.15);
+
+    const interval = setInterval(() => {
+      count--;
+      if (count > 0){
+        timerNumber.textContent = count;
+        beep(440, 0.15);
+      } else {
+        timerNumber.textContent = "👉";
+        timerLabel.textContent = "INDICA!";
+        beep(880, 0.35);
+        clearInterval(interval);
+        setTimeout(() => {
+          overlay.classList.remove("active");
+          voteBtn.disabled = false;
+        }, 1400);
+      }
+    }, 1000);
+  });
+
+  showQuestion();
+</script>
+
+</body>
+</html>

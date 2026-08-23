@@ -1,0 +1,501 @@
+/* =========================================================
+   PARTY GAMES COLLECTION — Stile condiviso da tutte le pagine
+   Ogni gioco imposta il proprio colore d'accento assegnando
+   alla <body> una classe: theme-orange | theme-red | theme-blue
+   ========================================================= */
+
+:root{
+  --bg-deep: #0a0e1a;
+  --text-main: #f2f4ff;
+  --text-muted: #9aa3c0;
+  --glass-bg: rgba(255, 255, 255, 0.045);
+  --glass-border: rgba(255, 255, 255, 0.10);
+
+  /* Accento di default (sovrascritto dai temi sotto) */
+  --accent: #4dd9ff;
+  --accent2: #4dd9ff;
+  --accent-soft: rgba(77, 217, 255, 0.16);
+  --accent-glow: rgba(77, 217, 255, 0.5);
+}
+
+/* ---- Temi per gioco ---- */
+body.theme-orange{
+  --accent: #ff9f1c;
+  --accent2: #ffce54;
+  --accent-soft: rgba(255, 159, 28, 0.16);
+  --accent-glow: rgba(255, 159, 28, 0.55);
+}
+body.theme-red{
+  --accent: #ff2d55;
+  --accent2: #b3123a;
+  --accent-soft: rgba(255, 45, 85, 0.16);
+  --accent-glow: rgba(255, 45, 85, 0.55);
+}
+body.theme-blue{
+  --accent: #4dd9ff;
+  --accent2: #a05bff;
+  --accent-soft: rgba(77, 217, 255, 0.16);
+  --accent-glow: rgba(77, 217, 255, 0.55);
+}
+body.theme-green{
+  --accent: #00e676;
+  --accent2: #00c853;
+  --accent-soft: rgba(0, 230, 118, 0.16);
+  --accent-glow: rgba(0, 230, 118, 0.55);
+}
+body.theme-yellow{
+  --accent: #ffd600;
+  --accent2: #ffab00;
+  --accent-soft: rgba(255, 214, 0, 0.16);
+  --accent-glow: rgba(255, 214, 0, 0.55);
+}
+
+/* =========================================================
+   RESET & BASE
+   ========================================================= */
+*{ box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body{
+  min-height: 100%;
+  background: var(--bg-deep);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Sfondo animato coerente con l'accento del gioco corrente */
+.bg-blobs{
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+}
+.bg-blobs span{
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.30;
+  animation: float 22s ease-in-out infinite;
+}
+.bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+.bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+@keyframes float{
+  0%, 100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(30px,-25px) scale(1.08); }
+}
+
+/* =========================================================
+   NAVBAR (condivisa da tutti i giochi)
+   ========================================================= */
+.navbar{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+}
+.nav-back{
+  text-decoration: none;
+  color: var(--text-main);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+
+.nav-title{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.nav-title .dot{
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.nav-counter{
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   STAGE / LAYOUT GENERICO DI GIOCO
+   ========================================================= */
+.stage{
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px 90px;
+  min-height: calc(100vh - 68px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  text-align: center;
+}
+
+.question-card{
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 28px;
+  padding: 50px 40px;
+  width: 100%;
+  box-shadow: 0 0 50px -12px var(--accent-glow);
+  animation: fadeIn 0.45s ease;
+}
+.question-eyebrow{
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+.question-text{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.35;
+}
+@keyframes fadeIn{
+  from{ opacity: 0; transform: translateY(16px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   PULSANTI & CONTROLLI
+   ========================================================= */
+.actions-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 18px 34px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+.btn-primary{
+  background: linear-gradient(120deg, var(--accent), var(--accent2));
+  color: #06090f;
+  box-shadow: 0 0 25px var(--accent-glow);
+}
+.btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+.btn-outline{
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+.btn-outline:hover{ background: var(--accent-soft); }
+.btn:active{ transform: scale(0.97); }
+.btn:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* =========================================================
+   BOX INFORMATIVO (penitenza / regole rapide)
+   ========================================================= */
+.info-box{
+  background: var(--accent-soft);
+  border: 1px dashed var(--accent);
+  border-radius: 16px;
+  padding: 18px 26px;
+  font-size: 1.05rem;
+  color: var(--text-main);
+  max-width: 640px;
+}
+
+/* =========================================================
+   OVERLAY TIMER (countdown a schermo intero)
+   ========================================================= */
+.timer-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 14, 0.94);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.timer-overlay.active{ opacity: 1; pointer-events: all; }
+.timer-number{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: min(38vw, 13rem);
+  color: var(--accent);
+  text-shadow: 0 0 60px var(--accent-glow);
+  animation: pop 0.45s ease;
+}
+.timer-label{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  color: var(--text-main);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+@keyframes pop{
+  0%{ transform: scale(0.4); opacity: 0; }
+  60%{ transform: scale(1.15); opacity: 1; }
+  100%{ transform: scale(1); }
+}
+
+/* =========================================================
+   DILEMMI: box opzione A vs B
+   ========================================================= */
+.dilemma-grid{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 20px;
+  align-items: stretch;
+  width: 100%;
+}
+.dilemma-option{
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 32px 24px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+.dilemma-option:hover{ border-color: var(--accent); box-shadow: 0 0 30px -8px var(--accent-glow); }
+.dilemma-vs{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+.timer-bar-track{
+  width: 100%;
+  max-width: 420px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+}
+.timer-bar-fill{
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform-origin: left;
+  transition: width 1s linear;
+}
+
+/* =========================================================
+   COPPIE: punteggi squadre
+   ========================================================= */
+.score-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+.score-card{
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.team-name{
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  color: var(--text-main);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-align: center;
+  padding: 6px 4px;
+  width: 100%;
+}
+.team-name:focus{ outline: none; }
+.score-value{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: 2.4rem;
+  color: var(--accent);
+}
+.score-btn{
+  background: var(--accent);
+  border: none;
+  color: #06090f;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.score-btn:hover{ filter: brightness(1.1); transform: translateY(-2px); }
+
+/* =========================================================
+   SETUP (schermata iniziale coppie)
+   ========================================================= */
+.mode-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 640px;
+}
+.mode-card{
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 30px 20px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  transition: all 0.25s ease;
+}
+.mode-card:hover, .mode-card.selected{
+  border-color: var(--accent);
+  box-shadow: 0 0 30px -6px var(--accent-glow);
+  background: var(--accent-soft);
+}
+
+/* =========================================================
+   FIRE DOWN: chip giocatori
+   ========================================================= */
+.chip-grid{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  width: 100%;
+}
+.player-chip{
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px 24px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+.player-chip:hover{ border-color: var(--accent); box-shadow: 0 0 20px -6px var(--accent-glow); }
+.player-chip.eliminated{
+  opacity: 0.45;
+  text-decoration: line-through;
+  border-color: #ff2d55;
+  color: #ff8fa3;
+  box-shadow: none;
+}
+
+/* Timer circolare con cambio colore negli ultimi secondi */
+.fire-timer-circle{
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 6px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: 4rem;
+  color: var(--accent);
+  box-shadow: 0 0 40px -6px var(--accent-glow);
+  transition: border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+.fire-timer-circle.warn{
+  border-color: #ffd600;
+  color: #ffd600;
+  box-shadow: 0 0 40px -6px rgba(255, 214, 0, 0.6);
+}
+.fire-timer-circle.danger{
+  border-color: #ff2d55;
+  color: #ff2d55;
+  box-shadow: 0 0 40px -6px rgba(255, 45, 85, 0.7);
+  animation: pulseDanger 0.5s ease infinite alternate;
+}
+@keyframes pulseDanger{
+  from{ transform: scale(1); }
+  to{ transform: scale(1.08); }
+}
+
+/* =========================================================
+   NOMI COSE CITTA: display lettera estratta
+   ========================================================= */
+.big-letter-display{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: clamp(4.5rem, 16vw, 9rem);
+  color: var(--accent);
+  text-shadow: 0 0 60px var(--accent-glow);
+  line-height: 1;
+}
+.round-badge{
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+}
+.round-badge.warn{
+  background: rgba(255, 45, 85, 0.16);
+  color: #ff2d55;
+  border-color: #ff2d55;
+  animation: pulseDanger 0.6s ease infinite alternate;
+}
+
+@media (max-width: 720px){
+  .dilemma-grid{ grid-template-columns: 1fr; }
+  .dilemma-vs{ padding: 4px 0; }
+}

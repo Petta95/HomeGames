@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+
+<style>
+  .hub-header{ text-align: center; padding: 56px 20px 20px; }
+  .hub-title{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #ff9f1c, #ff2d55, #4dd9ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 40px rgba(255,255,255,0.08);
+  }
+  .hub-subtitle{
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 500;
+  }
+  .back-home{
+    display: inline-block;
+    margin: 24px auto 0;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .back-home:hover{ color: #f2f4ff; }
+
+  .hub-grid{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 30px 24px 90px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+  }
+
+  .game-box{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 34px;
+    backdrop-filter: blur(14px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .game-box:hover{
+    transform: translateY(-8px);
+    border-color: var(--box-color);
+    box-shadow: 0 16px 45px -10px var(--box-glow);
+  }
+  .box-icon{ font-size: 2.8rem; margin-bottom: 14px; filter: drop-shadow(0 0 14px var(--box-glow)); }
+  .box-title{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 10px; }
+  .box-badge{
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+    color: var(--box-color);
+    background: var(--box-soft);
+    border: 1px solid var(--box-color);
+  }
+  .box-desc{ color: var(--text-muted); font-size: 1rem; line-height: 1.5; flex-grow: 1; margin-bottom: 24px; }
+  .box-play{
+    display: inline-block;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-decoration: none;
+    color: #06090f;
+    background: var(--box-color);
+    padding: 14px 20px;
+    border-radius: 14px;
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+  .box-play:hover{ filter: brightness(1.12); transform: scale(1.02); }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<header class="hub-header">
+  <h1 class="hub-title">🎉 Party Games Collection</h1>
+  <p class="hub-subtitle">Scegli il minigioco per la vostra serata — il Game Master decide!</p>
+  <a class="back-home" href="../index.html">← Torna a HOME GAMES</a>
+</header>
+
+<main class="hub-grid" id="hubGrid">
+  <!-- Le card vengono generate da JS a partire dall'array GAMES qui sotto -->
+</main>
+
+<script>
+  /* Array di configurazione: per aggiungere un futuro minigioco basta
+     aggiungere un oggetto qui e collegare la relativa pagina HTML. */
+  const GAMES = [
+    {
+      icon: "🍻",
+      title: "Il Più Probabile",
+      badge: "🟠 Most Likely To",
+      color: "#ff9f1c",
+      soft: "rgba(255,159,28,0.16)",
+      glow: "rgba(255,159,28,0.5)",
+      desc: "Vota chi tra i tuoi amici è più propenso a... Chi prende più voti, beve! Domande imbarazzanti e super divertenti garantite.",
+      link: "most-likely.html"
+    },
+    {
+      icon: "⚖️",
+      title: "Dilemmi Morali",
+      badge: "🔴 Dibattito & Etica",
+      color: "#ff2d55",
+      soft: "rgba(255,45,85,0.16)",
+      glow: "rgba(255,45,85,0.5)",
+      desc: "Scelte impossibili da fare in coppia o in gruppo. Nessuna risposta giusta: solo discussioni accese e risate assicurate.",
+      link: "dilemmi.html"
+    },
+    {
+      icon: "💞",
+      title: "Chi Si Conosce Meglio",
+      badge: "🔵 Coppie & Amici",
+      color: "#4dd9ff",
+      soft: "rgba(77,217,255,0.16)",
+      glow: "rgba(77,217,255,0.5)",
+      desc: "Sfida a coppie (innamorate o amici) per scoprire chi conosce davvero l'altro. Un punto per ogni risposta indovinata!",
+      link: "coppie.html"
+    },
+    {
+      icon: "🔥",
+      title: "Fire Down",
+      badge: "🟢 Categorie a Raffica",
+      color: "#00e676",
+      soft: "rgba(0,230,118,0.16)",
+      glow: "rgba(0,230,118,0.5)",
+      desc: "Categoria a schermo, timer di 5 secondi e giocatori che vengono eliminati uno a uno. Chi resta per ultimo vince!",
+      link: "fire-down.html"
+    },
+    {
+      icon: "🔤",
+      title: "Nomi Cose Città Speed",
+      badge: "🟡 Squadra vs Squadra",
+      color: "#ffd600",
+      soft: "rgba(255,214,0,0.16)",
+      glow: "rgba(255,214,0,0.5)",
+      desc: "Estrai una lettera, rispondi più veloce degli avversari sull'argomento mostrato e porta la tua squadra a 25 punti.",
+      link: "nomi-cose-citta.html"
+    }
+  ];
+
+  const grid = document.getElementById("hubGrid");
+
+  GAMES.forEach(game => {
+    const box = document.createElement("article");
+    box.className = "game-box";
+    box.style.setProperty("--box-color", game.color);
+    box.style.setProperty("--box-soft", game.soft);
+    box.style.setProperty("--box-glow", game.glow);
+    box.innerHTML = `
+      <div class="box-icon">${game.icon}</div>
+      <h2 class="box-title">${game.title}</h2>
+      <span class="box-badge">${game.badge}</span>
+      <p class="box-desc">${game.desc}</p>
+      <a class="box-play" href="${game.link}">GIOCA ORA ▶</a>
+    `;
+    grid.appendChild(box);
+  });
+</script>
+
+</body>
+</html>

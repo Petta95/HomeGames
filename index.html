@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOME GAMES — Serata di Giochi</title>
+
+<!-- Font leggibili da lontano, ideali per proiezione su TV -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     0. RESET & VARIABILI GLOBALI
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --bg-panel: #12172a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+
+    /* Colori categoria: usati per badge, glow hover, filtri attivi */
+    --c-competizione: #ff3b5c;
+    --c-competizione-soft: rgba(255, 59, 92, 0.18);
+    --c-party: #b06aff;
+    --c-party-soft: rgba(176, 106, 255, 0.18);
+    --c-prossimamente: #ffc247;
+    --c-prossimamente-soft: rgba(255, 194, 71, 0.18);
+
+    --accent: #4dd9ff;
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-bg: rgba(255, 255, 255, 0.045);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* =========================================================
+     1. SFONDO DINAMICO (blob sfumati animati)
+     ========================================================= */
+  .bg-blobs{
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.35;
+    animation: float 18s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){
+    width: 480px; height: 480px;
+    background: var(--c-competizione);
+    top: -10%; left: -10%;
+    animation-duration: 22s;
+  }
+  .bg-blobs span:nth-child(2){
+    width: 520px; height: 520px;
+    background: var(--c-party);
+    bottom: -15%; right: -10%;
+    animation-duration: 26s;
+    animation-delay: -6s;
+  }
+  .bg-blobs span:nth-child(3){
+    width: 360px; height: 360px;
+    background: var(--accent);
+    top: 40%; left: 60%;
+    animation-duration: 20s;
+    animation-delay: -3s;
+  }
+  @keyframes float{
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%      { transform: translate(40px, -30px) scale(1.08); }
+    66%      { transform: translate(-30px, 25px) scale(0.95); }
+  }
+
+  /* =========================================================
+     2. HEADER
+     ========================================================= */
+  .app-header{
+    text-align: center;
+    padding: 48px 20px 24px;
+  }
+  .app-title{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1.05;
+    text-shadow: 0 0 30px rgba(77, 217, 255, 0.35);
+  }
+  .app-title span{
+    background: linear-gradient(90deg, var(--accent), var(--c-party));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .app-subtitle{
+    margin-top: 10px;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* =========================================================
+     3. CONTROLLI (filtri + pulsante random)
+     ========================================================= */
+  .controls{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .filters{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .filter-btn{
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-main);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 10px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
+  }
+  .filter-btn:hover{
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .filter-btn.active{
+    background: var(--accent);
+    color: #04121a;
+    border-color: var(--accent);
+    box-shadow: 0 0 18px rgba(77, 217, 255, 0.55);
+  }
+
+  .random-btn{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #0a0e1a;
+    background: linear-gradient(90deg, #ffe066, #ff9f4d);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(255, 170, 77, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+  }
+  .random-btn:hover{
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 0 35px rgba(255, 170, 77, 0.7);
+  }
+  .random-btn:active{ transform: translateY(0) scale(0.98); }
+
+  /* =========================================================
+     4. GRIGLIA DI GIOCHI
+     ========================================================= */
+  .grid{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 24px 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+  }
+
+  /* Card con effetto glassmorphism */
+  .game-card{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 22px;
+    padding: 28px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+  }
+  .game-card::before{
+    /* alone/glow che appare in hover, colorato in base alla categoria */
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 22px;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--card-color, var(--accent)), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .game-card:hover{
+    transform: translateY(-8px);
+    border-color: var(--card-color, var(--accent));
+    box-shadow: 0 12px 40px -8px var(--card-color-soft, rgba(77,217,255,0.35));
+  }
+  .game-card:hover::before{ opacity: 1; }
+
+  .card-icon{
+    font-size: 2.6rem;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 12px var(--card-color-soft, rgba(255,255,255,0.2)));
+  }
+
+  .card-title{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  .card-badge{
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+    color: var(--card-color, var(--accent));
+    background: var(--card-color-soft, rgba(77,217,255,0.15));
+    border: 1px solid var(--card-color, var(--accent));
+  }
+
+  .card-desc{
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.5;
+    flex-grow: 1;
+    margin-bottom: 22px;
+  }
+
+  .card-extra{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--c-prossimamente);
+    background: var(--c-prossimamente-soft);
+    border: 1px dashed var(--c-prossimamente);
+    padding: 6px 12px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    width: fit-content;
+  }
+
+  .play-btn{
+    display: inline-block;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-decoration: none;
+    color: #06090f;
+    background: var(--card-color, var(--accent));
+    padding: 14px 20px;
+    border-radius: 14px;
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+  .play-btn:hover{
+    filter: brightness(1.12);
+    transform: scale(1.02);
+  }
+
+  /* Evidenziazione per "Scegli a Caso!" */
+  .game-card.shuffling{
+    border-color: var(--accent);
+    box-shadow: 0 0 25px rgba(77, 217, 255, 0.5);
+  }
+  .game-card.chosen{
+    animation: chosenPulse 1s ease-in-out 2;
+    border-color: #ffe066;
+    box-shadow: 0 0 45px rgba(255, 224, 102, 0.8);
+  }
+  @keyframes chosenPulse{
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.035); }
+  }
+
+  .game-card.hidden{ display: none; }
+
+  /* Empty state per categorie senza risultati (utile in espansione futura) */
+  .empty-state{
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-muted);
+    padding: 60px 20px;
+    font-size: 1.1rem;
+  }
+
+  footer{
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding-bottom: 30px;
+  }
+
+  @media (max-width: 560px){
+    .controls{ flex-direction: column; align-items: stretch; }
+    .random-btn{ width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sfondo animato -->
+<div class="bg-blobs"><span></span><span></span><span></span></div>
+
+<header class="app-header">
+  <h1 class="app-title">🎮 HOME <span>GAMES</span></h1>
+  <p class="app-subtitle">Il Game Master ha parlato: scegli la sfida di stasera!</p>
+</header>
+
+<div class="controls">
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-filter="tutti">Tutti</button>
+    <button class="filter-btn" data-filter="competizione">🔴 Competitivi</button>
+    <button class="filter-btn" data-filter="party">🟣 Party / Casual</button>
+    <button class="filter-btn" data-filter="prossimamente">🟡 Da Creare</button>
+  </div>
+  <button class="random-btn" id="randomBtn">🎲 Scegli a Caso!</button>
+</div>
+
+<main class="grid" id="gamesGrid">
+  <!-- Le card vengono generate dinamicamente da JavaScript -->
+</main>
+
+<footer>HOME GAMES · Serate tra amici · Aggiorna l'array <code>GAMES</code> per aggiungere nuovi giochi</footer>
+
+<script>
+  /* =========================================================
+     DATI DEI GIOCHI
+     Per aggiungere un nuovo gioco basta inserire un nuovo
+     oggetto in questo array: la UI si aggiorna da sola.
+     category: "competizione" | "party" | "prossimamente"
+     ========================================================= */
+  const GAMES = [
+    {
+      id: "pettaquiz",
+      icon: "🧠",
+      title: "PettaQuiz",
+      category: "competizione",
+      badgeLabel: "🔴 Competizione / Sfida a Squadre",
+      description: "Grande sfida a squadre ricca di minigiochi, quiz di cultura generale, reattività e prove veloci. Vince la squadra con più punti!",
+      link: "https://petta95.github.io/pettaquiz/index.html",
+      extraNote: null
+    },
+    {
+      id: "tournament",
+      icon: "🏆",
+      title: "Tournament",
+      category: "party",
+      badgeLabel: "🟣 Party / No Competizione",
+      description: "Sfida di votazione a gironi! Scegliamo e votiamo la preferita per ogni categoria (cibo, celebrità, serie tv, ecc.). Nessun vincitore singolo, solo dibattito e divertimento.",
+      link: "https://petta95.github.io/Torneo/index.html",
+      extraNote: null
+    },
+    {
+      id: "party-collection",
+      icon: "🎉",
+      title: "Party Games Collection",
+      category: "party",
+      badgeLabel: "🟣 Party / Casual",
+      description: "Tre minigiochi in uno: \"Il Più Probabile\", \"Dilemmi Morali\" e \"Chi Si Conosce Meglio\". Perfetti per rompere il ghiaccio e ridere insieme.",
+      link: "party-games/menu.html",
+      extraNote: null
+    }
+  ];
+
+  // Mappa categoria -> variabili colore CSS (usate per badge/glow/bordi)
+  const CATEGORY_COLORS = {
+    competizione:   { color: "var(--c-competizione)",   soft: "var(--c-competizione-soft)" },
+    party:          { color: "var(--c-party)",          soft: "var(--c-party-soft)" },
+    prossimamente:  { color: "var(--c-prossimamente)",  soft: "var(--c-prossimamente-soft)" }
+  };
+
+  const gridEl = document.getElementById("gamesGrid");
+  let currentFilter = "tutti";
+
+  /** Crea il markup HTML di una singola card a partire dai dati del gioco */
+  function createCardElement(game){
+    const card = document.createElement("article");
+    card.className = "game-card";
+    card.dataset.category = game.category;
+    card.dataset.id = game.id;
+
+    const colors = CATEGORY_COLORS[game.category] || {};
+    card.style.setProperty("--card-color", colors.color || "var(--accent)");
+    card.style.setProperty("--card-color-soft", colors.soft || "rgba(77,217,255,0.2)");
+
+    card.innerHTML = `
+      <div class="card-icon">${game.icon}</div>
+      <h2 class="card-title">${game.title}</h2>
+      <span class="card-badge">${game.badgeLabel}</span>
+      <p class="card-desc">${game.description}</p>
+      ${game.extraNote ? `<span class="card-extra">${game.extraNote}</span>` : ""}
+      <a class="play-btn" href="${game.link}" target="_blank" rel="noopener noreferrer">GIOCA ORA ▶</a>
+    `;
+    return card;
+  }
+
+  /** Ridisegna la griglia applicando il filtro di categoria corrente */
+  function renderGames(){
+    gridEl.innerHTML = "";
+    const visibleGames = GAMES.filter(g => currentFilter === "tutti" || g.category === currentFilter);
+
+    if (visibleGames.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Nessun gioco in questa categoria... per ora!";
+      gridEl.appendChild(empty);
+      return;
+    }
+
+    visibleGames.forEach(game => gridEl.appendChild(createCardElement(game)));
+  }
+
+  /* ---- Gestione filtri ---- */
+  document.getElementById("filters").addEventListener("click", (e) => {
+    const btn = e.target.closest(".filter-btn");
+    if (!btn) return;
+
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    currentFilter = btn.dataset.filter;
+    renderGames();
+  });
+
+  /* ---- Pulsante "Scegli a Caso!" ----
+     Effetto "slot machine": scorre rapidamente l'evidenziazione tra
+     le card visibili, poi si ferma su una scelta casuale. */
+  document.getElementById("randomBtn").addEventListener("click", () => {
+    const cards = Array.from(gridEl.querySelectorAll(".game-card"));
+    if (cards.length === 0) return;
+
+    // Pulizia di eventuali stati precedenti
+    cards.forEach(c => c.classList.remove("shuffling", "chosen"));
+
+    let ticks = 0;
+    const totalTicks = 16 + Math.floor(Math.random() * 6); // durata variabile
+    let lastIndex = -1;
+
+    const interval = setInterval(() => {
+      if (lastIndex >= 0) cards[lastIndex].classList.remove("shuffling");
+
+      const idx = Math.floor(Math.random() * cards.length);
+      cards[idx].classList.add("shuffling");
+      lastIndex = idx;
+      ticks++;
+
+      if (ticks >= totalTicks){
+        clearInterval(interval);
+        cards[idx].classList.remove("shuffling");
+        cards[idx].classList.add("chosen");
+        cards[idx].scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // Rimuove l'evidenziazione finale dopo qualche secondo
+        setTimeout(() => cards[idx].classList.remove("chosen"), 3500);
+      }
+    }, 90);
+  });
+
+  // Render iniziale
+  renderGames();
+</script>
+
+</body>
+</html>
