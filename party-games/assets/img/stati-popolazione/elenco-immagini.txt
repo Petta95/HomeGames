@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "stati-popolazione" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - india.jpg  (India)
+ - cina.jpg  (Cina)
+ - stati-uniti.jpg  (Stati Uniti)
+ - indonesia.jpg  (Indonesia)
+ - pakistan.jpg  (Pakistan)
+ - nigeria.jpg  (Nigeria)
+ - brasile.jpg  (Brasile)
+ - bangladesh.jpg  (Bangladesh)
+ - russia.jpg  (Russia)
+ - messico.jpg  (Messico)
+ - etiopia.jpg  (Etiopia)
+ - giappone.jpg  (Giappone)
+ - filippine.jpg  (Filippine)
+ - egitto.jpg  (Egitto)
+ - vietnam.jpg  (Vietnam)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

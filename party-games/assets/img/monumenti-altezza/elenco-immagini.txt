@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "monumenti-altezza" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - burj-khalifa.jpg  (Burj Khalifa)
+ - tokyo-skytree.jpg  (Tokyo Skytree)
+ - shanghai-tower.jpg  (Shanghai Tower)
+ - cn-tower.jpg  (CN Tower)
+ - empire-state-building.jpg  (Empire State Building)
+ - tokyo-tower.jpg  (Tokyo Tower)
+ - torre-eiffel.jpg  (Torre Eiffel)
+ - sagrada-familia.jpg  (Sagrada Familia)
+ - piramide-di-cheope.jpg  (Piramide di Cheope)
+ - duomo-di-milano.jpg  (Duomo di Milano)
+ - big-ben.jpg  (Big Ben (Elizabeth Tower))
+ - statua-della-liberta.jpg  (Statua della Libertà)
+ - torre-di-pisa.jpg  (Torre di Pisa)
+ - arco-di-trionfo.jpg  (Arco di Trionfo)
+ - colosseo.jpg  (Colosseo)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

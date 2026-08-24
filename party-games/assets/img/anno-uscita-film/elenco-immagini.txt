@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "anno-uscita-film" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - il-padrino.jpg  (Il Padrino)
+ - star-wars-una-nuova-speranza.jpg  (Star Wars: Una Nuova Speranza)
+ - et-lextra-terrestre.jpg  (E.T. l'Extra-Terrestre)
+ - ritorno-al-futuro.jpg  (Ritorno al Futuro)
+ - jurassic-park.jpg  (Jurassic Park)
+ - titanic.jpg  (Titanic)
+ - signore-degli-anelli-compagnia-anello.jpg  (Il Signore degli Anelli: La Compagnia dell'Anello)
+ - pirati-dei-caraibi-maledizione-prima-luna.jpg  (Pirati dei Caraibi: La Maledizione della Prima Luna)
+ - avatar.jpg  (Avatar)
+ - inception.jpg  (Inception)
+ - the-avengers.jpg  (The Avengers)
+ - frozen.jpg  (Frozen - Il Regno di Ghiaccio)
+ - interstellar.jpg  (Interstellar)
+ - joker.jpg  (Joker)
+ - barbie.jpg  (Barbie)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

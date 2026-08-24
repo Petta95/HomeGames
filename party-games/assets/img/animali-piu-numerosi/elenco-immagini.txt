@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "animali-piu-numerosi" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - polli.jpg  (Polli)
+ - esseri-umani.jpg  (Esseri Umani)
+ - bovini.jpg  (Bovini)
+ - pecore.jpg  (Pecore)
+ - anatre.jpg  (Anatre)
+ - maiali.jpg  (Maiali)
+ - cani.jpg  (Cani)
+ - gatti.jpg  (Gatti)
+ - capre.jpg  (Capre)
+ - cavalli.jpg  (Cavalli)
+ - elefanti.jpg  (Elefanti)
+ - gorilla.jpg  (Gorilla)
+ - leoni.jpg  (Leoni)
+ - tigri.jpg  (Tigri)
+ - panda-giganti.jpg  (Panda Giganti)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

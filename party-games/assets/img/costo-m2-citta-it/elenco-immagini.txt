@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "costo-m2-citta-it" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - milano.jpg  (Milano)
+ - firenze.jpg  (Firenze)
+ - venezia.jpg  (Venezia)
+ - bologna.jpg  (Bologna)
+ - roma.jpg  (Roma)
+ - napoli.jpg  (Napoli)
+ - verona.jpg  (Verona)
+ - padova.jpg  (Padova)
+ - torino.jpg  (Torino)
+ - genova.jpg  (Genova)
+ - modena.jpg  (Modena)
+ - bari.jpg  (Bari)
+ - palermo.jpg  (Palermo)
+ - catania.jpg  (Catania)
+ - messina.jpg  (Messina)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

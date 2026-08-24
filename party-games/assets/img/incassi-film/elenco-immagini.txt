@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "incassi-film" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - avatar.jpg  (Avatar)
+ - avengers-endgame.jpg  (Avengers: Endgame)
+ - avatar-la-via-dellacqua.jpg  (Avatar: La Via dell'Acqua)
+ - titanic.jpg  (Titanic)
+ - star-wars-risveglio-della-forza.jpg  (Star Wars: Il Risveglio della Forza)
+ - avengers-infinity-war.jpg  (Avengers: Infinity War)
+ - spider-man-no-way-home.jpg  (Spider-Man: No Way Home)
+ - inside-out-2.jpg  (Inside Out 2)
+ - jurassic-world.jpg  (Jurassic World)
+ - il-re-leone-2019.jpg  (Il Re Leone (2019))
+ - the-avengers.jpg  (The Avengers)
+ - furious-7.jpg  (Furious 7)
+ - top-gun-maverick.jpg  (Top Gun: Maverick)
+ - frozen-2.jpg  (Frozen II - Il Segreto di Arendelle)
+ - barbie.jpg  (Barbie)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

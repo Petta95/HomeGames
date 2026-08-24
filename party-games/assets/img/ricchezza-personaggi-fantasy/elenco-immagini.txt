@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "ricchezza-personaggi-fantasy" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - paperon-de-paperoni.jpg  (Paperon de' Paperoni)
+ - smaug.jpg  (Smaug)
+ - jabba-the-hutt.jpg  (Jabba the Hutt)
+ - tony-stark.jpg  (Tony Stark)
+ - lex-luthor.jpg  (Lex Luthor)
+ - bruce-wayne.jpg  (Bruce Wayne)
+ - mr-burns.jpg  (Mr. Burns)
+ - willy-wonka.jpg  (Willy Wonka)
+ - cruella-de-vil.jpg  (Cruella de Vil)
+ - conte-dracula.jpg  (Conte Dracula)
+ - jafar.jpg  (Jafar)
+ - capitan-uncino.jpg  (Capitan Uncino)
+ - aladdin-principe.jpg  (Aladdin - da povero a Principe)
+ - robin-hood.jpg  (Robin Hood)
+ - jack-sparrow.jpg  (Jack Sparrow)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

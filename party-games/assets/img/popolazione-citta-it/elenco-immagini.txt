@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "popolazione-citta-it" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - roma.jpg  (Roma)
+ - milano.jpg  (Milano)
+ - napoli.jpg  (Napoli)
+ - torino.jpg  (Torino)
+ - palermo.jpg  (Palermo)
+ - genova.jpg  (Genova)
+ - bologna.jpg  (Bologna)
+ - firenze.jpg  (Firenze)
+ - bari.jpg  (Bari)
+ - catania.jpg  (Catania)
+ - verona.jpg  (Verona)
+ - venezia.jpg  (Venezia)
+ - messina.jpg  (Messina)
+ - padova.jpg  (Padova)
+ - modena.jpg  (Modena)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

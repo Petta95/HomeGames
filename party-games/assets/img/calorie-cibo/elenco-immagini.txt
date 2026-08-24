@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "calorie-cibo" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - olio-doliva.jpg  (Olio d'Oliva)
+ - burro.jpg  (Burro)
+ - noci.jpg  (Noci)
+ - cioccolato-fondente.jpg  (Cioccolato Fondente)
+ - pancetta.jpg  (Pancetta)
+ - nutella.jpg  (Nutella)
+ - salame.jpg  (Salame)
+ - parmigiano.jpg  (Parmigiano)
+ - patatine-fritte.jpg  (Patatine Fritte)
+ - pizza-margherita.jpg  (Pizza Margherita)
+ - pane.jpg  (Pane)
+ - pasta-al-pomodoro.jpg  (Pasta al Pomodoro)
+ - banana.jpg  (Banana)
+ - mela.jpg  (Mela)
+ - insalata-verde.jpg  (Insalata Verde)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

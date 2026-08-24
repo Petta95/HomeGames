@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "anime-episodi" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - sazae-san.jpg  (Sazae-san)
+ - doraemon.jpg  (Doraemon)
+ - pokemon.jpg  (Pokémon)
+ - detective-conan.jpg  (Detective Conan)
+ - one-piece.jpg  (One Piece)
+ - naruto-shippuden.jpg  (Naruto + Shippuden)
+ - dragon-ball.jpg  (Dragon Ball (tutte le serie))
+ - bleach.jpg  (Bleach)
+ - fairy-tail.jpg  (Fairy Tail)
+ - my-hero-academia.jpg  (My Hero Academia)
+ - attack-on-titan.jpg  (Attack on Titan)
+ - fullmetal-alchemist-brotherhood.jpg  (Fullmetal Alchemist: Brotherhood)
+ - death-note.jpg  (Death Note)
+ - cowboy-bebop.jpg  (Cowboy Bebop)
+ - neon-genesis-evangelion.jpg  (Neon Genesis Evangelion)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

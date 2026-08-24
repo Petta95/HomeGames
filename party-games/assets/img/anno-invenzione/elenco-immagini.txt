@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "anno-invenzione" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - forchetta.jpg  (Forchetta (diffusa in Europa))
+ - occhiali-da-vista.jpg  (Occhiali da Vista)
+ - stampa-caratteri-mobili.jpg  (Stampa a Caratteri Mobili)
+ - gabinetto-sciacquone.jpg  (Gabinetto con Sciacquone)
+ - termometro-mercurio.jpg  (Termometro a Mercurio)
+ - paracadute.jpg  (Paracadute)
+ - pila-di-volta.jpg  (Pila Elettrica (Pila di Volta))
+ - fiammiferi.jpg  (Fiammiferi)
+ - anestesia.jpg  (Anestesia)
+ - carta-igienica.jpg  (Carta Igienica)
+ - telefono.jpg  (Telefono)
+ - lampadina.jpg  (Lampadina)
+ - cerniera-lampo.jpg  (Cerniera Lampo (Zip))
+ - microonde.jpg  (Microonde)
+ - velcro.jpg  (Velcro)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

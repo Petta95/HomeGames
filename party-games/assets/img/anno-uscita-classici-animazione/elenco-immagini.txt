@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "anno-uscita-classici-animazione" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - biancaneve-e-i-sette-nani.jpg  (Biancaneve e i Sette Nani)
+ - pinocchio.jpg  (Pinocchio)
+ - bambi.jpg  (Bambi)
+ - cenerentola.jpg  (Cenerentola)
+ - la-bella-addormentata-nel-bosco.jpg  (La Bella Addormentata nel Bosco)
+ - la-carica-dei-101.jpg  (La Carica dei 101)
+ - il-libro-della-giungla.jpg  (Il Libro della Giungla)
+ - la-sirenetta.jpg  (La Sirenetta)
+ - la-bella-e-la-bestia.jpg  (La Bella e la Bestia)
+ - aladdin.jpg  (Aladdin)
+ - il-re-leone.jpg  (Il Re Leone)
+ - toy-story.jpg  (Toy Story)
+ - shrek.jpg  (Shrek)
+ - alla-ricerca-di-nemo.jpg  (Alla Ricerca di Nemo)
+ - frozen.jpg  (Frozen - Il Regno di Ghiaccio)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

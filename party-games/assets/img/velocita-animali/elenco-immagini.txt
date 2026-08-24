@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "velocita-animali" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - falco-pellegrino.jpg  (Falco Pellegrino (in picchiata))
+ - aquila-reale.jpg  (Aquila Reale (in picchiata))
+ - ghepardo.jpg  (Ghepardo)
+ - pesce-vela.jpg  (Pesce Vela)
+ - marlin-nero.jpg  (Marlin Nero)
+ - antilope-pronghorn.jpg  (Antilope Pronghorn)
+ - leone.jpg  (Leone)
+ - struzzo.jpg  (Struzzo)
+ - cavallo-di-razza.jpg  (Cavallo di Razza)
+ - coyote.jpg  (Coyote)
+ - gatto-domestico.jpg  (Gatto Domestico)
+ - usain-bolt.jpg  (Usain Bolt)
+ - elefante.jpg  (Elefante)
+ - persona-che-corre.jpg  (Persona che Corre (media))
+ - lumaca.jpg  (Lumaca (record))
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

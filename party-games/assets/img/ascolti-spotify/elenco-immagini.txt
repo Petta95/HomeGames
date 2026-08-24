@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "ascolti-spotify" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata, es. copertina del brano):
+
+ - blinding-lights.jpg  (Blinding Lights - The Weeknd)
+ - shape-of-you.jpg  (Shape of You - Ed Sheeran)
+ - someone-you-loved.jpg  (Someone You Loved - Lewis Capaldi)
+ - dance-monkey.jpg  (Dance Monkey - Tones and I)
+ - sunflower.jpg  (Sunflower - Post Malone & Swae Lee)
+ - one-dance.jpg  (One Dance - Drake)
+ - starboy.jpg  (Starboy - The Weeknd)
+ - believer.jpg  (Believer - Imagine Dragons)
+ - closer.jpg  (Closer - The Chainsmokers)
+ - rockstar.jpg  (Rockstar - Post Malone)
+ - stay.jpg  (Stay - The Kid LAROI & Justin Bieber)
+ - perfect.jpg  (Perfect - Ed Sheeran)
+ - watermelon-sugar.jpg  (Watermelon Sugar - Harry Styles)
+ - thinking-out-loud.jpg  (Thinking Out Loud - Ed Sheeran)
+ - as-it-was.jpg  (As It Was - Harry Styles)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

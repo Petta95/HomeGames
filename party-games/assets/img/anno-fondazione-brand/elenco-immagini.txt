@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "anno-fondazione-brand" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata, es. il logo del brand):
+
+ - beretta.jpg  (Beretta)
+ - levis.jpg  (Levi's)
+ - coca-cola.jpg  (Coca-Cola)
+ - nintendo.jpg  (Nintendo)
+ - gucci.jpg  (Gucci)
+ - lego.jpg  (Lego)
+ - samsung.jpg  (Samsung)
+ - mcdonalds.jpg  (McDonald's)
+ - sony.jpg  (Sony)
+ - ferrari.jpg  (Ferrari)
+ - adidas.jpg  (Adidas)
+ - nike.jpg  (Nike)
+ - microsoft.jpg  (Microsoft)
+ - apple.jpg  (Apple)
+ - google.jpg  (Google)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

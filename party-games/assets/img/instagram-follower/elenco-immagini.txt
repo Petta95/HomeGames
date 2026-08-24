@@ -1,0 +1,21 @@
+Immagini attese in questa cartella per la categoria "instagram-follower" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - cristiano-ronaldo.jpg  (Cristiano Ronaldo)
+ - lionel-messi.jpg  (Lionel Messi)
+ - selena-gomez.jpg  (Selena Gomez)
+ - kylie-jenner.jpg  (Kylie Jenner)
+ - dwayne-johnson.jpg  (Dwayne Johnson)
+ - ariana-grande.jpg  (Ariana Grande)
+ - kim-kardashian.jpg  (Kim Kardashian)
+ - beyonce.jpg  (Beyoncé)
+ - justin-bieber.jpg  (Justin Bieber)
+ - taylor-swift.jpg  (Taylor Swift)
+ - neymar.jpg  (Neymar)
+ - nicki-minaj.jpg  (Nicki Minaj)
+ - zendaya.jpg  (Zendaya)
+ - cardi-b.jpg  (Cardi B)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

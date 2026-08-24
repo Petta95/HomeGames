@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "vittime-animali" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - zanzara.jpg  (Zanzara)
+ - uomo.jpg  (Uomo)
+ - serpente.jpg  (Serpente)
+ - cane.jpg  (Cane (rabbia))
+ - mosca-tse-tse.jpg  (Mosca Tse-Tse)
+ - cimice-assassina.jpg  (Cimice Assassina)
+ - lumaca-dacqua-dolce.jpg  (Lumaca d'Acqua Dolce)
+ - verme-ascaride.jpg  (Verme Ascaride)
+ - tenia.jpg  (Tenia (Verme Solitario))
+ - coccodrillo.jpg  (Coccodrillo)
+ - ippopotamo.jpg  (Ippopotamo)
+ - elefante.jpg  (Elefante)
+ - leone.jpg  (Leone)
+ - lupo.jpg  (Lupo)
+ - squalo.jpg  (Squalo)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

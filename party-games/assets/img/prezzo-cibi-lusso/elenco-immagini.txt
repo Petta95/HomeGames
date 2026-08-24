@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "prezzo-cibi-lusso" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - zafferano.jpg  (Zafferano)
+ - tartufo-bianco-dalba.jpg  (Tartufo Bianco d'Alba)
+ - caviale-beluga.jpg  (Caviale Beluga)
+ - formaggio-pule.jpg  (Formaggio Pule)
+ - tartufo-nero-pregiato.jpg  (Tartufo Nero Pregiato)
+ - aceto-balsamico-tradizionale-extravecchio.jpg  (Aceto Balsamico Tradizionale Extravecchio)
+ - vaniglia-del-madagascar.jpg  (Vaniglia del Madagascar)
+ - carne-wagyu-a5.jpg  (Carne Wagyu A5)
+ - prosciutto-iberico-di-bellota.jpg  (Prosciutto Iberico di Bellota)
+ - foie-gras.jpg  (Foie Gras)
+ - miele-di-manuka.jpg  (Miele di Manuka)
+ - parmigiano-reggiano-36-mesi.jpg  (Parmigiano Reggiano 36 mesi)
+ - salmone-selvaggio-affumicato.jpg  (Salmone Selvaggio Affumicato)
+ - olio-extravergine-dop.jpg  (Olio Extravergine DOP)
+ - cioccolato-fondente-gourmet.jpg  (Cioccolato Fondente Gourmet 85%)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

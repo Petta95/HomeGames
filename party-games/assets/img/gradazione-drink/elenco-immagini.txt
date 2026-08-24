@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "gradazione-drink" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - alcol-puro.jpg  (Alcol Puro (Everclear))
+ - assenzio.jpg  (Assenzio)
+ - whisky.jpg  (Whisky)
+ - vodka-liscia.jpg  (Vodka Liscia)
+ - rum.jpg  (Rum)
+ - gin.jpg  (Gin)
+ - tequila.jpg  (Tequila)
+ - amaro.jpg  (Amaro)
+ - negroni.jpg  (Negroni)
+ - vino-rosso.jpg  (Vino Rosso)
+ - vino-bianco.jpg  (Vino Bianco)
+ - prosecco.jpg  (Prosecco)
+ - mojito.jpg  (Mojito)
+ - spritz.jpg  (Spritz)
+ - birra.jpg  (Birra)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).
