@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "dipendenze-piu-comuni" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - caffeina.jpg  (Caffeina)
+ - nicotina-tabacco.jpg  (Nicotina / Tabacco)
+ - alcol.jpg  (Alcol)
+ - zucchero.jpg  (Zucchero)
+ - internet-smartphone.jpg  (Internet / Smartphone)
+ - cannabis.jpg  (Cannabis)
+ - gioco-dazzardo.jpg  (Gioco d'Azzardo)
+ - oppioidi.jpg  (Oppioidi)
+ - videogiochi.jpg  (Videogiochi)
+ - anfetamine-e-stimolanti.jpg  (Anfetamine e Stimolanti)
+ - cocaina.jpg  (Cocaina)
+ - benzodiazepine.jpg  (Benzodiazepine)
+ - shopping-compulsivo.jpg  (Shopping Compulsivo)
+ - eroina.jpg  (Eroina)
+ - allucinogeni.jpg  (Allucinogeni)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

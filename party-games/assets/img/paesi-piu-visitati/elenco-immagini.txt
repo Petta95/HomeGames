@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "paesi-piu-visitati" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - francia.jpg  (Francia)
+ - spagna.jpg  (Spagna)
+ - stati-uniti.jpg  (Stati Uniti)
+ - cina.jpg  (Cina)
+ - italia.jpg  (Italia)
+ - turchia.jpg  (Turchia)
+ - messico.jpg  (Messico)
+ - thailandia.jpg  (Thailandia)
+ - germania.jpg  (Germania)
+ - regno-unito.jpg  (Regno Unito)
+ - giappone.jpg  (Giappone)
+ - austria.jpg  (Austria)
+ - grecia.jpg  (Grecia)
+ - malesia.jpg  (Malesia)
+ - russia.jpg  (Russia)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

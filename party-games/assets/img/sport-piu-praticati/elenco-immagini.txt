@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "sport-piu-praticati" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - calcio.jpg  (Calcio)
+ - cricket.jpg  (Cricket)
+ - pallacanestro.jpg  (Pallacanestro)
+ - hockey-su-prato.jpg  (Hockey su Prato)
+ - tennis.jpg  (Tennis)
+ - pallavolo.jpg  (Pallavolo)
+ - tennistavolo.jpg  (Tennistavolo)
+ - baseball.jpg  (Baseball)
+ - rugby.jpg  (Rugby)
+ - golf.jpg  (Golf)
+ - football-americano.jpg  (Football Americano)
+ - boxe.jpg  (Boxe)
+ - nuoto.jpg  (Nuoto)
+ - ciclismo.jpg  (Ciclismo)
+ - badminton.jpg  (Badminton)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

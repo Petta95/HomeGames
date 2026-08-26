@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "velocita-veicoli" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - navetta-spaziale.jpg  (Navetta Spaziale - rientro in atmosfera)
+ - jet-militare-sr-71.jpg  (Jet Militare - SR-71 Blackbird)
+ - jet-privato.jpg  (Jet Privato)
+ - aereo-di-linea.jpg  (Aereo di Linea)
+ - auto-sportiva-bugatti-chiron.jpg  (Auto Sportiva Stradale - Bugatti Chiron)
+ - elicottero.jpg  (Elicottero)
+ - treno-maglev.jpg  (Treno Maglev)
+ - auto-formula-1.jpg  (Auto di Formula 1)
+ - moto-superbike-motogp.jpg  (Moto da Superbike - MotoGP)
+ - treno-proiettile-shinkansen.jpg  (Treno Proiettile - Shinkansen)
+ - auto-comune.jpg  (Auto Comune)
+ - moto-comune.jpg  (Moto Comune)
+ - quad-atv.jpg  (Quad / ATV)
+ - bicicletta.jpg  (Bicicletta)
+ - monopattino-elettrico.jpg  (Monopattino Elettrico)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

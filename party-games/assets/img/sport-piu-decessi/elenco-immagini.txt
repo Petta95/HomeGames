@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "sport-piu-decessi" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - nuoto-attivita-acquatiche.jpg  (Nuoto / Attività Acquatiche)
+ - ciclismo.jpg  (Ciclismo)
+ - calcio.jpg  (Calcio)
+ - corsa-maratona.jpg  (Corsa / Maratona)
+ - sci-alpino.jpg  (Sci Alpino)
+ - equitazione.jpg  (Equitazione)
+ - immersioni-subacquee.jpg  (Immersioni Subacquee)
+ - football-americano.jpg  (Football Americano)
+ - alpinismo.jpg  (Alpinismo)
+ - apnea-freediving.jpg  (Apnea / Freediving)
+ - boxe.jpg  (Boxe)
+ - paracadutismo.jpg  (Paracadutismo)
+ - rugby.jpg  (Rugby)
+ - wingsuit-flying.jpg  (Wingsuit Flying)
+ - base-jumping.jpg  (BASE Jumping)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

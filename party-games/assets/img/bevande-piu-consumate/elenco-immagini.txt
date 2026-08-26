@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "bevande-piu-consumate" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - acqua.jpg  (Acqua)
+ - te.jpg  (Tè)
+ - bevande-gassate.jpg  (Bevande Gassate)
+ - caffe.jpg  (Caffè)
+ - birra.jpg  (Birra)
+ - latte.jpg  (Latte)
+ - succhi-di-frutta.jpg  (Succhi di Frutta)
+ - superalcolici.jpg  (Superalcolici)
+ - vino.jpg  (Vino)
+ - bevande-energetiche.jpg  (Bevande Energetiche)
+ - bevande-vegetali.jpg  (Bevande Vegetali - Soia/Avena/Mandorla)
+ - sidro.jpg  (Sidro)
+ - cioccolata-calda.jpg  (Cioccolata Calda)
+ - kombucha.jpg  (Kombucha)
+ - acqua-di-cocco.jpg  (Acqua di Cocco)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).
