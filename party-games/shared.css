@@ -55,6 +55,12 @@ body.theme-purple{
   --accent-soft: rgba(213, 0, 249, 0.16);
   --accent-glow: rgba(213, 0, 249, 0.55);
 }
+body.theme-amber{
+  --accent: #ffb703;
+  --accent2: #fb5607;
+  --accent-soft: rgba(255, 183, 3, 0.16);
+  --accent-glow: rgba(255, 183, 3, 0.55);
+}
 
 /* =========================================================
    RESET & BASE
