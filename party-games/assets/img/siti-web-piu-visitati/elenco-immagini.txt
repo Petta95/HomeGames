@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "siti-web-piu-visitati" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - google.jpg  (Google)
+ - youtube.jpg  (YouTube)
+ - facebook.jpg  (Facebook)
+ - instagram.jpg  (Instagram)
+ - wikipedia.jpg  (Wikipedia)
+ - twitter-x.jpg  (Twitter / X)
+ - amazon.jpg  (Amazon)
+ - tiktok.jpg  (TikTok)
+ - yahoo.jpg  (Yahoo)
+ - whatsapp-web.jpg  (WhatsApp Web)
+ - netflix.jpg  (Netflix)
+ - reddit.jpg  (Reddit)
+ - linkedin.jpg  (LinkedIn)
+ - bing.jpg  (Bing)
+ - pinterest.jpg  (Pinterest)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

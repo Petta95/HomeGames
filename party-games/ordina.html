@@ -122,6 +122,38 @@
     background: var(--accent-soft);
   }
   .setup-section-title{ margin-top: 8px; }
+
+  /* ============================================================
+     SOLO MOBILE — su schermi stretti i box con "flex:1 1 0" si
+     schiacciano fino a diventare illeggibili (immagini invisibili).
+     Sotto i 700px si torna a box a larghezza fissa con scroll
+     orizzontale, come già previsto in shared.css per altri giochi.
+     Il layout desktop qui sopra resta invariato.
+     ============================================================ */
+  .mobile-hint{ display: none; }
+  @media (max-width: 700px){
+    #gameView.stage{ padding: 14px 10px 30px; gap: 10px; }
+    .order-track{
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      justify-content: flex-start;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+      padding: 6px 4px 14px;
+    }
+    .order-item{
+      flex: 0 0 auto;
+      width: 108px;
+      min-width: 108px;
+      max-width: none;
+      scroll-snap-align: start;
+    }
+    .item-name{ font-size: 0.72rem; }
+    .item-value{ font-size: 0.66rem; }
+    .move-btn{ width: 26px; height: 24px; font-size: 0.78rem; }
+    .desktop-hint{ display: none; }
+    .mobile-hint{ display: block; }
+  }
 </style>
 </head>
 <body class="theme-purple">
@@ -172,7 +204,8 @@
   </div>
 
   <div class="order-hint" id="orderHint"><span>⬅</span><span>➡</span></div>
-  <p class="move-hint">💡 Sposta i box trascinandoli con il mouse, con le frecce ◀ ▶ oppure selezionandoli e usando i tasti freccia della tastiera</p>
+  <p class="move-hint desktop-hint">💡 Sposta i box trascinandoli con il mouse, con le frecce ◀ ▶ oppure selezionandoli e usando i tasti freccia della tastiera</p>
+  <p class="move-hint mobile-hint">💡 Scorri lateralmente per vedere tutti i box, usa le frecce ◀ ▶ su ognuno per spostarlo</p>
 
   <div id="rowsContainer" style="width:100%; display:flex; flex-direction:column; gap:12px;"></div>
 
@@ -766,6 +799,89 @@
         { name: "Cioccolata Calda", slug: "cioccolata-calda", value: 2 },
         { name: "Kombucha", slug: "kombucha", value: 1 },
         { name: "Acqua di Cocco", slug: "acqua-di-cocco", value: 0.7 }
+      ]
+    },
+    {
+      id: "catastrofi-naturali-vittime", title: "Tipi di Catastrofi Naturali per Numero di Vittime",
+      rule: "Ordina le tipologie di catastrofi naturali dalla maggior somma stimata di vittime storiche complessive alla minore",
+      order: "desc", unit: "vittime stimate (somma storica complessiva, milioni)",
+      items: [
+        { name: "Siccità e Carestie", slug: "siccita", value: 40000000 },
+        { name: "Alluvioni", slug: "alluvioni", value: 6000000 },
+        { name: "Terremoti", slug: "terremoti", value: 2500000 },
+        { name: "Cicloni / Uragani / Tifoni", slug: "cicloni", value: 1500000 },
+        { name: "Tsunami", slug: "tsunami", value: 500000 },
+        { name: "Eruzioni Vulcaniche", slug: "eruzioni-vulcaniche", value: 250000 },
+        { name: "Ondate di Calore", slug: "ondate-di-calore", value: 150000 },
+        { name: "Frane e Smottamenti", slug: "frane-e-smottamenti", value: 60000 },
+        { name: "Valanghe", slug: "valanghe", value: 25000 },
+        { name: "Tornado", slug: "tornado", value: 10000 }
+      ]
+    },
+    {
+      id: "siti-web-piu-visitati", title: "Siti Web più Visitati al Mondo",
+      rule: "Ordina i siti web dal maggior numero stimato di visite mensili al minore",
+      order: "desc", unit: "miliardi di visite mensili (stima)",
+      items: [
+        { name: "Google", slug: "google", value: 84 },
+        { name: "YouTube", slug: "youtube", value: 34 },
+        { name: "Facebook", slug: "facebook", value: 16 },
+        { name: "Instagram", slug: "instagram", value: 6.5 },
+        { name: "Wikipedia", slug: "wikipedia", value: 5.6 },
+        { name: "Twitter / X", slug: "twitter-x", value: 5.4 },
+        { name: "Amazon", slug: "amazon", value: 4.8 },
+        { name: "TikTok", slug: "tiktok", value: 3.6 },
+        { name: "Yahoo", slug: "yahoo", value: 3 },
+        { name: "WhatsApp Web", slug: "whatsapp-web", value: 2.8 },
+        { name: "Netflix", slug: "netflix", value: 2.4 },
+        { name: "Reddit", slug: "reddit", value: 2.2 },
+        { name: "LinkedIn", slug: "linkedin", value: 1.9 },
+        { name: "Bing", slug: "bing", value: 1.6 },
+        { name: "Pinterest", slug: "pinterest", value: 1 }
+      ]
+    },
+    {
+      id: "regioni-italiane-superficie", title: "Regioni Italiane per Superficie Territoriale",
+      rule: "Ordina le regioni italiane dalla superficie territoriale più grande alla più piccola",
+      order: "desc", unit: "km²",
+      items: [
+        { name: "Sicilia", slug: "sicilia", value: 25832 },
+        { name: "Piemonte", slug: "piemonte", value: 25387 },
+        { name: "Sardegna", slug: "sardegna", value: 24090 },
+        { name: "Lombardia", slug: "lombardia", value: 23844 },
+        { name: "Toscana", slug: "toscana", value: 22987 },
+        { name: "Emilia-Romagna", slug: "emilia-romagna", value: 22453 },
+        { name: "Puglia", slug: "puglia", value: 19541 },
+        { name: "Veneto", slug: "veneto", value: 18345 },
+        { name: "Lazio", slug: "lazio", value: 17232 },
+        { name: "Calabria", slug: "calabria", value: 15222 },
+        { name: "Campania", slug: "campania", value: 13671 },
+        { name: "Trentino-Alto Adige", slug: "trentino-alto-adige", value: 13607 },
+        { name: "Abruzzo", slug: "abruzzo", value: 10832 },
+        { name: "Basilicata", slug: "basilicata", value: 9995 },
+        { name: "Marche", slug: "marche", value: 9401 }
+      ]
+    },
+    {
+      id: "calorie-frutta-verdura", title: "Frutta e Verdura: Calorie per 100g",
+      rule: "Ordina frutta e verdura dalla più calorica (per 100g) alla meno calorica",
+      order: "desc", unit: "kcal/100g",
+      items: [
+        { name: "Cocco (polpa fresca)", slug: "cocco", value: 354 },
+        { name: "Avocado", slug: "avocado", value: 160 },
+        { name: "Banana", slug: "banana", value: 89 },
+        { name: "Mais Dolce", slug: "mais-dolce", value: 86 },
+        { name: "Melograno", slug: "melograno", value: 83 },
+        { name: "Patata", slug: "patata", value: 77 },
+        { name: "Uva", slug: "uva", value: 69 },
+        { name: "Mango", slug: "mango", value: 60 },
+        { name: "Mela", slug: "mela", value: 52 },
+        { name: "Carota", slug: "carota", value: 41 },
+        { name: "Broccoli", slug: "broccoli", value: 34 },
+        { name: "Cavolfiore", slug: "cavolfiore", value: 25 },
+        { name: "Pomodoro", slug: "pomodoro", value: 18 },
+        { name: "Zucchina", slug: "zucchina", value: 17 },
+        { name: "Cetriolo", slug: "cetriolo", value: 15 }
       ]
     },
   ];

@@ -1,0 +1,17 @@
+Immagini attese in questa cartella per la categoria "catastrofi-naturali-vittime" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - siccita.jpg  (Siccità e Carestie)
+ - alluvioni.jpg  (Alluvioni)
+ - terremoti.jpg  (Terremoti)
+ - cicloni.jpg  (Cicloni / Uragani / Tifoni)
+ - tsunami.jpg  (Tsunami)
+ - eruzioni-vulcaniche.jpg  (Eruzioni Vulcaniche)
+ - ondate-di-calore.jpg  (Ondate di Calore)
+ - frane-e-smottamenti.jpg  (Frane e Smottamenti)
+ - valanghe.jpg  (Valanghe)
+ - tornado.jpg  (Tornado)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

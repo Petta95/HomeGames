@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "calorie-frutta-verdura" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - cocco.jpg  (Cocco - polpa fresca)
+ - avocado.jpg  (Avocado)
+ - banana.jpg  (Banana)
+ - mais-dolce.jpg  (Mais Dolce)
+ - melograno.jpg  (Melograno)
+ - patata.jpg  (Patata)
+ - uva.jpg  (Uva)
+ - mango.jpg  (Mango)
+ - mela.jpg  (Mela)
+ - carota.jpg  (Carota)
+ - broccoli.jpg  (Broccoli)
+ - cavolfiore.jpg  (Cavolfiore)
+ - pomodoro.jpg  (Pomodoro)
+ - zucchina.jpg  (Zucchina)
+ - cetriolo.jpg  (Cetriolo)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

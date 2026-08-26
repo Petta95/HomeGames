@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "regioni-italiane-superficie" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - sicilia.jpg  (Sicilia)
+ - piemonte.jpg  (Piemonte)
+ - sardegna.jpg  (Sardegna)
+ - lombardia.jpg  (Lombardia)
+ - toscana.jpg  (Toscana)
+ - emilia-romagna.jpg  (Emilia-Romagna)
+ - puglia.jpg  (Puglia)
+ - veneto.jpg  (Veneto)
+ - lazio.jpg  (Lazio)
+ - calabria.jpg  (Calabria)
+ - campania.jpg  (Campania)
+ - trentino-alto-adige.jpg  (Trentino-Alto Adige)
+ - abruzzo.jpg  (Abruzzo)
+ - basilicata.jpg  (Basilicata)
+ - marche.jpg  (Marche)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).
