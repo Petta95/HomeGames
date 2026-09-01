@@ -607,3 +607,53 @@ html, body{
   .dilemma-grid{ grid-template-columns: 1fr; }
   .dilemma-vs{ padding: 4px 0; }
 }
+
+/* =========================================================
+   OTTIMIZZAZIONE MOBILE GLOBALE
+   Regole condivise da ogni gioco che usa shared.css: meno
+   padding/gap per ridurre lo scroll, testi e pulsanti ridotti
+   ma sempre leggibili e con target di tocco comodi (>=44px),
+   card punteggio più strette per stare in 2 per riga anche su
+   telefoni piccoli invece di impilarsi una sotto l'altra.
+   ========================================================= */
+@media (max-width: 600px){
+  .navbar{ padding: 10px 14px; gap: 8px; }
+  .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+  .nav-title{ font-size: 1.05rem; gap: 7px; }
+  .nav-title .dot{ width: 9px; height: 9px; }
+  .nav-counter{ padding: 6px 12px; font-size: 0.8rem; }
+
+  .stage{ padding: 20px 14px 44px; gap: 16px; min-height: calc(100vh - 56px); }
+
+  .question-card{ padding: 24px 20px; border-radius: 20px; }
+  .question-eyebrow{ margin-bottom: 10px; font-size: 0.82rem; }
+  .question-text{ font-size: clamp(1.2rem, 5.5vw, 1.6rem); }
+
+  .actions-row{ gap: 12px; }
+  .btn{ padding: 14px 22px; font-size: 0.95rem; border-radius: 13px; }
+
+  .info-box{ padding: 14px 18px; font-size: 0.92rem; border-radius: 13px; }
+
+  .mode-grid{ gap: 12px; }
+  .mode-card{ padding: 18px 14px; font-size: 1.05rem; border-radius: 16px; }
+
+  .chip-grid{ gap: 10px; }
+  .player-chip{ padding: 11px 18px; font-size: 0.98rem; border-radius: 13px; }
+
+  .dilemma-option{ padding: 20px 16px; font-size: 1rem; border-radius: 16px; }
+  .dilemma-vs{ font-size: 1.3rem; }
+
+  /* Card punteggio: minmax più basso -> 2 (o più) per riga invece di 1 */
+  .score-grid{ gap: 12px; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+  .score-card{ padding: 14px; gap: 8px; border-radius: 15px; }
+  .team-name{ font-size: 0.92rem; padding: 4px 2px; }
+  .score-value{ font-size: 1.8rem; }
+  .score-btn{ padding: 8px 14px; font-size: 0.85rem; }
+
+  .fire-timer-circle{ width: 130px; height: 130px; font-size: 3rem; border-width: 5px; }
+
+  .setup-row input, .teams-setup input, .players-setup input{ padding: 12px 14px; font-size: 0.95rem; }
+
+  .count-grid{ gap: 8px; }
+  .count-card{ padding: 11px 16px; font-size: 1rem; }
+}

@@ -480,7 +480,7 @@
 
   <div class="gm-console">
     <div class="gm-input-row">
-      <input type="text" id="answerInput" placeholder="Digita qui la risposta detta dalla squadra…" maxlength="60" autocomplete="off">
+      <input type="text" id="answerInput" placeholder="Risposta della squadra…" maxlength="60" autocomplete="off">
       <button class="gm-submit-btn" id="submitBtn" type="button">Invia ✔</button>
     </div>
     <p class="gm-hint">💡 <kbd>Invio</kbd> per inviare la risposta (vuoto = risposta sbagliata) · <kbd>Esc</kbd> per segnare subito una risposta sbagliata</p>
@@ -674,6 +674,486 @@
         { name: "Berkshire Hathaway" },
         { name: "TSMC", alt: ["Taiwan Semiconductor"] },
         { name: "Eli Lilly" }
+      ]
+    },
+    {
+      id: "corpi-sistema-solare",
+      title: "I 10 Corpi Celesti più Grandi del Sistema Solare",
+      items: [
+        { name: "Sole" },
+        { name: "Giove" },
+        { name: "Saturno" },
+        { name: "Urano" },
+        { name: "Nettuno" },
+        { name: "Terra" },
+        { name: "Venere" },
+        { name: "Marte" },
+        { name: "Mercurio" },
+        { name: "Luna" }
+      ]
+    },
+    {
+      id: "champions-league-titoli",
+      title: "Le 10 Squadre con più Titoli di Champions League",
+      items: [
+        { name: "Real Madrid" },
+        { name: "Milan", alt: ["AC Milan"] },
+        { name: "Liverpool" },
+        { name: "Bayern Monaco", alt: ["Bayern Monaco di Baviera", "Bayern"] },
+        { name: "Barcellona", alt: ["FC Barcellona"] },
+        { name: "Ajax" },
+        { name: "Manchester United", alt: ["Man United", "Man Utd"] },
+        { name: "Inter", alt: ["Inter Milan", "Internazionale"] },
+        { name: "Juventus" },
+        { name: "Chelsea" }
+      ]
+    },
+    {
+      id: "tennisti-slam",
+      title: "I 10 Tennisti con più Titoli Slam (singolare maschile)",
+      items: [
+        { name: "Novak Djokovic", alt: ["Djokovic"] },
+        { name: "Rafael Nadal", alt: ["Nadal"] },
+        { name: "Roger Federer", alt: ["Federer"] },
+        { name: "Pete Sampras", alt: ["Sampras"] },
+        { name: "Roy Emerson", alt: ["Emerson"] },
+        { name: "Björn Borg", alt: ["Bjorn Borg", "Borg"] },
+        { name: "Rod Laver", alt: ["Laver"] },
+        { name: "Bill Tilden", alt: ["Tilden"] },
+        { name: "Andre Agassi", alt: ["Agassi"] },
+        { name: "Jimmy Connors", alt: ["Connors"] }
+      ]
+    },
+    {
+      id: "medaglie-olimpiche-nazioni",
+      title: "Le 10 Nazioni con più Medaglie Olimpiche Estive di Sempre",
+      items: [
+        { name: "Stati Uniti", alt: ["USA", "America"] },
+        { name: "Unione Sovietica", alt: ["URSS"] },
+        { name: "Gran Bretagna", alt: ["Regno Unito", "UK"] },
+        { name: "Francia" },
+        { name: "Germania" },
+        { name: "Italia" },
+        { name: "Cina" },
+        { name: "Australia" },
+        { name: "Ungheria" },
+        { name: "Svezia" }
+      ]
+    },
+    {
+      id: "deserti-grandi",
+      title: "I 10 Deserti più Grandi del Mondo",
+      items: [
+        { name: "Antartico", alt: ["Deserto Antartico", "Antartide"] },
+        { name: "Artico", alt: ["Deserto Artico"] },
+        { name: "Sahara" },
+        { name: "Arabico", alt: ["Deserto Arabico", "Arabia"] },
+        { name: "Gobi" },
+        { name: "Kalahari" },
+        { name: "Patagonia", alt: ["Deserto della Patagonia"] },
+        { name: "Siria", alt: ["Deserto Siriano"] },
+        { name: "Grande Deserto Vittoria" },
+        { name: "Karakum", alt: ["Deserto del Karakum"] }
+      ]
+    },
+    {
+      id: "paesi-grandi-superficie",
+      title: "I 10 Paesi più Grandi del Mondo per Superficie",
+      items: [
+        { name: "Russia" },
+        { name: "Canada" },
+        { name: "Stati Uniti", alt: ["USA", "America"] },
+        { name: "Cina" },
+        { name: "Brasile" },
+        { name: "Australia" },
+        { name: "India" },
+        { name: "Argentina" },
+        { name: "Kazakhstan" },
+        { name: "Algeria" }
+      ]
+    },
+    {
+      id: "paesi-piccoli-superficie",
+      title: "I 10 Paesi più Piccoli del Mondo per Superficie",
+      items: [
+        { name: "Città del Vaticano", alt: ["Vaticano"] },
+        { name: "Monaco" },
+        { name: "Nauru" },
+        { name: "Tuvalu" },
+        { name: "San Marino" },
+        { name: "Liechtenstein" },
+        { name: "Isole Marshall", alt: ["Marshall"] },
+        { name: "Saint Kitts e Nevis", alt: ["Saint Kitts", "San Cristoforo e Nevis"] },
+        { name: "Maldive" },
+        { name: "Malta" }
+      ]
+    },
+    {
+      id: "grattacieli-alti",
+      title: "I 10 Grattacieli più Alti del Mondo",
+      items: [
+        { name: "Burj Khalifa" },
+        { name: "Merdeka 118" },
+        { name: "Shanghai Tower" },
+        { name: "Abraj Al-Bait", alt: ["Torre dell'Orologio della Mecca", "Mecca Royal Clock Tower"] },
+        { name: "Ping An Finance Center" },
+        { name: "Lotte World Tower" },
+        { name: "One World Trade Center" },
+        { name: "Guangzhou CTF Finance Centre" },
+        { name: "Tianjin CTF Finance Centre" },
+        { name: "CITIC Tower" }
+      ]
+    },
+    {
+      id: "laghi-grandi",
+      title: "I 10 Laghi più Grandi del Mondo per Superficie",
+      items: [
+        { name: "Mar Caspio", alt: ["Caspio"] },
+        { name: "Lago Superiore" },
+        { name: "Lago Vittoria" },
+        { name: "Lago Huron" },
+        { name: "Lago Michigan" },
+        { name: "Lago Baikal" },
+        { name: "Grande Lago degli Orsi" },
+        { name: "Lago Tanganica" },
+        { name: "Grande Lago degli Schiavi" },
+        { name: "Lago Malawi", alt: ["Lago Niassa"] }
+      ]
+    },
+    {
+      id: "oceani-mari-grandi",
+      title: "I 10 Mari e Oceani più Grandi del Mondo",
+      items: [
+        { name: "Oceano Pacifico", alt: ["Pacifico"] },
+        { name: "Oceano Atlantico", alt: ["Atlantico"] },
+        { name: "Oceano Indiano", alt: ["Indiano"] },
+        { name: "Oceano Antartico", alt: ["Oceano Meridionale", "Antartico"] },
+        { name: "Oceano Artico", alt: ["Artico"] },
+        { name: "Mar dei Sargassi", alt: ["Sargassi"] },
+        { name: "Mar Cinese Meridionale" },
+        { name: "Mar dei Caraibi", alt: ["Caraibi"] },
+        { name: "Mar Mediterraneo", alt: ["Mediterraneo"] },
+        { name: "Mar di Bering", alt: ["Bering"] }
+      ]
+    },
+    {
+      id: "monumenti-visitati",
+      title: "I 10 Monumenti più Visitati al Mondo",
+      items: [
+        { name: "Grande Muraglia Cinese", alt: ["Muraglia Cinese"] },
+        { name: "Colosseo" },
+        { name: "Torre Eiffel", alt: ["Eiffel"] },
+        { name: "Taj Mahal" },
+        { name: "Statua della Libertà" },
+        { name: "Machu Picchu" },
+        { name: "Petra" },
+        { name: "Piramidi di Giza", alt: ["Piramidi d'Egitto", "Giza"] },
+        { name: "Cristo Redentore" },
+        { name: "Alhambra" }
+      ]
+    },
+    {
+      id: "animali-grandi-peso",
+      title: "I 10 Animali più Grandi del Mondo per Peso",
+      items: [
+        { name: "Balenottera Azzurra", alt: ["Balena Azzurra"] },
+        { name: "Balena Franca" },
+        { name: "Balenottera Comune" },
+        { name: "Capodoglio" },
+        { name: "Elefante Africano", alt: ["Elefante"] },
+        { name: "Giraffa" },
+        { name: "Ippopotamo" },
+        { name: "Rinoceronte Bianco", alt: ["Rinoceronte"] },
+        { name: "Orca" },
+        { name: "Squalo Balena" }
+      ]
+    },
+    {
+      id: "razze-cane-diffuse",
+      title: "Le 10 Razze di Cane più Diffuse al Mondo",
+      items: [
+        { name: "Labrador Retriever", alt: ["Labrador"] },
+        { name: "Pastore Tedesco" },
+        { name: "Golden Retriever" },
+        { name: "Bulldog Francese" },
+        { name: "Bulldog Inglese" },
+        { name: "Barboncino", alt: ["Poodle"] },
+        { name: "Beagle" },
+        { name: "Rottweiler" },
+        { name: "Yorkshire Terrier", alt: ["Yorkshire"] },
+        { name: "Boxer" }
+      ]
+    },
+    {
+      id: "social-piu-utenti",
+      title: "I 10 Social Network con più Utenti Attivi al Mondo",
+      items: [
+        { name: "Facebook" },
+        { name: "YouTube" },
+        { name: "WhatsApp" },
+        { name: "Instagram" },
+        { name: "TikTok" },
+        { name: "WeChat" },
+        { name: "Facebook Messenger", alt: ["Messenger"] },
+        { name: "Telegram" },
+        { name: "Snapchat" },
+        { name: "Pinterest" }
+      ]
+    },
+    {
+      id: "valute-forti",
+      title: "Le 10 Valute più Forti al Mondo (rispetto al Dollaro USA)",
+      items: [
+        { name: "Dinaro Kuwaitiano", alt: ["Dinaro del Kuwait"] },
+        { name: "Dinaro Bahreinita", alt: ["Dinaro del Bahrein"] },
+        { name: "Rial Omanita", alt: ["Rial dell'Oman"] },
+        { name: "Dinaro Giordano", alt: ["Dinaro della Giordania"] },
+        { name: "Sterlina Britannica", alt: ["Sterlina", "Pound"] },
+        { name: "Euro" },
+        { name: "Franco Svizzero" },
+        { name: "Dollaro USA", alt: ["Dollaro Americano", "Dollaro"] },
+        { name: "Dollaro Canadese" },
+        { name: "Dollaro Australiano" }
+      ]
+    },
+    {
+      id: "nobel-nazioni",
+      title: "Le 10 Nazioni con più Premi Nobel nella Storia",
+      items: [
+        { name: "Stati Uniti", alt: ["USA", "America"] },
+        { name: "Regno Unito", alt: ["Gran Bretagna", "UK"] },
+        { name: "Germania" },
+        { name: "Francia" },
+        { name: "Svezia" },
+        { name: "Russia" },
+        { name: "Giappone" },
+        { name: "Svizzera" },
+        { name: "Canada" },
+        { name: "Italia" }
+      ]
+    },
+    {
+      id: "film-animazione-incasso",
+      title: "I 10 Film d'Animazione col Maggior Incasso di Sempre",
+      items: [
+        { name: "Inside Out 2" },
+        { name: "Frozen II", alt: ["Frozen 2"] },
+        { name: "Frozen", alt: ["Frozen - Il Regno di Ghiaccio"] },
+        { name: "Gli Incredibili 2", alt: ["Incredibles 2"] },
+        { name: "Minions 2: Come Gru Diventa Cattivissimo", alt: ["Minions 2", "The Rise of Gru"] },
+        { name: "Toy Story 4" },
+        { name: "Alla Ricerca di Dory", alt: ["Finding Dory"] },
+        { name: "Zootropolis", alt: ["Zootopia"] },
+        { name: "Toy Story 3" },
+        { name: "Cattivissimo Me 3", alt: ["Despicable Me 3"] }
+      ]
+    },
+    {
+      id: "album-venduti",
+      title: "I 10 Album Musicali più Venduti di Sempre",
+      items: [
+        { name: "Thriller", alt: ["Michael Jackson"] },
+        { name: "Back in Black", alt: ["AC/DC"] },
+        { name: "The Dark Side of the Moon", alt: ["Pink Floyd"] },
+        { name: "The Bodyguard", alt: ["Whitney Houston"] },
+        { name: "Bat Out of Hell", alt: ["Meat Loaf"] },
+        { name: "Their Greatest Hits 1971-1975", alt: ["Eagles"] },
+        { name: "Saturday Night Fever" },
+        { name: "Rumours", alt: ["Fleetwood Mac"] },
+        { name: "Come On Over", alt: ["Shania Twain"] },
+        { name: "Appetite for Destruction", alt: ["Guns N' Roses", "Guns and Roses"] }
+      ]
+    },
+    {
+      id: "alimenti-prodotti",
+      title: "I 10 Alimenti più Prodotti al Mondo (in tonnellate)",
+      items: [
+        { name: "Canna da Zucchero" },
+        { name: "Mais" },
+        { name: "Riso" },
+        { name: "Grano", alt: ["Frumento"] },
+        { name: "Patate" },
+        { name: "Barbabietola da Zucchero" },
+        { name: "Manioca", alt: ["Cassava"] },
+        { name: "Soia" },
+        { name: "Olio di Palma" },
+        { name: "Pomodoro" }
+      ]
+    },
+    {
+      id: "aeroporti-trafficati",
+      title: "I 10 Aeroporti più Trafficati al Mondo",
+      items: [
+        { name: "Hartsfield-Jackson Atlanta", alt: ["Atlanta"] },
+        { name: "Dubai International", alt: ["Dubai"] },
+        { name: "Dallas/Fort Worth", alt: ["Dallas"] },
+        { name: "Denver International", alt: ["Denver"] },
+        { name: "O'Hare Chicago", alt: ["Chicago"] },
+        { name: "Los Angeles International", alt: ["LAX", "Los Angeles"] },
+        { name: "Londra Heathrow", alt: ["Heathrow", "Londra"] },
+        { name: "Tokyo Haneda", alt: ["Haneda", "Tokyo"] },
+        { name: "Indira Gandhi Delhi", alt: ["Delhi"] },
+        { name: "Istanbul Airport", alt: ["Istanbul"] }
+      ]
+    },
+    {
+      id: "canali-youtube-iscritti",
+      title: "I 10 Canali YouTube con più Iscritti al Mondo",
+      items: [
+        { name: "T-Series" },
+        { name: "MrBeast" },
+        { name: "Cocomelon" },
+        { name: "SET India" },
+        { name: "Kids Diana Show" },
+        { name: "PewDiePie" },
+        { name: "Vlad and Niki" },
+        { name: "Like Nastya" },
+        { name: "WWE" },
+        { name: "Zee Music Company" }
+      ]
+    },
+    {
+      id: "paesi-densita-popolazione",
+      title: "I 10 Paesi più Densamente Popolati al Mondo",
+      items: [
+        { name: "Monaco" },
+        { name: "Singapore" },
+        { name: "Bahrein" },
+        { name: "Malta" },
+        { name: "Maldive" },
+        { name: "Bangladesh" },
+        { name: "Libano" },
+        { name: "Taiwan" },
+        { name: "Corea del Sud" },
+        { name: "Paesi Bassi", alt: ["Olanda"] }
+      ]
+    },
+    {
+      id: "isole-grandi",
+      title: "Le 10 Isole più Grandi del Mondo",
+      items: [
+        { name: "Groenlandia" },
+        { name: "Nuova Guinea" },
+        { name: "Borneo" },
+        { name: "Madagascar" },
+        { name: "Isola di Baffin", alt: ["Baffin"] },
+        { name: "Sumatra" },
+        { name: "Gran Bretagna", alt: ["Regno Unito"] },
+        { name: "Honshu" },
+        { name: "Isola di Vittoria", alt: ["Vittoria"] },
+        { name: "Terra di Ellesmere", alt: ["Ellesmere"] }
+      ]
+    },
+    {
+      id: "paesi-produttori-petrolio",
+      title: "I 10 Paesi Produttori di Petrolio più Grandi al Mondo",
+      items: [
+        { name: "Stati Uniti", alt: ["USA", "America"] },
+        { name: "Arabia Saudita" },
+        { name: "Russia" },
+        { name: "Canada" },
+        { name: "Cina" },
+        { name: "Iraq" },
+        { name: "Emirati Arabi Uniti", alt: ["Emirati Arabi"] },
+        { name: "Iran" },
+        { name: "Brasile" },
+        { name: "Kuwait" }
+      ]
+    },
+    {
+      id: "citta-popolose-mondo",
+      title: "Le 10 Città più Popolose al Mondo (Area Metropolitana)",
+      items: [
+        { name: "Tokyo" },
+        { name: "Delhi" },
+        { name: "Shanghai" },
+        { name: "Dhaka" },
+        { name: "San Paolo", alt: ["Sao Paulo"] },
+        { name: "Il Cairo", alt: ["Cairo"] },
+        { name: "Città del Messico", alt: ["Mexico City"] },
+        { name: "Pechino", alt: ["Beijing"] },
+        { name: "Mumbai" },
+        { name: "Osaka" }
+      ]
+    },
+    {
+      id: "sport-piu-seguiti",
+      title: "Gli Sport più Seguiti al Mondo (per tifosi stimati)",
+      items: [
+        { name: "Calcio" },
+        { name: "Cricket" },
+        { name: "Basket", alt: ["Pallacanestro"] },
+        { name: "Hockey su Prato" },
+        { name: "Tennis" },
+        { name: "Pallavolo" },
+        { name: "Tennis Tavolo", alt: ["Ping Pong"] },
+        { name: "Baseball" },
+        { name: "Rugby" },
+        { name: "Golf" }
+      ]
+    },
+    {
+      id: "auto-vendute",
+      title: "Le 10 Auto più Vendute di Sempre (modelli)",
+      items: [
+        { name: "Toyota Corolla", alt: ["Corolla"] },
+        { name: "Ford F-Series", alt: ["Ford F-150"] },
+        { name: "Volkswagen Golf", alt: ["VW Golf", "Golf"] },
+        { name: "Volkswagen Maggiolino", alt: ["VW Beetle", "Maggiolino", "Beetle"] },
+        { name: "Toyota Hilux", alt: ["Hilux"] },
+        { name: "Honda Civic", alt: ["Civic"] },
+        { name: "Toyota Camry", alt: ["Camry"] },
+        { name: "Ford Escort", alt: ["Escort"] },
+        { name: "Lada Riva", alt: ["Lada"] },
+        { name: "Honda Accord", alt: ["Accord"] }
+      ]
+    },
+    {
+      id: "fiumi-lunghi-italia",
+      title: "I 10 Fiumi più Lunghi d'Italia",
+      items: [
+        { name: "Po" },
+        { name: "Adige" },
+        { name: "Tevere" },
+        { name: "Adda" },
+        { name: "Oglio" },
+        { name: "Tanaro" },
+        { name: "Ticino" },
+        { name: "Piave" },
+        { name: "Arno" },
+        { name: "Reno" }
+      ]
+    },
+    {
+      id: "vette-alte-italia",
+      title: "Le 10 Vette più Alte d'Italia",
+      items: [
+        { name: "Monte Bianco" },
+        { name: "Monte Rosa", alt: ["Punta Dufour"] },
+        { name: "Cervino" },
+        { name: "Gran Paradiso" },
+        { name: "Bernina", alt: ["Pizzo Bernina"] },
+        { name: "Adamello" },
+        { name: "Presanella" },
+        { name: "Ortles" },
+        { name: "Marmolada" },
+        { name: "Gran Sasso d'Italia", alt: ["Gran Sasso"] }
+      ]
+    },
+    {
+      id: "isole-italiane-grandi",
+      title: "Le 10 Isole Italiane più Grandi",
+      items: [
+        { name: "Sicilia" },
+        { name: "Sardegna" },
+        { name: "Elba", alt: ["Isola d'Elba"] },
+        { name: "Sant'Antioco" },
+        { name: "Isola di San Pietro", alt: ["San Pietro"] },
+        { name: "Pantelleria" },
+        { name: "Ischia", alt: ["Isola d'Ischia"] },
+        { name: "Salina", alt: ["Isola di Salina"] },
+        { name: "Vulcano", alt: ["Isola di Vulcano"] },
+        { name: "Favignana", alt: ["Isola di Favignana"] }
       ]
     }
   ];
