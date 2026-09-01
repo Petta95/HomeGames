@@ -66,6 +66,25 @@
 
   /* ---- Setup: numero squadre + nomi ---- */
   .rules-link-btn{ margin-top: -6px; }
+  .teams-setup{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .setup-row{ display: flex; gap: 10px; align-items: center; width: 100%; }
+  .setup-row input{
+    flex: 1;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+  }
+  .setup-row input:focus{ outline: none; border-color: var(--accent); }
 
   /* ---- Overlay modali generici (regole / round completato) ---- */
   .modal-overlay{
