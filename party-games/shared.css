@@ -61,6 +61,12 @@ body.theme-amber{
   --accent-soft: rgba(255, 183, 3, 0.16);
   --accent-glow: rgba(255, 183, 3, 0.55);
 }
+body.theme-thermo{
+  --accent: #ff4757;
+  --accent2: #2e86de;
+  --accent-soft: rgba(255, 71, 87, 0.16);
+  --accent-glow: rgba(255, 71, 87, 0.5);
+}
 
 /* =========================================================
    RESET & BASE
