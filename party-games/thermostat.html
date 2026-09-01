@@ -16,10 +16,39 @@
   #setupView.stage, #gameView.stage, #winView.stage{ max-width: 1000px; }
 
   #gameView.stage{
-    padding: 16px 20px 26px;
-    gap: 14px;
+    padding: 12px 18px 20px;
+    gap: 10px;
     justify-content: flex-start;
   }
+  #gameView .turn-banner{ padding: 8px 18px; }
+  #gameView .turn-banner .mic{ font-size: 1.2rem; }
+  #gameView .turn-label{ font-size: clamp(0.9rem, 1.8vw, 1.2rem); }
+  #gameView .score-grid{ gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  #gameView .score-card{ padding: 8px; gap: 2px; }
+  #gameView .team-name{ font-size: 0.85rem; padding: 3px; }
+  #gameView .score-value{ font-size: 1.3rem; }
+  #gameView .attempts-label{ font-size: 0.65rem; margin-top: -4px; }
+  #gameView .turn-badge{ top: -9px; right: 8px; font-size: 0.58rem; padding: 2px 8px; }
+  #gameView .category-card{ padding: 10px 18px; }
+  #gameView .category-eyebrow{ margin-bottom: 4px; font-size: 0.72rem; }
+  #gameView .category-title{ font-size: clamp(0.95rem, 2vw, 1.3rem); }
+  #gameView .thermo-wrap{ gap: 6px; }
+  #gameView .thermo-track{ height: 40px; }
+  #gameView .thermo-scale-ends{ font-size: 0.7rem; }
+  #gameView .thermo-bound{ font-size: 1.1rem; padding: 5px 12px; min-width: 46px; }
+  #gameView .thermo-range-hint{ font-size: 0.68rem; }
+  #gameView .thermo-marker{ top: -18px; }
+  #gameView .thermo-marker-value{ font-size: 0.75rem; }
+  #gameView .history-grid{ gap: 10px; }
+  #gameView .history-col{ padding: 8px; gap: 4px; max-height: 120px; }
+  #gameView .history-col-title{ font-size: 0.78rem; }
+  #gameView .history-chip{ padding: 5px 10px; font-size: 0.78rem; }
+  #gameView .history-empty{ font-size: 0.75rem; padding: 6px 0; }
+  #gameView .gm-console{ padding: 14px; gap: 8px; }
+  #gameView .gm-input-row input{ padding: 10px 14px; font-size: 1rem; }
+  #gameView .gm-submit-btn{ font-size: 0.85rem; padding: 0 16px; }
+  #gameView .gm-hint{ font-size: 0.7rem; }
+  #gameView .console-actions .btn{ padding: 9px 18px; font-size: 0.82rem; }
 
   /* ---- Pulsante info rotondo in navbar ---- */
   .nav-info-btn{
@@ -113,7 +142,6 @@
     box-shadow: 0 0 30px -6px var(--accent-glow);
     transform: translateY(-4px);
   }
-  .team-name-display{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1rem; }
   .turn-badge{
     position: absolute; top: -12px; right: 12px;
     background: var(--accent); color: #06090f;
@@ -379,7 +407,7 @@
     <div class="modal-title">📖 Come si Gioca</div>
     <p class="modal-note">Indovina il Numero: il Game Master gestisce tutto da tastiera, proiettando questa schermata sulla TV.</p>
     <ol>
-      <li><strong>Due sfidanti a turno.</strong> Il sistema sceglie una frase di contesto buffa (es. "La percentuale di batteria residua del telefono del Game Master") e genera in segreto un numero intero tra 1 e 100.</li>
+      <li><strong>Due sfidanti a turno.</strong> Il sistema sceglie una frase di contesto buffa (es. "La percentuale di batteria residua del telefono del Game Master") e genera in segreto un numero intero. Il range cambia in base al contesto: 0-100 per percentuali, punteggi ed età, un range più ampio per anni/date storiche o conteggi senza un limite ovvio (es. 0-10.000) — il range attivo è sempre mostrato sopra il termostato.</li>
       <li>A turno, ogni giocatore dice ad alta voce un numero. Il Game Master lo digita nel campo in basso e preme <strong>Invio</strong>.</li>
       <li>Se il numero non è quello segreto, lo schermo mostra <strong>⬆️ PIÙ ALTO</strong> o <strong>⬇️ PIÙ BASSO</strong>, il termostato si restringe sul range ancora possibile e il turno passa automaticamente all'altro giocatore.</li>
       <li>Chi indovina il numero esatto <strong>vince il round</strong>: si apre la schermata di vittoria con il numero segreto e i tentativi impiegati.</li>
@@ -411,12 +439,12 @@
   <div class="score-grid" id="playersRow"></div>
 
   <div class="category-card">
-    <div class="category-eyebrow">Indovina il Numero (1-100)</div>
+    <div class="category-eyebrow" id="rangeEyebrow">Indovina il Numero (1-100)</div>
     <div class="category-title" id="topicText">Caricamento…</div>
   </div>
 
   <div class="thermo-wrap">
-    <div class="thermo-scale-ends"><span>1</span><span>100</span></div>
+    <div class="thermo-scale-ends"><span id="thermoScaleLow">1</span><span id="thermoScaleHigh">100</span></div>
     <div class="thermo-track" id="thermoTrack">
       <div class="thermo-active" id="thermoActive"></div>
       <div class="thermo-marker" id="thermoMarker">
@@ -439,7 +467,7 @@
       <button class="gm-submit-btn" id="submitBtn" type="button">Invia Tentativo ✔</button>
     </div>
     <p class="gm-error" id="gmError"></p>
-    <p class="gm-hint">💡 <kbd>Invio</kbd> per inviare il tentativo (numero intero tra 1 e 100)</p>
+    <p class="gm-hint">💡 <kbd>Invio</kbd> per inviare il tentativo (numero intero nel range indicato sopra)</p>
     <div class="console-actions" style="display:flex; justify-content:center;">
       <button class="btn btn-outline" id="revealBtn" type="button">♻️ Rivela / Resetta Round</button>
     </div>
@@ -464,62 +492,73 @@
 <script>
   /* =========================================================
      DATABASE CONTESTI — frasi buffe usate come pretesto per il
-     numero segreto (che resta comunque sempre puramente casuale
-     tra 1 e 100, generato ad ogni round). Aggiungi nuove voci
-     qui per espandere il gioco: non serve toccare altro codice.
+     numero segreto, che resta comunque sempre puramente casuale
+     (nessun fatto reale da verificare). Ogni voce ha un range
+     "min"-"max" su misura per il tipo di domanda:
+       - percentuali, punteggi ed età  -> 0-100
+       - anni/date storiche            -> range storico ampio
+       - conteggi senza un limite ovvio -> tetto alto (es. 10000)
+     Aggiungi nuove voci qui per espandere il gioco, non serve
+     toccare altro codice.
      ========================================================= */
+  const CURRENT_YEAR = new Date().getFullYear();
+
   const TOPICS = [
-    "Il punteggio Rotten Tomatoes di questo film a caso",
-    "La percentuale di batteria residua del telefono del Game Master",
-    "L'anno del ventesimo secolo in cui è nato uno dei giocatori (ultime due cifre)",
-    "La percentuale di persone che preferiscono i gatti ai cani",
-    "Il numero di episodi della prima stagione di una serie TV famosa",
-    "La percentuale di gradimento di questa canzone su Spotify",
-    "L'età media dei membri della band musicale preferita del Game Master",
-    "Il numero di calorie in una fetta di pizza margherita",
-    "La percentuale di italiani che mette l'ananas sulla pizza",
-    "Il punteggio su IMDb (moltiplicato per 10) di un film scelto a caso",
-    "Il numero di minuti dell'ultimo film visto dal Game Master",
-    "La percentuale di batteria del telefono del giocatore alla sua sinistra",
-    "Il numero di messaggi WhatsApp non letti sul telefono del Game Master",
-    "La percentuale di umidità stimata nella stanza in questo momento",
-    "L'età del più giovane vincitore di un Oscar come attore protagonista",
-    "Il numero di foto nella galleria del telefono del Game Master (in centinaia)",
-    "La percentuale di persone che dorme sul lato destro del letto",
-    "Il punteggio di gradimento di questa serata secondo il Game Master (0-100)",
-    "Il numero civico della casa d'infanzia di uno dei giocatori",
-    "La percentuale di sconto sull'ultimo acquisto online del Game Master",
-    "Il numero di canzoni nella playlist preferita del Game Master",
-    "La percentuale di grassi nel formaggio preferito del Game Master",
-    "Il punteggio Metacritic di un videogioco famoso",
-    "Il numero di passi fatti oggi dal Game Master (in centinaia)",
-    "La percentuale di persone che crede negli oroscopi",
-    "L'anno in cui è stato fondato un famoso social network (ultime due cifre)",
-    "Il numero di app installate sul telefono del Game Master",
-    "La percentuale di riuscita di questo tentativo di indovinare il numero",
-    "Il punteggio di un film Marvel su Rotten Tomatoes",
-    "Il numero di contatti salvati in rubrica dal Game Master (in decine)",
-    "La percentuale di popolazione mondiale che parla almeno due lingue",
-    "Il numero di minuti di ritardo medio del Game Master agli appuntamenti",
-    "La percentuale di grassi in una tavoletta di cioccolato fondente",
-    "Il punteggio su Trustpilot (moltiplicato per 20) di un ristorante a caso",
-    "Il numero di follower (in centinaia) del profilo social del Game Master",
-    "La percentuale di persone che preferisce il mare alla montagna",
-    "L'età del personaggio più anziano di un cartone animato famoso",
-    "Il numero di caffè bevuti in una settimana dal Game Master",
-    "La percentuale di batteria del laptop più vicino",
-    "Il punteggio di difficoltà (0-100) di questa domanda secondo il gruppo",
-    "Il numero di libri letti nell'ultimo anno dal Game Master",
-    "La percentuale di persone che si lava i denti prima della doccia",
-    "L'anno di uscita di un videogioco storico (ultime due cifre)",
-    "Il numero di minuti passati sui social oggi dal Game Master",
-    "La percentuale di cacao in una tavoletta di cioccolato fondente premium",
-    "Il punteggio di un piatto cucinato stasera secondo lo chef di turno (0-100)",
-    "Il numero di paia di scarpe possedute dal Game Master",
-    "La percentuale di persone che russa durante il sonno",
-    "La posizione in classifica della canzone preferita del Game Master (0-100)",
-    "La percentuale di batteria rimanente sul telecomando della TV",
-    "Il numero di selfie scattati questo mese dal Game Master"
+    { phrase: "Il punteggio Rotten Tomatoes di questo film a caso", min: 0, max: 100 },
+    { phrase: "La percentuale di batteria residua del telefono del Game Master", min: 0, max: 100 },
+    { phrase: "La percentuale di persone che preferiscono i gatti ai cani", min: 0, max: 100 },
+    { phrase: "Il numero di episodi della prima stagione di una serie TV famosa", min: 0, max: 40 },
+    { phrase: "La percentuale di gradimento di questa canzone su Spotify", min: 0, max: 100 },
+    { phrase: "L'età media dei membri della band musicale preferita del Game Master", min: 0, max: 100 },
+    { phrase: "Il numero di calorie in una fetta di pizza margherita", min: 0, max: 1000 },
+    { phrase: "La percentuale di italiani che mette l'ananas sulla pizza", min: 0, max: 100 },
+    { phrase: "Il punteggio su IMDb (moltiplicato per 10) di un film scelto a caso", min: 0, max: 100 },
+    { phrase: "Il numero di minuti dell'ultimo film visto dal Game Master", min: 0, max: 240 },
+    { phrase: "La percentuale di batteria del telefono del giocatore alla sua sinistra", min: 0, max: 100 },
+    { phrase: "Il numero di messaggi WhatsApp non letti sul telefono del Game Master", min: 0, max: 10000 },
+    { phrase: "La percentuale di umidità stimata nella stanza in questo momento", min: 0, max: 100 },
+    { phrase: "L'età del più giovane vincitore di un Oscar come attore protagonista", min: 0, max: 100 },
+    { phrase: "Il numero di foto nella galleria del telefono del Game Master", min: 0, max: 10000 },
+    { phrase: "La percentuale di persone che dorme sul lato destro del letto", min: 0, max: 100 },
+    { phrase: "Il punteggio di gradimento di questa serata secondo il Game Master", min: 0, max: 100 },
+    { phrase: "Il numero civico della casa d'infanzia di uno dei giocatori", min: 1, max: 200 },
+    { phrase: "La percentuale di sconto sull'ultimo acquisto online del Game Master", min: 0, max: 100 },
+    { phrase: "Il numero di canzoni nella playlist preferita del Game Master", min: 0, max: 500 },
+    { phrase: "La percentuale di grassi nel formaggio preferito del Game Master", min: 0, max: 100 },
+    { phrase: "Il punteggio Metacritic di un videogioco famoso", min: 0, max: 100 },
+    { phrase: "Il numero di passi fatti oggi dal Game Master", min: 0, max: 20000 },
+    { phrase: "La percentuale di persone che crede negli oroscopi", min: 0, max: 100 },
+    { phrase: "L'anno in cui è stato fondato un famoso social network", min: 1990, max: CURRENT_YEAR },
+    { phrase: "Il numero di app installate sul telefono del Game Master", min: 0, max: 300 },
+    { phrase: "La percentuale di riuscita di questo tentativo di indovinare il numero", min: 0, max: 100 },
+    { phrase: "Il punteggio di un film Marvel su Rotten Tomatoes", min: 0, max: 100 },
+    { phrase: "Il numero di contatti salvati in rubrica dal Game Master", min: 0, max: 2000 },
+    { phrase: "La percentuale di popolazione mondiale che parla almeno due lingue", min: 0, max: 100 },
+    { phrase: "Il numero di minuti di ritardo medio del Game Master agli appuntamenti", min: 0, max: 120 },
+    { phrase: "La percentuale di grassi in una tavoletta di cioccolato fondente", min: 0, max: 100 },
+    { phrase: "Il punteggio su Trustpilot (moltiplicato per 20) di un ristorante a caso", min: 0, max: 100 },
+    { phrase: "Il numero di follower del profilo social del Game Master", min: 0, max: 10000 },
+    { phrase: "La percentuale di persone che preferisce il mare alla montagna", min: 0, max: 100 },
+    { phrase: "L'età del personaggio più anziano di un cartone animato famoso", min: 0, max: 100 },
+    { phrase: "Il numero di caffè bevuti in una settimana dal Game Master", min: 0, max: 50 },
+    { phrase: "La percentuale di batteria del laptop più vicino", min: 0, max: 100 },
+    { phrase: "Il punteggio di difficoltà di questa domanda secondo il gruppo", min: 0, max: 100 },
+    { phrase: "Il numero di libri letti nell'ultimo anno dal Game Master", min: 0, max: 200 },
+    { phrase: "La percentuale di persone che si lava i denti prima della doccia", min: 0, max: 100 },
+    { phrase: "L'anno di uscita di un videogioco storico", min: 1970, max: CURRENT_YEAR },
+    { phrase: "Il numero di minuti passati sui social oggi dal Game Master", min: 0, max: 600 },
+    { phrase: "La percentuale di cacao in una tavoletta di cioccolato fondente premium", min: 0, max: 100 },
+    { phrase: "Il punteggio di un piatto cucinato stasera secondo lo chef di turno", min: 0, max: 100 },
+    { phrase: "Il numero di paia di scarpe possedute dal Game Master", min: 0, max: 100 },
+    { phrase: "La percentuale di persone che russa durante il sonno", min: 0, max: 100 },
+    { phrase: "La posizione in classifica della canzone preferita del Game Master", min: 0, max: 100 },
+    { phrase: "La percentuale di batteria rimanente sul telecomando della TV", min: 0, max: 100 },
+    { phrase: "Il numero di selfie scattati questo mese dal Game Master", min: 0, max: 1000 },
+    { phrase: "L'anno di costruzione di un edificio o monumento storico a caso (es. un anno come il 1856)", min: 1200, max: CURRENT_YEAR },
+    { phrase: "L'anno di nascita di uno dei due giocatori", min: 1950, max: CURRENT_YEAR },
+    { phrase: "Il numero di follower di Cristiano Ronaldo su Instagram, in milioni", min: 0, max: 1000 },
+    { phrase: "Il numero di stelle visibili ad occhio nudo in una notte serena (stima)", min: 0, max: 10000 },
+    { phrase: "Il numero di persone presenti a un grande concerto immaginario stasera", min: 0, max: 10000 }
   ];
 
   /* ---- Elementi DOM ---- */
@@ -541,6 +580,9 @@
   const thermoMarkerValue = document.getElementById("thermoMarkerValue");
   const thermoLow = document.getElementById("thermoLow");
   const thermoHigh = document.getElementById("thermoHigh");
+  const rangeEyebrow = document.getElementById("rangeEyebrow");
+  const thermoScaleLow = document.getElementById("thermoScaleLow");
+  const thermoScaleHigh = document.getElementById("thermoScaleHigh");
 
   const historyGrid = document.getElementById("historyGrid");
 
@@ -570,7 +612,9 @@
   let currentPlayerIndex = 0;
   let roundStarterIndex = 0;      // alterna chi inizia ogni round
   let secretNumber = null;
-  let currentLow = 1;
+  let roundMin = 0;               // estremi del range scelto per il contesto di questo round
+  let roundMax = 100;
+  let currentLow = 0;
   let currentHigh = 100;
   let round = 0;
   let gameActive = false;
@@ -601,16 +645,25 @@
   /* ---- Nuovo round: nuovo numero segreto + nuovo contesto ---- */
   function startNewRound(){
     round++;
-    secretNumber = Math.floor(Math.random() * 100) + 1;
-    currentLow = 1;
-    currentHigh = 100;
+    const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+    roundMin = topic.min;
+    roundMax = topic.max;
+    secretNumber = Math.floor(Math.random() * (roundMax - roundMin + 1)) + roundMin;
+    currentLow = roundMin;
+    currentHigh = roundMax;
     attempts = [0, 0];
     history = [[], []];
     currentPlayerIndex = roundStarterIndex;
     roundStarterIndex = (roundStarterIndex + 1) % 2;
     gameActive = true;
 
-    topicText.textContent = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+    topicText.textContent = topic.phrase;
+    rangeEyebrow.textContent = `Indovina il Numero (${roundMin}-${roundMax})`;
+    thermoScaleLow.textContent = roundMin;
+    thermoScaleHigh.textContent = roundMax;
+    guessInput.min = roundMin;
+    guessInput.max = roundMax;
+    guessInput.placeholder = `Numero tra ${roundMin} e ${roundMax}…`;
     counter.textContent = `Round ${round}`;
     guessInput.value = "";
     guessInput.disabled = false;
@@ -623,9 +676,9 @@
     guessInput.focus();
   }
 
-  /* ---- Percentuale posizione sul termostato (scala 1-100) ---- */
+  /* ---- Percentuale posizione sul termostato, sulla scala roundMin-roundMax ---- */
   function percentOf(value){
-    return ((value - 1) / 99) * 100;
+    return ((value - roundMin) / (roundMax - roundMin)) * 100;
   }
 
   function renderThermo(){
@@ -653,7 +706,7 @@
       card.className = "score-card" + (isActive ? " active-turn" : "");
       card.innerHTML = `
         ${isActive ? '<span class="turn-badge">🎯 In Gioco</span>' : ""}
-        <span class="team-name-display">${player.name}</span>
+        <input class="team-name" type="text" value="${player.name}" data-index="${i}" maxlength="22">
         <div class="score-value">${attempts[i]}</div>
         <div class="attempts-label">tentativi</div>
       `;
@@ -665,6 +718,14 @@
       turnBanner.innerHTML = `<span class="mic">🎯</span><span class="turn-label">Tocca a <span class="turn-player-name">${current.name}</span></span>`;
     }
   }
+
+  playersRow.addEventListener("change", (e) => {
+    if (!e.target.classList.contains("team-name")) return;
+    const i = Number(e.target.dataset.index);
+    players[i].name = e.target.value.trim() || `Giocatore ${i + 1}`;
+    renderPlayersRow();
+    renderHistory();
+  });
 
   /* ---- Storico tentativi per colonna ---- */
   function renderHistory(){
@@ -710,8 +771,8 @@
     const raw = guessInput.value.trim();
     const num = Number(raw);
 
-    if (raw === "" || !Number.isInteger(num) || num < 1 || num > 100){
-      gmError.textContent = "⚠️ Inserisci un numero intero tra 1 e 100";
+    if (raw === "" || !Number.isInteger(num) || num < roundMin || num > roundMax){
+      gmError.textContent = `⚠️ Inserisci un numero intero tra ${roundMin} e ${roundMax}`;
       guessInput.focus();
       return;
     }

@@ -16,6 +16,26 @@
     align-items: center;
     gap: 16px;
   }
+
+  /* ---- Schermata più compatta: entra tutta in un'unica vista ---- */
+  #gameView.stage{
+    padding: 18px 20px 30px;
+    gap: 14px;
+    justify-content: flex-start;
+  }
+  #gameView .score-grid{ gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  #gameView .score-card{ padding: 10px; gap: 4px; }
+  #gameView .team-name{ font-size: 0.9rem; padding: 3px; }
+  #gameView .score-value{ font-size: 1.6rem; }
+  #gameView .score-btn{ padding: 7px 14px; font-size: 0.8rem; }
+  #gameView .letter-card{ gap: 10px; }
+  #gameView .question-eyebrow{ margin-bottom: 0; font-size: 0.82rem; }
+  #gameView .big-letter-display{ font-size: clamp(3rem, 9vw, 5.5rem); }
+  #gameView .question-card{ padding: 20px 26px; }
+  #gameView .question-text{ font-size: clamp(1.05rem, 2.6vw, 1.6rem); }
+  #gameView .round-badge{ padding: 6px 16px; font-size: 0.85rem; }
+  #gameView .actions-row{ gap: 12px; }
+  #gameView .btn{ padding: 13px 24px; font-size: 0.95rem; }
 </style>
 </head>
 <body class="theme-yellow">
@@ -28,7 +48,7 @@
   <span class="nav-counter" id="counter">Lettera: —</span>
 </nav>
 
-<main class="stage">
+<main class="stage" id="gameView">
 
   <!-- Tabellone punteggi -->
   <div class="score-grid" id="scoreGrid"></div>

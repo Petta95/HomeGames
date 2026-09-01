@@ -28,7 +28,7 @@
   #gameView .top-controls-row{ gap: 10px; }
   #gameView .score-grid{ gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   #gameView .score-card{ padding: 8px; gap: 2px; }
-  #gameView .team-name-display{ font-size: 0.82rem; }
+  #gameView .team-name{ font-size: 0.82rem; padding: 2px; }
   #gameView .score-value{ font-size: 1.35rem; }
   #gameView .turn-badge{ top: -9px; right: 8px; font-size: 0.58rem; padding: 2px 8px; }
   #gameView .end-game-btn{ padding: 9px 16px; font-size: 0.8rem; }
@@ -127,8 +127,9 @@
     box-shadow: 0 0 30px -6px var(--accent-glow);
     transform: translateY(-4px);
   }
-  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; box-shadow: 0 0 8px currentColor; }
-  .team-name-display{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1rem; }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name-row .team-name{ width: auto; flex: 0 1 auto; min-width: 0; }
   .turn-badge{
     position: absolute; top: -12px; right: 12px;
     background: var(--accent); color: #06090f;
@@ -1392,7 +1393,10 @@
       card.className = "score-card" + (isActive ? " active-turn" : "");
       card.innerHTML = `
         ${isActive ? '<span class="turn-badge">🎙️ In Gioco</span>' : ""}
-        <span class="team-name-display"><span class="team-dot" style="background:${team.color}; color:${team.color};"></span>${team.name}</span>
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${team.color}; color:${team.color};"></span>
+          <input class="team-name" type="text" value="${team.name}" data-index="${i}" maxlength="22">
+        </div>
         <div class="score-value">${team.score}</div>
       `;
       scoreGrid.appendChild(card);
@@ -1401,6 +1405,13 @@
     const current = state.teams[state.currentTeamIndex];
     turnBanner.innerHTML = `<span class="mic">🎙️</span><span class="turn-label">Tocca a <span class="turn-team-name" style="color:${current.color}">${current.name}</span></span>`;
   }
+
+  scoreGrid.addEventListener("change", (e) => {
+    if (!e.target.classList.contains("team-name")) return;
+    const i = Number(e.target.dataset.index);
+    state.teams[i].name = e.target.value.trim() || `Squadra ${i + 1}`;
+    renderScoreboard();
+  });
 
   /* ---- Feedback testuale Game Master ---- */
   function showFeedback(type, text){
