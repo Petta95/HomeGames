@@ -28,6 +28,7 @@
   #gameView .team-name{ font-size: 0.85rem; padding: 3px; }
   #gameView .score-value{ font-size: 1.3rem; }
   #gameView .attempts-label{ font-size: 0.65rem; margin-top: -4px; }
+  #gameView .round-attempts-label{ font-size: 0.6rem; margin-top: 2px; }
   #gameView .turn-badge{ top: -9px; right: 8px; font-size: 0.58rem; padding: 2px 8px; }
   #gameView .category-card{ padding: 10px 18px; }
   #gameView .category-eyebrow{ margin-bottom: 4px; font-size: 0.72rem; }
@@ -164,6 +165,10 @@
   .attempts-label{
     color: var(--text-muted); font-size: 0.72rem;
     text-transform: uppercase; letter-spacing: 0.5px; margin-top: -6px;
+  }
+  .round-attempts-label{
+    color: var(--text-muted); font-size: 0.72rem;
+    margin-top: 4px; text-align: center;
   }
 
   /* ---- Card contesto/argomento ---- */
@@ -355,6 +360,10 @@
   }
   .winner-score{ color: var(--text-main); font-weight: 600; margin-top: 10px; font-size: 1.05rem; }
   .winner-detail{ color: var(--text-muted); font-weight: 500; margin-top: 6px; font-size: 0.92rem; }
+  .winner-scoreboard{
+    color: var(--accent); font-weight: 800; margin-top: 16px; font-size: 1.05rem;
+    font-family: 'Poppins', sans-serif;
+  }
 
   /* ---- Confetti / Fuochi d'artificio ---- */
   #confettiLayer{ position: fixed; inset: 0; z-index: 900; pointer-events: none; overflow: hidden; }
@@ -392,6 +401,7 @@
     .thermo-bound{ font-size: 1.1rem; padding: 6px 12px; min-width: 46px; }
     .thermo-range-hint{ display: none; }
     .gm-input-row{ flex-direction: column; }
+    .round-attempts-label{ font-size: 0.66rem; }
   }
 </style>
 </head>
@@ -419,11 +429,12 @@
     <div class="modal-title">📖 Come si Gioca</div>
     <p class="modal-note">Indovina il Numero: il Game Master gestisce tutto da tastiera, proiettando questa schermata sulla TV.</p>
     <ol>
-      <li><strong>Due sfidanti a turno.</strong> Il sistema sceglie una frase di contesto buffa (es. "La percentuale di batteria residua del telefono del Game Master") e genera in segreto un numero intero. Il range cambia in base al contesto: 0-100 per percentuali, punteggi ed età, un range più ampio per anni/date storiche o conteggi senza un limite ovvio (es. 0-10.000) — il range attivo è sempre mostrato sopra il termostato.</li>
+      <li><strong>Due sfidanti a turno.</strong> Il sistema sceglie una domanda di cultura generale con una risposta numerica reale (es. "In che anno è stato inventato il telefono?") e tiene il numero segreto. Il range cambia in base alla domanda: 0-100 per percentuali, un range storico per anni/date, un range più ampio per conteggi e misure — il range attivo è sempre mostrato sopra il termostato.</li>
       <li>A turno, ogni giocatore dice ad alta voce un numero. Il Game Master lo digita nel campo in basso e preme <strong>Invio</strong>.</li>
       <li>Se il numero non è quello segreto, lo schermo mostra <strong>⬆️ PIÙ ALTO</strong> o <strong>⬇️ PIÙ BASSO</strong>, il termostato si restringe sul range ancora possibile e il turno passa automaticamente all'altro giocatore.</li>
-      <li>Chi indovina il numero esatto <strong>vince il round</strong>: si apre la schermata di vittoria con il numero segreto e i tentativi impiegati.</li>
-      <li><strong>"Nuovo Round"</strong> genera subito una nuova frase e un nuovo numero segreto, mantenendo gli stessi giocatori. <strong>"Rivela / Resetta Round"</strong> serve in caso di problemi: mostra il numero segreto al Game Master e ricomincia il round da capo.</li>
+      <li>Chi indovina il numero esatto <strong>vince il round</strong> e guadagna un punto: si apre la schermata di vittoria con il numero segreto, i tentativi impiegati e il punteggio generale aggiornato.</li>
+      <li>Il <strong>punteggio</strong> di ciascun giocatore resta sempre visibile nelle card in alto e si accumula per tutta la sfida: <strong>"Nuovo Round"</strong> genera una nuova frase e un nuovo numero segreto mantenendo i punti, mentre <strong>"Cambia Giocatori"</strong> azzera tutto per iniziare una nuova sfida.</li>
+      <li><strong>"Rivela / Resetta Round"</strong> serve in caso di problemi: mostra il numero segreto al Game Master e ricomincia il round da capo senza assegnare punti.</li>
     </ol>
     <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
   </div>
@@ -493,6 +504,7 @@
     <div class="winner-title" id="winnerTitle">Il Giocatore Vince!</div>
     <div class="winner-score" id="winnerScoreLine"></div>
     <div class="winner-detail" id="winnerDetailLine"></div>
+    <div class="winner-scoreboard" id="winnerScoreboard"></div>
   </div>
 
   <div class="actions-row">
@@ -503,74 +515,121 @@
 
 <script>
   /* =========================================================
-     DATABASE CONTESTI — frasi buffe usate come pretesto per il
-     numero segreto, che resta comunque sempre puramente casuale
-     (nessun fatto reale da verificare). Ogni voce ha un range
-     "min"-"max" su misura per il tipo di domanda:
-       - percentuali, punteggi ed età  -> 0-100
-       - anni/date storiche            -> range storico ampio
-       - conteggi senza un limite ovvio -> tetto alto (es. 10000)
+     DATABASE DOMANDE — domande di cultura generale con una
+     risposta numerica reale ("answer"). Ogni voce ha anche un
+     range "min"-"max" su misura per il tipo di domanda, usato
+     per il termostato e per l'input del Game Master:
+       - percentuali            -> 0-100
+       - anni/date storiche     -> range storico plausibile
+       - conteggi e misure      -> range attorno al valore vero
      Aggiungi nuove voci qui per espandere il gioco, non serve
-     toccare altro codice.
+     toccare altro codice. Assicurati solo che "answer" sia
+     sempre compreso tra "min" e "max".
      ========================================================= */
   const CURRENT_YEAR = new Date().getFullYear();
 
   const TOPICS = [
-    { phrase: "Il punteggio Rotten Tomatoes di questo film a caso", min: 0, max: 100 },
-    { phrase: "La percentuale di batteria residua del telefono del Game Master", min: 0, max: 100 },
-    { phrase: "La percentuale di persone che preferiscono i gatti ai cani", min: 0, max: 100 },
-    { phrase: "Il numero di episodi della prima stagione di una serie TV famosa", min: 0, max: 40 },
-    { phrase: "La percentuale di gradimento di questa canzone su Spotify", min: 0, max: 100 },
-    { phrase: "L'età media dei membri della band musicale preferita del Game Master", min: 0, max: 100 },
-    { phrase: "Il numero di calorie in una fetta di pizza margherita", min: 0, max: 1000 },
-    { phrase: "La percentuale di italiani che mette l'ananas sulla pizza", min: 0, max: 100 },
-    { phrase: "Il punteggio su IMDb (moltiplicato per 10) di un film scelto a caso", min: 0, max: 100 },
-    { phrase: "Il numero di minuti dell'ultimo film visto dal Game Master", min: 0, max: 240 },
-    { phrase: "La percentuale di batteria del telefono del giocatore alla sua sinistra", min: 0, max: 100 },
-    { phrase: "Il numero di messaggi WhatsApp non letti sul telefono del Game Master", min: 0, max: 10000 },
-    { phrase: "La percentuale di umidità stimata nella stanza in questo momento", min: 0, max: 100 },
-    { phrase: "L'età del più giovane vincitore di un Oscar come attore protagonista", min: 0, max: 100 },
-    { phrase: "Il numero di foto nella galleria del telefono del Game Master", min: 0, max: 10000 },
-    { phrase: "La percentuale di persone che dorme sul lato destro del letto", min: 0, max: 100 },
-    { phrase: "Il punteggio di gradimento di questa serata secondo il Game Master", min: 0, max: 100 },
-    { phrase: "Il numero civico della casa d'infanzia di uno dei giocatori", min: 1, max: 200 },
-    { phrase: "La percentuale di sconto sull'ultimo acquisto online del Game Master", min: 0, max: 100 },
-    { phrase: "Il numero di canzoni nella playlist preferita del Game Master", min: 0, max: 500 },
-    { phrase: "La percentuale di grassi nel formaggio preferito del Game Master", min: 0, max: 100 },
-    { phrase: "Il punteggio Metacritic di un videogioco famoso", min: 0, max: 100 },
-    { phrase: "Il numero di passi fatti oggi dal Game Master", min: 0, max: 20000 },
-    { phrase: "La percentuale di persone che crede negli oroscopi", min: 0, max: 100 },
-    { phrase: "L'anno in cui è stato fondato un famoso social network", min: 1990, max: CURRENT_YEAR },
-    { phrase: "Il numero di app installate sul telefono del Game Master", min: 0, max: 300 },
-    { phrase: "La percentuale di riuscita di questo tentativo di indovinare il numero", min: 0, max: 100 },
-    { phrase: "Il punteggio di un film Marvel su Rotten Tomatoes", min: 0, max: 100 },
-    { phrase: "Il numero di contatti salvati in rubrica dal Game Master", min: 0, max: 2000 },
-    { phrase: "La percentuale di popolazione mondiale che parla almeno due lingue", min: 0, max: 100 },
-    { phrase: "Il numero di minuti di ritardo medio del Game Master agli appuntamenti", min: 0, max: 120 },
-    { phrase: "La percentuale di grassi in una tavoletta di cioccolato fondente", min: 0, max: 100 },
-    { phrase: "Il punteggio su Trustpilot (moltiplicato per 20) di un ristorante a caso", min: 0, max: 100 },
-    { phrase: "Il numero di follower del profilo social del Game Master", min: 0, max: 10000 },
-    { phrase: "La percentuale di persone che preferisce il mare alla montagna", min: 0, max: 100 },
-    { phrase: "L'età del personaggio più anziano di un cartone animato famoso", min: 0, max: 100 },
-    { phrase: "Il numero di caffè bevuti in una settimana dal Game Master", min: 0, max: 50 },
-    { phrase: "La percentuale di batteria del laptop più vicino", min: 0, max: 100 },
-    { phrase: "Il punteggio di difficoltà di questa domanda secondo il gruppo", min: 0, max: 100 },
-    { phrase: "Il numero di libri letti nell'ultimo anno dal Game Master", min: 0, max: 200 },
-    { phrase: "La percentuale di persone che si lava i denti prima della doccia", min: 0, max: 100 },
-    { phrase: "L'anno di uscita di un videogioco storico", min: 1970, max: CURRENT_YEAR },
-    { phrase: "Il numero di minuti passati sui social oggi dal Game Master", min: 0, max: 600 },
-    { phrase: "La percentuale di cacao in una tavoletta di cioccolato fondente premium", min: 0, max: 100 },
-    { phrase: "Il punteggio di un piatto cucinato stasera secondo lo chef di turno", min: 0, max: 100 },
-    { phrase: "Il numero di paia di scarpe possedute dal Game Master", min: 0, max: 100 },
-    { phrase: "La percentuale di persone che russa durante il sonno", min: 0, max: 100 },
-    { phrase: "La posizione in classifica della canzone preferita del Game Master", min: 0, max: 100 },
-    { phrase: "La percentuale di batteria rimanente sul telecomando della TV", min: 0, max: 100 },
-    { phrase: "Il numero di selfie scattati questo mese dal Game Master", min: 0, max: 1000 },
-    { phrase: "L'anno di costruzione di un edificio o monumento storico a caso (es. un anno come il 1856)", min: 1200, max: CURRENT_YEAR },
-    { phrase: "L'anno di nascita di uno dei due giocatori", min: 1950, max: CURRENT_YEAR },
-    { phrase: "Il numero di follower di Cristiano Ronaldo su Instagram, in milioni", min: 0, max: 1000 },
-    { phrase: "Il numero di stelle visibili ad occhio nudo in una notte serena (stima)", min: 0, max: 10000 },
-    { phrase: "Il numero di persone presenti a un grande concerto immaginario stasera", min: 0, max: 10000 }
+    { phrase: "In che anno fu brevettato il telefono da Alexander Graham Bell?", answer: 1876, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno Thomas Edison mise a punto la lampadina a incandescenza?", answer: 1879, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno i fratelli Wright compirono il primo volo a motore della storia?", answer: 1903, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno Guglielmo Marconi realizzò le prime trasmissioni radio a lunga distanza?", answer: 1895, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno l'uomo mise piede sulla Luna per la prima volta (Apollo 11)?", answer: 1969, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno cadde il Muro di Berlino?", answer: 1989, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno Cristoforo Colombo raggiunse le Americhe?", answer: 1492, min: 1000, max: CURRENT_YEAR },
+    { phrase: "In che anno avvenne l'Unità d'Italia?", answer: 1861, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno finì la Seconda Guerra Mondiale?", answer: 1945, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondato Google?", answer: 1998, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondato Facebook?", answer: 2004, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno uscì il primo iPhone?", answer: 2007, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno Tim Berners-Lee propose il World Wide Web?", answer: 1989, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno uscì al cinema il primo film di Star Wars?", answer: 1977, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno si giocò il primo Mondiale di calcio FIFA?", answer: 1930, min: 1500, max: CURRENT_YEAR },
+    { phrase: "Quale percentuale della popolazione mondiale parla il cinese mandarino come lingua madre (circa)?", answer: 12, min: 0, max: 100 },
+    { phrase: "Quale percentuale della popolazione mondiale parla lo spagnolo come lingua madre (circa)?", answer: 6, min: 0, max: 100 },
+    { phrase: "Quale percentuale della popolazione mondiale parla l'inglese come lingua madre (circa)?", answer: 5, min: 0, max: 100 },
+    { phrase: "Quanti Paesi sono membri delle Nazioni Unite?", answer: 193, min: 0, max: 250 },
+    { phrase: "Quanti Stati membri conta l'Unione Europea?", answer: 27, min: 0, max: 50 },
+    { phrase: "Quanti Stati compongono gli Stati Uniti d'America?", answer: 50, min: 0, max: 100 },
+    { phrase: "Quanti fusi orari standard si usano nel mondo?", answer: 24, min: 0, max: 50 },
+    { phrase: "Che percentuale del corpo di un adulto è composta da acqua (circa)?", answer: 60, min: 0, max: 100 },
+    { phrase: "Quante ossa ha lo scheletro di un essere umano adulto?", answer: 206, min: 0, max: 500 },
+    { phrase: "Quanti denti ha una bocca adulta completa?", answer: 32, min: 0, max: 50 },
+    { phrase: "Quanti battiti al minuto ha in media il cuore di un adulto a riposo?", answer: 70, min: 0, max: 150 },
+    { phrase: "Che percentuale dell'atmosfera terrestre è composta da ossigeno (circa)?", answer: 21, min: 0, max: 100 },
+    { phrase: "Che percentuale della superficie terrestre è coperta d'acqua (circa)?", answer: 71, min: 0, max: 100 },
+    { phrase: "Che percentuale della popolazione mondiale è mancina (circa)?", answer: 10, min: 0, max: 100 },
+    { phrase: "Quanti metri è alto il Monte Everest?", answer: 8849, min: 1000, max: 10000 },
+    { phrase: "Quanti migliaia di km ci sono in media tra la Terra e la Luna?", answer: 384, min: 0, max: 500 },
+    { phrase: "Quanti metri è alta la Torre Eiffel, antenne comprese?", answer: 330, min: 0, max: 500 },
+    { phrase: "Quanti metri è alto il Burj Khalifa a Dubai?", answer: 828, min: 0, max: 1000 },
+    { phrase: "Quanti km è lungo il Rio delle Amazzoni (circa)?", answer: 6400, min: 3000, max: 8000 },
+    { phrase: "Quanti km è lungo il fiume Nilo (circa)?", answer: 6650, min: 3000, max: 8000 },
+    { phrase: "Quanti km si corrono in una maratona (arrotondato)?", answer: 42, min: 0, max: 100 },
+    { phrase: "Quanti minuti dura il tempo regolamentare di una partita di calcio?", answer: 90, min: 0, max: 150 },
+    { phrase: "Quanti giocatori di una squadra di calcio sono in campo insieme?", answer: 11, min: 0, max: 20 },
+    { phrase: "Quanti giocatori di una squadra di basket sono in campo insieme?", answer: 5, min: 0, max: 20 },
+    { phrase: "Quante buche ha un campo da golf standard?", answer: 18, min: 0, max: 30 },
+    { phrase: "Quante corde ha una chitarra classica?", answer: 6, min: 0, max: 12 },
+    { phrase: "Quanti tasti ha un pianoforte standard?", answer: 88, min: 0, max: 120 },
+    { phrase: "Quante lettere ha l'alfabeto italiano?", answer: 21, min: 0, max: 30 },
+    { phrase: "Quante lettere ha l'alfabeto inglese?", answer: 26, min: 0, max: 30 },
+    { phrase: "Quanti pianeti ci sono nel sistema solare?", answer: 8, min: 0, max: 15 },
+    { phrase: "Quante calorie ha in media una fetta di pizza margherita (circa 100g)?", answer: 270, min: 0, max: 1000 },
+    { phrase: "Quante calorie ha in media un Big Mac di McDonald's?", answer: 550, min: 0, max: 1500 },
+    { phrase: "Quante calorie ha in media una banana?", answer: 105, min: 0, max: 1000 },
+    { phrase: "Quante calorie ha in media una mela di media grandezza?", answer: 95, min: 0, max: 1000 },
+    { phrase: "Quanti grammi di zucchero ci sono in una lattina di Coca-Cola da 330ml?", answer: 35, min: 0, max: 100 },
+    { phrase: "In che anno fu fondata Microsoft?", answer: 1975, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondata Apple?", answer: 1976, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondata Amazon?", answer: 1994, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondata Netflix?", answer: 1997, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondato Twitter?", answer: 2006, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondato Instagram?", answer: 2010, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondato YouTube?", answer: 2005, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondato WhatsApp?", answer: 2009, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu lanciata la prima PlayStation?", answer: 1994, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu lanciato il primo Game Boy?", answer: 1989, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno uscì il videogioco Super Mario Bros?", answer: 1985, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu rilasciato ufficialmente Minecraft?", answer: 2011, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno avvenne il disastro nucleare di Chernobyl?", answer: 1986, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno avvennero gli attentati dell'11 settembre?", answer: 2001, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno furono introdotte banconote e monete in euro?", answer: 2002, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno avvenne la presa della Bastiglia, inizio della Rivoluzione Francese?", answer: 1789, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno nacque Albert Einstein?", answer: 1879, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu creata la Coca-Cola?", answer: 1886, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondata la Ferrari?", answer: 1947, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno fu fondata l'azienda LEGO?", answer: 1932, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno uscì al cinema il primo film di Harry Potter?", answer: 2001, min: 1500, max: CURRENT_YEAR },
+    { phrase: "In che anno debuttò in TV la serie animata I Simpson?", answer: 1989, min: 1500, max: CURRENT_YEAR },
+    { phrase: "Che percentuale di DNA condivide l'essere umano con gli scimpanzé (circa)?", answer: 98, min: 0, max: 100 },
+    { phrase: "Qual è la gradazione alcolica media di una birra (in percentuale, circa)?", answer: 5, min: 0, max: 100 },
+    { phrase: "Qual è la gradazione alcolica media di un vino (in percentuale, circa)?", answer: 12, min: 0, max: 100 },
+    { phrase: "Quanti cromosomi ha una cellula umana?", answer: 46, min: 0, max: 100 },
+    { phrase: "Quanti metri al secondo percorre il suono nell'aria (circa)?", answer: 343, min: 0, max: 1000 },
+    { phrase: "Quanti litri di sangue ha in media il corpo di un adulto (circa)?", answer: 5, min: 0, max: 15 },
+    { phrase: "Quanti elementi chimici conta attualmente la tavola periodica?", answer: 118, min: 0, max: 150 },
+    { phrase: "Quanti miliardi di neuroni ha in media il cervello umano (circa)?", answer: 86, min: 0, max: 150 },
+    { phrase: "Quanti gradi Celsius ha in media la temperatura corporea umana (arrotondata)?", answer: 37, min: 0, max: 50 },
+    { phrase: "Quanti anelli compongono il simbolo olimpico?", answer: 5, min: 0, max: 10 },
+    { phrase: "Quanti grammi pesa un pallone da calcio regolamentare (circa)?", answer: 430, min: 0, max: 1000 },
+    { phrase: "Quanti centimetri è alto un canestro da basket regolamentare?", answer: 305, min: 0, max: 500 },
+    { phrase: "Quanti metri è lunga una piscina olimpionica?", answer: 50, min: 0, max: 100 },
+    { phrase: "Quanti metri separano il dischetto del rigore dalla porta, nel calcio?", answer: 11, min: 0, max: 30 },
+    { phrase: "Quanti centimetri è alta la rete nella pallavolo maschile?", answer: 243, min: 0, max: 300 },
+    { phrase: "Quanti Oscar ha vinto il film 'Il Signore degli Anelli - Il Ritorno del Re'?", answer: 11, min: 0, max: 20 },
+    { phrase: "Quanti Oscar ha vinto il film 'Titanic' (1997)?", answer: 11, min: 0, max: 20 },
+    { phrase: "Quante stagioni ha avuto la serie TV Friends?", answer: 10, min: 0, max: 20 },
+    { phrase: "Quanti episodi totali ha avuto la serie TV Breaking Bad?", answer: 62, min: 0, max: 150 },
+    { phrase: "Quanti libri compongono la saga originale di Harry Potter?", answer: 7, min: 0, max: 15 },
+    { phrase: "Quanti milligrammi di caffeina contiene in media un espresso (circa)?", answer: 63, min: 0, max: 200 },
+    { phrase: "Quante calorie ha in media un cucchiaio di olio d'oliva (circa)?", answer: 120, min: 0, max: 300 },
+    { phrase: "Quante calorie ha in media 100 grammi di pasta cotta (circa)?", answer: 158, min: 0, max: 500 },
+    { phrase: "Quanti milioni di km² di superficie ha la Russia (circa)?", answer: 17, min: 0, max: 30 },
+    { phrase: "Quanti km è lunga la Grande Muraglia Cinese, secondo la stima ufficiale con tutte le diramazioni?", answer: 21196, min: 0, max: 30000 },
+    { phrase: "Quanti metri è profonda la Fossa delle Marianne nel punto più profondo (circa)?", answer: 10935, min: 0, max: 15000 },
+    { phrase: "Quanti km è lungo il Canale di Suez (circa)?", answer: 193, min: 0, max: 500 },
+    { phrase: "Quanti metri è alto il Monte Bianco?", answer: 4809, min: 0, max: 6000 },
+    { phrase: "Quanti metri è alta la Statua della Libertà, dal suolo alla fiamma della torcia (circa)?", answer: 93, min: 0, max: 200 }
   ];
 
   /* ---- Elementi DOM ---- */
@@ -613,12 +672,14 @@
   const winnerTitle = document.getElementById("winnerTitle");
   const winnerScoreLine = document.getElementById("winnerScoreLine");
   const winnerDetailLine = document.getElementById("winnerDetailLine");
+  const winnerScoreboard = document.getElementById("winnerScoreboard");
   const newRoundBtn = document.getElementById("newRoundBtn");
   const changePlayersBtn = document.getElementById("changePlayersBtn");
   const confettiLayer = document.getElementById("confettiLayer");
 
   /* ---- Stato di gioco ---- */
   let players = [];               // [{ name }]
+  let scores = [0, 0];            // punteggio (round vinti) per l'intera sfida
   let attempts = [0, 0];          // tentativi per giocatore in questo round
   let history = [[], []];         // storico tentativi per giocatore: { value, direction }
   let currentPlayerIndex = 0;
@@ -644,6 +705,7 @@
       { name: player1Input.value.trim() || "Giocatore 1" },
       { name: player2Input.value.trim() || "Giocatore 2" }
     ];
+    scores = [0, 0];
     round = 0;
     roundStarterIndex = 0;
     startNewRound();
@@ -660,7 +722,7 @@
     const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
     roundMin = topic.min;
     roundMax = topic.max;
-    secretNumber = Math.floor(Math.random() * (roundMax - roundMin + 1)) + roundMin;
+    secretNumber = topic.answer;
     currentLow = roundMin;
     currentHigh = roundMax;
     attempts = [0, 0];
@@ -719,8 +781,9 @@
       card.innerHTML = `
         ${isActive ? '<span class="turn-badge">🎯 In Gioco</span>' : ""}
         <input class="team-name" type="text" value="${player.name}" data-index="${i}" maxlength="22">
-        <div class="score-value">${attempts[i]}</div>
-        <div class="attempts-label">tentativi</div>
+        <div class="score-value">${scores[i]}</div>
+        <div class="attempts-label">punti</div>
+        <div class="round-attempts-label">🎯 ${attempts[i]} tentativi in questo round</div>
       `;
       playersRow.appendChild(card);
     });
@@ -840,6 +903,7 @@
   function triggerWin(winnerIndex){
     gameActive = false;
     guessInput.disabled = true;
+    scores[winnerIndex]++;
 
     const winner = players[winnerIndex];
     const loserIndex = (winnerIndex + 1) % 2;
@@ -848,6 +912,7 @@
     winnerTitle.textContent = `🏆 ${winner.name} Indovina il Numero!`;
     winnerScoreLine.textContent = `Il numero segreto era ${secretNumber} — indovinato in ${attempts[winnerIndex]} tentativi`;
     winnerDetailLine.textContent = `${loser.name} si è fermato a ${attempts[loserIndex]} tentativi`;
+    winnerScoreboard.textContent = `📊 Punteggio generale: ${winner.name} ${scores[winnerIndex]} — ${loser.name} ${scores[loserIndex]}`;
 
     gameView.style.display = "none";
     winView.style.display = "flex";

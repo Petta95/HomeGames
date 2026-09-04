@@ -427,7 +427,7 @@
   <a class="nav-back" href="menu.html">← Menu</a>
   <span class="nav-title"><span class="dot"></span>🏆 Top 10 Challenge</span>
   <div class="nav-right">
-    <span class="nav-counter" id="counter" style="display:none;">Manche 1</span>
+    <span class="nav-counter" id="counter" style="display:none;">Turno 1</span>
     <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
   </div>
 </nav>
@@ -1367,7 +1367,7 @@
     state.roundComplete = false;
 
     categoryTitle.textContent = state.category.title;
-    counter.textContent = `Manche ${state.round}`;
+    counter.textContent = `Turno ${state.round}`;
     renderBoard();
     roundCompleteOverlay.classList.remove("active");
     nextCategoryBtn.classList.remove("pulse-attention");

@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill Test — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+
+<style>
+  /* =========================================================
+     SKILL TEST — stile dedicato (oltre a shared.css)
+     ========================================================= */
+  /* shared.css imposta .stage con display:flex incondizionato: qui sopra
+     .view nasconde le schermate non attive, così "Inizia Gioco" sostituisce
+     davvero il setup con la dashboard invece di impilarli entrambi. */
+  .view{ display: none; }
+  .view.active{ display: flex; }
+
+  #setupView.stage, #gameView.stage, #finalView.stage{ max-width: 1100px; }
+  #gameView.stage{
+    padding: 16px 18px 40px;
+    gap: 16px;
+    justify-content: flex-start;
+  }
+
+  /* ---- Pulsante info rotondo in navbar (come altri giochi) ---- */
+  .nav-info-btn{
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+  .nav-right{ display: flex; align-items: center; gap: 12px; }
+
+  /* ---- Overlay modale generico (regole + zoom immagine) ---- */
+  .modal-overlay{
+    position: fixed; inset: 0;
+    background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+    padding: 36px;
+    max-width: 640px; width: 100%;
+    max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97);
+    transition: transform 0.25s ease;
+    text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{
+    font-family: 'Poppins', sans-serif; font-weight: 900;
+    font-size: 1.6rem; color: var(--accent); margin-bottom: 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-card ol, .modal-card ul{
+    padding-left: 22px; display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 24px; line-height: 1.5; color: var(--text-main); font-size: 0.98rem;
+  }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; }
+
+  /* ---- Modale zoom immagine ---- */
+  .zoom-modal-content{ position: relative; max-width: 92vw; max-height: 88vh; }
+  .zoom-modal-content img{
+    display: block;
+    max-width: 92vw; max-height: 88vh;
+    object-fit: contain;
+    border-radius: 18px;
+    box-shadow: 0 30px 90px -20px rgba(0,0,0,0.75);
+    border: 2px solid var(--glass-border);
+  }
+  .zoom-close-btn{
+    position: absolute; top: -16px; right: -16px;
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; border: none;
+    font-size: 1.1rem; font-weight: 900; cursor: pointer;
+    box-shadow: 0 0 24px var(--accent-glow);
+    transition: transform 0.15s ease;
+  }
+  .zoom-close-btn:hover{ transform: scale(1.1); }
+
+  /* =========================================================
+     SETUP VIEW
+     ========================================================= */
+  .setup-card{
+    width: 100%; max-width: 560px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+    padding: 32px 28px;
+    display: flex; flex-direction: column; gap: 22px;
+    box-shadow: 0 30px 70px -30px rgba(0,0,0,0.6);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .setup-section-title{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.95rem;
+    color: var(--accent2, var(--accent)); text-transform: uppercase; letter-spacing: 1px;
+  }
+  .count-grid{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .count-btn{
+    background: rgba(255,255,255,0.04);
+    border: 2px solid var(--glass-border);
+    color: var(--text-main);
+    border-radius: 12px;
+    padding: 12px 0;
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .count-btn:hover{ border-color: var(--accent2); }
+  .count-btn.selected{
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 20px -4px var(--accent-glow);
+  }
+  .name-inputs{ display: flex; flex-direction: column; gap: 10px; }
+  .name-input-row{ display: flex; align-items: center; gap: 10px; }
+  .name-input-badge{
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; font-family: 'Poppins', sans-serif; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+  }
+  .name-input-row input{
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif; font-size: 1rem;
+  }
+  .name-input-row input:focus{ outline: none; border-color: var(--accent2); box-shadow: 0 0 16px -4px var(--accent2-glow, var(--accent-glow)); }
+
+  /* =========================================================
+     GAME VIEW — scoreboard
+     ========================================================= */
+  .scoreboard-grid{
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .player-card{
+    position: relative;
+    background: var(--glass-bg);
+    border: 2px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 12px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: all 0.3s ease;
+  }
+  .player-card.active-turn{
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 26px -6px var(--accent-glow);
+    transform: translateY(-3px);
+  }
+  .player-turn-badge{
+    position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #06090f;
+    font-size: 0.62rem; font-weight: 800; letter-spacing: 0.4px;
+    padding: 3px 10px; border-radius: 999px; text-transform: uppercase;
+    box-shadow: 0 0 14px var(--accent-glow); white-space: nowrap;
+  }
+  .player-name{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.92rem;
+    text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .player-score{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.7rem; color: var(--accent2); }
+  .player-score-label{ font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ---- Barra categoria ---- */
+  .category-bar{
+    width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 10px 18px;
+  }
+  .category-bar-title{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+  .category-bar-progress{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.88rem;
+    color: var(--accent2); background: rgba(6,182,212,0.12);
+    border: 1px solid rgba(6,182,212,0.4);
+    padding: 5px 14px; border-radius: 999px;
+  }
+
+  /* ---- Banner obiettivo ---- */
+  .target-banner{
+    width: 100%; text-align: center;
+    background: var(--accent-soft);
+    border: 2px solid var(--accent);
+    border-radius: 20px;
+    padding: 18px 20px;
+    box-shadow: 0 0 50px -12px var(--accent-glow);
+    animation: targetPulse 2.6s ease-in-out infinite;
+  }
+  .target-banner-label{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.8rem;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); margin-bottom: 4px;
+  }
+  .target-banner-value{
+    font-family: 'Poppins', sans-serif; font-weight: 900;
+    font-size: clamp(1.4rem, 4.5vw, 2.3rem);
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  @keyframes targetPulse{
+    0%, 100%{ box-shadow: 0 0 50px -12px var(--accent-glow); }
+    50%{ box-shadow: 0 0 70px -6px var(--accent-glow); }
+  }
+
+  /* ---- Banner completamento categoria ---- */
+  .completion-banner{
+    width: 100%; text-align: center;
+    background: rgba(0,230,118,0.16);
+    border: 2px solid #00e676;
+    border-radius: 20px;
+    padding: 16px 20px;
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.15rem;
+    color: #00e676;
+    box-shadow: 0 0 50px -10px rgba(0,230,118,0.5);
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+  .completion-banner.show{ display: block; }
+
+  /* =========================================================
+     GRIGLIA ELEMENTI — 15 card, 5x3 desktop / 3x5 tablet / 2 col mobile
+     ========================================================= */
+  .items-grid{ width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  @media (max-width: 900px){ .items-grid{ grid-template-columns: repeat(3, 1fr); gap: 10px; } }
+  @media (max-width: 560px){ .items-grid{ grid-template-columns: repeat(2, 1fr); gap: 8px; } }
+
+  .item-card{
+    position: relative;
+    background: var(--glass-bg);
+    border: 3px solid var(--glass-border);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .item-card:hover:not(.found){ transform: translateY(-4px); border-color: var(--accent2); box-shadow: 0 10px 30px -10px var(--accent2-glow, var(--accent-glow)); }
+  .item-card:active:not(.found){ transform: scale(0.97); }
+  .item-card.found{ cursor: default; }
+
+  .item-img-wrap{
+    position: relative; width: 100%; aspect-ratio: 4 / 3;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    overflow: hidden;
+  }
+  .item-img-wrap img{ width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1; }
+  .item-img-wrap::before{
+    content: "🖼️"; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: var(--text-muted);
+    background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+  }
+  .item-img-wrap.img-broken img{ display: none; }
+
+  .item-footer{
+    min-height: 34px; display: flex; align-items: center; justify-content: center;
+    padding: 4px 6px;
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.78rem;
+    text-align: center; color: var(--text-muted);
+  }
+
+  /* ---- Icona esito (✔ / ✖), in alto a SINISTRA ---- */
+  .item-feedback-icon{
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 900;
+    opacity: 0; transform: scale(0.5);
+    transition: all 0.25s ease;
+  }
+
+  /* ---- Pulsante zoom, in alto a DESTRA ---- */
+  .zoom-btn{
+    position: absolute; top: 8px; right: 8px; z-index: 3;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(6, 10, 20, 0.65);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.28);
+    color: #fff; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .zoom-btn:hover{ background: var(--accent); border-color: var(--accent); transform: scale(1.12); box-shadow: 0 0 16px var(--accent-glow); }
+  .zoom-btn:active{ transform: scale(0.95); }
+
+  /* ---- Stato CORRETTO ---- */
+  .item-card.found{ border-color: #00e676; box-shadow: 0 0 28px -6px rgba(0,230,118,0.5); }
+  .item-card.found .item-feedback-icon{ opacity: 1; transform: scale(1); background: #00e676; color: #06090f; }
+  .item-card.found .item-footer{ color: #00e676; }
+
+  /* ---- Stato SBAGLIATO (temporaneo) ---- */
+  .item-card.flash-wrong{ border-color: #ff2d55; animation: shake 0.42s ease; box-shadow: 0 0 28px -6px rgba(255,45,85,0.5); }
+  .item-card.flash-wrong .item-feedback-icon{ opacity: 1; transform: scale(1); background: #ff2d55; color: #fff; }
+  @keyframes shake{
+    0%, 100%{ transform: translateX(0); }
+    20%{ transform: translateX(-8px); }
+    40%{ transform: translateX(7px); }
+    60%{ transform: translateX(-5px); }
+    80%{ transform: translateX(4px); }
+  }
+
+  /* ---- Controlli di navigazione ---- */
+  .controls-row{ width: 100%; display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+  .btn-danger-outline{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.92rem;
+    background: rgba(255,45,85,0.08);
+    border: 2px solid rgba(255,45,85,0.5);
+    color: #ffb3c1;
+    padding: 12px 22px; border-radius: 14px; cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .btn-danger-outline:hover{ border-color: #ff2d55; color: #fff; box-shadow: 0 0 20px -6px rgba(255,45,85,0.5); }
+
+  /* =========================================================
+     SCHERMATA FINALE — podio
+     ========================================================= */
+  .podium-row{ width: 100%; max-width: 620px; display: flex; align-items: flex-end; justify-content: center; gap: 16px; margin-top: 10px; }
+  .podium-col{ flex: 1; max-width: 180px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .podium-avatar{
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.5rem; color: #06090f;
+    box-shadow: 0 0 30px -6px var(--accent-glow);
+  }
+  .podium-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.95rem; text-align: center; }
+  .podium-score{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: var(--accent2); }
+  .podium-bar{
+    width: 100%; border-radius: 14px 14px 0 0;
+    background: var(--accent-soft);
+    border: 1px solid var(--glass-border); border-bottom: none;
+  }
+  .podium-col.rank-1 .podium-bar{ height: 150px; border-color: #ffd60a; background: rgba(255,214,10,0.16); }
+  .podium-col.rank-2 .podium-bar{ height: 110px; }
+  .podium-col.rank-3 .podium-bar{ height: 80px; border-color: #cd7f32; background: rgba(205,127,50,0.16); }
+  .podium-medal{ font-size: 1.6rem; }
+
+  .ranking-list{ width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 8px; }
+  .ranking-row{ display: flex; align-items: center; gap: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 16px; }
+  .ranking-pos{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1rem; width: 26px; text-align: center; color: var(--text-muted); }
+  .ranking-name{ flex: 1; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .ranking-score{ font-family: 'Poppins', sans-serif; font-weight: 800; color: var(--accent2); }
+
+  @media (max-width: 600px){
+    .setup-card{ padding: 24px 18px; border-radius: 20px; }
+    .count-grid{ grid-template-columns: repeat(3, 1fr); }
+    .podium-row{ gap: 8px; }
+    .podium-col{ max-width: none; }
+  }
+</style>
+</head>
+<body class="theme-skill">
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🎯 Skill Test</span>
+  <div class="nav-right">
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">Intuito e occhio allenato: trova l'elemento giusto nella griglia prima degli altri!</p>
+    <ol>
+      <li>Il banner in alto mostra l'elemento da <strong>TROVARE</strong> (es. "TROVA: ORATA"). A turno, ogni giocatore prova a individuarlo nella griglia di 15 foto.</li>
+      <li><strong>Foto corretta:</strong> la card si illumina di <strong>verde</strong> con una spunta ✔, il giocatore guadagna un punto, la card resta bloccata e si passa al giocatore successivo con un nuovo elemento da trovare.</li>
+      <li><strong>Foto sbagliata:</strong> la card lampeggia di <strong>rosso</strong> per un istante ma resta cliccabile in futuro; il turno passa comunque al giocatore successivo.</li>
+      <li><strong>🔍 Zoom:</strong> il pulsante in alto a destra su ogni foto la ingrandisce per vederla meglio, senza contare come tentativo. Cliccando invece sulla foto stessa si tenta la risposta.</li>
+      <li><strong>"Prossima Categoria / Salta"</strong> passa in qualunque momento alla categoria successiva. <strong>"Ricomincia Torneo"</strong> azzera i punteggi e rimescola tutto.</li>
+      <li>Al termine di tutte le categorie si apre la <strong>Classifica Finale</strong> con il podio dei punteggi.</li>
+    </ol>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ MODAL ZOOM IMMAGINE ============ -->
+<div class="modal-overlay" id="zoomModal">
+  <div class="zoom-modal-content">
+    <button class="zoom-close-btn" id="zoomCloseBtn" type="button" aria-label="Chiudi">✕</button>
+    <img id="zoomImage" src="" alt="">
+  </div>
+</div>
+
+<!-- ============ SCHERMATA 1: SETUP ============ -->
+<main class="stage view active" id="setupView">
+  <h2 class="question-text">🎯 Skill Test</h2>
+  <p class="app-subtitle" style="color: var(--text-muted); text-align:center;">Trova per primo l'elemento giusto nella griglia: intuito e occhio allenato!</p>
+  <button class="btn btn-outline openInfoBtn" type="button">📖 Leggi le Regole del Gioco</button>
+
+  <div class="setup-card">
+    <div>
+      <div class="setup-section-title">👥 Numero di giocatori</div>
+      <div class="count-grid" id="countGrid"></div>
+    </div>
+
+    <div>
+      <div class="setup-section-title" style="margin-bottom:10px;">✏️ Nomi dei giocatori</div>
+      <div class="name-inputs" id="nameInputs"></div>
+    </div>
+
+    <button class="btn btn-primary" id="startGameBtn" style="width:100%;">Inizia Gioco ▶</button>
+  </div>
+</main>
+
+<!-- ============ SCHERMATA 2: DASHBOARD DI GIOCO ============ -->
+<main class="stage view" id="gameView">
+
+  <div class="scoreboard-grid" id="scoreboardGrid"></div>
+
+  <div class="category-bar">
+    <span class="category-bar-title" id="categoryTitle"></span>
+    <span class="category-bar-progress" id="categoryProgress"></span>
+  </div>
+
+  <div class="target-banner">
+    <div class="target-banner-label">🔎 Trova nella griglia</div>
+    <div class="target-banner-value" id="targetValue">—</div>
+  </div>
+
+  <div class="completion-banner" id="completionBanner">🎉 Categoria completata! Si passa alla prossima…</div>
+
+  <div class="items-grid" id="itemsGrid"></div>
+
+  <div class="controls-row">
+    <button class="btn btn-outline" id="skipCategoryBtn">⏭ Prossima Categoria / Salta</button>
+    <button class="btn-danger-outline" id="restartTournamentBtn">🔄 Ricomincia Torneo</button>
+  </div>
+</main>
+
+<!-- ============ SCHERMATA 3: CLASSIFICA FINALE ============ -->
+<main class="stage view" id="finalView">
+  <h2 class="question-text">🏆 Classifica Finale</h2>
+  <p class="app-subtitle" style="color: var(--text-muted); text-align:center;">Tutte le categorie sono state completate!</p>
+
+  <div class="podium-row" id="podiumRow"></div>
+  <div class="ranking-list" id="rankingList"></div>
+
+  <button class="btn btn-primary" id="newGameBtn">🔁 Nuova Partita</button>
+</main>
+
+<script>
+  /* =========================================================
+     DATABASE CATEGORIE — 5 categorie complete, 15 elementi
+     ciascuna, con foto reali e stabili (Wikimedia Commons).
+     Struttura: { id, titolo, icona, items:[{id, nome, imageUrl}] }
+     Aggiungi altre categorie qui: non serve toccare altro codice,
+     verranno mescolate automaticamente nel mazzo di gioco.
+     ========================================================= */
+  const CATEGORIES = [
+    {
+      id: "pesci",
+      titolo: "Pesci di Mare e Fiume",
+      icona: "🐟",
+      items: [
+        { id: "orata-0", nome: "Orata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Sparus_aurata_-_Goldbrasse_167478208.jpg/500px-Sparus_aurata_-_Goldbrasse_167478208.jpg" },
+        { id: "branzino-1", nome: "Branzino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Dicentrarchus_labrax_Minorca.jpg/500px-Dicentrarchus_labrax_Minorca.jpg" },
+        { id: "salmone-2", nome: "Salmone", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Wst_atlantischer_lachs_stoer_001.jpg/500px-Wst_atlantischer_lachs_stoer_001.jpg" },
+        { id: "dentice-3", nome: "Dentice", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Dentex_dentex_357459777.jpg/500px-Dentex_dentex_357459777.jpg" },
+        { id: "sarago-4", nome: "Sarago", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Diplodus_sargus_sargus.jpg/500px-Diplodus_sargus_sargus.jpg" },
+        { id: "cernia-5", nome: "Cernia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Epinephelus_marginatus_%28Lowe%2C_1834%29_1.jpg/500px-Epinephelus_marginatus_%28Lowe%2C_1834%29_1.jpg" },
+        { id: "trota-6", nome: "Trota", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Salmo_trutta_fario_Bachforelle.JPG/500px-Salmo_trutta_fario_Bachforelle.JPG" },
+        { id: "pesce-spada-7", nome: "Pesce Spada", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Xiphias_gladius1.jpg/500px-Xiphias_gladius1.jpg" },
+        { id: "luccio-8", nome: "Luccio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Esox_Lucius.JPG/500px-Esox_Lucius.JPG" },
+        { id: "rombo-9", nome: "Rombo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Scophthalmus_maximus.jpg/500px-Scophthalmus_maximus.jpg" },
+        { id: "pesce-san-pietro-10", nome: "Pesce San Pietro", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Saint-Pierre_%28Zeus_faber%29_%28Ifremer_00555-66734_-_44451%29.jpg/500px-Saint-Pierre_%28Zeus_faber%29_%28Ifremer_00555-66734_-_44451%29.jpg" },
+        { id: "triglia-11", nome: "Triglia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Mullus_surmuletus%2C_Bouches-du-Rh%C3%B4ne%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_277193780_%28cropped%29.jpg/500px-Mullus_surmuletus%2C_Bouches-du-Rh%C3%B4ne%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_277193780_%28cropped%29.jpg" },
+        { id: "acciuga-12", nome: "Acciuga", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Acciughe_2.jpg/500px-Acciughe_2.jpg" },
+        { id: "merluzzo-13", nome: "Merluzzo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Gadus_morhua_Cod-2b-Atlanterhavsparken-Norway.JPG/500px-Gadus_morhua_Cod-2b-Atlanterhavsparken-Norway.JPG" },
+        { id: "palombo-14", nome: "Palombo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Mustelus_mustelus2.jpg/500px-Mustelus_mustelus2.jpg" }
+      ]
+    },
+    {
+      id: "formaggi",
+      titolo: "Formaggi",
+      icona: "🧀",
+      items: [
+        { id: "parmigiano-reggiano-0", nome: "Parmigiano Reggiano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Parmigiano-Reggiano_at_Eataly_in_Stockholm.jpg/500px-Parmigiano-Reggiano_at_Eataly_in_Stockholm.jpg" },
+        { id: "grana-padano-1", nome: "Grana Padano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Cheese_Grana_Padano.jpg/500px-Cheese_Grana_Padano.jpg" },
+        { id: "mozzarella-2", nome: "Mozzarella", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Mozzarella_di_bufala3.jpg/500px-Mozzarella_di_bufala3.jpg" },
+        { id: "gorgonzola-3", nome: "Gorgonzola", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/A_Gongonzola_from_Baci.jpg/500px-A_Gongonzola_from_Baci.jpg" },
+        { id: "pecorino-romano-4", nome: "Pecorino Romano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Pecorino_romano_cheese.jpg/500px-Pecorino_romano_cheese.jpg" },
+        { id: "provolone-5", nome: "Provolone", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Provolone_watermelon_shape.jpg/500px-Provolone_watermelon_shape.jpg" },
+        { id: "taleggio-6", nome: "Taleggio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Taleggio_vecchia_lavorazione_%283323694182%29.jpg/500px-Taleggio_vecchia_lavorazione_%283323694182%29.jpg" },
+        { id: "fontina-7", nome: "Fontina", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Fontina_DOP.jpg/500px-Fontina_DOP.jpg" },
+        { id: "asiago-8", nome: "Asiago", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Formaggio_Asiago_Dop.jpg/500px-Formaggio_Asiago_Dop.jpg" },
+        { id: "ricotta-9", nome: "Ricotta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Ricotta_fresca.jpg/500px-Ricotta_fresca.jpg" },
+        { id: "mascarpone-10", nome: "Mascarpone", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Mascarpone_4.png/500px-Mascarpone_4.png" },
+        { id: "burrata-11", nome: "Burrata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Burrata2.jpg/500px-Burrata2.jpg" },
+        { id: "scamorza-12", nome: "Scamorza", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Scamorza_chez_un_fromager.jpg/500px-Scamorza_chez_un_fromager.jpg" },
+        { id: "brie-13", nome: "Brie", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Wikicheese_-_Brie_de_Melun_-_20150515_-_015.jpg/500px-Wikicheese_-_Brie_de_Melun_-_20150515_-_015.jpg" },
+        { id: "emmental-14", nome: "Emmental", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Emmentaler_aoc_block.jpg/500px-Emmentaler_aoc_block.jpg" }
+      ]
+    },
+    {
+      id: "salumi",
+      titolo: "Salumi e Insaccati",
+      icona: "🥓",
+      items: [
+        { id: "prosciutto-crudo-0", nome: "Prosciutto Crudo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Tranches_jambon_San_Daniele.jpg/500px-Tranches_jambon_San_Daniele.jpg" },
+        { id: "prosciutto-cotto-1", nome: "Prosciutto Cotto", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Boiled_ham.JPG/500px-Boiled_ham.JPG" },
+        { id: "salame-2", nome: "Salame", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Luftgetrocknete_Wurst_aus_Italien_005.JPG/500px-Luftgetrocknete_Wurst_aus_Italien_005.JPG" },
+        { id: "mortadella-3", nome: "Mortadella", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Marjolaine_2016_20.jpg/500px-Marjolaine_2016_20.jpg" },
+        { id: "bresaola-4", nome: "Bresaola", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Brisaula.jpg/500px-Brisaula.jpg" },
+        { id: "speck-5", nome: "Speck", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/S%C3%BCdtiroler_Speck_g.g.A._aufgeschnitten.jpg/500px-S%C3%BCdtiroler_Speck_g.g.A._aufgeschnitten.jpg" },
+        { id: "coppa-6", nome: "Coppa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Coppa_di_Parma.jpg/500px-Coppa_di_Parma.jpg" },
+        { id: "pancetta-7", nome: "Pancetta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Pancetta_%286756255017%29.jpg/500px-Pancetta_%286756255017%29.jpg" },
+        { id: "guanciale-8", nome: "Guanciale", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Guanciale.jpg/500px-Guanciale.jpg" },
+        { id: "culatello-9", nome: "Culatello", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Culatello_di_Zibello.jpg/500px-Culatello_di_Zibello.jpg" },
+        { id: "soppressata-10", nome: "Soppressata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Soppressata_di_Decollatura.jpg/500px-Soppressata_di_Decollatura.jpg" },
+        { id: "nduja-11", nome: "'Nduja", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Nduja_mit_Brot.jpg/500px-Nduja_mit_Brot.jpg" },
+        { id: "lardo-12", nome: "Lardo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Pezzi_di_lardo_di_Colonnata.jpg/500px-Pezzi_di_lardo_di_Colonnata.jpg" },
+        { id: "cotechino-13", nome: "Cotechino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Cotechino-Servito-Polenta-Lenticchie.jpg/500px-Cotechino-Servito-Polenta-Lenticchie.jpg" },
+        { id: "wurstel-14", nome: "Wurstel", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Wiener_Wuerstchen_%28fcm%29.jpg/500px-Wiener_Wuerstchen_%28fcm%29.jpg" }
+      ]
+    },
+    {
+      id: "cani",
+      titolo: "Razze Canine",
+      icona: "🐶",
+      items: [
+        { id: "labrador-retriever-0", nome: "Labrador Retriever", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Labrador_on_Quantock_%282175262184%29.jpg/500px-Labrador_on_Quantock_%282175262184%29.jpg" },
+        { id: "pastore-tedesco-1", nome: "Pastore Tedesco", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/German_Shepherd_-_DSC_0346_%2810096362833%29.jpg/500px-German_Shepherd_-_DSC_0346_%2810096362833%29.jpg" },
+        { id: "golden-retriever-2", nome: "Golden Retriever", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Golden_Retriever_Dukedestiny01_drvd.jpg/500px-Golden_Retriever_Dukedestiny01_drvd.jpg" },
+        { id: "bulldog-francese-3", nome: "Bulldog Francese", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/2008-07-28_Dog_at_Frolick_Field.jpg/500px-2008-07-28_Dog_at_Frolick_Field.jpg" },
+        { id: "barboncino-4", nome: "Barboncino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Full_attention_%288067543690%29.jpg/500px-Full_attention_%288067543690%29.jpg" },
+        { id: "chihuahua-5", nome: "Chihuahua", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4c/Chihuahua1_bvdb.jpg" },
+        { id: "beagle-6", nome: "Beagle", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Beagle_600.jpg/500px-Beagle_600.jpg" },
+        { id: "rottweiler-7", nome: "Rottweiler", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Rottweiler_standing_facing_left.jpg/500px-Rottweiler_standing_facing_left.jpg" },
+        { id: "husky-siberiano-8", nome: "Husky Siberiano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Husky_L.jpg/500px-Husky_L.jpg" },
+        { id: "carlino-9", nome: "Carlino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Mops-duke-mopszucht-vom-maegdebrunnen.jpg/500px-Mops-duke-mopszucht-vom-maegdebrunnen.jpg" },
+        { id: "dalmata-10", nome: "Dalmata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Sun_Dog_Dalmatian.jpg/500px-Sun_Dog_Dalmatian.jpg" },
+        { id: "cocker-spaniel-11", nome: "Cocker Spaniel", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Gessa_d%27Aran_Copo_de_Nieve-_arancio_roano-_prop.Kalesa.jpg/500px-Gessa_d%27Aran_Copo_de_Nieve-_arancio_roano-_prop.Kalesa.jpg" },
+        { id: "border-collie-12", nome: "Border Collie", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Border_Collie_600.jpg/500px-Border_Collie_600.jpg" },
+        { id: "alaskan-malamute-13", nome: "Alaskan Malamute", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Alaskan_Malamute.jpg/500px-Alaskan_Malamute.jpg" },
+        { id: "jack-russell-terrier-14", nome: "Jack Russell Terrier", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Jack_Russell_Terrier_1.jpg/500px-Jack_Russell_Terrier_1.jpg" }
+      ]
+    },
+    {
+      id: "pasta",
+      titolo: "Tipi di Pasta",
+      icona: "🍝",
+      items: [
+        { id: "spaghetti-0", nome: "Spaghetti", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Spaghettoni.jpg/500px-Spaghettoni.jpg" },
+        { id: "penne-1", nome: "Penne", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Penne_Arrabbiata.jpg/500px-Penne_Arrabbiata.jpg" },
+        { id: "fusilli-2", nome: "Fusilli", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Fusilli_bucati_2.jpg/500px-Fusilli_bucati_2.jpg" },
+        { id: "farfalle-3", nome: "Farfalle", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Farfalle_Pasta.JPG/500px-Farfalle_Pasta.JPG" },
+        { id: "rigatoni-4", nome: "Rigatoni", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Rigatoni.jpg/500px-Rigatoni.jpg" },
+        { id: "tagliatelle-5", nome: "Tagliatelle", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Making_a_better_homemade_pasta_-_16670047286.jpg/500px-Making_a_better_homemade_pasta_-_16670047286.jpg" },
+        { id: "orecchiette-6", nome: "Orecchiette", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Orecchiette_su_tavoliere_in_legno.jpg/500px-Orecchiette_su_tavoliere_in_legno.jpg" },
+        { id: "tortellini-7", nome: "Tortellini", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Tortellini_Bolognesi.jpg/500px-Tortellini_Bolognesi.jpg" },
+        { id: "ravioli-8", nome: "Ravioli", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Ravioli_2020.jpg/500px-Ravioli_2020.jpg" },
+        { id: "lasagne-9", nome: "Lasagne", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Lasagne.png/500px-Lasagne.png" },
+        { id: "gnocchi-10", nome: "Gnocchi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gnocchi_di_ricotta_burro_e_salvia.jpg/500px-Gnocchi_di_ricotta_burro_e_salvia.jpg" },
+        { id: "linguine-11", nome: "Linguine", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Linguine.jpg/500px-Linguine.jpg" },
+        { id: "conchiglie-12", nome: "Conchiglie", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Conchiglie_2005.jpg/500px-Conchiglie_2005.jpg" },
+        { id: "cannelloni-13", nome: "Cannelloni", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Cannelloni2.png/500px-Cannelloni2.png" },
+        { id: "trofie-14", nome: "Trofie", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Trofie_al_pesto_.jpg/500px-Trofie_al_pesto_.jpg" }
+      ]
+    },
+    {
+      id: "fiori",
+      titolo: "Fiori",
+      icona: "🌸",
+      items: [
+        { id: "rosa-0", nome: "Rosa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Chinese_Rose.JPG/500px-Chinese_Rose.JPG" },
+        { id: "tulipano-1", nome: "Tulipano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Tulipa_suaveolens_in_Les_liliacees.jpg/500px-Tulipa_suaveolens_in_Les_liliacees.jpg" },
+        { id: "girasole-2", nome: "Girasole", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/A_sunflower.jpg/500px-A_sunflower.jpg" },
+        { id: "margherita-3", nome: "Margherita", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Bellis_perennis_white_%28aka%29.jpg/500px-Bellis_perennis_white_%28aka%29.jpg" },
+        { id: "orchidea-4", nome: "Orchidea", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/PhalaenopsisOphrysPaphiopedilumMaxillaria.jpg/500px-PhalaenopsisOphrysPaphiopedilumMaxillaria.jpg" },
+        { id: "papavero-5", nome: "Papavero", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Fleur_de_Coquelicot_%28Papaver_rhoeas%29.jpg/500px-Fleur_de_Coquelicot_%28Papaver_rhoeas%29.jpg" },
+        { id: "giglio-6", nome: "Giglio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/LiliumAuratumVVirginaleBluete2Rework.jpg/500px-LiliumAuratumVVirginaleBluete2Rework.jpg" },
+        { id: "iris-7", nome: "Iris", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Iris_germanica_160505.jpg/500px-Iris_germanica_160505.jpg" },
+        { id: "peonia-8", nome: "Peonia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Paeonia_suffruticosa13.jpg/500px-Paeonia_suffruticosa13.jpg" },
+        { id: "dalia-9", nome: "Dalia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Dahlia_pinnata_%28Dahlia_commun%29_-_118.jpg/500px-Dahlia_pinnata_%28Dahlia_commun%29_-_118.jpg" },
+        { id: "camelia-10", nome: "Camelia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Camellia_japonica_%27Kikutouji%27.jpg/500px-Camellia_japonica_%27Kikutouji%27.jpg" },
+        { id: "ortensia-11", nome: "Ortensia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/HydrangeaMacrophylla2.jpg/500px-HydrangeaMacrophylla2.jpg" },
+        { id: "gerbera-12", nome: "Gerbera", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Gerbera_viridifolia%2C_Waterberg.jpg/500px-Gerbera_viridifolia%2C_Waterberg.jpg" },
+        { id: "anemone-13", nome: "Anemone", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Anemone_coronaria_-_01.jpg/500px-Anemone_coronaria_-_01.jpg" },
+        { id: "lavanda-14", nome: "Lavanda", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Lavandula_angustifolia090718.jpg/500px-Lavandula_angustifolia090718.jpg" }
+      ]
+    },
+    {
+      id: "alberi",
+      titolo: "Alberi",
+      icona: "🌳",
+      items: [
+        { id: "quercia-0", nome: "Quercia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Quercus_pubescens_Tuscany.jpg/500px-Quercus_pubescens_Tuscany.jpg" },
+        { id: "pino-1", nome: "Pino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Tall_Trees_%283938590958%29.jpg/500px-Tall_Trees_%283938590958%29.jpg" },
+        { id: "abete-2", nome: "Abete", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Abies_koreana_%28szyszki%29.JPG/500px-Abies_koreana_%28szyszki%29.JPG" },
+        { id: "betulla-3", nome: "Betulla", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Bedulita_-_Betulla.jpg/500px-Bedulita_-_Betulla.jpg" },
+        { id: "faggio-4", nome: "Faggio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Fagus-sylvatica-cansiglio-forest-italy.jpg/500px-Fagus-sylvatica-cansiglio-forest-italy.jpg" },
+        { id: "castagno-5", nome: "Castagno", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/20130713Castanea_sativa5.jpg/500px-20130713Castanea_sativa5.jpg" },
+        { id: "olmo-6", nome: "Olmo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/East_Coker_elm%2C_2.jpg/500px-East_Coker_elm%2C_2.jpg" },
+        { id: "acero-7", nome: "Acero", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Acer_tataricum5.jpg/500px-Acer_tataricum5.jpg" },
+        { id: "salice-8", nome: "Salice", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Salix_alba11.jpg" },
+        { id: "pioppo-9", nome: "Pioppo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/PopulusNigra2a.jpg/500px-PopulusNigra2a.jpg" },
+        { id: "olivo-10", nome: "Olivo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/8/84/Olivesfromjordan.jpg" },
+        { id: "cipresso-11", nome: "Cipresso", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Cupressus_specie-01.jpg/500px-Cupressus_specie-01.jpg" },
+        { id: "platano-12", nome: "Platano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Platanus_occidentalis0.jpg/500px-Platanus_occidentalis0.jpg" },
+        { id: "ontano-13", nome: "Ontano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Alnus_incana_rugosa_leaves.jpg/500px-Alnus_incana_rugosa_leaves.jpg" },
+        { id: "larice-14", nome: "Larice", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/SubalpineLarch_7735tl.jpg/500px-SubalpineLarch_7735tl.jpg" }
+      ]
+    },
+    {
+      id: "funghi",
+      titolo: "Funghi",
+      icona: "🍄",
+      items: [
+        { id: "porcino-0", nome: "Porcino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Boletus_edulis_IT.jpg/500px-Boletus_edulis_IT.jpg" },
+        { id: "chiodino-1", nome: "Chiodino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Armillaria_mellea_%2848934163121%29.jpg/500px-Armillaria_mellea_%2848934163121%29.jpg" },
+        { id: "ovulo-buono-2", nome: "Ovulo Buono", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Amanita_caesarea.JPG/500px-Amanita_caesarea.JPG" },
+        { id: "amanita-muscaria-3", nome: "Amanita Muscaria", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Amanita_muscaria_3_vliegenzwammen_op_rij.jpg/500px-Amanita_muscaria_3_vliegenzwammen_op_rij.jpg" },
+        { id: "champignon-4", nome: "Champignon", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Champignons_Agaricus.jpg/500px-Champignons_Agaricus.jpg" },
+        { id: "finferlo-5", nome: "Finferlo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Chanterelle_Cantharellus_cibarius.jpg/500px-Chanterelle_Cantharellus_cibarius.jpg" },
+        { id: "prataiolo-6", nome: "Prataiolo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/2010-08-07_Agaricus_campestris_cropped.jpg/500px-2010-08-07_Agaricus_campestris_cropped.jpg" },
+        { id: "mazza-di-tamburo-7", nome: "Mazza di Tamburo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Macrolepiota-procera.jpg/500px-Macrolepiota-procera.jpg" },
+        { id: "trombetta-dei-morti-8", nome: "Trombetta dei Morti", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/2011-11-20_Craterellus_cornucopioides_%28L.%29_Pers_183522_cropped.jpg/500px-2011-11-20_Craterellus_cornucopioides_%28L.%29_Pers_183522_cropped.jpg" },
+        { id: "tignosa-verdognola-9", nome: "Tignosa Verdognola", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/71/Amanita_phalloides.jpg" },
+        { id: "spugnola-10", nome: "Spugnola", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/23/Morchella_esculenta_08.jpg" },
+        { id: "cardoncello-11", nome: "Cardoncello", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Pleurotus_eryngii.jpg/500px-Pleurotus_eryngii.jpg" },
+        { id: "russola-12", nome: "Russola", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Russula_emetica.jpg" },
+        { id: "pioppino-13", nome: "Pioppino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Agrocybe_aegerita_1.jpg/500px-Agrocybe_aegerita_1.jpg" },
+        { id: "orecchione-14", nome: "Orecchione", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Pleurotus_ostreatus_1.JPG/500px-Pleurotus_ostreatus_1.JPG" }
+      ]
+    },
+    {
+      id: "bandiere",
+      titolo: "Bandiere del Mondo",
+      icona: "🏳️",
+      items: [
+        { id: "romania-0", nome: "Romania", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Flag_of_Romania.svg/500px-Flag_of_Romania.svg.png" },
+        { id: "ciad-1", nome: "Ciad", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Flag_of_Chad.svg/500px-Flag_of_Chad.svg.png" },
+        { id: "indonesia-2", nome: "Indonesia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Flag_of_Indonesia.svg/500px-Flag_of_Indonesia.svg.png" },
+        { id: "monaco-3", nome: "Monaco", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Flag_of_Monaco.svg/500px-Flag_of_Monaco.svg.png" },
+        { id: "irlanda-4", nome: "Irlanda", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Flag_of_Ireland.svg/500px-Flag_of_Ireland.svg.png" },
+        { id: "costa-d-avorio-5", nome: "Costa d'Avorio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Flag_of_C%C3%B4te_d%27Ivoire.svg/500px-Flag_of_C%C3%B4te_d%27Ivoire.svg.png" },
+        { id: "paesi-bassi-6", nome: "Paesi Bassi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Flag_of_the_Netherlands.svg/500px-Flag_of_the_Netherlands.svg.png" },
+        { id: "lussemburgo-7", nome: "Lussemburgo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Flag_of_Luxembourg.svg/500px-Flag_of_Luxembourg.svg.png" },
+        { id: "australia-8", nome: "Australia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Flag_of_Australia.svg/500px-Flag_of_Australia.svg.png" },
+        { id: "nuova-zelanda-9", nome: "Nuova Zelanda", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Flag_of_New_Zealand.svg/500px-Flag_of_New_Zealand.svg.png" },
+        { id: "colombia-10", nome: "Colombia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Colombia.svg/500px-Flag_of_Colombia.svg.png" },
+        { id: "venezuela-11", nome: "Venezuela", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Flag_of_Venezuela.svg/500px-Flag_of_Venezuela.svg.png" },
+        { id: "slovenia-12", nome: "Slovenia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Flag_of_Slovenia.svg/500px-Flag_of_Slovenia.svg.png" },
+        { id: "slovacchia-13", nome: "Slovacchia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Flag_of_Slovakia.svg/500px-Flag_of_Slovakia.svg.png" },
+        { id: "senegal-14", nome: "Senegal", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Flag_of_Senegal.svg/500px-Flag_of_Senegal.svg.png" }
+      ]
+    },
+    {
+      id: "pomodori",
+      titolo: "Tipi di Pomodoro",
+      icona: "🍅",
+      items: [
+        { id: "san-marzano-0", nome: "San Marzano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/TomateSanMarzano.jpg/500px-TomateSanMarzano.jpg" },
+        { id: "cuore-di-bue-1", nome: "Cuore di Bue", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Coeur_de_boeuf_vraie.JPG/500px-Coeur_de_boeuf_vraie.JPG" },
+        { id: "ciliegino-2", nome: "Ciliegino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Cherry_Tomato_on_Vine.JPG/500px-Cherry_Tomato_on_Vine.JPG" },
+        { id: "datterino-3", nome: "Datterino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Pomodori_datterini.jpg/500px-Pomodori_datterini.jpg" },
+        { id: "costoluto-fiorentino-4", nome: "Costoluto Fiorentino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Costoluto_fiorentino_IMG_0242.jpg/500px-Costoluto_fiorentino_IMG_0242.jpg" },
+        { id: "marmande-5", nome: "Marmande", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Tomates_Marmande.jpg/500px-Tomates_Marmande.jpg" },
+        { id: "tigerella-6", nome: "Tigerella", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Tomate_Tigerella_P1020497.JPG/500px-Tomate_Tigerella_P1020497.JPG" },
+        { id: "green-zebra-7", nome: "Green Zebra", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Tomato_Cultivar_Green_Zebra_2021.jpg/500px-Tomato_Cultivar_Green_Zebra_2021.jpg" },
+        { id: "beefsteak-8", nome: "Beefsteak", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Lufa_Farms_Beefsteak_Tomato.jpg/500px-Lufa_Farms_Beefsteak_Tomato.jpg" },
+        { id: "roma-9", nome: "Roma", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Roma_Tomatoes_-_Flickr_-_pinemikey.jpg/500px-Roma_Tomatoes_-_Flickr_-_pinemikey.jpg" },
+        { id: "nero-black-krim-10", nome: "Nero (Black Krim)", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Black_krim_tomato.jpg/500px-Black_krim_tomato.jpg" },
+        { id: "verde-acerbo-11", nome: "Verde Acerbo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Green_Tomatoes_5.jpg/500px-Green_Tomatoes_5.jpg" },
+        { id: "giallo-12", nome: "Giallo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Sun-Kissed_Elegance_Yellow-Orange-Gold_Heirloom_Tomato_Medley_by_Raju_C_Reddy.jpg/500px-Sun-Kissed_Elegance_Yellow-Orange-Gold_Heirloom_Tomato_Medley_by_Raju_C_Reddy.jpg" },
+        { id: "arancione-13", nome: "Arancione", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Orange_Cherry_tomatoes.jpg/500px-Orange_Cherry_tomatoes.jpg" },
+        { id: "rosso-classico-14", nome: "Rosso Classico", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tomato_je.jpg/500px-Tomato_je.jpg" }
+      ]
+    }
+  ];
+
+  /* ---- Riferimenti DOM: modal regole ---- */
+  const infoModal = document.getElementById("infoModal");
+  const closeInfoBtn = document.getElementById("closeInfoBtn");
+  document.querySelectorAll(".openInfoBtn").forEach(btn => {
+    btn.addEventListener("click", () => infoModal.classList.add("active"));
+  });
+  closeInfoBtn.addEventListener("click", () => infoModal.classList.remove("active"));
+  infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoModal.classList.remove("active"); });
+
+  /* ---- Riferimenti DOM: modal zoom immagine ---- */
+  const zoomModal = document.getElementById("zoomModal");
+  const zoomImage = document.getElementById("zoomImage");
+  const zoomCloseBtn = document.getElementById("zoomCloseBtn");
+
+  function openZoom(url, altText){
+    zoomImage.src = url;
+    zoomImage.alt = altText || "";
+    zoomModal.classList.add("active");
+  }
+  function closeZoom(){ zoomModal.classList.remove("active"); }
+  zoomCloseBtn.addEventListener("click", closeZoom);
+  zoomModal.addEventListener("click", (e) => { if (e.target === zoomModal) closeZoom(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    closeZoom();
+    infoModal.classList.remove("active");
+  });
+
+  /* =========================================================
+     STATO DI GIOCO
+     ========================================================= */
+  let playerCount = 2;
+  let players = [];              // [{ name, score }]
+  let currentPlayerIndex = 0;
+
+  let categoryOrder = [];        // indici di CATEGORIES mescolati
+  let categoryPos = 0;           // posizione corrente nel mazzo di categorie
+  let currentCategory = null;
+  let gridOrder = [];            // ordine (mescolato) degli item mostrati in griglia per la categoria corrente
+  let foundIds = new Set();      // id degli elementi già indovinati nella categoria corrente
+  let currentTargetId = null;    // id dell'elemento da trovare in questo momento
+  let gridLocked = false;        // blocco temporaneo durante le animazioni
+
+  /* ---- Riferimenti DOM ---- */
+  const setupView = document.getElementById("setupView");
+  const gameView = document.getElementById("gameView");
+  const finalView = document.getElementById("finalView");
+
+  const countGrid = document.getElementById("countGrid");
+  const nameInputsWrap = document.getElementById("nameInputs");
+  const startGameBtn = document.getElementById("startGameBtn");
+
+  const scoreboardGrid = document.getElementById("scoreboardGrid");
+  const categoryTitle = document.getElementById("categoryTitle");
+  const categoryProgress = document.getElementById("categoryProgress");
+  const targetValue = document.getElementById("targetValue");
+  const completionBanner = document.getElementById("completionBanner");
+  const itemsGrid = document.getElementById("itemsGrid");
+  const skipCategoryBtn = document.getElementById("skipCategoryBtn");
+  const restartTournamentBtn = document.getElementById("restartTournamentBtn");
+
+  const podiumRow = document.getElementById("podiumRow");
+  const rankingList = document.getElementById("rankingList");
+  const newGameBtn = document.getElementById("newGameBtn");
+
+  /* =========================================================
+     UTILITÀ
+     ========================================================= */
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function switchView(name){
+    [setupView, gameView, finalView].forEach(v => v.classList.remove("active"));
+    if (name === "setup") setupView.classList.add("active");
+    if (name === "game") gameView.classList.add("active");
+    if (name === "final") finalView.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* =========================================================
+     SETUP: selezione numero giocatori + nomi
+     ========================================================= */
+  function buildCountGrid(){
+    countGrid.innerHTML = "";
+    for (let n = 1; n <= 6; n++){
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "count-btn" + (n === playerCount ? " selected" : "");
+      btn.textContent = n;
+      btn.addEventListener("click", () => {
+        playerCount = n;
+        buildCountGrid();
+        buildNameInputs();
+      });
+      countGrid.appendChild(btn);
+    }
+  }
+
+  function buildNameInputs(){
+    // Mantiene i nomi già digitati quando si cambia il numero di giocatori
+    const existing = Array.from(nameInputsWrap.querySelectorAll("input")).map(i => i.value);
+    nameInputsWrap.innerHTML = "";
+    for (let i = 0; i < playerCount; i++){
+      const row = document.createElement("div");
+      row.className = "name-input-row";
+      row.innerHTML = `
+        <span class="name-input-badge">${i + 1}</span>
+        <input type="text" maxlength="18" placeholder="Giocatore ${i + 1}" value="${escapeHtml(existing[i] || "")}">
+      `;
+      nameInputsWrap.appendChild(row);
+    }
+  }
+
+  startGameBtn.addEventListener("click", () => {
+    const inputs = Array.from(nameInputsWrap.querySelectorAll("input"));
+    players = inputs.map((inp, i) => ({
+      name: inp.value.trim() || `Giocatore ${i + 1}`,
+      score: 0
+    }));
+    currentPlayerIndex = 0;
+    categoryOrder = shuffle([...Array(CATEGORIES.length).keys()]);
+    categoryPos = 0;
+    gridLocked = false;
+    loadCategory();
+    switchView("game");
+  });
+
+  /* =========================================================
+     SCOREBOARD
+     ========================================================= */
+  function renderScoreboard(){
+    scoreboardGrid.innerHTML = "";
+    players.forEach((p, i) => {
+      const isActive = i === currentPlayerIndex;
+      const card = document.createElement("div");
+      card.className = "player-card" + (isActive ? " active-turn" : "");
+      card.innerHTML = `
+        ${isActive ? '<span class="player-turn-badge">🎯 Tocca a te</span>' : ""}
+        <span class="player-name">${escapeHtml(p.name)}</span>
+        <span class="player-score">${p.score}</span>
+        <span class="player-score-label">Punti</span>
+      `;
+      scoreboardGrid.appendChild(card);
+    });
+  }
+
+  /* =========================================================
+     CARICAMENTO CATEGORIA
+     ========================================================= */
+  function loadCategory(){
+    currentCategory = CATEGORIES[categoryOrder[categoryPos]];
+    foundIds = new Set();
+    gridOrder = shuffle(currentCategory.items);
+    completionBanner.classList.remove("show");
+
+    categoryTitle.textContent = `${currentCategory.icona} ${currentCategory.titolo}`;
+    categoryProgress.textContent = `Categoria ${categoryPos + 1}/${categoryOrder.length}`;
+
+    renderScoreboard();
+    renderGrid();
+    pickNewTarget();
+  }
+
+  function renderGrid(){
+    itemsGrid.innerHTML = "";
+    gridOrder.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "item-card";
+      card.dataset.id = item.id;
+      card.setAttribute("role", "button");
+      card.setAttribute("tabindex", "0");
+      card.innerHTML = `
+        <div class="item-img-wrap">
+          <img src="${item.imageUrl}" alt="" loading="lazy"
+               onerror="this.parentElement.classList.add('img-broken')">
+          <span class="item-feedback-icon"></span>
+          <button type="button" class="zoom-btn" aria-label="Ingrandisci immagine" title="Ingrandisci">🔍</button>
+        </div>
+        <div class="item-footer"></div>
+      `;
+
+      // Click sull'immagine/card = tentativo di risposta (regole del gioco)
+      card.addEventListener("click", () => handleCardClick(item, card));
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " "){
+          e.preventDefault();
+          handleCardClick(item, card);
+        }
+      });
+
+      // Click sul pulsante zoom = solo ingrandimento, NON conta come tentativo
+      const zoomBtn = card.querySelector(".zoom-btn");
+      zoomBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const revealName = foundIds.has(item.id) ? item.nome : "Elemento della categoria";
+        openZoom(item.imageUrl, revealName);
+      });
+
+      itemsGrid.appendChild(card);
+    });
+  }
+
+  function pickNewTarget(){
+    const remaining = currentCategory.items.filter(it => !foundIds.has(it.id));
+    if (remaining.length === 0){
+      onCategoryComplete();
+      return;
+    }
+    const pick = remaining[Math.floor(Math.random() * remaining.length)];
+    currentTargetId = pick.id;
+    targetValue.textContent = pick.nome;
+  }
+
+  /* =========================================================
+     GESTIONE CLICK SULLA CARD (tentativo di risposta)
+     ========================================================= */
+  function handleCardClick(item, card){
+    if (gridLocked) return;
+    if (foundIds.has(item.id)) return; // già trovata, ignora
+
+    if (item.id === currentTargetId){
+      /* ---- Tentativo CORRETTO ---- */
+      gridLocked = true;
+      foundIds.add(item.id);
+      players[currentPlayerIndex].score++;
+
+      card.classList.add("found");
+      card.setAttribute("aria-disabled", "true");
+      card.querySelector(".item-feedback-icon").textContent = "✔";
+      card.querySelector(".item-footer").textContent = item.nome;
+
+      currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      renderScoreboard();
+
+      setTimeout(() => {
+        gridLocked = false;
+        pickNewTarget();
+      }, 700);
+    } else {
+      /* ---- Tentativo SBAGLIATO ---- */
+      gridLocked = true;
+      card.classList.add("flash-wrong");
+      card.querySelector(".item-feedback-icon").textContent = "✖";
+
+      currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      renderScoreboard();
+
+      setTimeout(() => {
+        card.classList.remove("flash-wrong");
+        card.querySelector(".item-feedback-icon").textContent = "";
+        gridLocked = false;
+      }, 500);
+    }
+  }
+
+  /* =========================================================
+     COMPLETAMENTO CATEGORIA / NAVIGAZIONE
+     ========================================================= */
+  function onCategoryComplete(){
+    gridLocked = true;
+    completionBanner.classList.add("show");
+    targetValue.textContent = "Tutti trovati!";
+    setTimeout(() => { nextCategory(); }, 1800);
+  }
+
+  function nextCategory(){
+    categoryPos++;
+    if (categoryPos >= categoryOrder.length){
+      showFinalView();
+      return;
+    }
+    gridLocked = false;
+    loadCategory();
+  }
+
+  skipCategoryBtn.addEventListener("click", () => {
+    gridLocked = false;
+    nextCategory();
+  });
+
+  restartTournamentBtn.addEventListener("click", () => {
+    const ok = confirm("Ricominciare il torneo da capo? Tutti i punteggi verranno azzerati.");
+    if (!ok) return;
+    players.forEach(p => p.score = 0);
+    currentPlayerIndex = 0;
+    categoryOrder = shuffle([...Array(CATEGORIES.length).keys()]);
+    categoryPos = 0;
+    gridLocked = false;
+    loadCategory();
+  });
+
+  /* =========================================================
+     SCHERMATA FINALE — PODIO E CLASSIFICA
+     ========================================================= */
+  function showFinalView(){
+    const ranked = [...players].sort((a, b) => b.score - a.score);
+
+    // ---- Podio (primi 3, ordine visivo 2°-1°-3°) ----
+    podiumRow.innerHTML = "";
+    const top3 = ranked.slice(0, 3);
+    const visualOrder = [1, 0, 2].filter(i => top3[i]); // 2°, 1°, 3°
+    const medals = ["🥇", "🥈", "🥉"];
+    visualOrder.forEach(rankIdx => {
+      const p = top3[rankIdx];
+      const col = document.createElement("div");
+      col.className = `podium-col rank-${rankIdx + 1}`;
+      col.innerHTML = `
+        <span class="podium-medal">${medals[rankIdx]}</span>
+        <div class="podium-avatar">${escapeHtml(p.name.charAt(0).toUpperCase())}</div>
+        <div class="podium-name">${escapeHtml(p.name)}</div>
+        <div class="podium-score">${p.score} pt</div>
+        <div class="podium-bar"></div>
+      `;
+      podiumRow.appendChild(col);
+    });
+
+    // ---- Classifica completa (tutti i giocatori) ----
+    rankingList.innerHTML = "";
+    ranked.forEach((p, i) => {
+      const row = document.createElement("div");
+      row.className = "ranking-row";
+      row.innerHTML = `
+        <span class="ranking-pos">${i + 1}°</span>
+        <span class="ranking-name">${escapeHtml(p.name)}</span>
+        <span class="ranking-score">${p.score} pt</span>
+      `;
+      rankingList.appendChild(row);
+    });
+
+    switchView("final");
+  }
+
+  newGameBtn.addEventListener("click", () => {
+    switchView("setup");
+  });
+
+  /* ---- Avvio: costruisce la schermata di setup ---- */
+  buildCountGrid();
+  buildNameInputs();
+</script>
+
+</body>
+</html>
