@@ -1,0 +1,22 @@
+Categoria "Persone da Avere come Colleghi" — Battaglia all'Asta.
+
+Queste sono persone reali (amici/colleghi), quindi NON ho scaricato nessuna
+foto da internet: il gioco mostra un'emoji al posto della foto e funziona
+comunque. Se vuoi usare foto vere, salva il file con ESATTAMENTE questo
+nome (formato .jpg, meglio se quadrata) nella cartella "colleghi":
+
+ - lunetta.jpg           (Lunetta)
+ - antonino.jpg          (Antonino)
+ - alex.jpg              (Alex)
+ - steffi.jpg            (Steffi)
+ - luca.jpg              (Luca)
+ - anas.jpg              (Anas)
+ - gaia.jpg              (Gaia)
+ - silvi.jpg             (Silvi)
+ - flo.jpg               (Flo)
+ - matte.jpg             (Matte)
+ - nonno_da_giovane.jpg  (Nonno da Giovane)
+ - alle.jpg              (Alle)
+ - belloni.jpg           (Belloni)
+ - roli.jpg              (Roli)
+ - ama.jpg               (Ama)

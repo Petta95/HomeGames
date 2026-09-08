@@ -1,0 +1,13 @@
+Categoria "Villain Iconici" — Battaglia all'Asta.
+13 immagini su 20 sono già presenti (scaricate da Wikipedia, licenza libera).
+Per i personaggi coperti da copyright (poster/fumetti) non esiste una foto
+libera: il gioco mostra un'emoji al posto della foto, funziona comunque.
+
+Mancanti (facoltativo aggiungerle a mano, stesso nome esatto):
+ - voldemort.jpg        (Voldemort)
+ - hannibal_lecter.jpg  (Hannibal Lecter)
+ - michael_myers.jpg    (Michael Myers)
+ - malefica.jpg         (Malefica)
+ - scar.jpg             (Scar)
+ - palpatine.jpg        (Imperatore Palpatine)
+ - predator.jpg         (Il Predatore)

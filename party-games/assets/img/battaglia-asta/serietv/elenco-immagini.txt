@@ -1,0 +1,20 @@
+Categoria "Serie TV" — Battaglia all'Asta.
+7 immagini su 20 sono già presenti (scaricate da Wikipedia, licenza libera).
+La maggior parte dei poster di serie TV è protetta da copyright e non ha
+un'immagine libera disponibile: il gioco mostra un'emoji al posto della
+foto, funziona comunque.
+
+Mancanti (facoltativo aggiungerle a mano, stesso nome esatto):
+ - got.jpg              (Game of Thrones)
+ - friends.jpg          (Friends)
+ - the_office.jpg       (The Office)
+ - casa_di_carta.jpg    (La Casa di Carta)
+ - walking_dead.jpg     (The Walking Dead)
+ - wednesday.jpg        (Wednesday)
+ - narcos.jpg           (Narcos)
+ - sherlock.jpg         (Sherlock)
+ - the_crown.jpg        (The Crown)
+ - vikings.jpg          (Vikings)
+ - prison_break.jpg     (Prison Break)
+ - greys_anatomy.jpg    (Grey's Anatomy)
+ - black_mirror.jpg     (Black Mirror)

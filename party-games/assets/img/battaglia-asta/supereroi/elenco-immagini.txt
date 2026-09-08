@@ -1,0 +1,9 @@
+Categoria "Supereroi" — Battaglia all'Asta.
+17 immagini su 20 sono già presenti (scaricate da Wikipedia, licenza libera).
+Per i personaggi coperti da copyright non esiste una foto libera: il gioco
+mostra un'emoji al posto della foto, funziona comunque.
+
+Mancanti (facoltativo aggiungerle a mano, stesso nome esatto):
+ - capitan_america.jpg  (Capitan America)
+ - doctor_strange.jpg   (Doctor Strange)
+ - shazam.jpg           (Shazam)

@@ -27,6 +27,8 @@
     --c-party-soft: rgba(176, 106, 255, 0.18);
     --c-prossimamente: #ffc247;
     --c-prossimamente-soft: rgba(255, 194, 71, 0.18);
+    --c-ispirazione: #2dd4a7;
+    --c-ispirazione-soft: rgba(45, 212, 167, 0.18);
 
     --accent: #4dd9ff;
     --glass-border: rgba(255, 255, 255, 0.10);
@@ -346,6 +348,7 @@
     <button class="filter-btn" data-filter="competizione">🔴 Competitivi</button>
     <button class="filter-btn" data-filter="party">🟣 Party / Casual</button>
     <button class="filter-btn" data-filter="prossimamente">🟡 Da Creare</button>
+    <button class="filter-btn" data-filter="ispirazione">🌍 Ispirazione</button>
   </div>
   <button class="random-btn" id="randomBtn">🎲 Scegli a Caso!</button>
 </div>
@@ -389,9 +392,21 @@
       icon: "🎉",
       title: "Party Games Collection",
       category: "party",
-      badgeLabel: "🟣 Party / Casual",
-      description: "Tre minigiochi in uno: \"Il Più Probabile\", \"Dilemmi Morali\" e \"Chi Si Conosce Meglio\". Perfetti per rompere il ghiaccio e ridere insieme.",
+      badgeLabel: "🟠 Party / Casual",
+      description: "Lista di minigiochi party pronti da giocare: Il Più Probabile, Dilemmi Morali, Chi Si Conosce Meglio, Fire Down, Nomi Cose Città Speed, Ordina, Family Feud, Numero Esatto, Il Picco, Skill Test e Battaglia all'Asta. Perfetti per rompere il ghiaccio e ridere insieme.",
       link: "party-games/menu.html",
+      extraNote: null,
+      color: "#ff9f4d",
+      colorSoft: "rgba(255, 159, 77, 0.18)"
+    },
+    {
+      id: "world-travel-bucket-list",
+      icon: "🗺️",
+      title: "World Travel Bucket List",
+      category: "ispirazione",
+      badgeLabel: "🌍 Ispirazione / Non Competitivo",
+      description: "Una mappa del mondo per vedere tutti gli stati e segnare dove andare. Non è un gioco, ma una fonte di ispirazione per il prossimo viaggio.",
+      link: "https://petta95.github.io/WorldTravelBucketList/index.html",
       extraNote: null
     }
   ];
@@ -400,7 +415,8 @@
   const CATEGORY_COLORS = {
     competizione:   { color: "var(--c-competizione)",   soft: "var(--c-competizione-soft)" },
     party:          { color: "var(--c-party)",          soft: "var(--c-party-soft)" },
-    prossimamente:  { color: "var(--c-prossimamente)",  soft: "var(--c-prossimamente-soft)" }
+    prossimamente:  { color: "var(--c-prossimamente)",  soft: "var(--c-prossimamente-soft)" },
+    ispirazione:    { color: "var(--c-ispirazione)",    soft: "var(--c-ispirazione-soft)" }
   };
 
   const gridEl = document.getElementById("gamesGrid");
@@ -414,8 +430,8 @@
     card.dataset.id = game.id;
 
     const colors = CATEGORY_COLORS[game.category] || {};
-    card.style.setProperty("--card-color", colors.color || "var(--accent)");
-    card.style.setProperty("--card-color-soft", colors.soft || "rgba(77,217,255,0.2)");
+    card.style.setProperty("--card-color", game.color || colors.color || "var(--accent)");
+    card.style.setProperty("--card-color-soft", game.colorSoft || colors.soft || "rgba(77,217,255,0.2)");
 
     card.innerHTML = `
       <div class="card-icon">${game.icon}</div>

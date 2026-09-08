@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battaglia all'Asta — Party Games Collection</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          'bg-deep': '#0a0e1a',
+          'bg-panel': '#12172a',
+          'cyan-neon': '#22d3ee',
+          'pink-neon': '#ec4899',
+          'gold-neon': '#ffc247',
+        },
+        boxShadow: {
+          'glow-cyan': '0 0 30px -4px rgba(34,211,238,0.55)',
+          'glow-pink': '0 0 30px -4px rgba(236,72,153,0.55)',
+          'glow-gold': '0 0 30px -4px rgba(255,194,71,0.55)',
+        }
+      }
+    }
+  }
+</script>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+<style>
+  html, body{ background:#0a0e1a; font-family:'Inter',sans-serif; overflow-x:hidden; }
+  .font-display{ font-family:'Poppins', sans-serif; }
+
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.15); border-radius:10px; }
+
+  .bg-blobs span{
+    position:absolute; border-radius:50%; filter:blur(100px); opacity:0.28;
+    animation: float 20s ease-in-out infinite;
+  }
+  @keyframes float{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    33%{ transform:translate(40px,-30px) scale(1.08); }
+    66%{ transform:translate(-30px,25px) scale(0.95); }
+  }
+
+  .glass{
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .team-slot{
+    flex:1 1 0; min-width:0; min-height:0; border-radius:10px;
+    border:2px dashed rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.03); overflow:hidden; cursor:default;
+  }
+  .team-slot.filled{ border-style:solid; cursor:zoom-in; }
+  .team-slot img{ width:100%; height:100%; object-fit:cover; }
+
+  .item-fallback{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.10), transparent 60%), #171d33;
+  }
+
+  /* Vista centrale dell'elemento in asta: sfondo chiaro, immagine intera senza tagli.
+     Larghezza/altezza vengono calcolate in JS (fitMainFrame) in base alle proporzioni
+     reali della foto, cosi' le immagini verticali non lasciano grandi bordi bianchi. */
+  .main-item-frame{
+    position:relative; max-width:100%; max-height:100%; border-radius:18px; overflow:hidden;
+    background:#f4f5fa; display:flex; align-items:center; justify-content:center;
+    cursor:zoom-in; margin:auto;
+  }
+  .main-item-frame img{ display:block; width:100%; height:100%; object-fit:contain; }
+  .main-item-frame .item-fallback{ background: radial-gradient(circle at 30% 20%, rgba(0,0,0,0.05), transparent 60%), #e9ebf5; }
+  .main-item-frame .item-fallback span{ font-size: clamp(3.5rem, 12vw, 7rem); }
+  .zoom-hint{
+    position:absolute; bottom:8px; right:8px; opacity:0.85;
+    background:rgba(0,0,0,0.65); color:#fff; font-size:0.65rem; font-weight:600;
+    padding:4px 10px; border-radius:999px; display:flex; align-items:center; gap:4px;
+    pointer-events:none;
+  }
+  .price-badge{
+    position:absolute; bottom:2px; right:2px;
+    background:#ffc247; color:#1a1200; font-family:'Poppins', sans-serif;
+    font-size:0.62rem; font-weight:800; line-height:1;
+    padding:2.5px 5px; border-radius:6px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.4);
+    pointer-events:none;
+  }
+
+  /* Su schermi grandi la vista asta occupa tutta l'altezza disponibile, senza scroll */
+  @media (min-width: 1024px){
+    body.auction-mode{ height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+    body.auction-mode nav{ flex:0 0 auto; }
+    body.auction-mode #auctionView{ flex:1 1 auto; min-height:0; display:flex !important; flex-direction:column; }
+    body.auction-mode footer{ display:none; }
+  }
+
+  .cat-card{ transition: all .2s ease; }
+  .cat-card.selected{ border-color:#22d3ee; box-shadow:0 0 25px -6px rgba(34,211,238,0.6); background:rgba(34,211,238,0.08); }
+
+  .bid-btn:active{ transform:scale(0.94); }
+
+  .pulse-offer{ animation: pulseOffer .35s ease; }
+  @keyframes pulseOffer{ 0%{ transform:scale(1);} 50%{ transform:scale(1.12);} 100%{ transform:scale(1);} }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(5,7,14,0.86);
+    backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center;
+    z-index:1000; padding:20px; opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .modal-overlay.active{ opacity:1; pointer-events:all; }
+  .modal-card{ transform:translateY(18px) scale(0.97); transition:transform .25s ease; }
+  .modal-overlay.active .modal-card{ transform:translateY(0) scale(1); }
+</style>
+</head>
+<body class="text-white min-h-screen relative">
+
+<!-- Sfondo animato -->
+<div class="bg-blobs fixed inset-0 -z-10 overflow-hidden" style="background:radial-gradient(circle at 20% 20%, #131a33 0%, #0a0e1a 55%);">
+  <span style="width:480px;height:480px;background:#22d3ee;top:-10%;left:-10%;animation-duration:24s;"></span>
+  <span style="width:520px;height:520px;background:#ec4899;bottom:-15%;right:-10%;animation-duration:28s;animation-delay:-6s;"></span>
+  <span style="width:360px;height:360px;background:#ffc247;top:45%;left:55%;animation-duration:22s;animation-delay:-3s;"></span>
+</div>
+
+<!-- NAVBAR -->
+<nav class="max-w-6xl mx-auto flex items-center justify-between px-5 py-4">
+  <a href="menu.html" class="text-white/60 hover:text-white text-sm font-semibold transition">← Menu</a>
+  <span class="font-display font-extrabold text-sm sm:text-base tracking-wide flex items-center gap-2">
+    <i data-lucide="gavel" class="w-4 h-4 text-gold-neon"></i>
+    BATTAGLIA ALL'ASTA
+  </span>
+  <button id="openInfoBtn" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-cyan-neon hover:text-cyan-neon transition">
+    <i data-lucide="info" class="w-4 h-4"></i>
+  </button>
+</nav>
+
+<!-- MODAL REGOLE -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card glass rounded-3xl p-7 sm:p-9 max-w-xl w-full max-h-[85vh] overflow-y-auto">
+    <h3 class="font-display font-black text-xl sm:text-2xl mb-4 flex items-center gap-2 text-gold-neon">
+      <i data-lucide="book-open" class="w-5 h-5"></i> Come si Gioca
+    </h3>
+    <ol class="space-y-3 text-sm sm:text-[0.95rem] text-white/85 list-decimal list-inside leading-relaxed">
+      <li>Due giocatori (o squadre) partono con un budget di <strong class="text-white">20€</strong> ciascuno e devono aggiudicarsi <strong class="text-white">esattamente 5 elementi</strong>.</li>
+      <li>Ad ogni turno viene mostrato un elemento della categoria scelta: i giocatori <strong class="text-white">rilanciano ad alta voce</strong>, il Game Master usa i pulsanti rapidi (+1€/+2€/+5€) o l'importo personalizzato per far salire l'offerta.</li>
+      <li>Quando nessuno rilancia più, il Game Master clicca <strong class="text-cyan-neon">"Aggiudica a Giocatore 1"</strong> o <strong class="text-pink-neon">"Aggiudica a Giocatore 2"</strong>: il budget viene scalato e l'elemento aggiunto alla rosa.</li>
+      <li>Se nessuno fa offerte, si preme <strong class="text-white">"Passa"</strong> e l'elemento viene scartato.</li>
+      <li>Non si può offrire più del proprio budget residuo. Un giocatore che ha già i suoi 5 elementi non può più offrire: se l'altro ha ancora slot liberi, l'elemento gli spetta e il "Passa" si disattiva.</li>
+      <li>Dopo 10 elementi mostrati (o a rose complete) si apre il <strong class="text-white">Resoconto Finale</strong>: confrontate le rose e votate ad alta voce il vincitore della manche. Il punteggio si accumula per le sfide successive. Clicca su un'immagine in qualsiasi momento per vederla a schermo intero.</li>
+    </ol>
+    <button id="closeInfoBtn" class="mt-6 w-full py-3 rounded-xl bg-gold-neon text-[#1a1200] font-display font-bold hover:brightness-110 transition">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- MODALE ZOOM IMMAGINE -->
+<div class="modal-overlay" id="zoomModal">
+  <div class="modal-card relative max-w-2xl w-full">
+    <button id="closeZoomBtn" class="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg text-lg font-bold z-10">✕</button>
+    <div class="rounded-2xl overflow-hidden bg-white flex items-center justify-center" style="max-height:80vh;">
+      <img id="zoomImg" src="" alt="" style="max-width:100%;max-height:80vh;object-fit:contain;">
+    </div>
+    <p id="zoomCaption" class="text-center font-display font-bold text-lg mt-3"></p>
+  </div>
+</div>
+
+<!-- ===================== SETUP VIEW ===================== -->
+<main id="setupView" class="max-w-4xl mx-auto px-5 pb-24 flex flex-col items-center gap-8 pt-4">
+  <div class="text-center">
+    <h1 class="font-display font-black text-4xl sm:text-5xl uppercase tracking-wide">
+      <span class="bg-gradient-to-r from-cyan-neon to-pink-neon bg-clip-text text-transparent">Battaglia all'Asta</span>
+    </h1>
+    <p class="text-white/60 mt-2 text-sm sm:text-base">20€ di budget, 5 elementi a testa: chi costruisce la rosa migliore?</p>
+  </div>
+
+  <!-- Nomi giocatori -->
+  <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="glass rounded-2xl p-4 flex items-center gap-3">
+      <i data-lucide="user" class="w-5 h-5 text-cyan-neon shrink-0"></i>
+      <input id="teamAInput" maxlength="20" placeholder="Giocatore 1" value="Giocatore 1"
+        class="bg-transparent outline-none w-full font-display font-bold text-cyan-neon placeholder-cyan-neon/40">
+    </div>
+    <div class="glass rounded-2xl p-4 flex items-center gap-3">
+      <i data-lucide="user" class="w-5 h-5 text-pink-neon shrink-0"></i>
+      <input id="teamBInput" maxlength="20" placeholder="Giocatore 2" value="Giocatore 2"
+        class="bg-transparent outline-none w-full font-display font-bold text-pink-neon placeholder-pink-neon/40">
+    </div>
+  </div>
+
+  <!-- Punteggio manche corrente -->
+  <div id="matchScoreBar" class="hidden text-center text-sm text-white/50">
+    Punteggio manche: <span id="matchScoreText" class="font-display font-bold text-white"></span>
+  </div>
+
+  <!-- Categorie -->
+  <div class="w-full">
+    <p class="text-white/60 text-sm font-semibold mb-3 text-center">Scegli la Categoria</p>
+    <div id="categoryGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+  </div>
+
+  <button id="startBtn" disabled
+    class="font-display font-extrabold text-lg px-10 py-4 rounded-full bg-white/10 text-white/40 cursor-not-allowed transition
+           disabled:cursor-not-allowed">
+    <i data-lucide="gavel" class="w-5 h-5 inline -mt-1 mr-1"></i> INIZIA L'ASTA
+  </button>
+</main>
+
+<!-- ===================== AUCTION VIEW ===================== -->
+<main id="auctionView" class="hidden mx-auto w-full max-w-7xl px-2 sm:px-4 pb-3 pt-2 min-h-0">
+
+  <div id="auctionGrid" class="grid grid-cols-1 lg:grid-cols-[188px_1fr_188px] gap-2 sm:gap-3 flex-1 min-h-0">
+
+    <!-- Colonna Giocatore 1 (sinistra) -->
+    <div class="glass rounded-2xl p-2.5 sm:p-3 border-l-4 flex flex-col gap-2 min-h-0" style="border-color:#22d3ee;">
+      <div class="flex items-center justify-between shrink-0 lg:flex-col lg:items-start lg:gap-1">
+        <span id="boardNameA" class="font-display font-bold text-cyan-neon truncate text-sm sm:text-base"></span>
+        <div class="flex items-baseline gap-1.5">
+          <span id="boardBudgetA" class="font-display font-black text-lg sm:text-xl"></span>
+          <span id="boardSlotsA" class="text-[0.65rem] text-white/50 font-semibold shrink-0"></span>
+        </div>
+      </div>
+      <div id="boardItemsA" class="flex flex-row lg:flex-col gap-1.5 h-16 lg:h-auto lg:flex-1 lg:min-h-0"></div>
+    </div>
+
+    <!-- Colonna centrale: elemento in asta + pannello -->
+    <div class="flex flex-col gap-2 sm:gap-3 min-h-0 min-w-0">
+      <div class="glass rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 flex flex-col items-center gap-1.5 sm:gap-2 flex-1 min-h-0">
+        <div class="flex items-center gap-2 text-[0.7rem] sm:text-sm text-white/50 font-semibold shrink-0">
+          <span id="itemCounter"></span>
+          <span>·</span>
+          <span id="itemCategoryLabel"></span>
+        </div>
+        <div id="itemImageWrap" class="flex-1 min-h-0 w-full max-w-xs sm:max-w-md lg:max-w-xl flex items-center justify-center"></div>
+        <h2 id="itemName" class="font-display font-black text-lg sm:text-2xl lg:text-3xl text-center shrink-0 px-2"></h2>
+      </div>
+
+      <div class="glass rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 flex flex-col items-center gap-2 sm:gap-3 shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="text-white/50 text-xs sm:text-sm font-semibold">Offerta Attuale</span>
+          <span id="offerDisplay" class="font-display font-black text-2xl sm:text-4xl text-gold-neon">1€</span>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+          <button data-add="1" class="bid-btn glass rounded-lg sm:rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-sm font-display font-bold hover:border-gold-neon hover:text-gold-neon transition">+1€</button>
+          <button data-add="2" class="bid-btn glass rounded-lg sm:rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-sm font-display font-bold hover:border-gold-neon hover:text-gold-neon transition">+2€</button>
+          <button data-add="5" class="bid-btn glass rounded-lg sm:rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-sm font-display font-bold hover:border-gold-neon hover:text-gold-neon transition">+5€</button>
+          <input id="customOfferInput" type="number" min="1" max="20" placeholder="€"
+            class="glass rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 w-16 text-center text-sm font-display font-bold outline-none focus:border-gold-neon">
+          <button id="setCustomBtn" class="bid-btn glass rounded-lg sm:rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-sm font-display font-bold hover:border-gold-neon hover:text-gold-neon transition">Imposta</button>
+          <button id="resetOfferBtn" class="bid-btn glass rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-white/40 hover:text-white transition" title="Azzera offerta a 1€">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="w-full grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+          <button id="assignABtn" class="font-display font-extrabold py-2 sm:py-3 text-sm sm:text-base rounded-xl sm:rounded-2xl bg-cyan-neon text-[#04121a] hover:brightness-110 transition shadow-glow-cyan disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none">
+            Aggiudica a <span id="assignANameLabel"></span>
+          </button>
+          <button id="passBtn" class="font-display font-bold py-2 sm:py-3 text-sm sm:text-base rounded-xl sm:rounded-2xl glass text-white/70 hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed">
+            Passa / Nessuna Offerta
+          </button>
+          <button id="assignBBtn" class="font-display font-extrabold py-2 sm:py-3 text-sm sm:text-base rounded-xl sm:rounded-2xl bg-pink-neon text-[#1a0311] hover:brightness-110 transition shadow-glow-pink disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none">
+            Aggiudica a <span id="assignBNameLabel"></span>
+          </button>
+        </div>
+        <p id="forcedNote" class="hidden text-[0.7rem] sm:text-xs text-gold-neon/90 text-center font-semibold">⚠️ Un giocatore ha già 5 elementi: l'oggetto deve andare all'altro, non si può passare.</p>
+        <p id="lastActionNote" class="text-[0.7rem] sm:text-xs text-white/40 text-center"></p>
+      </div>
+    </div>
+
+    <!-- Colonna Giocatore 2 (destra) -->
+    <div class="glass rounded-2xl p-2.5 sm:p-3 border-r-4 flex flex-col gap-2 min-h-0 lg:text-right" style="border-color:#ec4899;">
+      <div class="flex items-center justify-between shrink-0 lg:flex-col lg:items-end lg:gap-1">
+        <span id="boardNameB" class="font-display font-bold text-pink-neon truncate text-sm sm:text-base"></span>
+        <div class="flex items-baseline gap-1.5">
+          <span id="boardSlotsB" class="text-[0.65rem] text-white/50 font-semibold shrink-0"></span>
+          <span id="boardBudgetB" class="font-display font-black text-lg sm:text-xl"></span>
+        </div>
+      </div>
+      <div id="boardItemsB" class="flex flex-row lg:flex-col gap-1.5 h-16 lg:h-auto lg:flex-1 lg:min-h-0"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== FINAL VIEW ===================== -->
+<main id="finalView" class="hidden max-w-5xl mx-auto px-5 pb-20 flex flex-col items-center gap-7 pt-4">
+  <h2 class="font-display font-black text-3xl sm:text-4xl text-center">
+    <span class="bg-gradient-to-r from-gold-neon to-pink-neon bg-clip-text text-transparent">🏁 Sfida Finale</span>
+  </h2>
+
+  <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="glass rounded-3xl p-5 border-t-4" style="border-color:#22d3ee;">
+      <div class="flex items-center justify-between mb-3">
+        <h3 id="finalNameA" class="font-display font-extrabold text-lg text-cyan-neon"></h3>
+        <span id="finalBudgetA" class="text-sm font-bold text-white/70"></span>
+      </div>
+      <div id="finalItemsA" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+    </div>
+    <div class="glass rounded-3xl p-5 border-t-4" style="border-color:#ec4899;">
+      <div class="flex items-center justify-between mb-3">
+        <h3 id="finalNameB" class="font-display font-extrabold text-lg text-pink-neon"></h3>
+        <span id="finalBudgetB" class="text-sm font-bold text-white/70"></span>
+      </div>
+      <div id="finalItemsB" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+    </div>
+  </div>
+
+  <div class="glass rounded-2xl p-5 flex flex-col items-center gap-3 w-full sm:w-auto">
+    <p class="text-white/60 text-sm font-semibold">Vota il Vincitore della Manche (ad Alta Voce)</p>
+    <div class="flex gap-3">
+      <button id="voteABtn" class="font-display font-bold px-6 py-3 rounded-xl bg-cyan-neon text-[#04121a] hover:brightness-110 transition">🏆 <span id="voteANameLabel"></span></button>
+      <button id="voteBBtn" class="font-display font-bold px-6 py-3 rounded-xl bg-pink-neon text-[#1a0311] hover:brightness-110 transition">🏆 <span id="voteBNameLabel"></span></button>
+    </div>
+    <p id="matchScoreFinalText" class="text-white/50 text-sm mt-1"></p>
+  </div>
+
+  <div class="flex flex-wrap justify-center gap-3">
+    <button id="rematchBtn" class="font-display font-bold px-6 py-3 rounded-full glass hover:border-gold-neon hover:text-gold-neon transition">
+      <i data-lucide="refresh-cw" class="w-4 h-4 inline -mt-1 mr-1"></i> Nuova Sfida (stesse squadre)
+    </button>
+    <button id="fullResetBtn" class="font-display font-bold px-6 py-3 rounded-full glass text-white/50 hover:text-white transition">
+      Reset Totale
+    </button>
+  </div>
+</main>
+
+<footer class="text-center text-white/30 text-xs pb-8">Battaglia all'Asta · Party Games Collection</footer>
+
+<script>
+/* =========================================================
+   DATASET — 5 categorie x 20 elementi. Ad ogni partita ne
+   vengono estratti 10 a caso. Se l'immagine locale manca,
+   viene mostrato automaticamente un fallback con emoji.
+   ========================================================= */
+const IMG_BASE = "assets/img/battaglia-asta";
+
+const CATEGORIES = [
+  {
+    key: "animali", label: "Animali Letali", icon: "🦁",
+    items: [
+      { name: "Squalo Bianco", file: "squalo_bianco.jpg", emoji: "🦈" },
+      { name: "Cobra Reale", file: "cobra_reale.jpg", emoji: "🐍" },
+      { name: "Scorpione Killer", file: "scorpione_deathstalker.jpg", emoji: "🦂" },
+      { name: "Coccodrillo del Nilo", file: "coccodrillo_nilo.jpg", emoji: "🐊" },
+      { name: "Leone Africano", file: "leone.jpg", emoji: "🦁" },
+      { name: "Orso Grizzly", file: "orso_grizzly.jpg", emoji: "🐻" },
+      { name: "Piranha", file: "piranha.jpg", emoji: "🐟" },
+      { name: "Medusa Scatola", file: "medusa_scatola.jpg", emoji: "🪼" },
+      { name: "Ragno Vedova Nera", file: "vedova_nera.jpg", emoji: "🕷️" },
+      { name: "Serpente a Sonagli", file: "serpente_sonagli.jpg", emoji: "🐍" },
+      { name: "Ippopotamo", file: "ippopotamo.jpg", emoji: "🦛" },
+      { name: "Squalo Tigre", file: "squalo_tigre.jpg", emoji: "🦈" },
+      { name: "Iena Maculata", file: "iena_maculata.jpg", emoji: "🐺" },
+      { name: "Rana Freccia Dorata", file: "rana_freccia.jpg", emoji: "🐸" },
+      { name: "Anaconda Verde", file: "anaconda_verde.jpg", emoji: "🐍" },
+      { name: "Drago di Komodo", file: "drago_komodo.jpg", emoji: "🦎" },
+      { name: "Casuario", file: "casuario.jpg", emoji: "🦤" },
+      { name: "Squalo Toro", file: "squalo_toro.jpg", emoji: "🦈" },
+      { name: "Formica Proiettile", file: "formica_proiettile.jpg", emoji: "🐜" },
+      { name: "Orca Assassina", file: "orca.jpg", emoji: "🐋" },
+      { name: "Rinoceronte", file: "rinoceronte.jpg", emoji: "🦏" },
+      { name: "Tigre del Bengala", file: "tigre.jpg", emoji: "🐯" },
+      { name: "Elefante Africano", file: "elefante.jpg", emoji: "🐘" },
+      { name: "Bufalo Cafro", file: "bufalo.jpg", emoji: "🐃" },
+      { name: "Gorilla di Montagna", file: "gorilla.jpg", emoji: "🦍" },
+      { name: "Lupo Grigio", file: "lupo.jpg", emoji: "🐺" },
+      { name: "Cinghiale", file: "cinghiale.jpg", emoji: "🐗" },
+      { name: "Leopardo", file: "leopardo.jpg", emoji: "🐆" },
+      { name: "Oca", file: "oca.jpg", emoji: "🪿" },
+      { name: "Coniglio", file: "coniglio.jpg", emoji: "🐰" },
+      { name: "Pecora", file: "pecora.jpg", emoji: "🐑" },
+      { name: "Gallina", file: "gallina.jpg", emoji: "🐔" },
+      { name: "Riccio", file: "riccio.jpg", emoji: "🦔" },
+      { name: "Tartaruga di Terra", file: "tartaruga.jpg", emoji: "🐢" },
+      { name: "Capra", file: "capra.jpg", emoji: "🐐" }
+    ]
+  },
+  {
+    key: "villain", label: "Villain Iconici", icon: "🦹",
+    items: [
+      { name: "Joker", file: "joker.jpg", emoji: "🤡" },
+      { name: "Darth Vader", file: "darth_vader.jpg", emoji: "🖤" },
+      { name: "Voldemort", file: "voldemort.jpg", emoji: "🐍" },
+      { name: "Thanos", file: "thanos.jpg", emoji: "💎" },
+      { name: "Sauron", file: "sauron.jpg", emoji: "👁️" },
+      { name: "Hannibal Lecter", file: "hannibal_lecter.jpg", emoji: "🍽️" },
+      { name: "Freddy Krueger", file: "freddy_krueger.jpg", emoji: "🔪" },
+      { name: "Jason Voorhees", file: "jason_voorhees.jpg", emoji: "🏒" },
+      { name: "Michael Myers", file: "michael_myers.jpg", emoji: "🔪" },
+      { name: "Il Grinch", file: "grinch.jpg", emoji: "💚" },
+      { name: "Ursula", file: "ursula.jpg", emoji: "🐙" },
+      { name: "Malefica", file: "malefica.jpg", emoji: "🐉" },
+      { name: "Scar", file: "scar.jpg", emoji: "🦁" },
+      { name: "Loki", file: "loki.jpg", emoji: "🐍" },
+      { name: "Lex Luthor", file: "lex_luthor.jpg", emoji: "🧠" },
+      { name: "Dottor Destino", file: "dottor_destino.jpg", emoji: "🎭" },
+      { name: "Imperatore Palpatine", file: "palpatine.jpg", emoji: "⚡" },
+      { name: "Il Predatore", file: "predator.jpg", emoji: "👽" },
+      { name: "Xenomorfo", file: "xenomorfo.jpg", emoji: "👾" },
+      { name: "Crudelia De Mon", file: "cruella.jpg", emoji: "🐶" }
+    ]
+  },
+  {
+    key: "celebrita", label: "Attori", icon: "🎬",
+    items: [
+      { name: "Leonardo DiCaprio", file: "leonardo_dicaprio.jpg", emoji: "🎬" },
+      { name: "Dwayne Johnson", file: "dwayne_johnson.jpg", emoji: "💪" },
+      { name: "Tom Cruise", file: "tom_cruise.jpg", emoji: "🎬" },
+      { name: "Brad Pitt", file: "brad_pitt.jpg", emoji: "🎬" },
+      { name: "Will Smith", file: "will_smith.jpg", emoji: "🎬" },
+      { name: "Johnny Depp", file: "johnny_depp.jpg", emoji: "🎬" },
+      { name: "Scarlett Johansson", file: "scarlett_johansson.jpg", emoji: "🎬" },
+      { name: "Keanu Reeves", file: "keanu_reeves.jpg", emoji: "🎬" },
+      { name: "Robert Downey Jr.", file: "robert_downey_jr.jpg", emoji: "🎬" },
+      { name: "Zendaya", file: "zendaya.jpg", emoji: "🎬" },
+      { name: "Chris Hemsworth", file: "chris_hemsworth.jpg", emoji: "🎬" },
+      { name: "Jennifer Lawrence", file: "jennifer_lawrence.jpg", emoji: "🎬" },
+      { name: "Emma Watson", file: "emma_watson.jpg", emoji: "🎬" },
+      { name: "Meryl Streep", file: "meryl_streep.jpg", emoji: "🏆" },
+      { name: "Denzel Washington", file: "denzel_washington.jpg", emoji: "🎬" },
+      { name: "Al Pacino", file: "al_pacino.jpg", emoji: "🎬" },
+      { name: "Anthony Hopkins", file: "anthony_hopkins.jpg", emoji: "🎬" },
+      { name: "Cate Blanchett", file: "cate_blanchett.jpg", emoji: "🏆" },
+      { name: "Tom Hanks", file: "tom_hanks.jpg", emoji: "🎬" },
+      { name: "Morgan Freeman", file: "morgan_freeman.jpg", emoji: "🎬" },
+      { name: "Christian Bale", file: "christian_bale.jpg", emoji: "🎬" },
+      { name: "Joaquin Phoenix", file: "joaquin_phoenix.jpg", emoji: "🎬" },
+      { name: "Natalie Portman", file: "natalie_portman.jpg", emoji: "🎬" },
+      { name: "Margot Robbie", file: "margot_robbie.jpg", emoji: "🎬" },
+      { name: "Ryan Gosling", file: "ryan_gosling.jpg", emoji: "🎬" },
+      { name: "Daniel Day-Lewis", file: "daniel_day_lewis.jpg", emoji: "🏆" },
+      { name: "Nicole Kidman", file: "nicole_kidman.jpg", emoji: "🎬" },
+      { name: "Samuel L. Jackson", file: "samuel_l_jackson.jpg", emoji: "🎬" },
+      { name: "Hugh Jackman", file: "hugh_jackman.jpg", emoji: "🎬" },
+      { name: "Angelina Jolie", file: "angelina_jolie.jpg", emoji: "🎬" }
+    ]
+  },
+  {
+    key: "cantanti", label: "Cantanti & Band", icon: "🎤",
+    items: [
+      { name: "Beyoncé", file: "beyonce.jpg", emoji: "🎤" },
+      { name: "Taylor Swift", file: "taylor_swift.jpg", emoji: "🎤" },
+      { name: "Rihanna", file: "rihanna.jpg", emoji: "🎤" },
+      { name: "Lady Gaga", file: "lady_gaga.jpg", emoji: "🎤" },
+      { name: "Ariana Grande", file: "ariana_grande.jpg", emoji: "🎤" },
+      { name: "Ed Sheeran", file: "ed_sheeran.jpg", emoji: "🎸" },
+      { name: "Michael Jackson", file: "michael_jackson.jpg", emoji: "🕺" },
+      { name: "Whitney Houston", file: "whitney_houston.jpg", emoji: "🎤" },
+      { name: "Freddie Mercury", file: "freddie_mercury.jpg", emoji: "🎤" },
+      { name: "Adele", file: "adele.jpg", emoji: "🎤" },
+      { name: "Bruno Mars", file: "bruno_mars.jpg", emoji: "🎤" },
+      { name: "Elvis Presley", file: "elvis_presley.jpg", emoji: "🎤" },
+      { name: "Mariah Carey", file: "mariah_carey.jpg", emoji: "🎤" },
+      { name: "The Beatles", file: "the_beatles.jpg", emoji: "🎸" },
+      { name: "Queen", file: "queen_band.jpg", emoji: "👑" },
+      { name: "Coldplay", file: "coldplay.jpg", emoji: "🎸" },
+      { name: "Justin Bieber", file: "justin_bieber.jpg", emoji: "🎤" },
+      { name: "Shakira", file: "shakira.jpg", emoji: "💃" },
+      { name: "Bob Marley", file: "bob_marley.jpg", emoji: "🎸" },
+      { name: "Eminem", file: "eminem.jpg", emoji: "🎤" }
+    ]
+  },
+  {
+    key: "serietv", label: "Serie TV", icon: "📺",
+    items: [
+      { name: "Breaking Bad", file: "breaking_bad.jpg", emoji: "🧪" },
+      { name: "Game of Thrones", file: "got.jpg", emoji: "🐉" },
+      { name: "Stranger Things", file: "stranger_things.jpg", emoji: "👾" },
+      { name: "Friends", file: "friends.jpg", emoji: "☕" },
+      { name: "The Office", file: "the_office.jpg", emoji: "📎" },
+      { name: "La Casa di Carta", file: "casa_di_carta.jpg", emoji: "🎭" },
+      { name: "The Walking Dead", file: "walking_dead.jpg", emoji: "🧟" },
+      { name: "Peaky Blinders", file: "peaky_blinders.jpg", emoji: "🎩" },
+      { name: "Squid Game", file: "squid_game.jpg", emoji: "🦑" },
+      { name: "Wednesday", file: "wednesday.jpg", emoji: "🕷️" },
+      { name: "I Simpson", file: "simpsons.jpg", emoji: "🍩" },
+      { name: "How I Met Your Mother", file: "himym.jpg", emoji: "💛" },
+      { name: "Dexter", file: "dexter.jpg", emoji: "🔪" },
+      { name: "Narcos", file: "narcos.jpg", emoji: "🌿" },
+      { name: "Sherlock", file: "sherlock.jpg", emoji: "🔍" },
+      { name: "The Crown", file: "the_crown.jpg", emoji: "👑" },
+      { name: "Vikings", file: "vikings.jpg", emoji: "⚔️" },
+      { name: "Prison Break", file: "prison_break.jpg", emoji: "⛓️" },
+      { name: "Grey's Anatomy", file: "greys_anatomy.jpg", emoji: "🩺" },
+      { name: "Black Mirror", file: "black_mirror.jpg", emoji: "📱" }
+    ]
+  },
+  {
+    key: "supereroi", label: "Supereroi", icon: "🦸",
+    items: [
+      { name: "Spider-Man", file: "spiderman.jpg", emoji: "🕷️" },
+      { name: "Batman", file: "batman.jpg", emoji: "🦇" },
+      { name: "Superman", file: "superman.jpg", emoji: "🦸" },
+      { name: "Iron Man", file: "ironman.jpg", emoji: "🤖" },
+      { name: "Wonder Woman", file: "wonder_woman.jpg", emoji: "⚡" },
+      { name: "Capitan America", file: "capitan_america.jpg", emoji: "🛡️" },
+      { name: "Thor", file: "thor.jpg", emoji: "🔨" },
+      { name: "Hulk", file: "hulk.jpg", emoji: "💚" },
+      { name: "Black Panther", file: "black_panther.jpg", emoji: "🐾" },
+      { name: "Flash", file: "flash.jpg", emoji: "⚡" },
+      { name: "Aquaman", file: "aquaman.jpg", emoji: "🔱" },
+      { name: "Deadpool", file: "deadpool.jpg", emoji: "⚔️" },
+      { name: "Wolverine", file: "wolverine.jpg", emoji: "🐾" },
+      { name: "Capitan Marvel", file: "capitan_marvel.jpg", emoji: "✨" },
+      { name: "Doctor Strange", file: "doctor_strange.jpg", emoji: "🔮" },
+      { name: "Green Lantern", file: "green_lantern.jpg", emoji: "💚" },
+      { name: "Black Widow", file: "black_widow.jpg", emoji: "🕸️" },
+      { name: "Ant-Man", file: "antman.jpg", emoji: "🐜" },
+      { name: "Shazam", file: "shazam.jpg", emoji: "⚡" },
+      { name: "Occhio di Falco", file: "hawkeye.jpg", emoji: "🏹" }
+    ]
+  },
+  {
+    key: "animazione", label: "Disney, Pixar & DreamWorks", icon: "🏰",
+    items: [
+      { name: "Toy Story", file: "toy_story.jpg", emoji: "🤠" },
+      { name: "Frozen", file: "frozen.jpg", emoji: "❄️" },
+      { name: "Il Re Leone", file: "re_leone.jpg", emoji: "🦁" },
+      { name: "Alla Ricerca di Nemo", file: "nemo.jpg", emoji: "🐠" },
+      { name: "Shrek", file: "shrek.jpg", emoji: "🟢" },
+      { name: "Up", file: "up.jpg", emoji: "🎈" },
+      { name: "Coco", file: "coco.jpg", emoji: "💀" },
+      { name: "Inside Out", file: "inside_out.jpg", emoji: "🧠" },
+      { name: "Kung Fu Panda", file: "kung_fu_panda.jpg", emoji: "🐼" },
+      { name: "Madagascar", file: "madagascar.jpg", emoji: "🦒" },
+      { name: "La Sirenetta", file: "sirenetta.jpg", emoji: "🧜‍♀️" },
+      { name: "Aladdin", file: "aladdin.jpg", emoji: "🧞" },
+      { name: "Zootropolis", file: "zootropolis.jpg", emoji: "🐰" },
+      { name: "Oceania", file: "moana.jpg", emoji: "🌊" },
+      { name: "Encanto", file: "encanto.jpg", emoji: "✨" },
+      { name: "Ratatouille", file: "ratatouille.jpg", emoji: "🐀" },
+      { name: "Cars", file: "cars.jpg", emoji: "🏎️" },
+      { name: "Dragon Trainer", file: "dragon_trainer.jpg", emoji: "🐉" },
+      { name: "Wall-E", file: "wall_e.jpg", emoji: "🤖" },
+      { name: "Cattivissimo Me", file: "cattivissimo_me.jpg", emoji: "🍌" },
+      { name: "Biancaneve e i Sette Nani", file: "biancaneve.jpg", emoji: "🍎" },
+      { name: "Cenerentola", file: "cenerentola.jpg", emoji: "👠" },
+      { name: "La Bella e la Bestia", file: "bella_bestia.jpg", emoji: "🌹" },
+      { name: "Mulan", file: "mulan.jpg", emoji: "⚔️" },
+      { name: "Pocahontas", file: "pocahontas.jpg", emoji: "🍂" },
+      { name: "Gli Incredibili", file: "incredibili.jpg", emoji: "🦸" },
+      { name: "Alla Ricerca di Dory", file: "dory.jpg", emoji: "🐠" },
+      { name: "Monsters & Co.", file: "monsters_co.jpg", emoji: "👹" },
+      { name: "Big Hero 6", file: "big_hero_6.jpg", emoji: "🤖" },
+      { name: "Trolls", file: "trolls.jpg", emoji: "🌈" }
+    ]
+  },
+  {
+    key: "film", label: "Film", icon: "🎥",
+    items: [
+      { name: "Titanic", file: "titanic.jpg", emoji: "🚢" },
+      { name: "Il Padrino", file: "padrino.jpg", emoji: "🍊" },
+      { name: "Pulp Fiction", file: "pulp_fiction.jpg", emoji: "💼" },
+      { name: "Inception", file: "inception.jpg", emoji: "🌀" },
+      { name: "Il Cavaliere Oscuro", file: "cavaliere_oscuro.jpg", emoji: "🦇" },
+      { name: "Jurassic Park", file: "jurassic_park.jpg", emoji: "🦖" },
+      { name: "Forrest Gump", file: "forrest_gump.jpg", emoji: "🍫" },
+      { name: "Matrix", file: "matrix.jpg", emoji: "💊" },
+      { name: "Star Wars", file: "star_wars.jpg", emoji: "🌌" },
+      { name: "Il Signore degli Anelli", file: "signore_anelli.jpg", emoji: "💍" },
+      { name: "Avatar", file: "avatar.jpg", emoji: "🔵" },
+      { name: "Il Gladiatore", file: "gladiator.jpg", emoji: "⚔️" },
+      { name: "Fight Club", file: "fight_club.jpg", emoji: "🥊" },
+      { name: "Interstellar", file: "interstellar.jpg", emoji: "🚀" },
+      { name: "La La Land", file: "la_la_land.jpg", emoji: "🎹" },
+      { name: "Joker", file: "joker_film.jpg", emoji: "🃏" },
+      { name: "Avengers: Endgame", file: "avengers_endgame.jpg", emoji: "🧤" },
+      { name: "Parasite", file: "parasite.jpg", emoji: "🪳" },
+      { name: "Oppenheimer", file: "oppenheimer.jpg", emoji: "💥" },
+      { name: "Barbie", file: "barbie.jpg", emoji: "💗" },
+      { name: "Il Silenzio degli Innocenti", file: "silenzio_innocenti.jpg", emoji: "🦋" },
+      { name: "Se7en", file: "seven.jpg", emoji: "🔪" },
+      { name: "Whiplash", file: "whiplash.jpg", emoji: "🥁" },
+      { name: "La Vita è Bella", file: "vita_bella.jpg", emoji: "❤️" },
+      { name: "Schindler's List", file: "schindlers_list.jpg", emoji: "🕯️" },
+      { name: "Il Grande Gatsby", file: "grande_gatsby.jpg", emoji: "🥂" },
+      { name: "Django Unchained", file: "django.jpg", emoji: "🤠" },
+      { name: "Léon", file: "leon.jpg", emoji: "🔫" },
+      { name: "Casablanca", file: "casablanca.jpg", emoji: "🎭" },
+      { name: "Rocky", file: "rocky.jpg", emoji: "🥊" }
+    ]
+  },
+  {
+    key: "moda", label: "Marche di Vestiti", icon: "👕",
+    items: [
+      { name: "Nike", file: "nike.jpg", emoji: "👟" },
+      { name: "Adidas", file: "adidas.jpg", emoji: "👟" },
+      { name: "Gucci", file: "gucci.jpg", emoji: "👜" },
+      { name: "Louis Vuitton", file: "louis_vuitton.jpg", emoji: "👜" },
+      { name: "Chanel", file: "chanel.jpg", emoji: "💄" },
+      { name: "Zara", file: "zara.jpg", emoji: "👕" },
+      { name: "H&M", file: "hm.jpg", emoji: "👕" },
+      { name: "Puma", file: "puma.jpg", emoji: "👟" },
+      { name: "Levi's", file: "levis.jpg", emoji: "👖" },
+      { name: "Ralph Lauren", file: "ralph_lauren.jpg", emoji: "🐎" },
+      { name: "Versace", file: "versace.jpg", emoji: "👗" },
+      { name: "Balenciaga", file: "balenciaga.jpg", emoji: "👜" },
+      { name: "Prada", file: "prada.jpg", emoji: "👜" },
+      { name: "Calvin Klein", file: "calvin_klein.jpg", emoji: "👕" },
+      { name: "Under Armour", file: "under_armour.jpg", emoji: "🏋️" },
+      { name: "The North Face", file: "north_face.jpg", emoji: "🏔️" },
+      { name: "Supreme", file: "supreme.jpg", emoji: "🔴" },
+      { name: "Dolce & Gabbana", file: "dolce_gabbana.jpg", emoji: "👗" },
+      { name: "Armani", file: "armani.jpg", emoji: "🕴️" },
+      { name: "Tommy Hilfiger", file: "tommy_hilfiger.jpg", emoji: "🇺🇸" },
+      { name: "Acne Studios", file: "acne_studios.jpg", emoji: "🧥" },
+      { name: "Alexander McQueen", file: "alexander_mcqueen.jpg", emoji: "💀" },
+      { name: "Balmain", file: "balmain.jpg", emoji: "🎖️" },
+      { name: "Bottega Veneta", file: "bottega_veneta.jpg", emoji: "👜" },
+      { name: "Burberry", file: "burberry.jpg", emoji: "🧣" },
+      { name: "Marcelo Burlon", file: "burlon.jpg", emoji: "🦅" },
+      { name: "Celine", file: "celine.jpg", emoji: "👛" },
+      { name: "Comme des Garçons", file: "comme_des_garcons.jpg", emoji: "🖤" },
+      { name: "Dior", file: "dior.jpg", emoji: "🌸" },
+      { name: "Fendi", file: "fendi.jpg", emoji: "👜" },
+      { name: "Ferragamo", file: "ferragamo.jpg", emoji: "👞" },
+      { name: "Givenchy", file: "givenchy.jpg", emoji: "🖤" },
+      { name: "Hermès", file: "hermes.jpg", emoji: "🧡" },
+      { name: "Kenzo", file: "kenzo.jpg", emoji: "🐯" },
+      { name: "Loewe", file: "loewe.jpg", emoji: "👜" },
+      { name: "Marc Jacobs", file: "marc_jacobs.jpg", emoji: "👛" },
+      { name: "MaxMara", file: "maxmara.jpg", emoji: "🧥" },
+      { name: "Miu Miu", file: "miu_miu.jpg", emoji: "🎀" },
+      { name: "Moschino", file: "moschino.jpg", emoji: "🧸" },
+      { name: "Off-White", file: "off_white.jpg", emoji: "⚠️" },
+      { name: "Stella McCartney", file: "stella_mccartney.jpg", emoji: "🌿" },
+      { name: "Valentino", file: "valentino.jpg", emoji: "❤️" },
+      { name: "Vivienne Westwood", file: "vivienne_westwood.jpg", emoji: "🪐" },
+      { name: "Yves Saint Laurent", file: "yves_saint_laurent.jpg", emoji: "💋" }
+    ]
+  },
+  {
+    key: "viaggi", label: "Destinazioni da Sogno", icon: "✈️",
+    items: [
+      { name: "Maldive", file: "maldive.jpg", emoji: "🏝️" },
+      { name: "Santorini", file: "santorini.jpg", emoji: "🌅" },
+      { name: "Bali", file: "bali.jpg", emoji: "🌺" },
+      { name: "Machu Picchu", file: "machu_picchu.jpg", emoji: "🏔️" },
+      { name: "Grande Barriera Corallina", file: "grande_barriera.jpg", emoji: "🐠" },
+      { name: "Parigi", file: "torre_eiffel.jpg", emoji: "🗼" },
+      { name: "New York", file: "new_york.jpg", emoji: "🗽" },
+      { name: "Dubai", file: "burj_khalifa.jpg", emoji: "🏙️" },
+      { name: "Venezia", file: "venezia.jpg", emoji: "🚤" },
+      { name: "Kyoto", file: "kyoto.jpg", emoji: "⛩️" },
+      { name: "Islanda", file: "islanda.jpg", emoji: "🧊" },
+      { name: "Safari in Kenya", file: "maasai_mara.jpg", emoji: "🦓" },
+      { name: "Grand Canyon", file: "grand_canyon.jpg", emoji: "🏜️" },
+      { name: "Petra", file: "petra.jpg", emoji: "🏛️" },
+      { name: "Bora Bora", file: "bora_bora.jpg", emoji: "🏝️" },
+      { name: "Cappadocia", file: "cappadocia.jpg", emoji: "🎈" },
+      { name: "Marrakech", file: "marrakech.jpg", emoji: "🕌" },
+      { name: "Fiordi di Norvegia", file: "fiordi_norvegia.jpg", emoji: "🏔️" },
+      { name: "Seychelles", file: "seychelles.jpg", emoji: "🏖️" },
+      { name: "Antartide", file: "antartide.jpg", emoji: "🐧" },
+      { name: "Roma", file: "roma_colosseo.jpg", emoji: "🏛️" },
+      { name: "Firenze", file: "firenze.jpg", emoji: "🎨" },
+      { name: "Hawaii", file: "hawaii.jpg", emoji: "🌺" },
+      { name: "Bangkok", file: "bangkok.jpg", emoji: "🛕" },
+      { name: "Singapore", file: "singapore.jpg", emoji: "🌃" },
+      { name: "Nuova Zelanda", file: "nuova_zelanda.jpg", emoji: "🥝" },
+      { name: "Patagonia", file: "patagonia.jpg", emoji: "🏔️" },
+      { name: "Zanzibar", file: "zanzibar.jpg", emoji: "🏝️" },
+      { name: "Deserto del Sahara", file: "sahara.jpg", emoji: "🐫" },
+      { name: "Salar de Uyuni", file: "salar_uyuni.jpg", emoji: "🪞" }
+    ]
+  },
+  {
+    key: "dreamhouse", label: "Dream House", icon: "🏰",
+    items: [
+      { name: "Piscina Esterna", file: "piscina_esterna.jpg", emoji: "🏊" },
+      { name: "Piscina Interna Riscaldata", file: "piscina_interna.jpg", emoji: "🏊‍♂️" },
+      { name: "Spa Personale (Sauna, Bagno Turco, Idromassaggio)", file: "spa_personale.jpg", emoji: "🧖" },
+      { name: "Sala Cinema IMAX Privata", file: "cinema_imax.jpg", emoji: "🎬" },
+      { name: "Sala Bowling & Arcade/Biliardo", file: "bowling_arcade.jpg", emoji: "🎳" },
+      { name: "Palestra Super Attrezzata con Vista", file: "palestra_vista.jpg", emoji: "🏋️" },
+      { name: "Campo da Tennis Privato", file: "campo_tennis_dh.jpg", emoji: "🎾" },
+      { name: "Accesso Privato alla Spiaggia", file: "accesso_spiaggia.jpg", emoji: "🏖️" },
+      { name: "Terrazza Panoramica", file: "terrazza_dh.jpg", emoji: "🌇" },
+      { name: "Garage Sotterraneo Supercar (Stile Batman)", file: "garage_batman.jpg", emoji: "🚗" },
+      { name: "Cantina di Vini Scavata nella Roccia", file: "cantina_roccia.jpg", emoji: "🍷" },
+      { name: "Giardino Botanico con Cascata Naturale", file: "giardino_botanico.jpg", emoji: "🌳" },
+      { name: "Chef Personale & Cucina Stellata", file: "chef_personale.jpg", emoji: "👨‍🍳" },
+      { name: "Bunker di Lusso Anti-Panico", file: "bunker_lusso.jpg", emoji: "🛡️" },
+      { name: "Scivolo ad Acqua dalla Camera alla Piscina", file: "scivolo_acqua.jpg", emoji: "🛝" },
+      { name: "Elipista Privata sul Tetto", file: "elipista.jpg", emoji: "🚁" },
+      { name: "Casa sull'Albero", file: "casa_albero.jpg", emoji: "🌲" },
+      { name: "Cucina e Barbecue Esterno", file: "cucina_bbq.jpg", emoji: "🍖" },
+      { name: "Sala Giochi Videogame", file: "sala_giochi.jpg", emoji: "🎮" },
+      { name: "Cabina Armadio", file: "cabina_armadio.jpg", emoji: "👗" },
+      { name: "Giardino Zen", file: "giardino_zen.jpg", emoji: "🪴" },
+      { name: "Camino Scoppiettante", file: "camino.jpg", emoji: "🔥" },
+      { name: "Serra per Piante", file: "serra.jpg", emoji: "🌿" },
+      { name: "Vigneto Privato", file: "vigneto_privato.jpg", emoji: "🍇" }
+    ]
+  },
+  {
+    key: "cocktail", label: "Cocktail da Aperitivo", icon: "🍹",
+    items: [
+      { name: "Spritz Aperol", file: "spritz.jpg", emoji: "🍹" },
+      { name: "Gin Tonic", file: "gin_tonic.jpg", emoji: "🍸" },
+      { name: "Mojito", file: "mojito.jpg", emoji: "🍹" },
+      { name: "Negroni", file: "negroni.jpg", emoji: "🥃" },
+      { name: "Espresso Martini", file: "espresso_martini.jpg", emoji: "🍸" },
+      { name: "Margarita", file: "margarita.jpg", emoji: "🍹" },
+      { name: "Caipirinha", file: "caipirinha.jpg", emoji: "🍹" },
+      { name: "Cuba Libre", file: "cuba_libre.jpg", emoji: "🥤" },
+      { name: "Moscow Mule", file: "moscow_mule.jpg", emoji: "🍹" },
+      { name: "Old Fashioned", file: "old_fashioned.jpg", emoji: "🥃" },
+      { name: "Birra", file: "birra.jpg", emoji: "🍺" },
+      { name: "Analcolico alla Frutta", file: "analcolico.jpg", emoji: "🥤" },
+      { name: "Prosecco", file: "prosecco.jpg", emoji: "🥂" },
+      { name: "Daiquiri", file: "daiquiri.jpg", emoji: "🍹" },
+      { name: "Piña Colada", file: "pina_colada.jpg", emoji: "🍍" },
+      { name: "Bellini", file: "bellini.jpg", emoji: "🥂" },
+      { name: "Americano", file: "americano_cocktail.jpg", emoji: "🍸" },
+      { name: "Sex on the Beach", file: "sex_on_beach.jpg", emoji: "🍹" },
+      { name: "Mai Tai", file: "mai_tai.jpg", emoji: "🍹" },
+      { name: "Whisky Sour", file: "whisky_sour.jpg", emoji: "🥃" }
+    ]
+  },
+  {
+    key: "vacanzaperfetta", label: "La Vacanza Perfetta", icon: "🌴",
+    items: [
+      { name: "Volo in Prima Classe / Jet Privato", file: "jet_privato.jpg", emoji: "✈️" },
+      { name: "Hotel 5 Stelle con Maggiordomo h24", file: "hotel_lusso.jpg", emoji: "🏨" },
+      { name: "Cibo e Drink Illimitati e Gratis", file: "allinclusive.jpg", emoji: "🍹" },
+      { name: "Meteo Perfetto Assoluto", file: "meteo_perfetto.jpg", emoji: "☀️" },
+      { name: "Zero File e Zero Attese", file: "zero_file.jpg", emoji: "⏱️" },
+      { name: "Escursione in Yacht Privato", file: "yacht_privato.jpg", emoji: "🛥️" },
+      { name: "Massaggio e SPA Ogni Giorno", file: "massaggio_spa.jpg", emoji: "💆" },
+      { name: "Iscrizione VIP a Party Esclusivi", file: "vip_party.jpg", emoji: "🎉" },
+      { name: "Bagagli Illimitati e Carta Senza Limite", file: "carta_senza_limite.jpg", emoji: "💳" },
+      { name: "Guida Locale Privata e Fotografo Dedicato", file: "guida_fotografo.jpg", emoji: "📸" },
+      { name: "Wifi Satellitare Gratis Ovunque", file: "wifi_satellitare.jpg", emoji: "📶" },
+      { name: "Auto Decappottabile a Noleggio di Lusso", file: "auto_decappottabile.jpg", emoji: "🚗" },
+      { name: "Elicottero Privato per gli Spostamenti", file: "elicottero_privato.jpg", emoji: "🚁" },
+      { name: "Nessun Jet Lag", file: "zero_jetlag.jpg", emoji: "😴" },
+      { name: "Concierge Personale 24/7", file: "concierge.jpg", emoji: "🛎️" },
+      { name: "Vista Mare Garantita in ogni Hotel", file: "vista_mare.jpg", emoji: "🌊" },
+      { name: "Cambio Valuta Senza Commissioni", file: "cambio_valuta.jpg", emoji: "💱" },
+      { name: "Bagagli che si Fanno da Soli", file: "bagagli_smart.jpg", emoji: "🧳" },
+      { name: "Souvenir e Regali Illimitati Gratis", file: "souvenir_gratis.jpg", emoji: "🎁" },
+      { name: "Zero Zanzare o Insetti Fastidiosi", file: "zero_zanzare.jpg", emoji: "🦟" }
+    ]
+  },
+  {
+    key: "dolci", label: "Dolci & Dessert dal Mondo", icon: "🍰",
+    items: [
+      { name: "Tiramisù", file: "tiramisu.jpg", emoji: "🍰" },
+      { name: "Cheesecake", file: "cheesecake.jpg", emoji: "🍰" },
+      { name: "Crepe alla Nutella", file: "crepe_nutella.jpg", emoji: "🥞" },
+      { name: "Gelato Artigianale", file: "gelato.jpg", emoji: "🍨" },
+      { name: "Soufflé al Cioccolato", file: "souffle.jpg", emoji: "🍫" },
+      { name: "Macarons", file: "macarons.jpg", emoji: "🍬" },
+      { name: "Churros", file: "churros.jpg", emoji: "🥖" },
+      { name: "Baklava", file: "baklava.jpg", emoji: "🍯" },
+      { name: "Donut", file: "donut.jpg", emoji: "🍩" },
+      { name: "Profiteroles", file: "profiteroles.jpg", emoji: "🧁" },
+      { name: "Panna Cotta", file: "panna_cotta.jpg", emoji: "🍮" },
+      { name: "Crème Brûlée", file: "creme_brulee.jpg", emoji: "🍮" },
+      { name: "Cannoli Siciliani", file: "cannoli.jpg", emoji: "🥐" },
+      { name: "Mochi", file: "mochi.jpg", emoji: "🍡" },
+      { name: "Pavlova", file: "pavlova.jpg", emoji: "🍰" },
+      { name: "Red Velvet Cake", file: "red_velvet.jpg", emoji: "🎂" },
+      { name: "Waffle", file: "waffle.jpg", emoji: "🧇" },
+      { name: "Strudel di Mele", file: "strudel.jpg", emoji: "🥧" },
+      { name: "Torta Sacher", file: "sacher.jpg", emoji: "🍫" },
+      { name: "Brownie", file: "brownie.jpg", emoji: "🍫" }
+    ]
+  },
+  {
+    key: "oggettimagici", label: "Oggetti Magici & Reliquie", icon: "🪄",
+    items: [
+      { name: "Mantello dell'Invisibilità", file: "mantello_invisibilita.jpg", emoji: "🧥" },
+      { name: "La Pietra Filosofale", file: "pietra_filosofale.jpg", emoji: "🪨" },
+      { name: "Bacchetta Magica", file: "bacchetta_sambuco.jpg", emoji: "🪄" },
+      { name: "Il Tappeto Volante", file: "tappeto_volante.jpg", emoji: "🧞" },
+      { name: "Lo Specchio delle Brame", file: "specchio_brame.jpg", emoji: "🪞" },
+      { name: "La Spada nella Roccia (Excalibur)", file: "excalibur.jpg", emoji: "⚔️" },
+      { name: "La Lampada del Genio", file: "lampada_genio.jpg", emoji: "🧞‍♂️" },
+      { name: "Gli Stivali delle Sette Leghe", file: "stivali_sette_leghe.jpg", emoji: "👢" },
+      { name: "L'Anello del Potere", file: "anello_potere.jpg", emoji: "💍" },
+      { name: "La Sfera di Cristallo dell'Onniscienza", file: "sfera_cristallo.jpg", emoji: "🔮" },
+      { name: "Mjolnir, il Martello di Thor", file: "mjolnir.jpg", emoji: "🔨" },
+      { name: "Il Guanto dell'Infinito", file: "guanto_infinito.jpg", emoji: "🧤" },
+      { name: "L'Occhio di Agamotto", file: "occhio_agamotto.jpg", emoji: "👁️" },
+      { name: "Il Tridente di Poseidone", file: "tridente_poseidone.jpg", emoji: "🔱" },
+      { name: "Lo Scudo di Capitan America", file: "scudo_capitan_america.jpg", emoji: "🛡️" },
+      { name: "Il Necronomicon", file: "necronomicon.jpg", emoji: "📕" },
+      { name: "La Death Note", file: "death_note.jpg", emoji: "📓" },
+      { name: "La Sfera del Drago", file: "sfera_drago.jpg", emoji: "🐉" },
+      { name: "Il Grimorio delle Streghe", file: "grimorio.jpg", emoji: "📜" }
+    ]
+  },
+  {
+    key: "nostrevacanze", label: "Nostre Vacanze", icon: "🧳",
+    items: [
+      { name: "Sicilia", file: "sicilia.jpg", emoji: "🇮🇹" },
+      { name: "Sardegna", file: "sardegna.jpg", emoji: "🏝️" },
+      { name: "Portogallo", file: "portogallo.jpg", emoji: "🇵🇹" },
+      { name: "Puglia", file: "puglia.jpg", emoji: "🌊" },
+      { name: "Costiera Amalfitana", file: "costiera_amalfitana.jpg", emoji: "🌅" },
+      { name: "Liguria", file: "liguria.jpg", emoji: "🌊" },
+      { name: "Costa Azzurra", file: "costa_azzurra.jpg", emoji: "🌴" },
+      { name: "Londra", file: "londra.jpg", emoji: "🇬🇧" },
+      { name: "Amsterdam", file: "amsterdam.jpg", emoji: "🌷" },
+      { name: "Creta", file: "creta.jpg", emoji: "🏛️" },
+      { name: "Barcellona", file: "barcellona.jpg", emoji: "⛱️" },
+      { name: "Parigi", file: "parigi.jpg", emoji: "🗼" },
+      { name: "Berlino", file: "berlino.jpg", emoji: "🐻" },
+      { name: "Elba", file: "elba.jpg", emoji: "🏝️" },
+      { name: "Praga", file: "praga.jpg", emoji: "🏰" },
+    ]
+  },
+  {
+    key: "nana", label: "Personaggi di Nana", icon: "🎸",
+    items: [
+      { name: "Nana Osaki", file: "nana_osaki.jpg", emoji: "🎤" },
+      { name: "Nana Komatsu (Hachi)", file: "nana_komatsu.jpg", emoji: "🎀" },
+      { name: "Ren Honjo", file: "ren_honjo.jpg", emoji: "🎸" },
+      { name: "Nobuo \"Nobu\" Terashima", file: "nobu.jpg", emoji: "🥁" },
+      { name: "Shinichi \"Shin\" Okazaki", file: "shin.jpg", emoji: "🎹" },
+      { name: "Yasushi \"Yasu\" Takagi", file: "yasu.jpg", emoji: "💼" },
+      { name: "Naoki Fujieda", file: "naoki.jpg", emoji: "🎨" },
+      { name: "Junko \"Jun\" Saotome", file: "jun.jpg", emoji: "👗" },
+      { name: "Kyosuke Sano", file: "kyosuke.jpg", emoji: "📷" },
+      { name: "Takumi Ichinose", file: "takumi.jpg", emoji: "💰" },
+      { name: "Reira Serizawa", file: "reira.jpg", emoji: "⭐" },
+      { name: "Sachiko \"Sachi\" Oda", file: "sachi.jpg", emoji: "👠" },
+      { name: "Isabella Yoshii", file: "isabella.jpg", emoji: "💔" },
+      { name: "Miu Ogata", file: "miu.jpg", emoji: "🎵" }
+    ]
+  },
+  {
+    key: "doveri", label: "Doveri di Casa", icon: "🧹",
+    items: [
+      { name: "Fare la Spesa (Scegliendo Snack e Cose Buone)", file: "spesa_snack.jpg", emoji: "🛒" },
+      { name: "Cucinare la Cena (Senza Lavare i Piatti)", file: "cucinare_cena.jpg", emoji: "🍳" },
+      { name: "Scegliere il Film o la Serie TV", file: "scegliere_film.jpg", emoji: "🍿" },
+      { name: "Scegliere la Musica in Macchina", file: "scegliere_musica.jpg", emoji: "🎵" },
+      { name: "Portare a Spasso il Cane", file: "spasso_cane.jpg", emoji: "🐕" },
+      { name: "Annaffiare le Piante e Curare il Terrazzo", file: "annaffiare_piante.jpg", emoji: "🪴" },
+      { name: "Piegare e Sistemare i Vestiti", file: "piegare_vestiti.jpg", emoji: "👕" },
+      { name: "Lavare i Piatti / Lavastoviglie", file: "lavare_piatti.jpg", emoji: "🍽️" },
+      { name: "Passare l'Aspirapolvere / Robot", file: "aspirapolvere.jpg", emoji: "🧹" },
+      { name: "Montare Mobili IKEA / Fai-da-Te", file: "mobili_ikea.jpg", emoji: "🪑" },
+      { name: "Pulire il Bagno", file: "pulire_bagno.jpg", emoji: "🚽" },
+      { name: "Stirare i Vestiti", file: "stirare.jpg", emoji: "👔" },
+      { name: "Pagare le Bollette Online", file: "bollette.jpg", emoji: "🧾" },
+      { name: "Portare Fuori la Spazzatura", file: "spazzatura.jpg", emoji: "🗑️" },
+      { name: "Lavare l'Auto", file: "lavare_auto.jpg", emoji: "🚿" },
+      { name: "Fare il Letto Ogni Mattina", file: "fare_letto.jpg", emoji: "🛏️" },
+      { name: "Organizzare Vacanze e Prenotazioni", file: "organizzare_vacanze.jpg", emoji: "📅" },
+      { name: "Preparare Colazione nel Weekend", file: "colazione_weekend.jpg", emoji: "🥐" },
+      { name: "Pulire i Vetri delle Finestre", file: "pulire_vetri.jpg", emoji: "🪟" },
+      { name: "Fare il Bucato in Lavatrice", file: "bucato.jpg", emoji: "🧺" }
+    ]
+  },
+  {
+    key: "scontrigusto", label: "Scontri di Gusto", icon: "🍕",
+    items: [
+      { name: "Pizza Margherita con Bufala e Basilico", file: "pizza_margherita.jpg", emoji: "🍕" },
+      { name: "Sushi Roll con Salmone e Avocado", file: "sushi_roll.jpg", emoji: "🍣" },
+      { name: "Tacos Messicani con Guacamole", file: "tacos.jpg", emoji: "🌮" },
+      { name: "Pasta alla Carbonara Cremosissima", file: "carbonara.jpg", emoji: "🍝" },
+      { name: "Cheeseburger Doppio con Bacon", file: "cheeseburger.jpg", emoji: "🍔" },
+      { name: "Nutella su Pane Caldo o Crepe", file: "nutella_pane.jpg", emoji: "🍫" },
+      { name: "Poke Bowl con Tonno e Mango", file: "poke_bowl.jpg", emoji: "🥗" },
+      { name: "Tagliere di Formaggi Stagionati", file: "tagliere_formaggi.jpg", emoji: "🧀" },
+      { name: "Tiramisù Classico Fatto in Casa", file: "tiramisu_sg.jpg", emoji: "🍰" },
+      { name: "Fiorentina alla Brace", file: "fiorentina.jpg", emoji: "🥩" },
+      { name: "Ramen Giapponese", file: "ramen.jpg", emoji: "🍜" },
+      { name: "Paella Spagnola", file: "paella.jpg", emoji: "🥘" },
+      { name: "Kebab", file: "kebab.jpg", emoji: "🥙" },
+      { name: "Risotto ai Funghi Porcini", file: "risotto_porcini.jpg", emoji: "🍚" },
+      { name: "Involtini Primavera", file: "involtini_primavera.jpg", emoji: "🥢" },
+      { name: "Pad Thai", file: "pad_thai.jpg", emoji: "🍜" },
+      { name: "Hot Dog Gourmet", file: "hot_dog.jpg", emoji: "🌭" },
+      { name: "Empanadas Argentine", file: "empanadas.jpg", emoji: "🥟" },
+      { name: "Curry Indiano", file: "curry_indiano.jpg", emoji: "🍛" },
+      { name: "Croissant Francese", file: "croissant.jpg", emoji: "🥐" }
+    ]
+  },
+  {
+    key: "trio", label: "Trio / Triplette Iconiche", icon: "🔺",
+    items: [
+      { name: "Trio Fast Food: Hamburger, Patatine e Coca-Cola", file: "trio_fastfood.jpg", emoji: "🍔🍟🥤" },
+      { name: "Trio Magico: Harry, Ron ed Hermione", file: "trio_magico.jpg", emoji: "⚡📚🪄" },
+      { name: "Trio Comico: Aldo, Giovanni e Giacomo", file: "trio_agg.jpg", emoji: "😂" },
+      { name: "Trio da Aperitivo: Spritz, Patatine e Tagliere", file: "trio_aperitivo.jpg", emoji: "🍹🥨🧀" },
+      { name: "Tridente MSN: Messi, Suárez e Neymar", file: "trio_msn.jpg", emoji: "⚽" },
+      { name: "Trio Marvel: Iron Man, Capitan America e Thor", file: "trio_marvel.jpg", emoji: "🦸" },
+      { name: "Trio Chill: Divano, Coperta e Netflix", file: "trio_chill.jpg", emoji: "🛋️📺🍿" },
+      { name: "Trio Colazione Italiana: Cappuccino, Cornetto e Spremuta", file: "trio_colazione_it.jpg", emoji: "☕🥐🍊" },
+      { name: "Trio Serie TV: Ross, Chandler e Joey", file: "trio_friends.jpg", emoji: "📺" },
+      { name: "Trio per Mangiare: Forchetta, Coltello e Cucchiaio", file: "trio_mangiare.jpg", emoji: "😂" },
+      { name: "Trio Condimento: Sale, Pepe e Olio", file: "trio_condimento.jpg", emoji: "🤠" },
+      { name: "Trio Trinità: Padre, Figlio e Spirito Santo", file: "trio_trinita.jpg", emoji: "🌈" },
+      { name: "Trio Tequila", file: "trio_tequila.jpg", emoji: "🎶" },
+      { name: "Trio Colazione Inglese: Uovo, Bacon e Toast", file: "trio_colazione_uk.jpg", emoji: "🍳🥓🍞" }
+    ]
+  },
+  {
+    key: "freeforlife", label: "Free For Life", icon: "♾️",
+    items: [
+      { name: "Voli Aerei Gratis per Tutta la Vita", file: "voli_gratis.jpg", emoji: "✈️" },
+      { name: "Hotel & Resort di Lusso Gratis per Sempre", file: "hotel_gratis.jpg", emoji: "🏨" },
+      { name: "Affitto / Mutuo della Casa Pagato a Vita", file: "casa_pagata.jpg", emoji: "🏠" },
+      { name: "Sushi & Ristoranti Giapponesi Illimitati", file: "sushi_gratis.jpg", emoji: "🍣" },
+      { name: "Alcol, Cocktail & Birra Gratis Ovunque", file: "alcol_gratis.jpg", emoji: "🍻" },
+      { name: "Carburante / Ricarica Elettrica Illimitata", file: "carburante_gratis.jpg", emoji: "⛽" },
+      { name: "Abbigliamento e Moda di Marca Gratis", file: "moda_gratis.jpg", emoji: "👗" },
+      { name: "Spesa al Supermercato Gratis a Vita", file: "spesa_gratis.jpg", emoji: "🛒" },
+      { name: "Concerti, Festival e Stadio in VIP Gratis", file: "concerti_gratis.jpg", emoji: "🎫" },
+      { name: "Tutte le Piattaforme di Streaming Gratis", file: "streaming_gratis.jpg", emoji: "📺" },
+      { name: "Ristoranti Stellati e Cene Gourmet Gratis", file: "ristoranti_gratis.jpg", emoji: "⭐" },
+      { name: "Caffè e Bar del Mattino Gratis a Vita", file: "caffe_gratis.jpg", emoji: "☕" },
+      { name: "Uber / Taxi / Trasporti Illimitati Gratis", file: "taxi_gratis.jpg", emoji: "🚕" },
+      { name: "Trattamenti SPA e Parrucchiere Gratis", file: "spa_gratis.jpg", emoji: "💇" },
+      { name: "Prodotti Tech e Smartphone Nuovi Gratis", file: "tech_gratis.jpg", emoji: "📱" },
+      { name: "Abbonamento Palestra a Vita", file: "palestra_gratis.jpg", emoji: "🏋️" },
+      { name: "Libri ed E-book Illimitati", file: "libri_gratis.jpg", emoji: "📚" },
+      { name: "Videogiochi e Console Nuove Ogni Anno", file: "videogiochi_gratis.jpg", emoji: "🎮" },
+      { name: "Benzina per la Barca Illimitata", file: "barca_gratis.jpg", emoji: "⛵" },
+      { name: "Corsi e Formazione Online Illimitati", file: "corsi_gratis.jpg", emoji: "🎓" }
+    ]
+  },
+  {
+    key: "medievale", label: "Combattimento Medievale", icon: "🗡️",
+    items: [
+      { name: "Elmo", file: "elmo.jpg", emoji: "🪖" },
+      { name: "Scudo", file: "scudo.jpg", emoji: "🛡️" },
+      { name: "Spada a Due Mani", file: "spada_due_mani.jpg", emoji: "⚔️" },
+      { name: "Ascia da Guerra", file: "ascia_guerra.jpg", emoji: "🪓" },
+      { name: "Arco e Freccia", file: "arco_freccia.jpg", emoji: "🏹" },
+      { name: "Cavallo Bardato", file: "cavallo_bardato.jpg", emoji: "🐴" },
+      { name: "Lancia da Giostra", file: "lancia_giostra.jpg", emoji: "🐎" },
+      { name: "Armatura a Piastre", file: "armatura_piastre.jpg", emoji: "🛡️" },
+      { name: "Mazza Chiodata", file: "mazza_chiodata.jpg", emoji: "🔨" },
+      { name: "Balestra", file: "balestra.jpg", emoji: "🏹" },
+      { name: "Catapulta / Trabucco", file: "catapulta.jpg", emoji: "🏰" },
+      { name: "Pugnale Misericordia", file: "pugnale_misericordia.jpg", emoji: "🗡️" },
+      { name: "Cotta di Maglia", file: "cotta_maglia.jpg", emoji: "⛓️" },
+      { name: "Alabarda", file: "alabarda.jpg", emoji: "🪓" },
+      { name: "Olio Bollente", file: "olio_bollente.jpg", emoji: "🔥" },
+      { name: "Corno da Battaglia", file: "corno_battaglia.jpg", emoji: "📯" },
+      { name: "Stendardo di Guerra", file: "stendardo.jpg", emoji: "🚩" },
+      { name: "Fionda", file: "fionda.jpg", emoji: "🎯" },
+      { name: "Ariete da Assedio", file: "ariete_assedio.jpg", emoji: "🪵" },
+      { name: "Giavellotto", file: "giavellotto.jpg", emoji: "🎯" }
+    ]
+  },
+  {
+    key: "futuristico", label: "Combattimento Futuristico", icon: "🤖",
+    items: [
+      { name: "Spada Laser", file: "spada_laser.jpg", emoji: "⚔️" },
+      { name: "Astronave da Caccia", file: "astronave_caccia.jpg", emoji: "🚀" },
+      { name: "Fucile al Plasma", file: "fucile_plasma.jpg", emoji: "🔫" },
+      { name: "Exoscheletro Potenziato", file: "exoscheletro.jpg", emoji: "🦾" },
+      { name: "Scudo a Campo di Forza", file: "scudo_energia.jpg", emoji: "🛡️" },
+      { name: "Droide da Guerra", file: "droide_guerra.jpg", emoji: "🤖" },
+      { name: "Cannone a Rotaia (Railgun)", file: "railgun.jpg", emoji: "🔫" },
+      { name: "Mecha / Robot Gigante", file: "mecha.jpg", emoji: "🤖" },
+      { name: "Dispositivo di Occultamento", file: "occultamento.jpg", emoji: "👻" },
+      { name: "Granata ad Impulsi Elettromagnetici (EMP)", file: "granata_emp.jpg", emoji: "💥" },
+      { name: "Raggio Traente", file: "raggio_traente.jpg", emoji: "🛸" },
+      { name: "Pistola a Disintegrazione", file: "pistola_disintegrazione.jpg", emoji: "🔫" },
+      { name: "Cyber-impianto di Mira", file: "cyber_impianto.jpg", emoji: "🎯" },
+      { name: "Nave Madre per Bombardamenti Orbitali", file: "nave_madre.jpg", emoji: "🛸" },
+      { name: "Nanobots Offensivi", file: "nanobots.jpg", emoji: "🦠" },
+      { name: "Teletrasportatore Tattico", file: "teletrasportatore.jpg", emoji: "🌀" },
+      { name: "Corazza Autorigenerante in Nanofibra", file: "corazza_nanofibra.jpg", emoji: "🥋" },
+      { name: "Drone da Ricognizione Stealth", file: "drone_stealth.jpg", emoji: "🛩️" },
+      { name: "Cannone a Impulsi Gravitazionali", file: "cannone_gravita.jpg", emoji: "🌌" },
+      { name: "Intelligenza Artificiale da Combattimento", file: "ia_combattimento.jpg", emoji: "🤖" }
+    ]
+  },
+  {
+    key: "colleghi", label: "Persone da Avere come Colleghi", icon: "🧑‍💼",
+    items: [
+      { name: "Lunetta", file: "lunetta.jpg", emoji: "🌙" },
+      { name: "Antonino", file: "antonino.jpg", emoji: "🎩" },
+      { name: "Alex", file: "alex.jpg", emoji: "😎" },
+      { name: "Steffi", file: "steffi.jpg", emoji: "⭐" },
+      { name: "Luca", file: "luca.jpg", emoji: "💪" },
+      { name: "Anas", file: "anas.jpg", emoji: "🎯" },
+      { name: "Gaia", file: "gaia.jpg", emoji: "🌸" },
+      { name: "Silvi", file: "silvi.jpg", emoji: "💼" },
+      { name: "Flo", file: "flo.jpg", emoji: "🌊" },
+      { name: "Matte", file: "matte.jpg", emoji: "⚡" },
+      { name: "Nonno da Giovane", file: "nonno_da_giovane.jpg", emoji: "🕺" },
+      { name: "Alle", file: "alle.jpg", emoji: "🚀" },
+      { name: "Belloni", file: "belloni.jpg", emoji: "🎉" },
+      { name: "Roli", file: "roli.jpg", emoji: "🔥" },
+      { name: "Ama", file: "ama.jpg", emoji: "✨" }
+    ]
+  }
+];
+
+const STARTING_BUDGET = 20;
+const ITEMS_PER_SESSION = 10;
+const SLOTS_PER_TEAM = 5;
+const STORAGE_KEY = "battagliaAstaMatch";
+
+/* =========================================================
+   STATO
+   ========================================================= */
+let state = {
+  teamA: { name: "Giocatore 1", budget: STARTING_BUDGET, items: [] },
+  teamB: { name: "Giocatore 2", budget: STARTING_BUDGET, items: [] },
+  categoryKey: null,
+  pool: [],
+  index: 0,
+  offer: 1,
+  log: [],
+  matchScore: { a: 0, b: 0 },
+  roundVoted: false
+};
+
+/* =========================================================
+   PERSISTENZA PUNTEGGIO MANCHE
+   ========================================================= */
+function loadMatch(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    state.matchScore = saved.matchScore || { a: 0, b: 0 };
+    if (saved.teamAName) document.getElementById("teamAInput").value = saved.teamAName;
+    if (saved.teamBName) document.getElementById("teamBInput").value = saved.teamBName;
+  } catch(e) { /* ignora dati corrotti */ }
+}
+function saveMatch(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    matchScore: state.matchScore,
+    teamAName: document.getElementById("teamAInput").value,
+    teamBName: document.getElementById("teamBInput").value
+  }));
+}
+function refreshMatchScoreBar(){
+  const bar = document.getElementById("matchScoreBar");
+  const { a, b } = state.matchScore;
+  if (a === 0 && b === 0){ bar.classList.add("hidden"); return; }
+  bar.classList.remove("hidden");
+  document.getElementById("matchScoreText").textContent =
+    `${document.getElementById("teamAInput").value || "Giocatore 1"} ${a} — ${b} ${document.getElementById("teamBInput").value || "Giocatore 2"}`;
+}
+
+/* =========================================================
+   UTILS
+   ========================================================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function handleImgError(imgEl){
+  const frame = imgEl.closest(".main-item-frame");
+  const wrap = document.createElement("div");
+  wrap.className = "item-fallback";
+  wrap.innerHTML = `<span style="font-size:2.2rem">${imgEl.dataset.fallbackEmoji || "🖼️"}</span>`;
+  imgEl.replaceWith(wrap);
+  if (frame){
+    // niente foto da cui calcolare le proporzioni: il riquadro riempie lo spazio disponibile
+    const box = frame.parentElement;
+    frame.style.width = box.clientWidth + "px";
+    frame.style.height = box.clientHeight + "px";
+  }
+}
+window.handleImgError = handleImgError;
+
+/** Ridimensiona il riquadro centrale sulle proporzioni reali della foto, cosi'
+    un'immagine verticale non lascia grandi bordi bianchi ai lati. */
+function fitMainFrame(imgEl){
+  const frame = imgEl.closest(".main-item-frame");
+  if (!frame) return;
+  const box = frame.parentElement;
+  const availW = box.clientWidth;
+  const availH = box.clientHeight;
+  const iw = imgEl.naturalWidth || 1;
+  const ih = imgEl.naturalHeight || 1;
+  const scale = Math.min(availW / iw, availH / ih);
+  frame.style.width = Math.max(1, Math.round(iw * scale)) + "px";
+  frame.style.height = Math.max(1, Math.round(ih * scale)) + "px";
+}
+window.fitMainFrame = fitMainFrame;
+window.addEventListener("resize", () => {
+  const img = document.querySelector(".main-item-frame img");
+  if (img && img.complete && img.naturalWidth) fitMainFrame(img);
+});
+
+function itemSrc(item){ return `${IMG_BASE}/${state.categoryKey}/${item.file}`; }
+
+/** Miniatura per gli slot delle rose: immagine intera (non tagliata), cliccabile per lo zoom,
+    con il prezzo pagato mostrato in un badge. */
+function itemImageHTML(item){
+  const priceBadge = item.price !== undefined
+    ? `<span class="price-badge">${item.price}€</span>`
+    : "";
+  return `<button type="button" class="zoom-trigger relative w-full h-full flex items-center justify-center bg-white/95 rounded-md p-1" data-zoom-file="${item.file}" data-zoom-name="${item.name}" data-zoom-emoji="${item.emoji}">
+            <img src="${itemSrc(item)}" alt="${item.name}" data-fallback-emoji="${item.emoji}" onerror="handleImgError(this)"
+                 style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;">
+            ${priceBadge}
+          </button>`;
+}
+
+/** Display centrale grande: immagine intera (mai tagliata), sfondo chiaro, click per zoom. */
+function mainItemImageHTML(item){
+  return `<button type="button" class="zoom-trigger main-item-frame" style="width:100%;height:100%;" data-zoom-file="${item.file}" data-zoom-name="${item.name}" data-zoom-emoji="${item.emoji}">
+            <img src="${itemSrc(item)}" alt="${item.name}" data-fallback-emoji="${item.emoji}" onload="fitMainFrame(this)" onerror="handleImgError(this)">
+            <span class="zoom-hint"><i data-lucide="maximize-2" class="w-3 h-3"></i> Zoom</span>
+          </button>`;
+}
+
+function openZoom(file, name, emoji){
+  const img = document.getElementById("zoomImg");
+  img.dataset.fallbackEmoji = emoji;
+  img.onerror = function(){ handleImgError(this); };
+  img.src = `${IMG_BASE}/${state.categoryKey}/${file}`;
+  img.alt = name;
+  document.getElementById("zoomCaption").textContent = name;
+  document.getElementById("zoomModal").classList.add("active");
+}
+
+document.addEventListener("click", (e) => {
+  const trigger = e.target.closest(".zoom-trigger");
+  if (trigger) openZoom(trigger.dataset.zoomFile, trigger.dataset.zoomName, trigger.dataset.zoomEmoji);
+});
+document.getElementById("closeZoomBtn").addEventListener("click", () => document.getElementById("zoomModal").classList.remove("active"));
+document.getElementById("zoomModal").addEventListener("click", (e) => {
+  if (e.target.id === "zoomModal") document.getElementById("zoomModal").classList.remove("active");
+});
+
+/* =========================================================
+   SETUP VIEW
+   ========================================================= */
+function renderCategoryGrid(){
+  const grid = document.getElementById("categoryGrid");
+  grid.innerHTML = CATEGORIES.map(cat => `
+    <button data-cat="${cat.key}" class="cat-card glass rounded-2xl p-4 flex flex-col items-center gap-1.5 border border-white/10">
+      <span class="text-3xl">${cat.icon}</span>
+      <span class="font-display font-bold text-sm text-center">${cat.label}</span>
+    </button>
+  `).join("");
+  grid.querySelectorAll("[data-cat]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      grid.querySelectorAll(".cat-card").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      state.categoryKey = btn.dataset.cat;
+      updateStartButton();
+    });
+  });
+}
+
+function updateStartButton(){
+  const startBtn = document.getElementById("startBtn");
+  const ready = !!state.categoryKey;
+  startBtn.disabled = !ready;
+  startBtn.className = ready
+    ? "font-display font-extrabold text-lg px-10 py-4 rounded-full bg-gradient-to-r from-cyan-neon to-pink-neon text-[#0a0e1a] hover:brightness-110 transition shadow-glow-cyan"
+    : "font-display font-extrabold text-lg px-10 py-4 rounded-full bg-white/10 text-white/40 cursor-not-allowed transition";
+}
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  if (!state.categoryKey) return;
+  const category = CATEGORIES.find(c => c.key === state.categoryKey);
+
+  state.teamA.name = document.getElementById("teamAInput").value.trim() || "Giocatore 1";
+  state.teamB.name = document.getElementById("teamBInput").value.trim() || "Giocatore 2";
+  state.teamA.budget = STARTING_BUDGET; state.teamA.items = [];
+  state.teamB.budget = STARTING_BUDGET; state.teamB.items = [];
+  state.pool = shuffle(category.items).slice(0, ITEMS_PER_SESSION);
+  state.index = 0;
+  state.offer = 1;
+  state.log = [];
+  state.roundVoted = false;
+
+  saveMatch();
+  document.getElementById("setupView").classList.add("hidden");
+  document.getElementById("finalView").classList.add("hidden");
+  document.getElementById("auctionView").classList.remove("hidden");
+  document.body.classList.add("auction-mode");
+  renderCurrentItem();
+});
+
+/* =========================================================
+   AUCTION VIEW
+   ========================================================= */
+function currentItem(){ return state.pool[state.index]; }
+
+function bothFull(){
+  return state.teamA.items.length >= SLOTS_PER_TEAM && state.teamB.items.length >= SLOTS_PER_TEAM;
+}
+
+function renderBoards(){
+  document.getElementById("boardNameA").textContent = state.teamA.name;
+  document.getElementById("boardNameB").textContent = state.teamB.name;
+  document.getElementById("boardSlotsA").textContent = `${state.teamA.items.length}/${SLOTS_PER_TEAM}`;
+  document.getElementById("boardSlotsB").textContent = `${state.teamB.items.length}/${SLOTS_PER_TEAM}`;
+  document.getElementById("boardBudgetA").innerHTML = `<span class="text-cyan-neon">${state.teamA.budget}€</span><span class="text-white/40 text-xs font-normal">/${STARTING_BUDGET}€</span>`;
+  document.getElementById("boardBudgetB").innerHTML = `<span class="text-white/40 text-xs font-normal">/${STARTING_BUDGET}€</span><span class="text-pink-neon">${state.teamB.budget}€</span>`;
+
+  renderSlots("boardItemsA", state.teamA.items);
+  renderSlots("boardItemsB", state.teamB.items);
+}
+
+function renderSlots(containerId, items){
+  const el = document.getElementById(containerId);
+  let html = "";
+  for (let i = 0; i < SLOTS_PER_TEAM; i++){
+    const it = items[i];
+    html += `<div class="team-slot ${it ? "filled" : ""}">${it ? itemImageHTML(it) : ""}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+function renderOffer(){
+  const display = document.getElementById("offerDisplay");
+  display.textContent = `${state.offer}€`;
+  display.classList.remove("pulse-offer");
+  void display.offsetWidth;
+  display.classList.add("pulse-offer");
+}
+
+function updateActionButtons(){
+  const aFull = state.teamA.items.length >= SLOTS_PER_TEAM;
+  const bFull = state.teamB.items.length >= SLOTS_PER_TEAM;
+  const assignA = document.getElementById("assignABtn");
+  const assignB = document.getElementById("assignBBtn");
+  const passBtn = document.getElementById("passBtn");
+
+  assignA.disabled = aFull || state.offer > state.teamA.budget;
+  assignB.disabled = bFull || state.offer > state.teamB.budget;
+
+  const forced = aFull !== bFull; // esattamente una delle due è piena
+  passBtn.disabled = forced;
+  document.getElementById("forcedNote").classList.toggle("hidden", !forced);
+
+  document.getElementById("assignANameLabel").textContent = state.teamA.name;
+  document.getElementById("assignBNameLabel").textContent = state.teamB.name;
+}
+
+function renderLastAction(){
+  const note = document.getElementById("lastActionNote");
+  if (state.log.length === 0){ note.textContent = ""; return; }
+  const entry = state.log[state.log.length - 1];
+  if (entry.type === "pass"){
+    note.textContent = `Scartato: ${entry.emoji} ${entry.name}`;
+  } else {
+    note.textContent = `Ultima: ${entry.emoji} ${entry.name} → ${entry.teamName} (${entry.price}€)`;
+  }
+}
+
+function renderCurrentItem(){
+  if (state.index >= state.pool.length || bothFull()){
+    finishAuction();
+    return;
+  }
+  const item = currentItem();
+  state.offer = 1;
+
+  document.getElementById("itemCounter").textContent = `Elemento ${state.index + 1} di ${state.pool.length}`;
+  document.getElementById("itemCategoryLabel").textContent = CATEGORIES.find(c => c.key === state.categoryKey).label;
+  document.getElementById("itemName").textContent = item.name;
+  document.getElementById("itemImageWrap").innerHTML = mainItemImageHTML(item);
+
+  renderBoards();
+  renderOffer();
+  updateActionButtons();
+  renderLastAction();
+  if (window.lucide) lucide.createIcons();
+}
+
+document.querySelectorAll("[data-add]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    state.offer += parseInt(btn.dataset.add, 10);
+    if (state.offer > 99) state.offer = 99;
+    renderOffer();
+    updateActionButtons();
+  });
+});
+
+document.getElementById("setCustomBtn").addEventListener("click", () => {
+  const input = document.getElementById("customOfferInput");
+  const val = parseInt(input.value, 10);
+  if (!isNaN(val) && val >= 1){
+    state.offer = val;
+    renderOffer();
+    updateActionButtons();
+  }
+  input.value = "";
+});
+
+document.getElementById("resetOfferBtn").addEventListener("click", () => {
+  state.offer = 1;
+  renderOffer();
+  updateActionButtons();
+});
+
+function assign(teamKey){
+  const team = teamKey === "A" ? state.teamA : state.teamB;
+  if (team.items.length >= SLOTS_PER_TEAM || state.offer > team.budget) return;
+
+  const item = currentItem();
+  team.budget -= state.offer;
+  team.items.push({ ...item, price: state.offer });
+  state.log.push({ type: "assign", name: item.name, emoji: item.emoji, team: teamKey, teamName: team.name, price: state.offer });
+  state.index++;
+  renderCurrentItem();
+}
+document.getElementById("assignABtn").addEventListener("click", () => assign("A"));
+document.getElementById("assignBBtn").addEventListener("click", () => assign("B"));
+
+document.getElementById("passBtn").addEventListener("click", () => {
+  if (document.getElementById("passBtn").disabled) return;
+  const item = currentItem();
+  state.log.push({ type: "pass", name: item.name, emoji: item.emoji });
+  state.index++;
+  renderCurrentItem();
+});
+
+/* =========================================================
+   FINAL VIEW
+   ========================================================= */
+function finishAuction(){
+  document.getElementById("auctionView").classList.add("hidden");
+  document.getElementById("finalView").classList.remove("hidden");
+  document.body.classList.remove("auction-mode");
+  state.roundVoted = false;
+
+  document.getElementById("finalNameA").textContent = `🏆 ${state.teamA.name}`;
+  document.getElementById("finalNameB").textContent = `🏆 ${state.teamB.name}`;
+  document.getElementById("finalBudgetA").textContent = `${state.teamA.budget}€ residui`;
+  document.getElementById("finalBudgetB").textContent = `${state.teamB.budget}€ residui`;
+
+  document.getElementById("finalItemsA").innerHTML = renderFinalRoster(state.teamA.items);
+  document.getElementById("finalItemsB").innerHTML = renderFinalRoster(state.teamB.items);
+
+  document.getElementById("voteANameLabel").textContent = state.teamA.name;
+  document.getElementById("voteBNameLabel").textContent = state.teamB.name;
+  document.getElementById("voteABtn").disabled = false;
+  document.getElementById("voteBBtn").disabled = false;
+
+  refreshMatchScoreBar();
+  document.getElementById("matchScoreFinalText").textContent =
+    `Punteggio manche: ${state.teamA.name} ${state.matchScore.a} — ${state.matchScore.b} ${state.teamB.name}`;
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function renderFinalRoster(items){
+  if (items.length === 0){
+    return `<p class="col-span-full text-white/30 italic text-sm">Nessun elemento aggiudicato.</p>`;
+  }
+  return items.map(it => `
+    <div class="rounded-xl overflow-hidden">
+      <div class="aspect-square rounded-lg overflow-hidden mb-1">${itemImageHTML(it)}</div>
+      <p class="text-[0.7rem] text-white/70 text-center truncate">${it.name}</p>
+    </div>
+  `).join("");
+}
+
+function vote(teamKey){
+  if (state.roundVoted) return;
+  state.roundVoted = true;
+  if (teamKey === "A") state.matchScore.a++; else state.matchScore.b++;
+  saveMatch();
+  document.getElementById("voteABtn").disabled = true;
+  document.getElementById("voteBBtn").disabled = true;
+  document.getElementById("matchScoreFinalText").textContent =
+    `Punteggio manche: ${state.teamA.name} ${state.matchScore.a} — ${state.matchScore.b} ${state.teamB.name}`;
+}
+document.getElementById("voteABtn").addEventListener("click", () => vote("A"));
+document.getElementById("voteBBtn").addEventListener("click", () => vote("B"));
+
+document.getElementById("rematchBtn").addEventListener("click", () => {
+  document.getElementById("finalView").classList.add("hidden");
+  document.getElementById("setupView").classList.remove("hidden");
+  state.categoryKey = null;
+  document.querySelectorAll(".cat-card").forEach(b => b.classList.remove("selected"));
+  updateStartButton();
+  refreshMatchScoreBar();
+});
+
+document.getElementById("fullResetBtn").addEventListener("click", () => {
+  state.matchScore = { a: 0, b: 0 };
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById("finalView").classList.add("hidden");
+  document.getElementById("setupView").classList.remove("hidden");
+  state.categoryKey = null;
+  document.querySelectorAll(".cat-card").forEach(b => b.classList.remove("selected"));
+  updateStartButton();
+  refreshMatchScoreBar();
+});
+
+/* =========================================================
+   MODALE REGOLE
+   ========================================================= */
+const infoModal = document.getElementById("infoModal");
+document.getElementById("openInfoBtn").addEventListener("click", () => infoModal.classList.add("active"));
+document.getElementById("closeInfoBtn").addEventListener("click", () => infoModal.classList.remove("active"));
+infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoModal.classList.remove("active"); });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+loadMatch();
+renderCategoryGrid();
+updateStartButton();
+refreshMatchScoreBar();
+["teamAInput", "teamBInput"].forEach(id => {
+  document.getElementById(id).addEventListener("input", refreshMatchScoreBar);
+});
+if (window.lucide) lucide.createIcons();
+</script>
+
+</body>
+</html>
