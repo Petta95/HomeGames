@@ -1,5 +1,5 @@
 import os
-from PIL import Image
+from PIL import Image, ImageOps
 
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..", "party-games", "assets", "img", "battaglia-asta")
 MAX_WIDTH = 800
@@ -20,6 +20,7 @@ def main():
             try:
                 im = Image.open(path)
                 im.seek(0)  # first frame if animated
+                im = ImageOps.exif_transpose(im)  # rispetta la rotazione EXIF (foto da telefono)
                 if im.mode in ("RGBA", "LA", "P"):
                     bg = Image.new("RGB", im.size, (244, 245, 250))
                     im = im.convert("RGBA")

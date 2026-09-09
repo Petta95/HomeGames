@@ -658,12 +658,12 @@ const CATEGORIES = [
       { name: "Kyoto", file: "kyoto.jpg", emoji: "⛩️" },
       { name: "Islanda", file: "islanda.jpg", emoji: "🧊" },
       { name: "Safari in Kenya", file: "maasai_mara.jpg", emoji: "🦓" },
-      { name: "Grand Canyon", file: "grand_canyon.jpg", emoji: "🏜️" },
+      { name: "Parchi Americani", file: "grand_canyon.jpg", emoji: "🏜️" },
       { name: "Petra", file: "petra.jpg", emoji: "🏛️" },
       { name: "Bora Bora", file: "bora_bora.jpg", emoji: "🏝️" },
       { name: "Cappadocia", file: "cappadocia.jpg", emoji: "🎈" },
       { name: "Marrakech", file: "marrakech.jpg", emoji: "🕌" },
-      { name: "Fiordi di Norvegia", file: "fiordi_norvegia.jpg", emoji: "🏔️" },
+      { name: "Lapponia", file: "fiordi_norvegia.jpg", emoji: "🏔️" },
       { name: "Seychelles", file: "seychelles.jpg", emoji: "🏖️" },
       { name: "Antartide", file: "antartide.jpg", emoji: "🐧" },
       { name: "Roma", file: "roma_colosseo.jpg", emoji: "🏛️" },
@@ -675,7 +675,10 @@ const CATEGORIES = [
       { name: "Patagonia", file: "patagonia.jpg", emoji: "🏔️" },
       { name: "Zanzibar", file: "zanzibar.jpg", emoji: "🏝️" },
       { name: "Deserto del Sahara", file: "sahara.jpg", emoji: "🐫" },
-      { name: "Salar de Uyuni", file: "salar_uyuni.jpg", emoji: "🪞" }
+      { name: "Salar de Uyuni", file: "salar_uyuni.jpg", emoji: "🪞" },
+      { name: "Cina", file: "cina.jpg", emoji: "🏮" },
+      { name: "Crociera", file: "crociera.jpg", emoji: "🚢" },
+      { name: "Egitto", file: "egitto.jpg", emoji: "🐫" }
     ]
   },
   {
@@ -993,7 +996,7 @@ const CATEGORIES = [
     key: "colleghi", label: "Persone da Avere come Colleghi", icon: "🧑‍💼",
     items: [
       { name: "Lunetta", file: "lunetta.jpg", emoji: "🌙" },
-      { name: "Antonino", file: "antonino.jpg", emoji: "🎩" },
+      { name: "Antonino", file: "anto.jpg", emoji: "🎩" },
       { name: "Alex", file: "alex.jpg", emoji: "😎" },
       { name: "Steffi", file: "steffi.jpg", emoji: "⭐" },
       { name: "Luca", file: "luca.jpg", emoji: "💪" },
@@ -1006,7 +1009,124 @@ const CATEGORIES = [
       { name: "Alle", file: "alle.jpg", emoji: "🚀" },
       { name: "Belloni", file: "belloni.jpg", emoji: "🎉" },
       { name: "Roli", file: "roli.jpg", emoji: "🔥" },
-      { name: "Ama", file: "ama.jpg", emoji: "✨" }
+      { name: "Ama", file: "ama.jpg", emoji: "✨" },
+      { name: "Poppi", file: "poppi.jpg", emoji: "🎈" }
+    ]
+  },
+  {
+    key: "cibocasuale", label: "Cibo Casuale", icon: "🍽️",
+    items: [
+      { name: "Fonzies", file: "fonzies.jpg", emoji: "🧀" },
+      { name: "Olive Taggiasche", file: "olive_taggiasche.jpg", emoji: "🫒" },
+      { name: "Fichi e Prosciutto", file: "fichi_prosciutto.jpg", emoji: "🍑" },
+      { name: "Banana Split", file: "banana_split.jpg", emoji: "🍌" },
+      { name: "Torta Cocco e Nutella", file: "torta_cocco_nutella.jpg", emoji: "🥥" },
+      { name: "Cozze alla Marinara", file: "cozze_marinara.jpg", emoji: "🦪" },
+      { name: "Kinder Bueno", file: "kinder_bueno.jpg", emoji: "🍫" },
+      { name: "Rosetta", file: "rosetta.jpg", emoji: "🥖" },
+      { name: "Pandoro", file: "pandoro.jpg", emoji: "⭐" },
+      { name: "Pollo Fritto", file: "pollo_fritto.jpg", emoji: "🍗" },
+      { name: "Polpette", file: "polpette.jpg", emoji: "🍖" },
+      { name: "Panzerotto", file: "panzerotto.jpg", emoji: "🥟" },
+      { name: "Arancino", file: "arancino.jpg", emoji: "🍚" },
+      { name: "Tramezzino", file: "tramezzino.jpg", emoji: "🥪" },
+      { name: "Piadina", file: "piadina.jpg", emoji: "🌯" },
+      { name: "Supplì", file: "suppli.jpg", emoji: "🍙" },
+      { name: "Panettone", file: "panettone.jpg", emoji: "🎄" },
+      { name: "Mortadella", file: "mortadella.jpg", emoji: "🥓" },
+      { name: "Parmigiano Reggiano", file: "parmigiano.jpg", emoji: "🧀" },
+      { name: "Lasagna", file: "lasagna.jpg", emoji: "🍝" }
+    ]
+  },
+  {
+    key: "app", label: "App", icon: "📱",
+    items: [
+      { name: "TikTok", file: "tiktok.jpg", emoji: "🎵" },
+      { name: "Instagram", file: "instagram.jpg", emoji: "📷" },
+      { name: "WhatsApp", file: "whatsapp.jpg", emoji: "💬" },
+      { name: "Spotify", file: "spotify.jpg", emoji: "🎧" },
+      { name: "YouTube", file: "youtube.jpg", emoji: "▶️" },
+      { name: "Google Maps", file: "google_maps.jpg", emoji: "🗺️" },
+      { name: "ChatGPT", file: "chatgpt.jpg", emoji: "🤖" },
+      { name: "Netflix", file: "netflix.jpg", emoji: "🎬" },
+      { name: "Amazon", file: "amazon.jpg", emoji: "📦" },
+      { name: "Facebook", file: "facebook.jpg", emoji: "👍" },
+      { name: "Telegram", file: "telegram.jpg", emoji: "✈️" },
+      { name: "Snapchat", file: "snapchat.jpg", emoji: "👻" },
+      { name: "X (Twitter)", file: "x_twitter.jpg", emoji: "🐦" },
+      { name: "LinkedIn", file: "linkedin.jpg", emoji: "💼" },
+      { name: "Pinterest", file: "pinterest.jpg", emoji: "📌" },
+      { name: "Uber", file: "uber.jpg", emoji: "🚗" },
+      { name: "Airbnb", file: "airbnb.jpg", emoji: "🏠" },
+      { name: "Gmail", file: "gmail.jpg", emoji: "📧" },
+      { name: "Duolingo", file: "duolingo.jpg", emoji: "🦉" },
+      { name: "Shazam", file: "shazam_app.jpg", emoji: "🎶" }
+    ]
+  },
+  {
+    key: "natale", label: "Tradizione Natalizia", icon: "🎄",
+    items: [
+      { name: "Scartare i Regali", file: "scartare_regali.jpg", emoji: "🎁" },
+      { name: "Battaglia di Palle di Neve", file: "palle_neve.jpg", emoji: "❄️" },
+      { name: "Pupazzo di Neve", file: "pupazzo_neve.jpg", emoji: "⛄" },
+      { name: "Vigilia in Famiglia", file: "vigilia_famiglia.jpg", emoji: "🕯️" },
+      { name: "Aperitivo con Amici in Centro", file: "aperitivo_centro.jpg", emoji: "🍹" },
+      { name: "Albero di Natale", file: "albero_natale.jpg", emoji: "🎄" },
+      { name: "Presepe", file: "presepe.jpg", emoji: "👼" },
+      { name: "Mercatino di Natale", file: "mercatino_natale.jpg", emoji: "🎪" },
+      { name: "Canti Natalizi", file: "canti_natalizi.jpg", emoji: "🎶" },
+      { name: "Cenone della Vigilia", file: "cenone_vigilia.jpg", emoji: "🍽️" },
+      { name: "Luci e Addobbi", file: "luci_addobbi.jpg", emoji: "💡" },
+      { name: "La Calza della Befana", file: "calza_befana.jpg", emoji: "🧦" },
+      { name: "Slitta e Renne", file: "slitta_renne.jpg", emoji: "🛷" },
+      { name: "Babbo Natale", file: "babbo_natale.jpg", emoji: "🎅" },
+      { name: "Vin Brulé", file: "vin_brule.jpg", emoji: "🍷" },
+      { name: "Tombola in Famiglia", file: "tombola_famiglia.jpg", emoji: "🎲" },
+      { name: "Film di Natale sul Divano", file: "film_natale_divano.jpg", emoji: "📺" },
+      { name: "Corsa ai Regali all'Ultimo Minuto", file: "corsa_regali.jpg", emoji: "🏃" },
+      { name: "Cenone di Capodanno", file: "cenone_capodanno.jpg", emoji: "🥂" },
+      { name: "Fuochi d'Artificio", file: "fuochi_artificio.jpg", emoji: "🎆" }
+    ]
+  },
+  {
+    key: "pelati", label: "Pelati", icon: "🥚",
+    items: [
+      { name: "The Rock", file: "the_rock.jpg", emoji: "💪" },
+      { name: "Vin Diesel", file: "vin_diesel.jpg", emoji: "🚗" },
+      { name: "Jason Statham", file: "jason_statham.jpg", emoji: "🥊" },
+      { name: "Bruce Willis", file: "bruce_willis.jpg", emoji: "🔫" },
+      { name: "Pitbull", file: "pitbull.jpg", emoji: "🎤" },
+      { name: "Claudio Bisio", file: "claudio_bisio.jpg", emoji: "🎭" },
+      { name: "Johnny Sins", file: "johnny_sins.jpg", emoji: "😏" },
+      { name: "Michael Jordan", file: "michael_jordan.jpg", emoji: "🏀" },
+      { name: "Sinéad O'Connor", file: "sinead_oconnor.jpg", emoji: "🎤" },
+      { name: "Stone Cold Steve Austin", file: "stone_cold.jpg", emoji: "🍺" },
+      { name: "Michael Chiklis", file: "michael_chiklis.jpg", emoji: "🚔" },
+      { name: "Larry David", file: "larry_david.jpg", emoji: "😒" },
+      { name: "Mastro Lindo", file: "mastro_lindo.jpg", emoji: "🧽" },
+      { name: "Homer Simpson", file: "homer_simpson.jpg", emoji: "🍩" },
+      { name: "Walter White", file: "walter_white.jpg", emoji: "🧪" },
+      { name: "Kojak", file: "kojak.jpg", emoji: "🍭" },
+      { name: "Zio Fester", file: "uncle_fester.jpg", emoji: "💡" },
+      { name: "Gru", file: "gru.jpg", emoji: "🥸" },
+      { name: "Petta", file: "petta.jpg", emoji: "🥚" },
+      { name: "Lunetta", file: "lunetta_pelata.jpg", emoji: "🌙" }
+    ]
+  },
+  {
+    key: "ristorantimodena", label: "Ristoranti di Modena", icon: "🍷",
+    items: [
+      { name: "Vinicio", file: "vinicio.jpg", emoji: "🍽️" },
+      { name: "Antika Moka", file: "antika_moka.jpg", emoji: "☕" },
+      { name: "La Griglia", file: "la_griglia.jpg", emoji: "🥩" },
+      { name: "Osteria Francescana", file: "osteria_francescana.jpg", emoji: "⭐" },
+      { name: "Masa", file: "masa.jpg", emoji: "🍣" },
+      { name: "Rosticceria Tokyo", file: "rosticceria_tokyo.jpg", emoji: "🍗" },
+      { name: "Penny", file: "penny.jpg", emoji: "🍕" },
+      { name: "Osteria del Pozzo", file: "osteria_pozzo.jpg", emoji: "🍷" },
+      { name: "Franceschetta 58", file: "franceschetta58.jpg", emoji: "🍝" },
+      { name: "Hosteria Giusti", file: "hosteria_giusti.jpg", emoji: "🧀" },
+      { name: "Mercato Albinelli", file: "mercato_albinelli.jpg", emoji: "🛒" }
     ]
   }
 ];

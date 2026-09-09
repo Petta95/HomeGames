@@ -136,6 +136,96 @@ def download(url, dest_path):
 
 # (category_folder, filename, wikipedia_title, display_name_it)
 MANIFEST = [
+    # ---- Cibo Casuale ----
+    ("cibocasuale", "fonzies", "Fonzies", "Fonzies"),
+    ("cibocasuale", "olive_taggiasche", "Olive", "Olive Taggiasche"),
+    ("cibocasuale", "fichi_prosciutto", "Prosciutto", "Fichi e Prosciutto"),
+    ("cibocasuale", "banana_split", "Banana split", "Banana Split"),
+    ("cibocasuale", "torta_cocco_nutella", "Nutella", "Torta Cocco e Nutella"),
+    ("cibocasuale", "cozze_marinara", "Mussel", "Cozze alla Marinara"),
+    ("cibocasuale", "kinder_bueno", "Kinder Bueno", "Kinder Bueno"),
+    ("cibocasuale", "rosetta", "Michetta", "Rosetta"),
+    ("cibocasuale", "pandoro", "Pandoro", "Pandoro"),
+    ("cibocasuale", "pollo_fritto", "Fried chicken", "Pollo Fritto"),
+    ("cibocasuale", "polpette", "Meatball", "Polpette"),
+    ("cibocasuale", "panzerotto", "Panzerotto", "Panzerotto"),
+    ("cibocasuale", "arancino", "Arancini", "Arancino"),
+    ("cibocasuale", "tramezzino", "Tramezzino", "Tramezzino"),
+    ("cibocasuale", "piadina", "Piadina", "Piadina"),
+    ("cibocasuale", "suppli", "Supplì", "Supplì"),
+    ("cibocasuale", "panettone", "Panettone", "Panettone"),
+    ("cibocasuale", "mortadella", "Mortadella", "Mortadella"),
+    ("cibocasuale", "parmigiano", "Parmigiano Reggiano", "Parmigiano Reggiano"),
+    ("cibocasuale", "lasagna", "Lasagna", "Lasagna"),
+
+    # ---- App ----
+    ("app", "tiktok", "TikTok", "TikTok"),
+    ("app", "instagram", "Instagram", "Instagram"),
+    ("app", "whatsapp", "WhatsApp", "WhatsApp"),
+    ("app", "spotify", "Spotify", "Spotify"),
+    ("app", "youtube", "YouTube", "YouTube"),
+    ("app", "google_maps", "Google Maps", "Google Maps"),
+    ("app", "chatgpt", "ChatGPT", "ChatGPT"),
+    ("app", "netflix", "Netflix", "Netflix"),
+    ("app", "amazon", "Amazon (company)", "Amazon"),
+    ("app", "facebook", "Facebook", "Facebook"),
+    ("app", "telegram", "Telegram (software)", "Telegram"),
+    ("app", "snapchat", "Snapchat", "Snapchat"),
+    ("app", "x_twitter", "X (social network)", "X (Twitter)"),
+    ("app", "linkedin", "LinkedIn", "LinkedIn"),
+    ("app", "pinterest", "Pinterest", "Pinterest"),
+    ("app", "uber", "Uber", "Uber"),
+    ("app", "airbnb", "Airbnb", "Airbnb"),
+    ("app", "gmail", "Gmail", "Gmail"),
+    ("app", "duolingo", "Duolingo", "Duolingo"),
+    ("app", "shazam_app", "Shazam (application)", "Shazam"),
+
+    # ---- Tradizione Natalizia ----
+    ("natale", "scartare_regali", "Gift wrapping", "Scartare i Regali"),
+    ("natale", "palle_neve", "Snowball fight", "Battaglia di Palle di Neve"),
+    ("natale", "pupazzo_neve", "Snowman", "Pupazzo di Neve"),
+    ("natale", "vigilia_famiglia", "Christmas Eve", "Vigilia in Famiglia"),
+    ("natale", "aperitivo_centro", "Aperitivo", "Aperitivo con Amici in Centro"),
+    ("natale", "albero_natale", "Christmas tree", "Albero di Natale"),
+    ("natale", "presepe", "Nativity scene", "Presepe"),
+    ("natale", "mercatino_natale", "Christmas market", "Mercatino di Natale"),
+    ("natale", "canti_natalizi", "Christmas carol", "Canti Natalizi"),
+    ("natale", "cenone_vigilia", "Christmas dinner", "Cenone della Vigilia"),
+    ("natale", "luci_addobbi", "Christmas lights", "Luci e Addobbi"),
+    ("natale", "calza_befana", "Befana", "La Calza della Befana"),
+    ("natale", "slitta_renne", "Reindeer", "Slitta e Renne"),
+    ("natale", "babbo_natale", "Santa Claus", "Babbo Natale"),
+    ("natale", "vin_brule", "Mulled wine", "Vin Brulé"),
+    ("natale", "tombola_famiglia", "Tombola (game)", "Tombola in Famiglia"),
+    ("natale", "cenone_capodanno", "New Year's Eve", "Cenone di Capodanno"),
+    ("natale", "fuochi_artificio", "Fireworks", "Fuochi d'Artificio"),
+
+    # ---- Pelati ----
+    ("pelati", "the_rock", "Dwayne Johnson", "The Rock"),
+    ("pelati", "vin_diesel", "Vin Diesel", "Vin Diesel"),
+    ("pelati", "jason_statham", "Jason Statham", "Jason Statham"),
+    ("pelati", "bruce_willis", "Bruce Willis", "Bruce Willis"),
+    ("pelati", "pitbull", "Pitbull (rapper)", "Pitbull"),
+    ("pelati", "claudio_bisio", "Claudio Bisio", "Claudio Bisio"),
+    ("pelati", "johnny_sins", "Johnny Sins", "Johnny Sins"),
+    ("pelati", "michael_jordan", "Michael Jordan", "Michael Jordan"),
+    ("pelati", "sinead_oconnor", "Sinéad O'Connor", "Sinéad O'Connor"),
+    ("pelati", "stone_cold", "Steve Austin (wrestler)", "Stone Cold Steve Austin"),
+    ("pelati", "michael_chiklis", "Michael Chiklis", "Michael Chiklis"),
+    ("pelati", "larry_david", "Larry David", "Larry David"),
+    ("pelati", "mastro_lindo", "Mr. Clean", "Mastro Lindo"),
+    ("pelati", "homer_simpson", "Homer Simpson", "Homer Simpson"),
+    ("pelati", "walter_white", "Walter White (Breaking Bad)", "Walter White"),
+    ("pelati", "kojak", "Kojak", "Kojak"),
+    ("pelati", "uncle_fester", "Fester Addams", "Zio Fester"),
+    ("pelati", "gru", "Gru (Despicable Me)", "Gru"),
+
+    # ---- Ristoranti di Modena ----
+    ("ristorantimodena", "osteria_francescana", "Osteria Francescana", "Osteria Francescana"),
+    ("ristorantimodena", "franceschetta58", "Franceschetta 58", "Franceschetta 58"),
+    ("ristorantimodena", "hosteria_giusti", "Hosteria Giusti", "Hosteria Giusti"),
+    ("ristorantimodena", "mercato_albinelli", "Mercato Albinelli", "Mercato Albinelli"),
+
     # ---- Attori (+10) ----
     ("celebrita", "christian_bale", "Christian Bale", "Christian Bale"),
     ("celebrita", "joaquin_phoenix", "Joaquin Phoenix", "Joaquin Phoenix"),
@@ -628,7 +718,7 @@ MANIFEST = [
 ]
 
 
-INFOBOX_FIRST_CATEGORIES = {"moda", "oggettimagici", "trio"}  # loghi/personaggi/oggetti fittizi: l'immagine "libera" spesso e' quella sbagliata
+INFOBOX_FIRST_CATEGORIES = {"moda", "oggettimagici", "trio", "app"}  # loghi/personaggi/oggetti fittizi: l'immagine "libera" spesso e' quella sbagliata
 
 
 def main():
