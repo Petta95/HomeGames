@@ -678,9 +678,31 @@
   const changePlayersBtn = document.getElementById("changePlayersBtn");
   const confettiLayer = document.getElementById("confettiLayer");
 
+  /* ---- Squadre globali (nomi/colori/punteggio impostati in index.html) ----
+     Se presenti, la sfida parte subito con quei nomi (niente più richiesta ad
+     ogni partita) e il punteggio generale resta sincronizzato tra i giochi. */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalTeam(index, name, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].name = name;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
   /* ---- Stato di gioco ---- */
   let players = [];               // [{ name }]
-  let scores = [0, 0];            // punteggio (round vinti) per l'intera sfida
+  let scores = [0, 0];            // punteggio totale (parte già dal totale accumulato in index.html)
   let attempts = [0, 0];          // tentativi per giocatore in questo round
   let history = [[], []];         // storico tentativi per giocatore: { value, direction }
   let currentPlayerIndex = 0;
@@ -701,12 +723,17 @@
   infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoModal.classList.remove("active"); });
 
   /* ---- Avvio partita ---- */
-  startBtn.addEventListener("click", () => {
+  function startChallenge(){
     players = [
       { name: player1Input.value.trim() || "Giocatore 1" },
       { name: player2Input.value.trim() || "Giocatore 2" }
     ];
-    scores = [0, 0];
+    const global = loadGlobalTeams();
+    scores = global ? [global.teams[0].score || 0, global.teams[1].score || 0] : [0, 0];
+    if (global){
+      saveGlobalTeam(0, players[0].name, scores[0]);
+      saveGlobalTeam(1, players[1].name, scores[1]);
+    }
     round = 0;
     roundStarterIndex = 0;
     startNewRound();
@@ -715,6 +742,25 @@
     winView.style.display = "none";
     gameView.style.display = "flex";
     counter.style.display = "inline-block";
+  }
+  startBtn.addEventListener("click", startChallenge);
+
+  /* ---- Se le squadre globali sono già impostate, si parte subito ---- */
+  (function autoStartFromGlobalTeams(){
+    const global = loadGlobalTeams();
+    if (!global) return;
+    player1Input.value = global.teams[0].name;
+    player2Input.value = global.teams[1].name;
+    startChallenge();
+  })();
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    if (!gameActive && round === 0) return;
+    const global = loadGlobalTeams();
+    if (!global || !players.length) return;
+    scores = [global.teams[0].score || 0, global.teams[1].score || 0];
+    renderPlayersRow();
   });
 
   /* ---- Nuovo round: nuovo numero segreto + nuovo contesto ---- */
@@ -905,6 +951,8 @@
     gameActive = false;
     guessInput.disabled = true;
     scores[winnerIndex]++;
+    saveGlobalTeam(winnerIndex, players[winnerIndex].name, scores[winnerIndex]);
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
 
     const winner = players[winnerIndex];
     const loserIndex = (winnerIndex + 1) % 2;
@@ -933,6 +981,11 @@
     gameView.style.display = "none";
     counter.style.display = "none";
     setupView.style.display = "flex";
+    const global = loadGlobalTeams();
+    if (global){
+      player1Input.value = global.teams[0].name;
+      player2Input.value = global.teams[1].name;
+    }
   });
 
   /* =========================================================
@@ -978,6 +1031,114 @@
     if (celebrationInterval) clearInterval(celebrationInterval);
     celebrationInterval = null;
   }
+</script>
+
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5);
+    font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+    transition: background 0.15s ease;
+  }
+  .gsw-btn:hover{ background: rgba(255,255,255,0.32); }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55);
+    background: rgba(8,10,20,0.7); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  .gsw-reset:hover{ color: #fff; border-color: rgba(255,255,255,0.3); }
+  @media (max-width: 560px){
+    .global-score-widget{ bottom: 8px; right: 8px; }
+    .gsw-name{ max-width: 72px; }
+  }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw){
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.teams) && d.teams.length >= 2) return d;
+      }
+    } catch(e) {}
+    return null;
+  }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){
+    var div = document.createElement("div");
+    div.textContent = s == null ? "" : s;
+    return div.innerHTML;
+  }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML = ""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0, n).map(function(t, i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:' + esc(t.color || "#4dd9ff") + '"></span>' +
+        '<span class="gsw-name">' + esc(t.name) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">' + (t.score || 0) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load();
+      if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score || 0) + d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load();
+      if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
 </script>
 
 </body>

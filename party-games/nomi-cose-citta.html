@@ -230,10 +230,53 @@
     return arr;
   }
 
-  let teams = [
-    { name: "Squadra A", score: 0 },
-    { name: "Squadra B", score: 0 }
-  ];
+  /* ---- Squadre globali (nomi/colori/punteggio impostati in index.html) ----
+     Se presenti, il gioco riparte da lì senza richiedere nomi ogni volta e
+     tiene il punteggio totale sempre sincronizzato con le altre schede. */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalTeam(index, name, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].name = name;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
+  /* scoreBaseline[i] = punteggio globale già accumulato quando è iniziata
+     questa partita: il punteggio locale (0..WIN_SCORE) si aggiunge sopra,
+     così "Nuova Partita" azzera la sfida ma non il totale di serata. */
+  let scoreBaseline = [0, 0];
+  let teamColors = [null, null];
+
+  function buildTeams(){
+    const global = loadGlobalTeams();
+    if (global){
+      scoreBaseline = [global.teams[0].score, global.teams[1].score];
+      teamColors = [global.teams[0].color, global.teams[1].color];
+      return [
+        { name: global.teams[0].name, score: 0 },
+        { name: global.teams[1].name, score: 0 }
+      ];
+    }
+    scoreBaseline = [0, 0];
+    teamColors = [null, null];
+    return [
+      { name: "Squadra A", score: 0 },
+      { name: "Squadra B", score: 0 }
+    ];
+  }
+
+  let teams = buildTeams();
   let topicOrder = shuffle([...TOPICS]);
   let topicIndex = 0;
   let currentLetter = null;
@@ -258,9 +301,10 @@
     teams.forEach((team, i) => {
       const card = document.createElement("div");
       card.className = "score-card";
+      if (teamColors[i]) card.style.borderLeft = `4px solid ${teamColors[i]}`;
       card.innerHTML = `
         <input class="team-name" type="text" value="${team.name}" data-index="${i}" maxlength="24">
-        <div class="score-value" id="score-${i}">${team.score}</div>
+        <div class="score-value" id="score-${i}">${scoreBaseline[i] + team.score}</div>
         <button class="score-btn" data-index="${i}">+1 Punto</button>
       `;
       scoreGrid.appendChild(card);
@@ -271,7 +315,9 @@
     if (!e.target.classList.contains("score-btn")) return;
     const i = Number(e.target.dataset.index);
     teams[i].score++;
-    document.getElementById(`score-${i}`).textContent = teams[i].score;
+    document.getElementById(`score-${i}`).textContent = scoreBaseline[i] + teams[i].score;
+    saveGlobalTeam(i, teams[i].name, scoreBaseline[i] + teams[i].score);
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
     checkWinner();
   });
 
@@ -279,6 +325,7 @@
     if (!e.target.classList.contains("team-name")) return;
     const i = Number(e.target.dataset.index);
     teams[i].name = e.target.value.trim() || `Squadra ${i === 0 ? "A" : "B"}`;
+    saveGlobalTeam(i, teams[i].name, scoreBaseline[i] + teams[i].score);
   });
 
   function checkWinner(){
@@ -331,10 +378,7 @@
 
   /* ---- Nuova partita ---- */
   function resetGame(){
-    teams = [
-      { name: "Squadra A", score: 0 },
-      { name: "Squadra B", score: 0 }
-    ];
+    teams = buildTeams();
     topicOrder = shuffle([...TOPICS]);
     topicIndex = 0;
     currentLetter = null;
@@ -353,7 +397,123 @@
   restartBtn.addEventListener("click", resetGame);
   winnerRestartBtn.addEventListener("click", resetGame);
 
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    const global = loadGlobalTeams();
+    if (!global) return;
+    scoreBaseline = [global.teams[0].score, global.teams[1].score];
+    renderScoreboard();
+  });
+
   renderScoreboard();
+</script>
+
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5);
+    font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+    transition: background 0.15s ease;
+  }
+  .gsw-btn:hover{ background: rgba(255,255,255,0.32); }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55);
+    background: rgba(8,10,20,0.7); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  .gsw-reset:hover{ color: #fff; border-color: rgba(255,255,255,0.3); }
+  @media (max-width: 560px){
+    .global-score-widget{ bottom: 8px; right: 8px; }
+    .gsw-name{ max-width: 72px; }
+  }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw){
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.teams) && d.teams.length >= 2) return d;
+      }
+    } catch(e) {}
+    return null;
+  }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){
+    var div = document.createElement("div");
+    div.textContent = s == null ? "" : s;
+    return div.innerHTML;
+  }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML = ""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0, n).map(function(t, i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:' + esc(t.color || "#4dd9ff") + '"></span>' +
+        '<span class="gsw-name">' + esc(t.name) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">' + (t.score || 0) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load();
+      if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score || 0) + d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load();
+      if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
 </script>
 
 </body>

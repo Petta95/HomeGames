@@ -330,6 +330,129 @@
     .controls{ flex-direction: column; align-items: stretch; }
     .random-btn{ width: 100%; }
   }
+
+  /* =========================================================
+     PANNELLO SQUADRE GLOBALI — nomi, colori e punteggio
+     condivisi con i giochi a squadre (vedi TEAMS_KEY nel JS)
+     ========================================================= */
+  .teams-panel{
+    max-width: 1200px;
+    margin: 0 auto 32px;
+    padding: 26px 28px;
+    border-radius: 22px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .teams-panel-head h2{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+  }
+  .teams-panel-head p{
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    max-width: 760px;
+  }
+  .teams-count-row{
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
+  }
+  .team-count-btn{
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .team-count-btn:hover{ border-color: var(--accent); }
+  .team-count-btn.active{
+    background: var(--accent);
+    color: #04121a;
+    border-color: var(--accent);
+  }
+  .teams-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .team-card{
+    border-radius: 16px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.03);
+    border: 2px solid var(--team-color, var(--glass-border));
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.2s ease;
+  }
+  .team-name-row{ display: flex; align-items: center; gap: 10px; }
+  .team-name-row input[type="text"]{
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-main);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 4px 2px;
+    outline: none;
+  }
+  .team-name-row input[type="text"]:focus{ border-color: var(--team-color, var(--accent)); }
+  .team-name-row input[type="color"]{
+    width: 30px; height: 30px;
+    border: none; border-radius: 50%;
+    cursor: pointer; background: none; padding: 0;
+    flex-shrink: 0;
+  }
+  .team-name-row input[type="color"]::-webkit-color-swatch-wrapper{ padding: 0; border-radius: 50%; }
+  .team-name-row input[type="color"]::-webkit-color-swatch{ border: 1px solid var(--glass-border); border-radius: 50%; }
+  .team-score-row{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .team-score-value{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: var(--team-color, var(--accent));
+  }
+  .team-score-btns{ display: flex; gap: 6px; }
+  .team-score-btns button{
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+  }
+  .team-score-btns button:hover{ border-color: var(--team-color, var(--accent)); color: var(--team-color, var(--accent)); }
+  .teams-panel-actions{ display: flex; justify-content: flex-end; }
+  .reset-scores-btn{
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background: rgba(255, 59, 92, 0.12);
+    border: 1px solid var(--c-competizione);
+    color: var(--c-competizione);
+    padding: 9px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .reset-scores-btn:hover{ background: var(--c-competizione); color: #fff; }
 </style>
 </head>
 <body>
@@ -341,6 +464,18 @@
   <h1 class="app-title">🎮 HOME <span>GAMES</span></h1>
   <p class="app-subtitle">Il Game Master ha parlato: scegli la sfida di stasera!</p>
 </header>
+
+<section class="teams-panel" id="teamsPanel">
+  <div class="teams-panel-head">
+    <h2>🏆 Le Tue Squadre</h2>
+    <p>Imposta nomi, colori e punteggio una volta sola: verranno usati automaticamente in Battaglia all'Asta, Numero Esatto, Nomi Cose Città Speed, Family Feud e Ordina, senza doverli richiedere di nuovo ad ogni partita.</p>
+  </div>
+  <div class="teams-count-row" id="teamsCountRow"></div>
+  <div class="teams-grid" id="teamsGrid"></div>
+  <div class="teams-panel-actions">
+    <button class="reset-scores-btn" id="resetScoresBtn" type="button">🔄 Azzera Punteggi</button>
+  </div>
+</section>
 
 <div class="controls">
   <div class="filters" id="filters">
@@ -360,6 +495,128 @@
 <footer>HOME GAMES · Serate tra amici · Aggiorna l'array <code>GAMES</code> per aggiungere nuovi giochi</footer>
 
 <script>
+  /* =========================================================
+     SQUADRE GLOBALI — nomi, colori e punteggio condivisi con
+     i giochi a squadre (Battaglia all'Asta, Numero Esatto,
+     Nomi Cose Città Speed, Family Feud, Ordina) tramite
+     localStorage. Ogni gioco legge questa stessa chiave così
+     non richiede più nomi/punteggio ad ogni partita.
+     ========================================================= */
+  const TEAMS_KEY = "homeGamesTeams";
+  const TEAMS_MAX = 6;
+  const TEAM_DEFAULT_COLORS = ["#22d3ee", "#ec4899", "#ffc247", "#7cff6b", "#b06aff", "#ff6f4d"];
+
+  function loadTeamsState(){
+    try {
+      const raw = localStorage.getItem(TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si riparte dai default */ }
+    return {
+      count: 2,
+      teams: [
+        { name: "Squadra 1", color: TEAM_DEFAULT_COLORS[0], score: 0 },
+        { name: "Squadra 2", color: TEAM_DEFAULT_COLORS[1], score: 0 }
+      ]
+    };
+  }
+
+  let teamsState = loadTeamsState();
+
+  function saveTeamsState(){
+    localStorage.setItem(TEAMS_KEY, JSON.stringify(teamsState));
+  }
+
+  function escapeAttr(str){
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderTeamsCountRow(){
+    const row = document.getElementById("teamsCountRow");
+    row.innerHTML = "";
+    for (let n = 2; n <= TEAMS_MAX; n++){
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "team-count-btn" + (teamsState.count === n ? " active" : "");
+      btn.textContent = `${n} Squadre`;
+      btn.addEventListener("click", () => {
+        while (teamsState.teams.length < n){
+          const idx = teamsState.teams.length;
+          teamsState.teams.push({ name: `Squadra ${idx + 1}`, color: TEAM_DEFAULT_COLORS[idx % TEAM_DEFAULT_COLORS.length], score: 0 });
+        }
+        teamsState.count = n;
+        saveTeamsState();
+        renderTeamsPanel();
+      });
+      row.appendChild(btn);
+    }
+  }
+
+  function renderTeamsGrid(){
+    const grid = document.getElementById("teamsGrid");
+    grid.innerHTML = "";
+    teamsState.teams.slice(0, teamsState.count).forEach((team, i) => {
+      const card = document.createElement("div");
+      card.className = "team-card";
+      card.style.setProperty("--team-color", team.color);
+      card.innerHTML = `
+        <div class="team-name-row">
+          <input type="color" value="${team.color}" data-i="${i}" class="team-color-input" title="Colore squadra">
+          <input type="text" value="${escapeAttr(team.name)}" maxlength="20" data-i="${i}" class="team-name-input" placeholder="Nome squadra">
+        </div>
+        <div class="team-score-row">
+          <span class="team-score-value">${team.score} pt</span>
+          <div class="team-score-btns">
+            <button type="button" data-i="${i}" data-delta="-1" title="Togli un punto">−</button>
+            <button type="button" data-i="${i}" data-delta="1" title="Aggiungi un punto">+</button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function renderTeamsPanel(){
+    renderTeamsCountRow();
+    renderTeamsGrid();
+  }
+
+  document.getElementById("teamsGrid").addEventListener("input", (e) => {
+    const i = e.target.dataset.i;
+    if (i === undefined) return;
+    if (e.target.classList.contains("team-name-input")){
+      teamsState.teams[i].name = e.target.value.trim() || `Squadra ${Number(i) + 1}`;
+      saveTeamsState();
+    } else if (e.target.classList.contains("team-color-input")){
+      teamsState.teams[i].color = e.target.value;
+      e.target.closest(".team-card").style.setProperty("--team-color", e.target.value);
+      saveTeamsState();
+    }
+  });
+
+  document.getElementById("teamsGrid").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-delta]");
+    if (!btn) return;
+    const i = Number(btn.dataset.i);
+    const delta = Number(btn.dataset.delta);
+    teamsState.teams[i].score = Math.max(0, teamsState.teams[i].score + delta);
+    saveTeamsState();
+    renderTeamsGrid();
+  });
+
+  document.getElementById("resetScoresBtn").addEventListener("click", () => {
+    if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+    teamsState.teams.forEach(t => t.score = 0);
+    saveTeamsState();
+    renderTeamsGrid();
+  });
+
+  renderTeamsPanel();
+
   /* =========================================================
      DATI DEI GIOCHI
      Per aggiungere un nuovo gioco basta inserire un nuovo

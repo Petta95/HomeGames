@@ -1139,7 +1139,7 @@ const CATEGORIES = [
 const STARTING_BUDGET = 20;
 const ITEMS_PER_SESSION = 10;
 const SLOTS_PER_TEAM = 5;
-const STORAGE_KEY = "battagliaAstaMatch";
+const STORAGE_KEY = "homeGamesTeams"; // squadre globali condivise, impostate in index.html
 
 /* =========================================================
    STATO
@@ -1164,17 +1164,29 @@ function loadMatch(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const saved = JSON.parse(raw);
-    state.matchScore = saved.matchScore || { a: 0, b: 0 };
-    if (saved.teamAName) document.getElementById("teamAInput").value = saved.teamAName;
-    if (saved.teamBName) document.getElementById("teamBInput").value = saved.teamBName;
+    if (!saved || !Array.isArray(saved.teams) || saved.teams.length < 2) return;
+    state.matchScore = { a: saved.teams[0].score || 0, b: saved.teams[1].score || 0 };
+    if (saved.teams[0].name) document.getElementById("teamAInput").value = saved.teams[0].name;
+    if (saved.teams[1].name) document.getElementById("teamBInput").value = saved.teams[1].name;
   } catch(e) { /* ignora dati corrotti */ }
 }
 function saveMatch(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    matchScore: state.matchScore,
-    teamAName: document.getElementById("teamAInput").value,
-    teamBName: document.getElementById("teamBInput").value
-  }));
+  let data;
+  try {
+    data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!data || !Array.isArray(data.teams) || data.teams.length < 2) throw new Error("no data");
+  } catch(e) {
+    data = { count: 2, teams: [
+      { name: "Giocatore 1", color: "#22d3ee", score: 0 },
+      { name: "Giocatore 2", color: "#ec4899", score: 0 }
+    ] };
+  }
+  data.teams[0].name = document.getElementById("teamAInput").value.trim() || "Giocatore 1";
+  data.teams[1].name = document.getElementById("teamBInput").value.trim() || "Giocatore 2";
+  data.teams[0].score = state.matchScore.a;
+  data.teams[1].score = state.matchScore.b;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
 }
 function refreshMatchScoreBar(){
   const bar = document.getElementById("matchScoreBar");
@@ -1527,7 +1539,7 @@ document.getElementById("rematchBtn").addEventListener("click", () => {
 
 document.getElementById("fullResetBtn").addEventListener("click", () => {
   state.matchScore = { a: 0, b: 0 };
-  localStorage.removeItem(STORAGE_KEY);
+  saveMatch();
   document.getElementById("finalView").classList.add("hidden");
   document.getElementById("setupView").classList.remove("hidden");
   state.categoryKey = null;
@@ -1554,7 +1566,119 @@ refreshMatchScoreBar();
 ["teamAInput", "teamBInput"].forEach(id => {
   document.getElementById(id).addEventListener("input", refreshMatchScoreBar);
 });
+window.addEventListener("globalScoreChanged", () => {
+  loadMatch();
+  refreshMatchScoreBar();
+});
 if (window.lucide) lucide.createIcons();
+</script>
+
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5);
+    font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+    transition: background 0.15s ease;
+  }
+  .gsw-btn:hover{ background: rgba(255,255,255,0.32); }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55);
+    background: rgba(8,10,20,0.7); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  .gsw-reset:hover{ color: #fff; border-color: rgba(255,255,255,0.3); }
+  @media (max-width: 560px){
+    .global-score-widget{ bottom: 8px; right: 8px; }
+    .gsw-name{ max-width: 72px; }
+  }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw){
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.teams) && d.teams.length >= 2) return d;
+      }
+    } catch(e) {}
+    return null;
+  }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){
+    var div = document.createElement("div");
+    div.textContent = s == null ? "" : s;
+    return div.innerHTML;
+  }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML = ""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0, n).map(function(t, i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:' + esc(t.color || "#4dd9ff") + '"></span>' +
+        '<span class="gsw-name">' + esc(t.name) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">' + (t.score || 0) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load();
+      if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score || 0) + d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load();
+      if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
 </script>
 
 </body>

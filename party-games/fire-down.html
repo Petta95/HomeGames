@@ -64,21 +64,6 @@
   <span class="nav-counter" id="counter" style="display:none;">Giocatori: 0</span>
 </nav>
 
-<!-- ============ SCHERMATA DI SETUP GIOCATORI ============ -->
-<main class="stage" id="setupView">
-  <h2 class="question-text">Chi partecipa a Fire Down?</h2>
-  <p class="timer-hint">Aggiungi tutti i giocatori: verranno eliminati uno a uno durante la partita.</p>
-
-  <div class="players-setup" id="playersSetup">
-    <div class="player-row"><input type="text" value="Giocatore 1" maxlength="24"><button type="button" class="removePlayer">✕</button></div>
-    <div class="player-row"><input type="text" value="Giocatore 2" maxlength="24"><button type="button" class="removePlayer">✕</button></div>
-    <div class="player-row"><input type="text" value="Giocatore 3" maxlength="24"><button type="button" class="removePlayer">✕</button></div>
-  </div>
-  <button id="addPlayerBtn" type="button">+ Aggiungi Giocatore</button>
-
-  <button class="btn btn-primary" id="startBtn">INIZIA IL GIOCO ▶</button>
-</main>
-
 <!-- ============ SCHERMATA DI GIOCO ============ -->
 <main class="stage" id="gameView" style="display:none;">
   <div class="question-card">
@@ -225,17 +210,35 @@
     return arr;
   }
 
-  let players = [];        // [{ name, eliminated }]
+  /* ---- Squadre globali (nomi/colori/punteggio impostati in index.html) ----
+     I partecipanti di Fire Down sono le squadre globali: niente più scelta
+     giocatori qui, e chi vince la partita guadagna un punto nel totale. */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function addGlobalPoint(index){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = (data.teams[index].score || 0) + 1;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+  }
+
+  let players = [];        // [{ name, color, eliminated }]
   let catOrder = [];
   let catIndex = 0;
   let timerInterval = null;
 
   /* ---- Elementi DOM ---- */
-  const setupView = document.getElementById("setupView");
   const gameView = document.getElementById("gameView");
-  const playersSetup = document.getElementById("playersSetup");
-  const addPlayerBtn = document.getElementById("addPlayerBtn");
-  const startBtn = document.getElementById("startBtn");
   const categoryText = document.getElementById("categoryText");
   const playersGrid = document.getElementById("playersGrid");
   const counter = document.getElementById("counter");
@@ -247,34 +250,21 @@
   const winnerLabel = document.getElementById("winnerLabel");
   const winnerRestartBtn = document.getElementById("winnerRestartBtn");
 
-  /* ---- Gestione righe giocatori (min 2, max 14) ---- */
-  function addPlayerRow(defaultName){
-    const rows = playersSetup.querySelectorAll(".player-row");
-    if (rows.length >= 14) return;
-    const row = document.createElement("div");
-    row.className = "player-row";
-    row.innerHTML = `<input type="text" value="${defaultName}" maxlength="24"><button type="button" class="removePlayer">✕</button>`;
-    playersSetup.appendChild(row);
+  /* ---- Avvio partita: partecipanti = squadre globali ---- */
+  function buildPlayersFromGlobal(){
+    const global = loadGlobalTeams();
+    if (global){
+      const n = global.count || global.teams.length;
+      return global.teams.slice(0, n).map(t => ({ name: t.name, color: t.color, eliminated: false }));
+    }
+    return [
+      { name: "Giocatore 1", eliminated: false },
+      { name: "Giocatore 2", eliminated: false }
+    ];
   }
-  addPlayerBtn.addEventListener("click", () => {
-    const count = playersSetup.querySelectorAll(".player-row").length + 1;
-    addPlayerRow(`Giocatore ${count}`);
-  });
-  playersSetup.addEventListener("click", (e) => {
-    if (!e.target.classList.contains("removePlayer")) return;
-    const rows = playersSetup.querySelectorAll(".player-row");
-    if (rows.length <= 2) return;
-    e.target.closest(".player-row").remove();
-  });
 
-  /* ---- Avvio partita ---- */
-  startBtn.addEventListener("click", () => {
-    const inputs = playersSetup.querySelectorAll("input");
-    players = Array.from(inputs).map((input, i) => ({
-      name: input.value.trim() || `Giocatore ${i + 1}`,
-      eliminated: false
-    }));
-
+  function startGame(){
+    players = buildPlayersFromGlobal();
     catOrder = shuffle([...CATEGORIES]);
     catIndex = 0;
 
@@ -282,10 +272,9 @@
     showCategory();
     resetTimerDisplay();
 
-    setupView.style.display = "none";
     gameView.style.display = "flex";
     counter.style.display = "inline-block";
-  });
+  }
 
   /* ---- Griglia giocatori con toggle eliminazione ---- */
   function renderPlayers(){
@@ -294,6 +283,7 @@
       const chip = document.createElement("div");
       chip.className = "player-chip" + (p.eliminated ? " eliminated" : "");
       chip.textContent = p.eliminated ? `${p.name} ❌` : p.name;
+      if (p.color && !p.eliminated) chip.style.borderColor = p.color;
       chip.dataset.index = i;
       playersGrid.appendChild(chip);
     });
@@ -310,11 +300,15 @@
     renderPlayers();
   });
 
+  let winAwarded = false;
   function checkWinner(remaining){
-    if (players.length >= 2 && remaining === 1){
-      const winner = players.find(p => !p.eliminated);
+    if (players.length >= 2 && remaining === 1 && !winAwarded){
+      winAwarded = true;
+      const winnerIndex = players.findIndex(p => !p.eliminated);
+      const winner = players[winnerIndex];
       winnerLabel.textContent = `🏆 ${winner.name} VINCE LA PARTITA!`;
       winnerOverlay.classList.add("active");
+      addGlobalPoint(winnerIndex);
     }
   }
 
@@ -383,16 +377,125 @@
     }, 1000);
   });
 
-  /* ---- Nuova partita ---- */
+  /* ---- Nuova partita: si riparte subito con le stesse squadre globali ---- */
   function goToSetup(){
     if (timerInterval) clearInterval(timerInterval);
     winnerOverlay.classList.remove("active");
-    gameView.style.display = "none";
-    counter.style.display = "none";
-    setupView.style.display = "flex";
+    winAwarded = false;
+    startGame();
   }
   restartBtn.addEventListener("click", goToSetup);
   winnerRestartBtn.addEventListener("click", goToSetup);
+
+  startGame();
+</script>
+
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5);
+    font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+    transition: background 0.15s ease;
+  }
+  .gsw-btn:hover{ background: rgba(255,255,255,0.32); }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55);
+    background: rgba(8,10,20,0.7); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  .gsw-reset:hover{ color: #fff; border-color: rgba(255,255,255,0.3); }
+  @media (max-width: 560px){
+    .global-score-widget{ bottom: 8px; right: 8px; }
+    .gsw-name{ max-width: 72px; }
+  }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw){
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.teams) && d.teams.length >= 2) return d;
+      }
+    } catch(e) {}
+    return null;
+  }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){
+    var div = document.createElement("div");
+    div.textContent = s == null ? "" : s;
+    return div.innerHTML;
+  }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML = ""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0, n).map(function(t, i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:' + esc(t.color || "#4dd9ff") + '"></span>' +
+        '<span class="gsw-name">' + esc(t.name) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">' + (t.score || 0) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load();
+      if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score || 0) + d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load();
+      if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
 </script>
 
 </body>
