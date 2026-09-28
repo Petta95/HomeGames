@@ -253,7 +253,7 @@
     .board-grid{ grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* ---- Feedback Game Master ---- */
+  /* ---- Feedback Petta ---- */
   .gm-feedback{
     min-height: 30px;
     font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.02rem;
@@ -286,7 +286,7 @@
     100%{ opacity: 0; transform: scale(1.25); }
   }
 
-  /* ---- Console Game Master ---- */
+  /* ---- Console Petta ---- */
   .gm-console{
     width: 100%; max-width: 860px;
     display: flex; flex-direction: column; gap: 14px;
@@ -436,16 +436,16 @@
 <div class="modal-overlay" id="infoModal">
   <div class="modal-card">
     <div class="modal-title">📖 Come si Gioca</div>
-    <p class="modal-note">Stile "Family Feud / Intesa Vincente": il Game Master gestisce tutto da tastiera, proiettando questa schermata sulla TV.</p>
+    <p class="modal-note">Stile "Family Feud / Intesa Vincente": Petta gestisce tutto da tastiera, proiettando questa schermata sulla TV.</p>
     <ol>
       <li><strong>Squadre a turno:</strong> a ogni manche viene mostrata una categoria (es. "I 10 Paesi più Visitati al Mondo") con 10 caselle coperte, numerate dalla posizione #1 alla #10.</li>
-      <li><strong>Una squadra alla volta</strong> dice ad alta voce un elemento che pensa sia in classifica. Il Game Master digita la risposta nel campo in basso e preme <strong>Invio</strong>.</li>
+      <li><strong>Una squadra alla volta</strong> dice ad alta voce un elemento che pensa sia in classifica. Petta digita la risposta nel campo in basso e preme <strong>Invio</strong>.</li>
       <li><strong>Risposta esatta e presente in classifica:</strong> la casella corrispondente si scopre con un'animazione, la squadra di turno guadagna subito i punti (posizione #1 = 10 punti, #2 = 9 punti… fino a #10 = 1 punto).</li>
       <li><strong>Risposta sbagliata o non in classifica:</strong> compare una grande ❌ e il turno passa automaticamente alla squadra successiva.</li>
       <li><strong>Risposta già indovinata</strong> da qualcun altro in precedenza: il gioco avvisa ma <em>non</em> toglie il turno né penalizza — si può riprovare.</li>
       <li>Il turno ruota sempre alla squadra successiva dopo ogni tentativo (giusto o sbagliato), tranne quando la risposta era già stata trovata.</li>
-      <li>Quando tutte le 10 caselle sono scoperte compare un messaggio di tabellone completato. Il Game Master può anche usare <strong>"Mostra Tutto"</strong> per svelare le caselle rimaste (in un colore diverso, senza punti assegnati): il tabellone resta visibile per essere controllato, poi si preme <strong>"Prossima Categoria"</strong> (evidenziato) quando si è pronti — <strong>senza azzerare</strong> i punteggi.</li>
-      <li>In qualsiasi istante il Game Master può premere <strong>"Termina Partita"</strong> per chiudere il gioco e proclamare la squadra vincitrice.</li>
+      <li>Quando tutte le 10 caselle sono scoperte compare un messaggio di tabellone completato. Petta può anche usare <strong>"Mostra Tutto"</strong> per svelare le caselle rimaste (in un colore diverso, senza punti assegnati): il tabellone resta visibile per essere controllato, poi si preme <strong>"Prossima Categoria"</strong> (evidenziato) quando si è pronti — <strong>senza azzerare</strong> i punteggi.</li>
+      <li>In qualsiasi istante Petta può premere <strong>"Termina Partita"</strong> per chiudere il gioco e proclamare la squadra vincitrice.</li>
     </ol>
     <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
   </div>
@@ -1704,7 +1704,7 @@
     renderScoreboard();
   });
 
-  /* ---- Feedback testuale Game Master ---- */
+  /* ---- Feedback testuale Petta ---- */
   function showFeedback(type, text){
     clearTimeout(feedbackTimer);
     gmFeedback.className = `gm-feedback show ${type}`;
@@ -1800,7 +1800,7 @@
       : "Tabellone già completo — premete \"Prossima Categoria\" per andare avanti");
 
     // A differenza del completamento naturale, qui NON si apre l'overlay:
-    // il Game Master deve prima vedere gli elementi svelati sul tabellone,
+    // Petta deve prima vedere gli elementi svelati sul tabellone,
     // poi decide da solo quando premere "Prossima Categoria" (evidenziato).
     state.roundComplete = true;
     answerInput.disabled = true;
@@ -1821,7 +1821,7 @@
     loadCategory();
   }
 
-  /* ---- Eventi console Game Master ---- */
+  /* ---- Eventi console Petta ---- */
   submitBtn.addEventListener("click", submitAnswer);
   answerInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter"){

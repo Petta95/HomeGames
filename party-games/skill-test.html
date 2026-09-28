@@ -246,6 +246,29 @@
   }
   .completion-banner.show{ display: block; }
 
+  .round-award-row{
+    margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+  }
+  .round-award-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.88rem;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 10px 18px; border-radius: 14px; cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .round-award-btn:hover{ border-color: #00e676; color: #00e676; box-shadow: 0 0 18px -6px rgba(0,230,118,0.5); }
+  .round-award-btn.suggested{ border-color: #00e676; background: rgba(0,230,118,0.1); }
+  .round-award-reset-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.88rem;
+    background: rgba(255,45,85,0.08);
+    border: 2px solid rgba(255,45,85,0.5);
+    color: #ffb3c1;
+    padding: 10px 18px; border-radius: 14px; cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .round-award-reset-btn:hover{ border-color: #ff2d55; color: #fff; box-shadow: 0 0 18px -6px rgba(255,45,85,0.5); }
+
   /* =========================================================
      GRIGLIA ELEMENTI — 15 card, 5x3 desktop / 3x5 tablet / 2 col mobile
      ========================================================= */
@@ -403,6 +426,7 @@
       <li><strong>Foto sbagliata:</strong> la card lampeggia di <strong>rosso</strong> per un istante ma resta cliccabile in futuro; il turno passa comunque al giocatore successivo.</li>
       <li><strong>🔍 Zoom:</strong> il pulsante in alto a destra su ogni foto la ingrandisce per vederla meglio, senza contare come tentativo. Cliccando invece sulla foto stessa si tenta la risposta.</li>
       <li><strong>"Prossima Categoria / Salta"</strong> passa in qualunque momento alla categoria successiva. <strong>"Ricomincia Torneo"</strong> azzera i punteggi e rimescola tutto.</li>
+      <li>A fine categoria puoi (facoltativo) dare <strong>+1 punto</strong> al giocatore che ha fatto meglio in quel round, oppure azzerare il punteggio globale a 0-0. Se non fai nulla si passa comunque avanti.</li>
       <li>Al termine di tutte le categorie si apre la <strong>Classifica Finale</strong> con il podio dei punteggi.</li>
     </ol>
     <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
@@ -432,7 +456,10 @@
     <div class="target-banner-value" id="targetValue">—</div>
   </div>
 
-  <div class="completion-banner" id="completionBanner">🎉 Categoria completata! Si passa alla prossima…</div>
+  <div class="completion-banner" id="completionBanner">
+    🎉 Categoria completata!
+    <div class="round-award-row" id="roundAwardRow"></div>
+  </div>
 
   <div class="items-grid" id="itemsGrid"></div>
 
@@ -782,7 +809,7 @@
         { id: "borneo-15", nome: "Borneo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Borneo_sat.jpg/500px-Borneo_sat.jpg" },
         { id: "sumatra-16", nome: "Sumatra", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Sumatra.A2001190.0359_lrg.jpg/500px-Sumatra.A2001190.0359_lrg.jpg" },
         { id: "taiwan-17", nome: "Taiwan", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Taiwan_location_map.svg/500px-Taiwan_location_map.svg.png" },
-        { id: "malta-18", nome: "Malta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Flag_of_Malta.svg/500px-Flag_of_Malta.svg.png" },
+        { id: "malta-18", nome: "Malta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Malta_location_map.svg/500px-Malta_location_map.svg.png" },
         { id: "hawaii-19", nome: "Hawaii", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Hawaii_Island_relief_location_map.svg/500px-Hawaii_Island_relief_location_map.svg.png" }
       ]
     },
@@ -1024,6 +1051,168 @@
         { id: "volkswagen-golf-gti-18", nome: "Volkswagen Golf GTI", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Volkswagen_Golf_Mk1_GTI_MY_1983.jpg/500px-Volkswagen_Golf_Mk1_GTI_MY_1983.jpg" },
         { id: "toyota-land-cruiser-19", nome: "Toyota Land Cruiser", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/1980_Toyota_Land_Cruiser_%28FJ40%29.jpg/500px-1980_Toyota_Land_Cruiser_%28FJ40%29.jpg" }
       ]
+    },
+    {
+      id: "erbe_spezie",
+      titolo: "Erbe Aromatiche e Spezie",
+      icona: "🌿",
+      items: [
+        { id: "basilico", nome: "Basilico", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Ocimum_basilicum_8zz.jpg/500px-Ocimum_basilicum_8zz.jpg" },
+        { id: "prezzemolo", nome: "Prezzemolo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Petroselinum.jpg/500px-Petroselinum.jpg" },
+        { id: "rosmarino", nome: "Rosmarino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Rosemary_in_bloom.JPG/500px-Rosemary_in_bloom.JPG" },
+        { id: "salvia", nome: "Salvia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Salvia_officinalis0.jpg/500px-Salvia_officinalis0.jpg" },
+        { id: "timo", nome: "Timo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Thyme-Bundle.jpg/500px-Thyme-Bundle.jpg" },
+        { id: "origano", nome: "Origano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Origanum_vulgare_-_harilik_pune.jpg/500px-Origanum_vulgare_-_harilik_pune.jpg" },
+        { id: "maggiorana", nome: "Maggiorana", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Origanum_majorana_002.JPG/500px-Origanum_majorana_002.JPG" },
+        { id: "menta", nome: "Menta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Minze.jpg/500px-Minze.jpg" },
+        { id: "erba_cipollina", nome: "Erba Cipollina", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Allium_schoenoprasum_-_Bombus_lapidarius_-_Tootsi.jpg/500px-Allium_schoenoprasum_-_Bombus_lapidarius_-_Tootsi.jpg" },
+        { id: "alloro", nome: "Alloro", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Starr-071024-0195-Laurus_nobilis-leaves-Enchanting_Floral_Gardens_of_Kula-Maui_%2824867859296%29.jpg/500px-Starr-071024-0195-Laurus_nobilis-leaves-Enchanting_Floral_Gardens_of_Kula-Maui_%2824867859296%29.jpg" },
+        { id: "dragoncello", nome: "Dragoncello", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6c/Estragon_1511.jpg" },
+        { id: "anice_stellato", nome: "Anice Stellato", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Illicium_verum_1zz.jpg/500px-Illicium_verum_1zz.jpg" },
+        { id: "finocchietto", nome: "Finocchietto Selvatico", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Foeniculum_July_2011-1a.jpg/500px-Foeniculum_July_2011-1a.jpg" },
+        { id: "curcuma", nome: "Curcuma", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Turmeric_inflorescence.jpg/500px-Turmeric_inflorescence.jpg" },
+        { id: "zenzero", nome: "Zenzero", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Koeh-146-no_text.jpg/500px-Koeh-146-no_text.jpg" },
+        { id: "cannella", nome: "Cannella", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Cinnamomum_verum_spices.jpg/500px-Cinnamomum_verum_spices.jpg" },
+        { id: "chiodi_garofano", nome: "Chiodi di Garofano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Syzygium_aromaticum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-030.jpg" },
+        { id: "zafferano", nome: "Zafferano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Saffron_-_premium_spice.jpg/500px-Saffron_-_premium_spice.jpg" },
+        { id: "cumino", nome: "Cumino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/58/Cuminum_cyminum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-198.jpg" },
+        { id: "coriandolo", nome: "Coriandolo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/13/Coriandrum_sativum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-193.jpg" }
+      ]
+    },
+    {
+      id: "pasta_ripiena",
+      titolo: "Pasta Fresca e Ripiena",
+      icona: "🥟",
+      items: [
+        { id: "tortellini", nome: "Tortellini", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Tortellini_Bolognesi.jpg/500px-Tortellini_Bolognesi.jpg" },
+        { id: "cappelletti", nome: "Cappelletti", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/02_Cappelletti_-_Cappellacci_-_Pasta_ripiena_-_Cucina_tipica_-_Ferrara.jpg/500px-02_Cappelletti_-_Cappellacci_-_Pasta_ripiena_-_Cucina_tipica_-_Ferrara.jpg" },
+        { id: "agnolotti", nome: "Agnolotti", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Agnolotti.JPG/500px-Agnolotti.JPG" },
+        { id: "casoncelli", nome: "Casoncelli", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Casoncelli_in_una_grande_padella.jpg/500px-Casoncelli_in_una_grande_padella.jpg" },
+        { id: "culurgiones", nome: "Culurgiones", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Culurgione.jpg/500px-Culurgione.jpg" },
+        { id: "ravioli", nome: "Ravioli", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Flickr_-_cyclonebill_-_Ravioli_med_skinke_og_asparges_i_mascarponecreme.jpg/500px-Flickr_-_cyclonebill_-_Ravioli_med_skinke_og_asparges_i_mascarponecreme.jpg" },
+        { id: "tortelli_zucca", nome: "Tortelli di Zucca", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Tortelli.jpg/500px-Tortelli.jpg" },
+        { id: "pansotti", nome: "Pansotti", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Pastificio_Novella_-_Pansoti_Preboggion%2C_crop.jpg/500px-Pastificio_Novella_-_Pansoti_Preboggion%2C_crop.jpg" },
+        { id: "tagliatelle", nome: "Tagliatelle", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Nests_of_tagliatelle_bolognesi.jpg/500px-Nests_of_tagliatelle_bolognesi.jpg" },
+        { id: "pappardelle", nome: "Pappardelle", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Pappardelle.jpg/500px-Pappardelle.jpg" },
+        { id: "garganelli", nome: "Garganelli", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Garganelli_%2810348149363%29.jpg/500px-Garganelli_%2810348149363%29.jpg" },
+        { id: "strozzapreti", nome: "Strozzapreti", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Strozzapreti_bulk.jpg/500px-Strozzapreti_bulk.jpg" },
+        { id: "trofie", nome: "Trofie", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Trofie_pasta_macro.jpg/500px-Trofie_pasta_macro.jpg" },
+        { id: "orecchiette", nome: "Orecchiette", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Orecchiette_carbonara.jpg/500px-Orecchiette_carbonara.jpg" },
+        { id: "fettuccine", nome: "Fettuccine", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Fettucine1.JPG/500px-Fettucine1.JPG" },
+        { id: "pizzoccheri", nome: "Pizzoccheri", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Pizzoccheri.jpg/500px-Pizzoccheri.jpg" },
+        { id: "malloreddus", nome: "Malloreddus", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Sardo_Cucina%2C_Fitzrovia%2C_London_%285147126888%29.jpg/500px-Sardo_Cucina%2C_Fitzrovia%2C_London_%285147126888%29.jpg" },
+        { id: "anolini", nome: "Anolini", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Anolini_in_brodo.jpg/500px-Anolini_in_brodo.jpg" },
+        { id: "cappellacci_zucca", nome: "Cappellacci di Zucca", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Capl%C3%A9t_ad_suca.jpg/500px-Capl%C3%A9t_ad_suca.jpg" },
+        { id: "marubini", nome: "Marubini", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Il_marobino_%28Al_marub%C3%A9n%29_di_Casalmaggiore_-_Pasta_ripiena_tradizionale_delle_festivit%C3%A0.JPG/500px-Il_marobino_%28Al_marub%C3%A9n%29_di_Casalmaggiore_-_Pasta_ripiena_tradizionale_delle_festivit%C3%A0.JPG" }
+      ]
+    },
+    {
+      id: "crostacei_molluschi",
+      titolo: "Crostacei e Molluschi",
+      icona: "🦐",
+      items: [
+        { id: "scampo", nome: "Scampo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Nephrops_norvegicus.jpg/500px-Nephrops_norvegicus.jpg" },
+        { id: "gambero_rosso", nome: "Gambero Rosso", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Fish4525_-_Flickr_-_NOAA_Photo_Library.jpg/500px-Fish4525_-_Flickr_-_NOAA_Photo_Library.jpg" },
+        { id: "mazzancolla", nome: "Mazzancolla", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/CSIRO_ScienceImage_2992_The_Giant_Tiger_Prawn.jpg/500px-CSIRO_ScienceImage_2992_The_Giant_Tiger_Prawn.jpg" },
+        { id: "canocchia", nome: "Canocchia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/OdontodactylusScyllarus2.jpg/500px-OdontodactylusScyllarus2.jpg" },
+        { id: "astice", nome: "Astice", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/KreeftbijDenOsse.jpg/500px-KreeftbijDenOsse.jpg" },
+        { id: "aragosta", nome: "Aragosta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/California_spiny_lobster.JPG/500px-California_spiny_lobster.JPG" },
+        { id: "granchio", nome: "Granchio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Cancer_pagurus.jpg/500px-Cancer_pagurus.jpg" },
+        { id: "granseola", nome: "Granseola", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Maja_squinado.jpg/500px-Maja_squinado.jpg" },
+        { id: "polpo", nome: "Polpo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Octopus2.jpg/500px-Octopus2.jpg" },
+        { id: "seppia", nome: "Seppia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Sepia_com%C3%BAn_%28Sepia_officinalis%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-21%2C_DD_62.jpg/500px-Sepia_com%C3%BAn_%28Sepia_officinalis%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-21%2C_DD_62.jpg" },
+        { id: "calamaro", nome: "Calamaro", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Sepioteuthis_sepioidea_%28Caribbean_Reef_Squid%29.jpg/500px-Sepioteuthis_sepioidea_%28Caribbean_Reef_Squid%29.jpg" },
+        { id: "totano", nome: "Totano", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Todarodes_sagittatus.jpg/500px-Todarodes_sagittatus.jpg" },
+        { id: "cozza", nome: "Cozza", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/CornishMussels.JPG/500px-CornishMussels.JPG" },
+        { id: "vongola", nome: "Vongola", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Clam_with_its_siphon_out_in_Boothbay_Maine.jpg/500px-Clam_with_its_siphon_out_in_Boothbay_Maine.jpg" },
+        { id: "ostrica", nome: "Ostrica", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Crassostrea_gigas_p1040848.jpg/500px-Crassostrea_gigas_p1040848.jpg" },
+        { id: "capasanta", nome: "Capasanta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Argopecten_irradians.jpg/500px-Argopecten_irradians.jpg" },
+        { id: "patella", nome: "Patella", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Common_limpets1.jpg/500px-Common_limpets1.jpg" },
+        { id: "buccino", nome: "Buccino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Whelks_at_a_fish_market_in_Japan.jpg/500px-Whelks_at_a_fish_market_in_Japan.jpg" },
+        { id: "cannolicchio", nome: "Cannolicchio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Solen_marginatus.jpg/500px-Solen_marginatus.jpg" },
+        { id: "gambero_imperiale", nome: "Gambero Imperiale", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Penaeus_monodon.jpg/500px-Penaeus_monodon.jpg" }
+      ]
+    },
+    {
+      id: "uccelli_rapaci",
+      titolo: "Uccelli e Rapaci",
+      icona: "🦉",
+      items: [
+        { id: "gufo_comune", nome: "Gufo Comune", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Long-eared_Owl_-_Kisjuszallas_-_Hungary_S4E0920_%2815671750198%29.jpg/500px-Long-eared_Owl_-_Kisjuszallas_-_Hungary_S4E0920_%2815671750198%29.jpg" },
+        { id: "allocco", nome: "Allocco", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Strix_aluco_3_%28Martin_Mecnarowski%29.jpg/500px-Strix_aluco_3_%28Martin_Mecnarowski%29.jpg" },
+        { id: "barbagianni", nome: "Barbagianni", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/American_Barn_Owl_%28Tyto_furcata_guatemalae%29%2C_Orange_Walk.jpg/500px-American_Barn_Owl_%28Tyto_furcata_guatemalae%29%2C_Orange_Walk.jpg" },
+        { id: "civetta", nome: "Civetta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D1%8B%D0%B9_%D1%81%D1%8B%D1%87._%D0%A1%D0%BE%D0%B2%D0%B0_%D0%B2_%D0%BA%D0%B0%D0%BD%D1%8C%D0%BE%D0%BD%D0%B5_%D1%83%D1%80%D0%BE%D1%87%D0%B8%D1%89%D0%B0_%D0%91%D0%BE%D0%B7%D0%B6%D1%8B%D1%80%D0%B0._01.jpg/500px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D1%8B%D0%B9_%D1%81%D1%8B%D1%87._%D0%A1%D0%BE%D0%B2%D0%B0_%D0%B2_%D0%BA%D0%B0%D0%BD%D1%8C%D0%BE%D0%BD%D0%B5_%D1%83%D1%80%D0%BE%D1%87%D0%B8%D1%89%D0%B0_%D0%91%D0%BE%D0%B7%D0%B6%D1%8B%D1%80%D0%B0._01.jpg" },
+        { id: "assiolo", nome: "Assiolo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Scops_Owl_%28Otus_scops%29%2C_Kalloni%2C_Lesvos%2C_Greece%2C_19.04.2015_%2816773748434%29.jpg/500px-Scops_Owl_%28Otus_scops%29%2C_Kalloni%2C_Lesvos%2C_Greece%2C_19.04.2015_%2816773748434%29.jpg" },
+        { id: "gufo_reale", nome: "Gufo Reale", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Bubo_bubo_3_%28Martin_Mecnarowski%29.jpg/500px-Bubo_bubo_3_%28Martin_Mecnarowski%29.jpg" },
+        { id: "aquila_reale", nome: "Aquila Reale", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/015_Wild_Golden_Eagle_in_flight_at_Pfyn-Finges_%28Switzerland%29_Photo_by_Giles_Laurent.jpg/500px-015_Wild_Golden_Eagle_in_flight_at_Pfyn-Finges_%28Switzerland%29_Photo_by_Giles_Laurent.jpg" },
+        { id: "falco_pellegrino", nome: "Falco Pellegrino", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Falco_peregrinus_m_Humber_Bay_Park_Toronto.jpg/500px-Falco_peregrinus_m_Humber_Bay_Park_Toronto.jpg" },
+        { id: "poiana", nome: "Poiana", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Common_Buzzard_by_caroline_legg_%28cropped%29.jpg/500px-Common_Buzzard_by_caroline_legg_%28cropped%29.jpg" },
+        { id: "nibbio_reale", nome: "Nibbio Reale", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Milvus_milvus_R%28ThKraft%29.jpg/500px-Milvus_milvus_R%28ThKraft%29.jpg" },
+        { id: "sparviere", nome: "Sparviere", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/%D0%AF%D1%81%D1%82%D1%80%D0%B5%D0%B1-%D0%BF%D0%B5%D1%80%D0%B5%D0%BF%D0%B5%D0%BB%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%28Accipiter_nisus%2C_m%29%2C_%D0%98%D0%B7%D0%BC%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA.jpg/500px-%D0%AF%D1%81%D1%82%D1%80%D0%B5%D0%B1-%D0%BF%D0%B5%D1%80%D0%B5%D0%BF%D0%B5%D0%BB%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%28Accipiter_nisus%2C_m%29%2C_%D0%98%D0%B7%D0%BC%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA.jpg" },
+        { id: "gheppio", nome: "Gheppio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Common_kestrel_falco_tinnunculus.jpg/500px-Common_kestrel_falco_tinnunculus.jpg" },
+        { id: "grifone", nome: "Grifone", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Gyps_fulvus_in_flight_-_Spain.jpg/500px-Gyps_fulvus_in_flight_-_Spain.jpg" },
+        { id: "avvoltoio_monaco", nome: "Avvoltoio Monaco", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Buitre_negro_%281%29.jpg/500px-Buitre_negro_%281%29.jpg" },
+        { id: "aquila_bonelli", nome: "Aquila del Bonelli", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Bonelli%27s_Eagle_-_Montsonis_-_Spain_S4E8373_%2824849913309%29.jpg/500px-Bonelli%27s_Eagle_-_Montsonis_-_Spain_S4E8373_%2824849913309%29.jpg" },
+        { id: "falco_palude", nome: "Falco di Palude", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/M%C3%A4nnliche_Rohrweihe_im_Flug_04.jpg/500px-M%C3%A4nnliche_Rohrweihe_im_Flug_04.jpg" },
+        { id: "smeriglio", nome: "Smeriglio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Merlin_in_Prospect_Park_%2863386%29.jpg/500px-Merlin_in_Prospect_Park_%2863386%29.jpg" },
+        { id: "lanario", nome: "Lanario", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Lanner_Falcon_800.jpg/500px-Lanner_Falcon_800.jpg" },
+        { id: "capovaccaio", nome: "Capovaccaio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Egyptian_Vulture%2C_Socotra.jpg/500px-Egyptian_Vulture%2C_Socotra.jpg" },
+        { id: "astore", nome: "Astore", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Northern_Goshawk_ad_M2.jpg/500px-Northern_Goshawk_ad_M2.jpg" }
+      ]
+    },
+    {
+      id: "serietv_iconiche",
+      titolo: "Serie TV Iconiche",
+      icona: "📺",
+      items: [
+        { id: "breaking_bad", nome: "Breaking Bad", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/PaleyFest_2010_-_Breaking_Bad.jpg/500px-PaleyFest_2010_-_Breaking_Bad.jpg" },
+        { id: "game_of_thrones", nome: "Game of Thrones", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Emilia_Clarke_at_the_2023_Harper%27s_Bazaar_Women_of_the_Year_Awards.jpg/500px-Emilia_Clarke_at_the_2023_Harper%27s_Bazaar_Women_of_the_Year_Awards.jpg" },
+        { id: "modern_family", nome: "Modern Family", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Modern_Family_Cast.jpg/500px-Modern_Family_Cast.jpg" },
+        { id: "friends", nome: "Friends", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d6/Friends_season_one_cast.jpg/500px-Friends_season_one_cast.jpg" },
+        { id: "the_office", nome: "The Office", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Steve_Carell_%2811024125195%29.jpg/500px-Steve_Carell_%2811024125195%29.jpg" },
+        { id: "stranger_things", nome: "Stranger Things", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Millie_Bobby_Brown_2025_%281%29.png/500px-Millie_Bobby_Brown_2025_%281%29.png" },
+        { id: "big_bang_theory", nome: "The Big Bang Theory", imageUrl: "https://upload.wikimedia.org/wikipedia/en/7/73/The_Big_Bang_Theory_Poster.jpg" },
+        { id: "how_i_met", nome: "How I Met Your Mother", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/How_I_Met_Your_Mother_cast.jpg/500px-How_I_Met_Your_Mother_cast.jpg" },
+        { id: "greys_anatomy", nome: "Grey's Anatomy", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Patrick_Dempsey_SiriusXM.jpg/500px-Patrick_Dempsey_SiriusXM.jpg" },
+        { id: "walking_dead", nome: "The Walking Dead", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Andrew_Lincoln%2C_Greg_Nicotero%2C_Norman_Reedus%2C_Melissa_McBride%2C_Lennie_James%2C_Chandler_Riggs%2C_Jeffrey_Dean_Morgan%2C_Lauren_Cohan%2C_Alanna_Masterson_%26_Seth_Gilliam_%28cropped%29.jpg/500px-thumbnail.jpg" },
+        { id: "peaky_blinders", nome: "Peaky Blinders", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Peaky_Bliders.jpg/500px-Peaky_Bliders.jpg" },
+        { id: "narcos", nome: "Narcos", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Wagner_Moura-6546_%283x4%29.jpg/500px-Wagner_Moura-6546_%283x4%29.jpg" },
+        { id: "suits", nome: "Suits", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Meghan_Markle_and_Patrick_J._Adams_%28Paley_Center_%27Suits%27%29.jpg/500px-Meghan_Markle_and_Patrick_J._Adams_%28Paley_Center_%27Suits%27%29.jpg" },
+        { id: "sherlock", nome: "Sherlock", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Benedict_Cumberbatch_filming_Sherlock_cropped2.jpg/500px-Benedict_Cumberbatch_filming_Sherlock_cropped2.jpg" },
+        { id: "dexter", nome: "Dexter", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Michael_C._Hall_%282009%29.jpg/500px-Michael_C._Hall_%282009%29.jpg" },
+        { id: "house_md", nome: "Dr. House", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Hugh_Laurie%2C_from_a_bit_of_Fry_%26_Laurie%2C_http---en.wikipedia.org-wiki-Hugh_laurie_%289450843901%29_%28cropped%29.jpg/500px-Hugh_Laurie%2C_from_a_bit_of_Fry_%26_Laurie%2C_http---en.wikipedia.org-wiki-Hugh_laurie_%289450843901%29_%28cropped%29.jpg" },
+        { id: "prison_break", nome: "Prison Break", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Prison_Break_Cast.jpg/500px-Prison_Break_Cast.jpg" },
+        { id: "the_crown", nome: "The Crown", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Claire_Foy_at_83rd_Venice_International_Film_Festival-3_%28cropped%29.jpg/500px-Claire_Foy_at_83rd_Venice_International_Film_Festival-3_%28cropped%29.jpg" },
+        { id: "la_casa_di_carta", nome: "La Casa di Carta", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Money_Heist_Berlin_character.jpg/500px-Money_Heist_Berlin_character.jpg" },
+        { id: "squid_game", nome: "Squid Game", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Mu%C3%B1eca_del_Juego_del_Calamar.jpg" }
+      ]
+    },
+    {
+      id: "locandine_minimaliste",
+      titolo: "Locandine di Film Senza Titolo",
+      icona: "🎬",
+      items: [
+        { id: "alien", nome: "Alien", imageUrl: "https://upload.wikimedia.org/wikipedia/en/c/c3/Alien_movie_poster.jpg" },
+        { id: "the_shining", nome: "Shining", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/1/1d/The_Shining_%281980%29_U.K._release_poster_-_The_tide_of_terror_that_swept_America_IS_HERE.jpg/500px-The_Shining_%281980%29_U.K._release_poster_-_The_tide_of_terror_that_swept_America_IS_HERE.jpg" },
+        { id: "psycho", nome: "Psyco", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Psycho_%281960%29_theatrical_poster_%28retouched%29.jpg/500px-Psycho_%281960%29_theatrical_poster_%28retouched%29.jpg" },
+        { id: "jaws", nome: "Lo Squalo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Jaws_movie_poster.jpg/500px-Jaws_movie_poster.jpg" },
+        { id: "exorcist", nome: "L'Esorcista", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7b/Exorcist_ver2.jpg/500px-Exorcist_ver2.jpg" },
+        { id: "halloween", nome: "Halloween", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/a/af/Halloween_%281978%29_theatrical_poster.jpg/500px-Halloween_%281978%29_theatrical_poster.jpg" },
+        { id: "nightmare_elm_street", nome: "Nightmare - Dal Profondo della Notte", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/f/fa/A_Nightmare_on_Elm_Street_%281984%29_theatrical_poster.jpg/500px-A_Nightmare_on_Elm_Street_%281984%29_theatrical_poster.jpg" },
+        { id: "hereditary", nome: "Hereditary - Le Radici del Male", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d9/Hereditary.png/500px-Hereditary.png" },
+        { id: "get_out", nome: "Scappa - Get Out", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a3/Get_Out_poster.png/500px-Get_Out_poster.png" },
+        { id: "2001_space_odyssey", nome: "2001: Odissea nello Spazio", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/1/11/2001_A_Space_Odyssey_%281968%29.png/500px-2001_A_Space_Odyssey_%281968%29.png" },
+        { id: "blade_runner", nome: "Blade Runner", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Blade_Runner_%281982_poster%29.png/500px-Blade_Runner_%281982_poster%29.png" },
+        { id: "et", nome: "E.T. l'Extra-Terrestre", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/6/66/E_t_the_extra_terrestrial_ver3.jpg/500px-E_t_the_extra_terrestrial_ver3.jpg" },
+        { id: "arrival", nome: "Arrival", imageUrl: "https://upload.wikimedia.org/wikipedia/en/d/df/Arrival%2C_Movie_Poster.jpg" },
+        { id: "interstellar", nome: "Interstellar", imageUrl: "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg" },
+        { id: "moon", nome: "Moon", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/a/af/Moon_%282009_film%29.jpg/500px-Moon_%282009_film%29.jpg" },
+        { id: "ex_machina", nome: "Ex Machina", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/b/ba/Ex-machina-uk-poster.jpg/500px-Ex-machina-uk-poster.jpg" },
+        { id: "up", nome: "Up", imageUrl: "https://upload.wikimedia.org/wikipedia/en/0/05/Up_%282009_film%29.jpg" },
+        { id: "spirited_away", nome: "La Città Incantata", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/db/Spirited_Away_Japanese_poster.png/500px-Spirited_Away_Japanese_poster.png" },
+        { id: "wall_e", nome: "WALL-E", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/WALL-E_poster.jpg/500px-WALL-E_poster.jpg" },
+        { id: "coco", nome: "Coco", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/9/98/Coco_%282017_film%29_poster.jpg/500px-Coco_%282017_film%29_poster.jpg" }
+      ]
     }
   ];
 
@@ -1093,7 +1282,7 @@
 
   let players = [];              // [{ name, score, globalIndex }]
   let currentPlayerIndex = 0;
-  let winAwarded = false;
+  let roundStartScore = [];      // punteggio di ciascun giocatore all'inizio del round corrente
 
   let categoryOrder = [];        // indici di CATEGORIES mescolati
   let categoryPos = 0;           // posizione corrente nel mazzo di categorie
@@ -1113,6 +1302,7 @@
   const categoryProgress = document.getElementById("categoryProgress");
   const targetValue = document.getElementById("targetValue");
   const completionBanner = document.getElementById("completionBanner");
+  const roundAwardRow = document.getElementById("roundAwardRow");
   const itemsGrid = document.getElementById("itemsGrid");
   const skipCategoryBtn = document.getElementById("skipCategoryBtn");
   const restartTournamentBtn = document.getElementById("restartTournamentBtn");
@@ -1150,7 +1340,6 @@
   function startGame(){
     players = buildPlayersFromGlobal();
     currentPlayerIndex = 0;
-    winAwarded = false;
     categoryOrder = shuffle([...Array(CATEGORIES.length).keys()]);
     categoryPos = 0;
     gridLocked = false;
@@ -1188,6 +1377,8 @@
     roundItems = shuffle(currentCategory.items).slice(0, MAX_ROUND_ITEMS);
     gridOrder = shuffle(roundItems);
     completionBanner.classList.remove("show");
+    roundAwardRow.innerHTML = "";
+    roundStartScore = players.map(p => p.score);
 
     categoryTitle.textContent = `${currentCategory.icona} ${currentCategory.titolo}`;
     categoryProgress.textContent = `Categoria ${categoryPos + 1}/${categoryOrder.length}`;
@@ -1296,7 +1487,40 @@
     gridLocked = true;
     completionBanner.classList.add("show");
     targetValue.textContent = "Tutti trovati!";
-    setTimeout(() => { nextCategory(); }, 1800);
+    renderRoundAwardPanel();
+  }
+
+  /* ---- Pannello di fine round: punto bonus facoltativo a scelta ----
+     Non è obbligatorio: si passa avanti anche senza cliccare nulla,
+     con "Prossima Categoria / Salta". */
+  function renderRoundAwardPanel(){
+    const deltas = players.map((p, i) => p.score - (roundStartScore[i] || 0));
+    const maxDelta = Math.max(...deltas);
+    roundAwardRow.innerHTML = players.map((p, i) => `
+      <button type="button" class="round-award-btn${deltas[i] === maxDelta && maxDelta > 0 ? " suggested" : ""}" data-award-index="${i}">
+        +1 a ${escapeHtml(p.name)} (${deltas[i]} in questo round)
+      </button>
+    `).join("") + `<button type="button" class="round-award-reset-btn" id="roundResetBtn">🔄 Azzera Punteggio 0-0</button>`;
+
+    roundAwardRow.querySelectorAll("[data-award-index]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const i = parseInt(btn.dataset.awardIndex, 10);
+        addGlobalPoint(players[i].globalIndex);
+        roundAwardRow.innerHTML = `<span style="color:#00e676;">✔ Punto assegnato a ${escapeHtml(players[i].name)}</span>`;
+      });
+    });
+    const resetBtn = document.getElementById("roundResetBtn");
+    resetBtn.addEventListener("click", () => {
+      const ok = confirm("Azzerare il punteggio globale a 0-0?");
+      if (!ok) return;
+      const data = loadGlobalTeams();
+      if (data){
+        players.forEach(p => { if (data.teams[p.globalIndex]) data.teams[p.globalIndex].score = 0; });
+        localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+        if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+      }
+      roundAwardRow.innerHTML = `<span style="color:#00e676;">✔ Punteggio azzerato</span>`;
+    });
   }
 
   function nextCategory(){
@@ -1330,10 +1554,6 @@
      ========================================================= */
   function showFinalView(){
     const ranked = [...players].sort((a, b) => b.score - a.score);
-    if (!winAwarded && ranked.length){
-      winAwarded = true;
-      addGlobalPoint(ranked[0].globalIndex);
-    }
 
     // ---- Podio (primi 3, ordine visivo 2°-1°-3°) ----
     podiumRow.innerHTML = "";

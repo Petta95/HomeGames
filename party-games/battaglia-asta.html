@@ -76,6 +76,10 @@
     background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.10), transparent 60%), #171d33;
   }
 
+  .dream-scene-wrap{ border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,0.14); }
+  .dream-scene-wrap svg{ display:block; }
+  .dream-scene-caption{ text-align:center; font-weight:800; font-size:0.85rem; margin-top:6px; }
+
   /* Vista centrale dell'elemento in asta: sfondo chiaro, immagine intera senza tagli.
      Larghezza/altezza vengono calcolate in JS (fitMainFrame) in base alle proporzioni
      reali della foto, cosi' le immagini verticali non lasciano grandi bordi bianchi. */
@@ -157,10 +161,10 @@
     </h3>
     <ol class="space-y-3 text-sm sm:text-[0.95rem] text-white/85 list-decimal list-inside leading-relaxed">
       <li>Due giocatori (o squadre) partono con un budget di <strong class="text-white">20€</strong> ciascuno e devono aggiudicarsi <strong class="text-white">esattamente 5 elementi</strong>.</li>
-      <li>Ad ogni turno viene mostrato un elemento della categoria scelta: i giocatori <strong class="text-white">rilanciano ad alta voce</strong>, il Game Master usa i pulsanti rapidi (+1€/+2€/+5€) o l'importo personalizzato per far salire l'offerta.</li>
-      <li>Quando nessuno rilancia più, il Game Master clicca <strong class="text-cyan-neon">"Aggiudica a Giocatore 1"</strong> o <strong class="text-pink-neon">"Aggiudica a Giocatore 2"</strong>: il budget viene scalato e l'elemento aggiunto alla rosa.</li>
+      <li>Ad ogni turno viene mostrato un elemento della categoria scelta: i giocatori <strong class="text-white">rilanciano ad alta voce</strong>, Petta usa i pulsanti rapidi (+1€/+2€/+5€) o l'importo personalizzato per far salire l'offerta.</li>
+      <li>Quando nessuno rilancia più, Petta clicca <strong class="text-cyan-neon">"Aggiudica a Giocatore 1"</strong> o <strong class="text-pink-neon">"Aggiudica a Giocatore 2"</strong>: il budget viene scalato e l'elemento aggiunto alla rosa.</li>
       <li>Se nessuno fa offerte, si preme <strong class="text-white">"Passa"</strong> e l'elemento viene scartato.</li>
-      <li>Non si può offrire più del proprio budget residuo. Un giocatore che ha già i suoi 5 elementi non può più offrire: se l'altro ha ancora slot liberi, l'elemento gli spetta e il "Passa" si disattiva.</li>
+      <li>Non si può offrire più del proprio budget residuo. Un giocatore che ha già i suoi 5 elementi non può più offrire: se l'altro ha ancora slot liberi, il "Passa" si disattiva e l'elemento gli spetta cliccando "Aggiudica", finché non arriva anche lui a 5: alla fine avrete sempre 5 elementi a testa.</li>
       <li>Dopo 10 elementi mostrati (o a rose complete) si apre il <strong class="text-white">Resoconto Finale</strong>: confrontate le rose e votate ad alta voce il vincitore della manche. Il punteggio si accumula per le sfide successive. Clicca su un'immagine in qualsiasi momento per vederla a schermo intero.</li>
     </ol>
     <button id="closeInfoBtn" class="mt-6 w-full py-3 rounded-xl bg-gold-neon text-[#1a1200] font-display font-bold hover:brightness-110 transition">Ho Capito, si Gioca! ▶</button>
@@ -277,7 +281,7 @@
             Aggiudica a <span id="assignBNameLabel"></span>
           </button>
         </div>
-        <p id="forcedNote" class="hidden text-[0.7rem] sm:text-xs text-gold-neon/90 text-center font-semibold">⚠️ Un giocatore ha già 5 elementi: l'oggetto deve andare all'altro, non si può passare.</p>
+        <p id="forcedNote" class="hidden text-[0.75rem] sm:text-sm text-gold-neon font-bold text-center animate-pulse">⚡ Un giocatore ha già 5 elementi: l'oggetto deve andare all'altro, clicca "Aggiudica" per assegnarlo (non si può passare).</p>
         <p id="lastActionNote" class="text-[0.7rem] sm:text-xs text-white/40 text-center"></p>
       </div>
     </div>
@@ -297,25 +301,39 @@
 </main>
 
 <!-- ===================== FINAL VIEW ===================== -->
-<main id="finalView" class="hidden max-w-5xl mx-auto px-5 pb-20 flex flex-col items-center gap-7 pt-4">
+<main id="finalView" class="hidden max-w-6xl mx-auto px-5 pb-20 flex flex-col items-center gap-7 pt-4">
   <h2 class="font-display font-black text-3xl sm:text-4xl text-center">
     <span class="bg-gradient-to-r from-gold-neon to-pink-neon bg-clip-text text-transparent">🏁 Sfida Finale</span>
   </h2>
 
-  <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-5">
+  <div class="w-full grid grid-cols-1 xl:grid-cols-2 gap-5">
     <div class="glass rounded-3xl p-5 border-t-4" style="border-color:#22d3ee;">
       <div class="flex items-center justify-between mb-3">
         <h3 id="finalNameA" class="font-display font-extrabold text-lg text-cyan-neon"></h3>
         <span id="finalBudgetA" class="text-sm font-bold text-white/70"></span>
       </div>
-      <div id="finalItemsA" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+      <div id="finalItemsA" class="grid grid-cols-3 sm:grid-cols-5 xl:grid-cols-3 gap-3"></div>
     </div>
     <div class="glass rounded-3xl p-5 border-t-4" style="border-color:#ec4899;">
       <div class="flex items-center justify-between mb-3">
         <h3 id="finalNameB" class="font-display font-extrabold text-lg text-pink-neon"></h3>
         <span id="finalBudgetB" class="text-sm font-bold text-white/70"></span>
       </div>
-      <div id="finalItemsB" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+      <div id="finalItemsB" class="grid grid-cols-3 sm:grid-cols-5 xl:grid-cols-3 gap-3"></div>
+    </div>
+  </div>
+
+  <div id="dreamFinalSection" class="hidden w-full flex flex-col items-center gap-3">
+    <h3 class="font-display font-black text-xl sm:text-2xl text-center">🌅 Il Vostro Stato dei Sogni</h3>
+    <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div>
+        <div id="dreamFinalSceneA" class="dream-scene-wrap"></div>
+        <p id="dreamFinalCaptionA" class="dream-scene-caption text-cyan-neon"></p>
+      </div>
+      <div>
+        <div id="dreamFinalSceneB" class="dream-scene-wrap"></div>
+        <p id="dreamFinalCaptionB" class="dream-scene-caption text-pink-neon"></p>
+      </div>
     </div>
   </div>
 
@@ -1133,6 +1151,142 @@ const CATEGORIES = [
       { name: "Hosteria Giusti", file: "hosteria_giusti.jpg", emoji: "🧀" },
       { name: "Mercato Albinelli", file: "mercato_albinelli.jpg", emoji: "🛒" }
     ]
+  },
+  {
+    key: "attoriitaliani", label: "Attori Italiani", icon: "🎭",
+    items: [
+      { name: "Checco Zalone", file: "checco_zalone.jpg", emoji: "😂" },
+      { name: "Aldo Baglio", file: "aldo_baglio.jpg", emoji: "🎭" },
+      { name: "Giovanni Storti", file: "giovanni_storti.jpg", emoji: "🎭" },
+      { name: "Giacomo Poretti", file: "giacomo_poretti.jpg", emoji: "🎭" },
+      { name: "Christian De Sica", file: "christian_de_sica.jpg", emoji: "🎬" },
+      { name: "Diego Abatantuono", file: "diego_abatantuono.jpg", emoji: "🎬" },
+      { name: "Claudio Bisio", file: "claudio_bisio.jpg", emoji: "🎤" },
+      { name: "Fabio De Luigi", file: "fabio_de_luigi.jpg", emoji: "😄" },
+      { name: "Alessandro Siani", file: "alessandro_siani.jpg", emoji: "😄" },
+      { name: "Leonardo Pieraccioni", file: "leonardo_pieraccioni.jpg", emoji: "🎬" },
+      { name: "Rocco Papaleo", file: "rocco_papaleo.jpg", emoji: "🎭" },
+      { name: "Massimo Boldi", file: "massimo_boldi.jpg", emoji: "😂" },
+      { name: "Carlo Verdone", file: "carlo_verdone.jpg", emoji: "🎬" },
+      { name: "Roberto Benigni", file: "roberto_benigni.jpg", emoji: "🏆" },
+      { name: "Elio Germano", file: "elio_germano.jpg", emoji: "🎬" },
+      { name: "Pierfrancesco Favino", file: "pierfrancesco_favino.jpg", emoji: "🎬" },
+      { name: "Luca Zingaretti", file: "luca_zingaretti.jpg", emoji: "🕵️" },
+      { name: "Raoul Bova", file: "raoul_bova.jpg", emoji: "🎬" },
+      { name: "Alessandro Gassmann", file: "alessandro_gassmann.jpg", emoji: "🎬" },
+      { name: "Valerio Mastandrea", file: "valerio_mastandrea.jpg", emoji: "🎬" }
+    ]
+  },
+  {
+    key: "statodeisogni", label: "Il Tuo Stato dei Sogni", icon: "🌅",
+    items: [
+      { name: "Montagne Maestose", file: "montagne.jpg", emoji: "🏔️", dreamKey: "montagne" },
+      { name: "Foresta Rigogliosa", file: "foresta.jpg", emoji: "🌳", dreamKey: "foresta" },
+      { name: "Metropoli Scintillante", file: "metropoli.jpg", emoji: "🏙️", dreamKey: "metropoli" },
+      { name: "Deserto Sconfinato", file: "deserto.jpg", emoji: "🏜️", dreamKey: "deserto" },
+      { name: "Mare Cristallino", file: "mare.jpg", emoji: "🌊", dreamKey: "mare" },
+      { name: "Neve e Ghiacciai Eterni", file: "neve.jpg", emoji: "❄️", dreamKey: "neve" },
+      { name: "Isole Tropicali", file: "isole.jpg", emoji: "🏝️", dreamKey: "isole" },
+      { name: "Vita di Campagna Tranquilla", file: "campagna.jpg", emoji: "🌾", dreamKey: "campagna" },
+      { name: "Animali Selvatici Ovunque", file: "animali.jpg", emoji: "🦁", dreamKey: "animali" },
+      { name: "Buon Cibo Sempre Disponibile", file: "cibo.jpg", emoji: "🍽️", dreamKey: "cibo" },
+      { name: "Vita Notturna Sfrenata", file: "vitanotturna.jpg", emoji: "🌃", dreamKey: "vitanotturna" },
+      { name: "Storia e Cultura Millenaria", file: "cultura.jpg", emoji: "🏛️", dreamKey: "cultura" },
+      { name: "Sport e Adrenalina", file: "sport.jpg", emoji: "🧗", dreamKey: "sport" },
+      { name: "Relax e Benessere Totale", file: "benessere.jpg", emoji: "🧖", dreamKey: "benessere" },
+      { name: "Musica dal Vivo Ovunque", file: "musica.jpg", emoji: "🎸", dreamKey: "musica" },
+      { name: "Shopping Illimitato", file: "shopping.jpg", emoji: "🛍️", dreamKey: "shopping" }
+    ]
+  },
+  {
+    key: "simpson", label: "Personaggi dei Simpson", icon: "🍩",
+    items: [
+      { name: "Homer Simpson", file: "homer.jpg", emoji: "🍩" },
+      { name: "Bart Simpson", file: "bart.jpg", emoji: "🛹" },
+      { name: "Marge Simpson", file: "marge.jpg", emoji: "💙" },
+      { name: "Lisa Simpson", file: "lisa.jpg", emoji: "🎷" },
+      { name: "Maggie Simpson", file: "maggie.jpg", emoji: "🍼" },
+      { name: "Ned Flanders", file: "ned_flanders.jpg", emoji: "😇" },
+      { name: "Mr. Burns", file: "mr_burns.jpg", emoji: "☢️" },
+      { name: "Waylon Smithers", file: "smithers.jpg", emoji: "🤓" },
+      { name: "Krusty il Clown", file: "krusty.jpg", emoji: "🤡" },
+      { name: "Moe Szyslak", file: "moe.jpg", emoji: "🍺" },
+      { name: "Barney Gumble", file: "barney.jpg", emoji: "🍻" },
+      { name: "Milhouse Van Houten", file: "milhouse.jpg", emoji: "🤓" },
+      { name: "Nelson Muntz", file: "nelson.jpg", emoji: "😈" },
+      { name: "Preside Skinner", file: "skinner.jpg", emoji: "🏫" },
+      { name: "Capo Wiggum", file: "wiggum.jpg", emoji: "🍩" },
+      { name: "Apu Nahasapeemapetilon", file: "apu.jpg", emoji: "🏪" },
+      { name: "Ralph Wiggum", file: "ralph.jpg", emoji: "🐱" },
+      { name: "Sideshow Bob", file: "sideshow_bob.jpg", emoji: "🔪" },
+      { name: "Willie il Giardiniere", file: "willie.jpg", emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+      { name: "Comic Book Guy", file: "comic_book_guy.jpg", emoji: "📚" }
+    ]
+  },
+  {
+    key: "videogiochi", label: "Icone dei Videogiochi", icon: "🎮",
+    items: [
+      { name: "Mario", file: "mario.jpg", emoji: "🍄" },
+      { name: "Sonic", file: "sonic.jpg", emoji: "💨" },
+      { name: "Pikachu", file: "pikachu.jpg", emoji: "⚡" },
+      { name: "Link", file: "link.jpg", emoji: "🗡️" },
+      { name: "Lara Croft", file: "lara_croft.jpg", emoji: "🏺" },
+      { name: "Master Chief", file: "master_chief.jpg", emoji: "🪖" },
+      { name: "Kratos", file: "kratos.jpg", emoji: "🪓" },
+      { name: "Pac-Man", file: "pacman.jpg", emoji: "🟡" },
+      { name: "Solid Snake", file: "solid_snake.jpg", emoji: "🎖️" },
+      { name: "Geralt di Rivia", file: "geralt.jpg", emoji: "🐺" },
+      { name: "Cloud Strife", file: "cloud.jpg", emoji: "⚔️" },
+      { name: "Crash Bandicoot", file: "crash.jpg", emoji: "🦊" },
+      { name: "Donkey Kong", file: "donkey_kong.jpg", emoji: "🍌" },
+      { name: "Yoshi", file: "yoshi.jpg", emoji: "🥚" },
+      { name: "Ryu", file: "ryu.jpg", emoji: "🥋" },
+      { name: "Scorpion", file: "scorpion.jpg", emoji: "💀" },
+      { name: "Samus Aran", file: "samus.jpg", emoji: "🚀" },
+      { name: "Steve (Minecraft)", file: "steve_minecraft.jpg", emoji: "⛏️" }
+    ]
+  },
+  {
+    key: "calciologhi", label: "Loghi di Squadre di Calcio", icon: "⚽",
+    items: [
+      { name: "Juventus", file: "juventus.jpg", emoji: "⚫" },
+      { name: "Real Madrid", file: "real_madrid.jpg", emoji: "⚪" },
+      { name: "FC Barcellona", file: "barcellona.jpg", emoji: "🔵" },
+      { name: "AC Milan", file: "milan.jpg", emoji: "🔴" },
+      { name: "Inter", file: "inter.jpg", emoji: "🔵" },
+      { name: "Manchester United", file: "manchester_united.jpg", emoji: "🔴" },
+      { name: "Liverpool", file: "liverpool.jpg", emoji: "🔴" },
+      { name: "Bayern Monaco", file: "bayern.jpg", emoji: "🔴" },
+      { name: "Paris Saint-Germain", file: "psg.jpg", emoji: "🔵" },
+      { name: "Napoli", file: "napoli.jpg", emoji: "🔵" },
+      { name: "Chelsea", file: "chelsea.jpg", emoji: "🔵" },
+      { name: "Arsenal", file: "arsenal.jpg", emoji: "🔴" },
+      { name: "Manchester City", file: "manchester_city.jpg", emoji: "🩵" },
+      { name: "AS Roma", file: "roma.jpg", emoji: "🟡" },
+      { name: "Atletico Madrid", file: "atletico_madrid.jpg", emoji: "🔴" },
+      { name: "Borussia Dortmund", file: "borussia_dortmund.jpg", emoji: "🟡" }
+    ]
+  },
+  {
+    key: "giochitavolo", label: "Giochi da Tavolo Classici", icon: "🎲",
+    items: [
+      { name: "Monopoly", file: "monopoly.jpg", emoji: "🎩" },
+      { name: "Risiko", file: "risiko.jpg", emoji: "🗺️" },
+      { name: "Cluedo", file: "cluedo.jpg", emoji: "🔍" },
+      { name: "Scarabeo", file: "scarabeo.jpg", emoji: "🔤" },
+      { name: "UNO", file: "uno.jpg", emoji: "🃏" },
+      { name: "Trivial Pursuit", file: "trivial_pursuit.jpg", emoji: "🧠" },
+      { name: "Jenga", file: "jenga.jpg", emoji: "🧱" },
+      { name: "Scacchi", file: "scacchi.jpg", emoji: "♟️" },
+      { name: "Dama", file: "dama.jpg", emoji: "⚫" },
+      { name: "Forza 4", file: "forza4.jpg", emoji: "🔴" },
+      { name: "Backgammon", file: "backgammon.jpg", emoji: "🎯" },
+      { name: "Domino", file: "domino.jpg", emoji: "🁢" },
+      { name: "Mahjong", file: "mahjong.jpg", emoji: "🀄" },
+      { name: "Battaglia Navale", file: "battaglia_navale.jpg", emoji: "🚢" },
+      { name: "Twister", file: "twister.jpg", emoji: "🌀" },
+      { name: "Pictionary", file: "pictionary.jpg", emoji: "✏️" }
+    ]
   }
 ];
 
@@ -1140,6 +1294,90 @@ const STARTING_BUDGET = 20;
 const ITEMS_PER_SESSION = 10;
 const SLOTS_PER_TEAM = 5;
 const STORAGE_KEY = "homeGamesTeams"; // squadre globali condivise, impostate in index.html
+
+/* =========================================================
+   STATO DEI SOGNI — scena composita che si costruisce mano a
+   mano che una squadra si aggiudica gli elementi di questa
+   categoria: 8 "tasselli di terreno" fissi lungo il terreno e
+   8 "badge" fissi in cielo, ognuno rivelato solo se posseduto.
+   ========================================================= */
+const DREAM_TERRAIN = [
+  { key: "montagne", emoji: "🏔️", label: "Montagne" },
+  { key: "foresta", emoji: "🌳", label: "Foresta" },
+  { key: "metropoli", emoji: "🏙️", label: "Metropoli" },
+  { key: "deserto", emoji: "🏜️", label: "Deserto" },
+  { key: "mare", emoji: "🌊", label: "Mare" },
+  { key: "neve", emoji: "❄️", label: "Neve" },
+  { key: "isole", emoji: "🏝️", label: "Isole" },
+  { key: "campagna", emoji: "🌾", label: "Campagna" }
+];
+const DREAM_BADGES = [
+  { key: "animali", emoji: "🦁" },
+  { key: "cibo", emoji: "🍽️" },
+  { key: "vitanotturna", emoji: "🌃" },
+  { key: "cultura", emoji: "🏛️" },
+  { key: "sport", emoji: "🧗" },
+  { key: "benessere", emoji: "🧖" },
+  { key: "musica", emoji: "🎸" },
+  { key: "shopping", emoji: "🛍️" }
+];
+
+function buildDreamSceneSVG(wonKeys){
+  const has = k => wonKeys.includes(k);
+  const revealed = wonKeys.length > 0;
+  const W = 400, H = 220;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">`;
+
+  if (revealed){
+    svg += `<defs><linearGradient id="dreamSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e3a5f"/><stop offset="60%" stop-color="#5b8fc7"/><stop offset="100%" stop-color="#bfe3f2"/>
+    </linearGradient></defs>`;
+    svg += `<rect x="0" y="0" width="${W}" height="${H*0.68}" fill="url(#dreamSky)"/>`;
+    svg += `<circle cx="${W-50}" cy="40" r="22" fill="#ffe28a" opacity="0.9"/>`;
+  } else {
+    svg += `<rect x="0" y="0" width="${W}" height="${H*0.68}" fill="#262b38"/>`;
+  }
+  svg += `<rect x="0" y="${H*0.68}" width="${W}" height="${H*0.32}" fill="${revealed ? "#3d7a3d" : "#343a46"}"/>`;
+
+  if (!revealed){
+    svg += `<text x="${W/2}" y="${H/2 - 4}" text-anchor="middle" font-size="34" opacity="0.5">❓</text>`;
+    svg += `<text x="${W/2}" y="${H/2 + 24}" text-anchor="middle" font-size="13" fill="#ffffff99" font-family="sans-serif">Terra Ancora da Scoprire...</text>`;
+    svg += `</svg>`;
+    return svg;
+  }
+
+  const tileW = (W - 16) / DREAM_TERRAIN.length;
+  DREAM_TERRAIN.forEach((t, i) => {
+    const cx = 8 + tileW * i + tileW / 2;
+    const cy = H * 0.68 + (H * 0.32) / 2;
+    if (has(t.key)){
+      svg += `<text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="30">${t.emoji}</text>`;
+      svg += `<text x="${cx}" y="${H - 6}" text-anchor="middle" font-size="8" fill="#ffffffcc" font-family="sans-serif">${t.label}</text>`;
+    } else {
+      svg += `<circle cx="${cx}" cy="${cy}" r="12" fill="none" stroke="#ffffff40" stroke-width="1.5" stroke-dasharray="3,3"/>`;
+    }
+  });
+
+  const badgeW = (W - 16) / DREAM_BADGES.length;
+  DREAM_BADGES.forEach((b, i) => {
+    const cx = 8 + badgeW * i + badgeW / 2;
+    const cy = 26;
+    if (has(b.key)){
+      svg += `<circle cx="${cx}" cy="${cy}" r="15" fill="#0a0e1a" fill-opacity="0.55" stroke="#ffd166" stroke-width="1.5"/>`;
+      svg += `<text x="${cx}" y="${cy + 6}" text-anchor="middle" font-size="16">${b.emoji}</text>`;
+    } else {
+      svg += `<circle cx="${cx}" cy="${cy}" r="12" fill="none" stroke="#ffffff30" stroke-width="1.2" stroke-dasharray="2,2"/>`;
+    }
+  });
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function dreamSceneSVGFor(team){
+  const wonKeys = team.items.filter(it => it.dreamKey).map(it => it.dreamKey);
+  return buildDreamSceneSVG(wonKeys);
+}
 
 /* =========================================================
    STATO
@@ -1387,7 +1625,7 @@ function updateActionButtons(){
   assignA.disabled = aFull || state.offer > state.teamA.budget;
   assignB.disabled = bFull || state.offer > state.teamB.budget;
 
-  const forced = aFull !== bFull; // esattamente una delle due è piena
+  const forced = aFull !== bFull; // esattamente una delle due è piena: l'altra deve cliccare "Aggiudica" per forza, niente Passa
   passBtn.disabled = forced;
   document.getElementById("forcedNote").classList.toggle("hidden", !forced);
 
@@ -1491,6 +1729,15 @@ function finishAuction(){
   document.getElementById("finalItemsA").innerHTML = renderFinalRoster(state.teamA.items);
   document.getElementById("finalItemsB").innerHTML = renderFinalRoster(state.teamB.items);
 
+  const isDreamCategory = state.categoryKey === "statodeisogni";
+  document.getElementById("dreamFinalSection").classList.toggle("hidden", !isDreamCategory);
+  if (isDreamCategory){
+    document.getElementById("dreamFinalSceneA").innerHTML = dreamSceneSVGFor(state.teamA);
+    document.getElementById("dreamFinalSceneB").innerHTML = dreamSceneSVGFor(state.teamB);
+    document.getElementById("dreamFinalCaptionA").textContent = state.teamA.name;
+    document.getElementById("dreamFinalCaptionB").textContent = state.teamB.name;
+  }
+
   document.getElementById("voteANameLabel").textContent = state.teamA.name;
   document.getElementById("voteBNameLabel").textContent = state.teamB.name;
   document.getElementById("voteABtn").disabled = false;
@@ -1508,9 +1755,10 @@ function renderFinalRoster(items){
     return `<p class="col-span-full text-white/30 italic text-sm">Nessun elemento aggiudicato.</p>`;
   }
   return items.map(it => `
-    <div class="rounded-xl overflow-hidden">
-      <div class="aspect-square rounded-lg overflow-hidden mb-1">${itemImageHTML(it)}</div>
-      <p class="text-[0.7rem] text-white/70 text-center truncate">${it.name}</p>
+    <div class="rounded-2xl overflow-hidden bg-white/5 border border-white/10 p-2 flex flex-col gap-1.5">
+      <div class="aspect-square rounded-xl overflow-hidden">${itemImageHTML(it)}</div>
+      <p class="text-xs sm:text-sm font-display font-bold text-center leading-tight line-clamp-2">${it.name}</p>
+      <p class="text-[0.7rem] sm:text-xs font-semibold text-center ${it.price > 0 ? "text-gold-neon" : "text-cyan-neon"}">${it.price > 0 ? `${it.price}€` : "🎁 Gratis"}</p>
     </div>
   `).join("");
 }

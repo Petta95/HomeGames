@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sarabanda — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     SARABANDA — file singolo e autocontenuto: stesso sistema
+     grafico, stessa palette/struttura e stessa gestione squadre
+     già usati negli altri giochi della suite (qui incollati
+     direttamente invece di linkare shared.css, per restare
+     autonomo in un unico file).
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+    --glass-bg: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --accent: #4dd9ff;
+    --accent2: #4dd9ff;
+    --accent-soft: rgba(77, 217, 255, 0.16);
+    --accent-glow: rgba(77, 217, 255, 0.5);
+  }
+  body.theme-sarabanda{
+    --accent: #ff2e88;
+    --accent2: #ffd600;
+    --accent-soft: rgba(255, 46, 136, 0.16);
+    --accent-glow: rgba(255, 46, 136, 0.5);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-blobs{
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.30;
+    animation: float 22s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+  .bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+  @keyframes float{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-25px) scale(1.08); }
+  }
+
+  /* ---- Navbar ---- */
+  .navbar{
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+  }
+  .nav-back{
+    text-decoration: none; color: var(--text-main);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+  .nav-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  }
+  .nav-title .dot{ width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .nav-right{ display: flex; align-items: center; gap: 12px; }
+  .nav-info-btn{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+
+  /* ---- Stage / layout generico ---- */
+  .stage{
+    max-width: 1000px; margin: 0 auto; padding: 40px 24px 90px;
+    min-height: calc(100vh - 68px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 26px; text-align: center;
+  }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Pulsanti ---- */
+  .btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.1rem;
+    padding: 18px 34px; border-radius: 16px; border: none; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; box-shadow: 0 0 25px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+  .btn-outline{ background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+  .btn-outline:hover{ background: var(--accent-soft); }
+  .btn:active{ transform: scale(0.97); }
+  .btn:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ---- Modale regole ---- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    border: 1px solid var(--glass-border); border-radius: 26px; padding: 36px;
+    max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97); transition: transform 0.25s ease; text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.6rem;
+    color: var(--accent); margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  .modal-card ol, .modal-card ul{
+    padding-left: 22px; display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 24px; line-height: 1.5; color: var(--text-main); font-size: 0.98rem;
+  }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; }
+
+  /* ---- Tabellone punteggi squadre ---- */
+  .score-grid{
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; width: 100%;
+  }
+  .score-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px;
+    padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    position: relative; transition: all 0.3s ease;
+  }
+  .score-card.just-scored{
+    border-color: var(--accent); background: var(--accent-soft);
+    box-shadow: 0 0 30px -6px var(--accent-glow); transform: translateY(-4px);
+  }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name{
+    background: transparent; border: none; border-bottom: 2px solid var(--accent);
+    color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem;
+    text-align: center; padding: 4px; width: auto; flex: 0 1 auto; min-width: 0;
+  }
+  .team-name:focus{ outline: none; }
+  .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); }
+
+  /* ---- Player musicale ---- */
+  .player-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-radius: 28px; padding: 40px 30px; width: 100%; max-width: 640px;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    box-shadow: 0 0 50px -12px var(--accent-glow);
+    animation: fadeIn 0.45s ease;
+  }
+  .vinyl-disc{
+    width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #2a2f3d, #05070c 70%);
+    border: 6px solid var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 3rem;
+    box-shadow: 0 0 40px -6px var(--accent-glow);
+    transition: box-shadow 0.3s ease;
+  }
+  .vinyl-disc.spinning{ animation: spin 2.2s linear infinite; box-shadow: 0 0 60px -4px var(--accent-glow); }
+  @keyframes spin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+
+  .player-status{
+    font-family: 'Poppins', sans-serif; font-weight: 700;
+    font-size: clamp(1rem, 2.4vw, 1.25rem); text-align: center; min-height: 1.6em;
+  }
+  .timer-bar-track{
+    width: 100%; max-width: 420px; height: 14px; border-radius: 999px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); overflow: hidden;
+  }
+  .timer-bar-fill{
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform-origin: left;
+  }
+  .snippet-timer{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: var(--accent); }
+  .player-actions{ display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Pannello rivelazione titolo/artista ---- */
+  .reveal-panel{
+    display: none; width: 100%; max-width: 640px;
+    background: var(--accent-soft); border: 2px solid var(--accent); border-radius: 22px;
+    padding: 22px 26px; text-align: center; animation: fadeIn 0.4s ease;
+  }
+  .reveal-panel.show{ display: block; }
+  .reveal-eyebrow{ font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-size: 0.85rem; }
+  .reveal-title{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.3rem, 3vw, 1.8rem); }
+  .reveal-artist{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--text-muted); margin-top: 4px; }
+  .reveal-year{ font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.92rem; color: var(--accent2); margin-top: 6px; }
+
+  .reveal-actions{ display: flex; justify-content: center; }
+
+  /* ---- Assegnazione punti ---- */
+  .points-section{ width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .points-hint{ color: var(--text-muted); font-weight: 600; font-size: 0.98rem; }
+  .points-grid{ width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .points-team-row{
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 18px;
+    transition: border-color 0.2s ease;
+  }
+  .points-team-name{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.05rem; }
+  .points-btns{ display: flex; gap: 8px; flex-wrap: wrap; }
+  .point-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.85rem;
+    border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; color: #06090f;
+    transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+  }
+  .point-btn:hover:not(:disabled){ transform: translateY(-2px); filter: brightness(1.1); }
+  .point-btn:disabled{ opacity: 0.35; cursor: not-allowed; transform: none; }
+  .point-btn-2{ background: #00e676; }
+  .point-btn-1{ background: #ffd600; }
+  .point-btn.awarded{ opacity: 0.55; filter: grayscale(0.4); }
+
+  .bottom-actions{ display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+
+  @media (max-width: 700px){
+    .points-team-row{ flex-direction: column; align-items: stretch; text-align: center; }
+    .points-btns{ justify-content: center; }
+  }
+
+  /* ---- Ottimizzazione mobile globale ---- */
+  @media (max-width: 600px){
+    .navbar{ padding: 10px 14px; gap: 8px; }
+    .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+    .nav-title{ font-size: 1.05rem; gap: 7px; }
+    .nav-title .dot{ width: 9px; height: 9px; }
+
+    .stage{ padding: 20px 14px 44px; gap: 16px; min-height: calc(100vh - 56px); }
+
+    .btn{ padding: 14px 22px; font-size: 0.95rem; border-radius: 13px; }
+
+    .score-grid{ gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .score-card{ padding: 12px; gap: 6px; border-radius: 15px; }
+    .team-name{ font-size: 0.88rem; }
+    .score-value{ font-size: 1.6rem; }
+
+    .player-card{ padding: 26px 18px; border-radius: 22px; gap: 14px; }
+    .vinyl-disc{ width: 100px; height: 100px; font-size: 2.2rem; border-width: 5px; }
+  }
+</style>
+</head>
+<body class="theme-sarabanda">
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🎤 Sarabanda</span>
+  <div class="nav-right">
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">Indovina Titolo e Artista prima degli avversari, ad alta voce!</p>
+    <ol>
+      <li>Premi <strong>"▶️ Riproduci Brano"</strong>: parte uno snippet a sorpresa di 15 secondi da un database di oltre 100 canzoni di ogni epoca e genere. Puoi mettere <strong>in pausa</strong> in qualsiasi momento e riprendere quando vuoi, oppure premere <strong>"🔁 Riascolta"</strong> per ripartire da capo.</li>
+      <li>I giocatori prenotano la risposta <strong>ad alta voce</strong> e provano a indovinare Titolo e/o Artista.</li>
+      <li>Quando siete pronti, premi <strong>"🎯 Rivela"</strong> per scoprire Titolo, Artista e Anno del brano.</li>
+      <li>Dopo la rivelazione, assegna i punti a chi ha indovinato: <strong>+2</strong> se ha indovinato Titolo e Artista, <strong>+1</strong> se ne ha indovinato solo uno. Puoi premiare <strong>entrambe le squadre</strong> nella stessa canzone (es. +1 a una per il titolo, +1 all'altra per l'artista); se nessuno ha indovinato, non assegnare nulla.</li>
+      <li><strong>"⏭ Prossima Canzone"</strong> è sempre disponibile: puoi passare al brano successivo anche senza rivelare la risposta.</li>
+      <li>Le canzoni già uscite non si ripetono finché non sono state proposte tutte quelle del database.</li>
+    </ol>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage" id="gameView">
+
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <div class="player-card">
+    <div class="vinyl-disc" id="vinylDisc">🎵</div>
+    <div class="player-status" id="playerStatus">Pronti per il prossimo brano misterioso!</div>
+    <div class="timer-bar-track"><div class="timer-bar-fill" id="snippetBar"></div></div>
+    <div class="snippet-timer" id="snippetTimer">15s</div>
+    <div class="player-actions">
+      <button class="btn btn-primary" id="playBtn">▶️ Riproduci Brano</button>
+      <button class="btn btn-outline" id="pauseResumeBtn" style="display:none;">⏸ Pausa</button>
+      <button class="btn btn-outline" id="replayBtn" disabled>🔁 Riascolta</button>
+    </div>
+    <audio id="audioPlayer" preload="none"></audio>
+  </div>
+
+  <div class="reveal-panel" id="revealPanel">
+    <div class="reveal-eyebrow">🎉 La Risposta Era</div>
+    <div class="reveal-title" id="revealTitle"></div>
+    <div class="reveal-artist" id="revealArtist"></div>
+    <div class="reveal-year" id="revealYear"></div>
+  </div>
+
+  <div class="reveal-actions">
+    <button class="btn btn-outline" id="revealBtn">🎯 Rivela Titolo, Artista e Anno</button>
+  </div>
+
+  <div class="points-section">
+    <p class="points-hint">Assegna i punti a chi ha indovinato (disponibile dopo la rivelazione):</p>
+    <div class="points-grid" id="pointsGrid"></div>
+  </div>
+
+  <button class="btn btn-primary" id="nextSongBtn">⏭ Prossima Canzone</button>
+</main>
+
+<script>
+  /* =========================================================
+     DATABASE BRANI — oltre 100 canzoni italiane e internazionali
+     di ogni epoca e genere. audioUrl è una preview pubblica e
+     stabile (iTunes/Apple Music, nessuna chiave richiesta,
+     nessun problema di CORS per <audio>).
+     ========================================================= */
+  const SONGS = [
+    { title: "Sally", artist: "Vasco Rossi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d5/46/af/d546af1b-5185-c807-e608-1ccaf32c912c/mzaf_7206189723946138070.plus.aac.p.m4a" },
+    { title: "Vita Spericolata", artist: "Vasco Rossi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/60/eb/22/60eb22f7-72d7-25ed-e8e5-773b6a26d8c2/mzaf_18012812365703256024.plus.aac.p.m4a", year: "1982" },
+    { title: "Albachiara", artist: "Vasco Rossi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c0/11/4b/c0114b8d-3e3e-1cb4-030a-426425ad29b7/mzaf_6422503058544175547.plus.aac.p.m4a", year: "1979" },
+    { title: "Diamante", artist: "Vasco Rossi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3c/ff/08/3cff084b-38ec-116c-01f9-20a37e6499e4/mzaf_6923518668668524432.plus.aac.p.m4a" },
+    { title: "Senza Una Donna", artist: "Zucchero", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e8/97/8c/e8978ce5-92f0-f8dd-bda1-c0695bc31f40/mzaf_1920292641920674567.plus.aac.p.m4a", year: "1985" },
+    { title: "Il Volo", artist: "Zucchero", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d7/6b/9b/d76b9b6c-7e3c-2567-7897-0641d5b9f2c2/mzaf_16695624052407658008.plus.aac.p.m4a", year: "2008" },
+    { title: "Baila Morena", artist: "Zucchero", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/66/ae/84/66ae841b-a749-9bc3-3f98-55b37baf3eda/mzaf_14316700727339898960.plus.aac.p.m4a", year: "2012" },
+    { title: "Se Bastasse Una Canzone", artist: "Eros Ramazzotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/55/3e/b4/553eb4b2-134e-a943-a283-d1f583b4609f/mzaf_5487016375758972302.plus.aac.p.m4a", year: "1987" },
+    { title: "Più Bella Cosa", artist: "Eros Ramazzotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/48/00/85/480085a5-c442-8074-85f0-a28921df0027/mzaf_11512870831333321482.plus.aac.p.m4a", year: "1996" },
+    { title: "Un'Emozione per Sempre", artist: "Eros Ramazzotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/be/d4/b8/bed4b884-614c-952a-3638-4025d30279fc/mzaf_14769896633313514809.plus.aac.p.m4a", year: "2003" },
+    { title: "La Solitudine", artist: "Laura Pausini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/de/ae/0f/deae0f8e-b047-c3fb-25a4-80381990a8d6/mzaf_11805627372487887199.plus.aac.p.m4a", year: "1993" },
+    { title: "Strani Amori", artist: "Laura Pausini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/bf/16/66/bf16667a-9548-801f-cbb9-d533f29c1c19/mzaf_5269554727886315056.plus.aac.p.m4a", year: "2001" },
+    { title: "Vivi Davvero", artist: "Laura Pausini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6c/4d/89/6c4d8929-36f7-e03f-33f4-3ac7df69d6a2/mzaf_1079581334714426390.plus.aac.p.m4a", year: "1996" },
+    { title: "Perdono", artist: "Tiziano Ferro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/18/a2/2e/18a22ee3-bfa4-9721-86e7-148dc5027e66/mzaf_2053313897019316659.plus.aac.p.m4a", year: "2014" },
+    { title: "Sere Nere", artist: "Tiziano Ferro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bf/e1/6e/bfe16e17-bf7f-0c42-6725-e3a197a67468/mzaf_18347522453354480892.plus.aac.p.m4a", year: "2003" },
+    { title: "Ed Ero Contentissimo", artist: "Tiziano Ferro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3f/c4/b0/3fc4b004-7eb9-9556-9f99-2faa05b195a6/mzaf_15688887599930912522.plus.aac.p.m4a", year: "2006" },
+    { title: "Serenata Rap", artist: "Jovanotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/70/a7/21/70a721b6-1018-2052-3239-fd5a88b14470/mzaf_7448460024065834876.plus.aac.p.m4a", year: "1994" },
+    { title: "A Te", artist: "Jovanotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4b/69/91/4b699191-ba7f-f095-4d9a-a357c8ee3e13/mzaf_11984894603554273739.plus.aac.p.m4a", year: "2008" },
+    { title: "Tanto", artist: "Jovanotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3f/21/7a/3f217add-4b29-1a48-936b-0758cc4e1ec0/mzaf_8687001785820554262.plus.aac.p.m4a", year: "2015" },
+    { title: "L'Ombelico del Mondo", artist: "Jovanotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/21/87/93/21879368-f9ca-d074-dfe7-5ebfb050e01f/mzaf_16385793899748651152.plus.aac.p.m4a", year: "2015" },
+    { title: "Certe Notti", artist: "Ligabue", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f2/90/66/f29066d2-52c6-0b81-c11e-023d57410c97/mzaf_10513775323570258279.plus.aac.p.m4a", year: "1995" },
+    { title: "Balliamo Sul Mondo", artist: "Ligabue", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d5/59/f1/d559f12b-2e1c-b224-0453-1bca1cd24557/mzaf_13494046136874040.plus.aac.p.m4a", year: "1990" },
+    { title: "Buonanotte all'Italia", artist: "Ligabue", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d2/20/cb/d220cbeb-69ff-5b34-6279-7c2742d6e8d7/mzaf_4726991740709123669.plus.aac.p.m4a", year: "2014" },
+    { title: "Poetica", artist: "Cesare Cremonini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7a/c9/9d/7ac99df5-73d2-f32f-4d32-3abc8cc905d1/mzaf_564484188909723783.plus.aac.p.m4a" },
+    { title: "Marmellata #25", artist: "Cesare Cremonini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2c/47/56/2c47567a-a1b7-f877-c977-b02dbfcc8514/mzaf_16434609448551505787.plus.aac.p.m4a", year: "2010" },
+    { title: "Una Come Te", artist: "Cesare Cremonini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3b/16/2a/3b162a03-5497-1b1a-260a-fdfa99560b41/mzaf_3036093099563672654.plus.aac.p.m4a", year: "2012" },
+    { title: "Luce (Tramonti a Nord Est)", artist: "Elisa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e8/8a/93/e88a93ae-b2e9-d5c7-e5e7-ad136949a628/mzaf_4731297958778133476.plus.aac.p.m4a", year: "2000" },
+    { title: "Una Poesia Anche per Te", artist: "Elisa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/2f/d9/54/2fd95447-32ec-d96e-96cf-76306d5c309b/mzaf_10480720452487606025.plus.aac.p.m4a", year: "1997" },
+    { title: "Mentre Tutto Scorre", artist: "Negramaro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7e/42/98/7e429864-a634-3202-bbdb-6430888f14b5/mzaf_15168983686725156258.plus.aac.p.m4a", year: "2016" },
+    { title: "Nuvole e Lenzuola", artist: "Negramaro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/5d/fb/2e/5dfb2ed7-ec46-45a5-1f06-a3c99cf1333b/mzaf_7870991464735245290.plus.aac.p.m4a", year: "2016" },
+    { title: "Questo Piccolo Grande Amore", artist: "Claudio Baglioni", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/77/fa/0b/77fa0b77-5607-e8fc-f403-34b68256ead8/mzaf_468220569409288102.plus.aac.p.m4a", year: "1989" },
+    { title: "Avrai", artist: "Claudio Baglioni", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b6/f6/51/b6f651c0-00de-48ce-f919-6866dd8d86db/mzaf_7968042124349790329.plus.aac.p.m4a", year: "1982" },
+    { title: "Napule è", artist: "Pino Daniele", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7a/be/9e/7abe9e34-a6c4-c4f7-0e57-a18955f097f3/mzaf_13728191749095817769.plus.aac.p.m4a", year: "1977" },
+    { title: "Yes I Know My Way", artist: "Pino Daniele", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f4/34/e2/f434e2cd-c15c-a0e4-89a2-48edc845361a/mzaf_1496739437648646843.plus.aac.p.m4a", year: "1981" },
+    { title: "Emozioni", artist: "Lucio Battisti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/47/c3/30/47c3304f-5377-f327-9daa-9e433970b5f3/mzaf_10870968214746616712.plus.aac.p.m4a", year: "1970" },
+    { title: "Il Mio Canto Libero", artist: "Lucio Battisti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ee/41/1c/ee411c93-6961-3475-1d7b-aa64275cab0d/mzaf_8297109431875020512.plus.aac.p.m4a", year: "1972" },
+    { title: "Parole Parole", artist: "Mina", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/9f/ed/81/9fed81ca-3d3c-bfeb-a829-5391836424c8/mzaf_8520644497428151419.plus.aac.p.m4a", year: "1972" },
+    { title: "Grande Grande Grande", artist: "Mina", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ce/9d/00/ce9d0019-76f7-c2ad-c7a6-79f43f72abda/mzaf_6883767119651760077.plus.aac.p.m4a", year: "1973" },
+    { title: "Azzurro", artist: "Adriano Celentano", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/50/c4/73/50c4731b-895b-472a-9ed3-ee9b4c208a77/mzaf_257069537808109742.plus.aac.p.m4a", year: "1968" },
+    { title: "Il Ragazzo della Via Gluck", artist: "Adriano Celentano", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ee/33/1c/ee331caf-b45c-fc5d-297e-88ddfc50f75a/mzaf_13268554481819514596.plus.aac.p.m4a", year: "1965" },
+    { title: "Più Su", artist: "Renato Zero", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fe/b9/1f/feb91f8d-1c6b-93e5-a8d8-87d64ddabef0/mzaf_9177788906725186187.plus.aac.p.m4a", year: "1981" },
+    { title: "Il Carrozzone", artist: "Renato Zero", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f7/f1/23/f7f12378-6792-77ba-605d-81aff26e4bad/mzaf_17822763065611702573.plus.aac.p.m4a", year: "1979" },
+    { title: "Come Saprei", artist: "Giorgia", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c3/fc/93/c3fc931a-7de1-b82c-7eb7-b8dd1b7ef690/mzaf_8726385431601622662.plus.aac.p.m4a", year: "1995" },
+    { title: "Gocce di Memoria", artist: "Giorgia", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d1/c5/1a/d1c51a13-b40f-f1a5-1173-9843c730817e/mzaf_8399597913273383620.plus.aac.p.m4a", year: "2003" },
+    { title: "L'Essenziale", artist: "Marco Mengoni", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c0/11/69/c011693c-792b-6c09-b327-b747eb589339/mzaf_818140673092416777.plus.aac.p.m4a", year: "2013" },
+    { title: "Pronto a Correre", artist: "Marco Mengoni", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f7/a6/d6/f7a6d6f5-7f29-fa08-6f78-578e902784fa/mzaf_1655678105810208258.plus.aac.p.m4a", year: "2013" },
+    { title: "Occidentali's Karma", artist: "Francesco Gabbani", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/eb/82/d1/eb82d1c5-911b-1190-111d-fd17643726f8/mzaf_18204810507184637339.plus.aac.p.m4a", year: "2017" },
+    { title: "Amen", artist: "Francesco Gabbani", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/ef/1c/27/ef1c2712-4ecb-8b7a-1312-d7a699b14dab/mzaf_6112411449846401117.plus.aac.p.m4a", year: "2015" },
+    { title: "Come Una Volta", artist: "Marracash", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c8/b5/87/c8b58720-0c43-0a44-2277-9233e5d13724/mzaf_3564315963547477331.plus.aac.p.m4a", year: "2013" },
+    { title: "Roland TR-808", artist: "Fedez", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/63/08/09/63080997-b5c5-ad66-9876-80e4f0a8ab3a/mzaf_1149094682014738327.plus.aac.p.m4a", year: "2024" },
+    { title: "Bella Storia", artist: "Fedez", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/86/89/b2/8689b2a1-1aad-1256-8575-93c5a3f651de/mzaf_1127116825326959925.plus.aac.p.m4a", year: "2020" },
+    { title: "Cara Italia", artist: "Ghali", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/8a/21/2c/8a212ceb-122c-a3b3-c8b3-d54f693d82d3/mzaf_13737619746323704846.plus.aac.p.m4a", year: "2020" },
+    { title: "Cash", artist: "Ghali", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ae/b0/a0/aeb0a007-8750-6d72-44b5-134703738028/mzaf_2637714666331108750.plus.aac.p.m4a", year: "2020" },
+    { title: "Brividi", artist: "Mahmood Blanco", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/87/67/6c/87676c6a-fbfb-4fda-4b4e-71e0d229613b/mzaf_7278197207242729407.plus.aac.p.m4a", year: "2022" },
+    { title: "Andromeda", artist: "Mahmood", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e5/d7/d8/e5d7d836-a99d-b1a7-b3dd-ed512ea19659/mzaf_17986148793232770364.plus.aac.p.m4a", year: "2012" },
+    { title: "Tuta Gold", artist: "Mahmood", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/07/92/6c/07926c2f-1980-7ff6-0716-77232fffef85/mzaf_691823611434426598.plus.aac.p.m4a", year: "2024" },
+    { title: "Sinceramente", artist: "Annalisa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/df/ea/9c/dfea9c13-fcea-eb88-0d48-919d0be70082/mzaf_219088237159934153.plus.aac.p.m4a", year: "2024" },
+    { title: "Zitti e Buoni", artist: "Måneskin", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5a/1f/86/5a1f869d-8fdd-e0eb-e4a6-69130eed7657/mzaf_14131122941770077941.plus.aac.p.m4a", year: "2021" },
+    { title: "I Wanna Be Your Slave", artist: "Måneskin", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/50/09/8d/50098dc6-c769-4ee4-a1d0-2cc41a549021/mzaf_3806809689939804076.plus.aac.p.m4a", year: "2025" },
+    { title: "Yellow", artist: "Coldplay", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fe/5c/d1/fe5cd1ba-c01b-8bc4-1e0e-341ec3229dc7/mzaf_9216977205483689546.plus.aac.p.m4a", year: "2000" },
+    { title: "La Isla Bonita", artist: "Madonna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bd/37/4b/bd374b96-5389-d3c6-078d-224a1626dafc/mzaf_18323262469914382393.plus.aac.p.m4a", year: "1986" },
+    { title: "Wannabe", artist: "Spice Girls", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/db/cb/c6/dbcbc688-8277-b365-8deb-1da3c30da079/mzaf_7842872759474974048.plus.aac.p.m4a", year: "1996" },
+    { title: "Blinding Lights", artist: "The Weeknd", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/12/73/ca/1273ca46-233a-5331-189b-25ac1d656533/mzaf_976341070785891411.plus.aac.p.m4a", year: "2020" },
+    { title: "As It Was", artist: "Harry Styles", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/67/10/16/67101606-3869-ca44-6c03-e13d6322cb51/mzaf_1135399237022217274.plus.aac.p.m4a", year: "2022" },
+    { title: "Pazza Musica", artist: "Annalisa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/dd/c3/ed/ddc3ed61-4564-9c3a-e966-debfa5f3c931/mzaf_10352186313437281462.plus.aac.p.m4a", year: "2023" },
+    { title: "Bellissima", artist: "Annalisa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1e/3e/2d/1e3e2d45-82ee-440b-b479-3f0256d902cb/mzaf_12986989343344401920.plus.aac.p.m4a", year: "2022" },
+    { title: "Beggin'", artist: "Måneskin", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/76/5f/db/765fdb18-6421-bf37-813d-fd00f14fbfd4/mzaf_5193356525080895049.plus.aac.p.m4a", year: "2017" },
+    { title: "Torna a Casa", artist: "Måneskin", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4f/85/13/4f85130e-5884-f124-fe0d-7a3d8fa4e70c/mzaf_1484715931062896901.plus.aac.p.m4a", year: "2018" },
+    { title: "Tribale", artist: "Elodie", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9e/6b/4d/9e6b4da6-86f8-54da-a198-b41d955c49c5/mzaf_12653996318236784998.plus.aac.p.m4a", year: "2022" },
+    { title: "Margarita", artist: "Elodie", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/66/db/fd/66dbfdd7-64ca-0bb5-46b7-f1b9a17915e1/mzaf_6049789560886910805.plus.aac.p.m4a", year: "2019" },
+    { title: "Sofia", artist: "Alvaro Soler", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1e/de/ad/1edead5f-f2dd-2cda-2e0c-2a57ac3e4b5a/mzaf_8206977644538284126.plus.aac.p.m4a", year: "2016" },
+    { title: "Rondò Veneziano", artist: "Cristina D'Avena", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/99/67/fa/9967fa7e-f119-c081-bafa-aa597727cdc6/mzaf_28457169607240389.plus.aac.p.m4a", year: "2020" },
+    { title: "Tanti Auguri", artist: "Raffaella Carrà", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8e/52/52/8e5252be-4e1d-e550-54c4-679ce9cab3ae/mzaf_239243331888900160.plus.aac.p.m4a", year: "1974" },
+    { title: "A Far l'Amore Comincia Tu", artist: "Raffaella Carrà", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/36/cf/2436cf0f-d07b-0e65-5ae1-212882d32f38/mzaf_16715491452182132104.plus.aac.p.m4a", year: "1976" },
+    { title: "Felicità", artist: "Al Bano e Romina Power", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/84/7a/a5/847aa55a-ab11-9a81-32a4-ba7dab519604/mzaf_10301624610149635695.plus.aac.p.m4a", year: "1982" },
+    { title: "Nel Blu Dipinto di Blu", artist: "Domenico Modugno", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0c/ac/19/0cac194e-6807-2dfe-5b44-9d6eec920d96/mzaf_13825720463738874070.plus.aac.p.m4a", year: "1994" },
+    { title: "Tintarella di Luna", artist: "Mina", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2d/51/5a/2d515a76-a56a-eca3-b2bf-e4f449b5bbac/mzaf_16117897232861018485.plus.aac.p.m4a", year: "1958" },
+    { title: "Rimmel", artist: "Francesco De Gregori", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/eb/cb/47/ebcb47c8-2597-4ac8-2d14-94784b646520/mzaf_9529026728562449530.plus.aac.p.m4a", year: "1974" },
+    { title: "La Donna Cannone", artist: "Francesco De Gregori", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a2/48/90/a248909f-2fbc-9360-4312-9b813ce1a158/mzaf_147001480916122051.plus.aac.p.m4a", year: "1974" },
+    { title: "Bocca di Rosa", artist: "Fabrizio De André", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bb/59/62/bb596209-4e8b-c260-ca63-ab8b2981ad17/mzaf_9140932281714468234.plus.aac.p.m4a", year: "2020" },
+    { title: "La Canzone di Marinella", artist: "Fabrizio De André", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/50/88/9a/50889a6f-d926-5199-743a-492702ce780e/mzaf_6558865183345003361.plus.aac.p.m4a", year: "1968" },
+    { title: "Generale", artist: "Francesco De Gregori", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bc/45/d3/bc45d363-0c6d-525e-2101-4c7b6678b2df/mzaf_11096580398306307934.plus.aac.p.m4a", year: "1974" },
+    { title: "Dancing Queen", artist: "ABBA", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ec/b1/63/ecb163bc-aff2-4dd2-d40b-c044f0b9fa4d/mzaf_4358783485405794088.plus.aac.p.m4a", year: "1976" },
+    { title: "Mamma Mia", artist: "ABBA", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b6/11/b6/b611b634-d2ea-3413-19be-b3c19daddfe5/mzaf_11228048896593074702.plus.aac.p.m4a", year: "1975" },
+    { title: "Waterloo", artist: "ABBA", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c6/7c/00/c67c008a-125e-816b-d605-13029848a14d/mzaf_9917084468265042979.plus.aac.p.m4a", year: "1974" },
+    { title: "Bohemian Rhapsody", artist: "Queen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/17/fc/1e/17fc1eba-946d-84a9-710b-a0e88ea64209/mzaf_3049006317693088799.plus.aac.p.m4a", year: "1975" },
+    { title: "Another One Bites the Dust", artist: "Queen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f1/84/52/f1845293-e7a3-5d0c-9bfd-55e3d059c945/mzaf_16627152648909684483.plus.aac.p.m4a", year: "1980" },
+    { title: "We Will Rock You", artist: "Queen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0a/a9/f3/0aa9f3af-4672-fb3b-42d8-6d56a9a4c69b/mzaf_16030082968131796908.plus.aac.p.m4a", year: "1977" },
+    { title: "Billie Jean", artist: "Michael Jackson", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/dc/bc/8a/dcbc8a3e-4ce1-c00d-cc02-eda2212053c7/mzaf_8347559338388601510.plus.aac.p.m4a", year: "1982" },
+    { title: "Thriller", artist: "Michael Jackson", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/58/8c/cb/588ccb9a-ab79-4a38-43b5-d4c24ea42859/mzaf_2083607504726567992.plus.aac.p.m4a", year: "1982" },
+    { title: "Beat It", artist: "Michael Jackson", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/88/cd/46/88cd46bd-dba7-1dc2-a63b-e8c111ac4fc3/mzaf_4042555053237612653.plus.aac.p.m4a", year: "1982" },
+    { title: "Stayin' Alive", artist: "Bee Gees", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3f/26/77/3f2677d0-8077-c16a-7eea-7795fa614e0f/mzaf_14501202821130740263.plus.aac.p.m4a", year: "1977" },
+    { title: "Night Fever", artist: "Bee Gees", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f7/92/b8/f792b815-5b3f-1744-259b-945c25187e0b/mzaf_11734007033811891911.plus.aac.p.m4a", year: "1977" },
+    { title: "Rocket Man", artist: "Elton John", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8c/09/6d/8c096da7-10b6-422b-51b6-f1f97a66380d/mzaf_5290536375751623365.plus.aac.p.m4a", year: "1972" },
+    { title: "Your Song", artist: "Elton John", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/85/f4/5e/85f45e08-8724-4144-54c0-d87f0ac42f51/mzaf_17953656609560449107.plus.aac.p.m4a", year: "1970" },
+    { title: "Hotel California", artist: "Eagles", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/17/30/06/1730066d-13fb-6803-0e52-46d4762b94e0/mzaf_8068080726527063383.plus.aac.p.m4a", year: "1976" },
+    { title: "Dreams", artist: "Fleetwood Mac", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b6/5a/4b/b65a4b6f-54dd-ee99-0b36-98e27d5b5dd8/mzaf_13813391014293209258.plus.aac.p.m4a", year: "1987" },
+    { title: "Go Your Own Way", artist: "Fleetwood Mac", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d1/37/68/d1376853-ec1e-cce0-4ac9-2e98fc9d9c51/mzaf_7672022765745493173.plus.aac.p.m4a", year: "1976" },
+    { title: "Heroes", artist: "David Bowie", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1f/f3/12/1ff3122a-eb3e-373d-d524-cfe00de9b19a/mzaf_8446634475827049231.plus.aac.p.m4a", year: "1977" },
+    { title: "Let's Dance", artist: "David Bowie", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ea/e1/be/eae1be9d-611b-f67d-864f-1dc8df04726b/mzaf_8018381438157593013.plus.aac.p.m4a", year: "1983" },
+    { title: "Imagine", artist: "John Lennon", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7d/4e/8c/7d4e8ced-a37b-fab9-c66a-f3b4d6f043cb/mzaf_1566428042492234227.plus.aac.p.m4a", year: "1971" },
+    { title: "Hey Jude", artist: "The Beatles", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3d/08/f5/3d08f5d7-1e0a-99d9-1085-d50ecc972bb9/mzaf_1689604474306790314.plus.aac.p.m4a", year: "1968" },
+    { title: "Let It Be", artist: "The Beatles", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/60/76/fd/6076fd8f-422a-d5e3-7b02-5953bc93cfbd/mzaf_3945462995290301839.plus.aac.p.m4a", year: "1970" },
+    { title: "Like a Prayer", artist: "Madonna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0b/23/82/0b238289-52e2-2107-5531-181836267ed2/mzaf_6726729811402686020.plus.aac.p.m4a", year: "1989" },
+    { title: "Material Girl", artist: "Madonna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/de/b5/30/deb5306d-c74c-33f2-03b1-aa6ac3c7a86e/mzaf_18318343204477424279.plus.aac.p.m4a", year: "1984" },
+    { title: "Wonderwall", artist: "Oasis", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ab/16/93/ab16933c-6203-3db9-9da9-513ff1c8496d/mzaf_16993612140334549994.plus.aac.p.m4a", year: "1995" },
+    { title: "Don't Look Back in Anger", artist: "Oasis", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e7/0d/2c/e70d2c62-b10a-333e-7289-1032482a5242/mzaf_380233244515330166.plus.aac.p.m4a", year: "1995" },
+    { title: "Smells Like Teen Spirit", artist: "Nirvana", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/65/49/4e/65494e02-b6d3-26d8-6b0c-9bd98dcf4d5d/mzaf_7665413316386155700.plus.aac.p.m4a", year: "1991" },
+    { title: "Come as You Are", artist: "Nirvana", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/88/55/17/88551793-f12c-c809-2657-bea5256c7aa0/mzaf_4166033993768096448.plus.aac.p.m4a", year: "1991" },
+    { title: "I Want It That Way", artist: "Backstreet Boys", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/12/cd/f8/12cdf81c-f174-cd45-9a56-9b2388df9e63/mzaf_2642298639219088626.plus.aac.p.m4a", year: "1999" },
+    { title: "Everybody", artist: "Backstreet Boys", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bf/30/b7/bf30b77d-80db-f418-47ea-0f455e980f08/mzaf_733937835429193874.plus.aac.p.m4a", year: "1997" },
+    { title: "I Will Always Love You", artist: "Whitney Houston", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/03/d2/1a/03d21aca-c69e-09af-03ef-118004e68ab5/mzaf_17408932698913708736.plus.aac.p.m4a", year: "1992" },
+    { title: "I Wanna Dance with Somebody", artist: "Whitney Houston", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/67/fd/7b67fd07-6a7a-0362-135c-878ac5799f2c/mzaf_11309521725869189721.plus.aac.p.m4a", year: "1987" },
+    { title: "My Heart Will Go On", artist: "Celine Dion", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ad/10/9c/ad109c62-aa02-8345-bfcc-b50f98345475/mzaf_3279697888712975539.plus.aac.p.m4a", year: "1997" },
+    { title: "Hero", artist: "Mariah Carey", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8e/e6/16/8ee616f8-be3d-8733-66d4-aac382df17d8/mzaf_4565011465364563889.plus.aac.p.m4a", year: "1993" },
+    { title: "Freed from Desire", artist: "Gala", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8a/a6/ed/8aa6edd7-c6b8-a99a-d5ee-d092e1460e9d/mzaf_12498017299340318780.plus.aac.p.m4a", year: "1996" },
+    { title: "Blue (Da Ba Dee)", artist: "Eiffel 65", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5c/2a/4f/5c2a4f09-ac01-be90-d6b2-a0b94bd82b7e/mzaf_3916619128344794117.plus.aac.p.m4a", year: "1998" },
+    { title: "Rhythm of the Night", artist: "Corona", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/5f/9e/0f/5f9e0f8f-f1fe-7ebd-ccfe-cab48ba7dbb4/mzaf_7541665307700108080.plus.aac.p.m4a", year: "1993" },
+    { title: "What Is Love", artist: "Haddaway", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/89/ea/52/89ea5203-802f-2158-614c-8c7d5cedd3df/mzaf_13828661315018209252.plus.aac.p.m4a", year: "1992" },
+    { title: "Crazy in Love", artist: "Beyoncé", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7a/7f/b3/7a7fb397-c707-f7a6-93be-1db3cd1c7fcb/mzaf_10719026518601275807.plus.aac.p.m4a", year: "2003" },
+    { title: "Umbrella", artist: "Rihanna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/45/22/7b452241-882c-409b-3a9b-23306b14286a/mzaf_8588243939716013218.plus.aac.p.m4a", year: "2007" },
+    { title: "Don't Stop the Music", artist: "Rihanna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f6/5b/0d/f65b0d9e-ad88-c617-94a8-de4cf6579dff/mzaf_4611312496171288825.plus.aac.p.m4a", year: "2007" },
+    { title: "I Gotta Feeling", artist: "Black Eyed Peas", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/88/5e/6a/885e6adb-f307-d849-a3e0-47280088b5a4/mzaf_12588254824919596992.plus.aac.p.m4a", year: "2009" },
+    { title: "Viva la Vida", artist: "Coldplay", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b0/19/60/b0196060-7786-24c0-8c56-8f628fe89f52/mzaf_12479456646715449366.plus.aac.p.m4a", year: "2008" },
+    { title: "Hips Don't Lie", artist: "Shakira", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ac/c7/61/acc7619f-c1e3-e0a5-df9b-0329a35af062/mzaf_13106936727189536738.plus.aac.p.m4a", year: "2006" },
+    { title: "Waka Waka", artist: "Shakira", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/98/88/e5/9888e55d-4daf-0e96-480b-a38259013586/mzaf_9048311608369053538.plus.aac.p.m4a", year: "2010" },
+    { title: "Lose Yourself", artist: "Eminem", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/13/5a/61/135a6154-8ca2-0523-1fa2-f4ac0ea9e1e7/mzaf_13242749689945681184.plus.aac.p.m4a", year: "2002" },
+    { title: "Toxic", artist: "Britney Spears", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ae/c4/7f/aec47f56-842d-49b4-558b-7a7523fd6728/mzaf_6693111381462300599.plus.aac.p.m4a", year: "2003" },
+    { title: "Since U Been Gone", artist: "Kelly Clarkson", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8d/e7/24/8de72427-cabf-27c4-563f-5be2e83da122/mzaf_8282882240981789361.plus.aac.p.m4a", year: "2004" },
+    { title: "Mr. Brightside", artist: "The Killers", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c3/a0/30/c3a03008-17c5-aa29-6c6a-5e757ccdbaa5/mzaf_6073120660767081787.plus.aac.p.m4a", year: "2003" },
+    { title: "Seven Nation Army", artist: "The White Stripes", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fe/2d/58/fe2d587f-6344-3fb3-43f7-d318a6253dcc/mzaf_16825320951570507954.plus.aac.p.m4a", year: "2003" },
+    { title: "Shape of You", artist: "Ed Sheeran", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/44/c7/4f/44c74f0d-72dc-6143-d4d0-ba14d661ca0d/mzaf_9566898362556366703.plus.aac.p.m4a", year: "2017" },
+    { title: "Perfect", artist: "Ed Sheeran", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c7/ba/bc/c7babc66-f598-aaa6-bcf6-307281795817/mzaf_16337361235117168274.plus.aac.p.m4a", year: "2017" },
+    { title: "Levitating", artist: "Dua Lipa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/59/dc/4d/59dc4dda-93ff-8f1c-c536-f005f6ea6af5/mzaf_3066686759813252385.plus.aac.p.m4a", year: "2020" },
+    { title: "Don't Start Now", artist: "Dua Lipa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/3d/34/243d3413-a0fc-b229-f54a-1715ebd3a9ca/mzaf_11578996572221800393.plus.aac.p.m4a", year: "2019" },
+    { title: "Bad Guy", artist: "Billie Eilish", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c3/87/1f/c3871f7e-3260-d615-1c66-5fdca2c3a48f/mzaf_10721331211699880949.plus.aac.p.m4a", year: "2019" },
+    { title: "Watermelon Sugar", artist: "Harry Styles", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/25/54/81/255481c0-1ef2-c1bc-f3b3-ea2b1419c1f1/mzaf_5289557126888202047.plus.aac.p.m4a", year: "2019" },
+    { title: "Shake It Off", artist: "Taylor Swift", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/11/d5/6d/11d56d4a-ce23-e793-8681-70dc4d35d931/mzaf_5886436202259848624.plus.aac.p.m4a", year: "2014" },
+    { title: "Uptown Funk", artist: "Bruno Mars", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b9/96/2c/b9962c79-3662-235c-e55d-6c4b41457499/mzaf_18075623088273148288.plus.aac.p.m4a", year: "2014" },
+    { title: "24K Magic", artist: "Bruno Mars", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/45/c4/cb/45c4cb28-670f-f1fe-9678-7fa1601bbb5a/mzaf_2006385778979520718.plus.aac.p.m4a", year: "2016" },
+    { title: "Rolling in the Deep", artist: "Adele", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4c/4f/03/4c4f032a-3d2b-853d-da81-996602355b42/mzaf_11625850023134180491.plus.aac.p.m4a", year: "2010" },
+    { title: "Someone Like You", artist: "Adele", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/08/22/2e/08222e25-43f5-20e6-a442-b8127ac83368/mzaf_1689070223363740216.plus.aac.p.m4a", year: "2011" },
+    { title: "Circles", artist: "Post Malone", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f9/b1/aa/f9b1aaed-3e24-227f-153d-99969f8b8464/mzaf_6272498007975402144.plus.aac.p.m4a", year: "2019" },
+    { title: "Sunflower", artist: "Post Malone", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/98/f0/d6/98f0d67e-f8bf-762d-cac7-1c6b3b6b35dd/mzaf_4543283896248560946.plus.aac.p.m4a", year: "2018" },
+    { title: "Old Town Road", artist: "Lil Nas X", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/32/9c/42/329c4214-8cce-5382-aa92-fe87e013f3d5/mzaf_14962210134357559640.plus.aac.p.m4a", year: "2018" },
+    { title: "Havana", artist: "Camila Cabello", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7d/42/fe/7d42fe40-78b9-c546-861e-bda5788bba4e/mzaf_7434858341023410545.plus.aac.p.m4a", year: "2017" },
+    { title: "Despacito", artist: "Luis Fonsi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0d/cb/ec/0dcbec41-5e9e-bd09-7cdd-fdff44acdf78/mzaf_17345185466754008149.plus.aac.p.m4a", year: "2017" },
+    { title: "Sweet Child O' Mine", artist: "Guns N' Roses", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0d/cb/f3/0dcbf381-7cbf-78b8-7f74-d5789adf65a1/mzaf_17081805577020235844.plus.aac.p.m4a", year: "1987" },
+    { title: "Highway to Hell", artist: "AC/DC", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d0/54/a9/d054a909-fe00-757a-b5fb-3760ea7cdf13/mzaf_15087080229874880055.plus.aac.p.m4a", year: "1979" },
+    { title: "Thunderstruck", artist: "AC/DC", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/11/cb/bb/11cbbbcc-49f3-11e2-cbe9-9f8c02ce390f/mzaf_13150709707479713449.plus.aac.p.m4a", year: "1990" },
+    { title: "Livin' on a Prayer", artist: "Bon Jovi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/75/15/30/75153020-b7c4-7958-8907-4aa1b965dc24/mzaf_2377504467597068152.plus.aac.p.m4a", year: "1986" },
+    { title: "Eye of the Tiger", artist: "Survivor", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fe/fa/9e/fefa9edd-c023-4d1c-1012-08bfb0ec69e6/mzaf_4651653238471209843.plus.aac.p.m4a", year: "1982" },
+    { title: "One More Time", artist: "Daft Punk", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5d/93/d8/5d93d83f-ad1e-da4d-1d79-9937bdff24ec/mzaf_14396932211949300852.plus.aac.p.m4a", year: "2000" },
+    { title: "Get Lucky", artist: "Daft Punk", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/57/a5/85/57a585aa-f1bc-7619-881b-f8a04a5541d5/mzaf_6906185026678279401.plus.aac.p.m4a", year: "2013" },
+    { title: "Eppure Sentire", artist: "Elisa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/07/d1/69/07d169c5-bc16-6dd4-b07f-0b52bb459962/mzaf_629036874954871106.plus.aac.p.m4a", year: "2025" },
+    { title: "Meraviglioso", artist: "Negramaro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fc/5c/a7/fc5ca7dd-75eb-9a9e-0228-7f435a54b925/mzaf_5626138700032219295.plus.aac.p.m4a", year: "1968" },
+    { title: "Laura non c'è", artist: "Nek", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8c/36/20/8c362001-3081-aa3d-ae59-403b1f381805/mzaf_360931927064929862.plus.aac.p.m4a", year: "1990" },
+    { title: "Bello e Impossibile", artist: "Gianna Nannini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/Music/87/1f/c0/mzm.hiuxbait.aac.p.m4a", year: "2009" },
+    { title: "America", artist: "Gianna Nannini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e1/89/a8/e189a89f-1b2d-4164-cba7-2764381c45ca/mzaf_7407353180562797678.plus.aac.p.m4a", year: "2009" },
+    { title: "Mare Mare", artist: "Luca Carboni", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/33/bb/e6/33bbe6d0-6d7b-b038-f466-fbac550902c8/mzaf_17001631506494626315.plus.aac.p.m4a", year: "1984" },
+    { title: "Notte Prima degli Esami", artist: "Antonello Venditti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/07/71/86/07718667-31f8-c171-1280-18d3c7899292/mzaf_9774851842683783159.plus.aac.p.m4a", year: "1984" },
+    { title: "La Mia Banda Suona il Rock", artist: "Ivano Fossati", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/c9/8b/b9/c98bb973-34d1-cdfa-3a87-1a1201dc7b2a/mzaf_9939965258643647630.plus.aac.p.m4a", year: "2007" },
+    { title: "Non Sono Una Signora", artist: "Loredana Bertè", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b1/59/c3/b159c333-7903-b6a5-c82c-8b77323d71cc/mzaf_5140762871462598334.plus.aac.p.m4a", year: "1982" },
+    { title: "Pazza Idea", artist: "Patty Pravo", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/66/8c/59/668c592b-a63c-8c22-7de9-36a7832908cf/mzaf_14840548136090101684.plus.aac.p.m4a", year: "1973" },
+    { title: "Gianna", artist: "Rino Gaetano", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fe/60/23/fe602364-09b2-9506-4496-128bf65769f3/mzaf_7313577448546868565.plus.aac.p.m4a", year: "1978" },
+    { title: "Ma il Cielo è Sempre Più Blu", artist: "Rino Gaetano", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6d/fc/2f/6dfc2f49-085b-c30a-4275-cddc47aa524c/mzaf_9694940277593178182.plus.aac.p.m4a", year: "1975" },
+    { title: "Ti Amo", artist: "Umberto Tozzi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ef/7d/95/ef7d956a-e88b-a781-f67e-ba904eb6cccb/mzaf_7127076448013173130.plus.aac.p.m4a", year: "1977" },
+    { title: "Gloria", artist: "Umberto Tozzi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/c8/ff/28/c8ff28b1-165c-f34f-53c3-935e1147acdb/mzaf_10909506005334592812.plus.aac.p.m4a", year: "1979" },
+    { title: "Bella Senz'Anima", artist: "Riccardo Cocciante", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/68/25/3d/68253da7-4ea5-230d-57f7-f31bcc0d0e21/mzaf_7132315668634199762.plus.aac.p.m4a", year: "2008" },
+    { title: "L'Italiano", artist: "Toto Cutugno", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a4/2e/97/a42e97d6-fabc-b221-d4b6-e5ed7b2612d3/mzaf_13159283113987498328.plus.aac.p.m4a", year: "2025" },
+    { title: "Rolls Royce", artist: "Achille Lauro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/11/14/55/111455b7-e7d1-31cd-902e-2d67a78e9230/mzaf_13689256175406345864.plus.aac.p.m4a", year: "2019" },
+    { title: "Nostalgia", artist: "Blanco", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/09/7e/1b/097e1bf8-8d29-eb09-b387-6354352e0105/mzaf_16204878829383363792.plus.aac.p.m4a", year: "2020" },
+    { title: "Il Coraggio dei Bambini", artist: "Geolier", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/07/bc/c2/07bcc287-2beb-4d84-c03a-aaba44890a2b/mzaf_10651130491721277651.plus.aac.p.m4a", year: "2023" },
+    { title: "Ovunque Sarai", artist: "Irama", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/f4/6b/7d/f46b7d3b-e5ea-9eb0-3611-f3f592be4fd5/mzaf_11423351943219866554.plus.aac.p.m4a", year: "2022" },
+    { title: "Non Sei Tu", artist: "Gazzelle", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a3/cc/b6/a3ccb680-93b0-8903-c4db-1d694c314e92/mzaf_12853370965606025694.plus.aac.p.m4a", year: "2017" },
+    { title: "Cosa Mi Manchi a Fare", artist: "Calcutta", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/10/ff/86/10ff86c4-392f-fae4-f1d4-b9283f528de3/mzaf_13881710324175180018.plus.aac.p.m4a", year: "2015" },
+    { title: "Riccione", artist: "Thegiornalisti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f0/a4/1d/f0a41d85-968b-4406-4cf3-1c658c995ab6/mzaf_6019778513980778379.plus.aac.p.m4a", year: "2017" },
+    { title: "Felicità Puttana", artist: "Thegiornalisti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3a/b8/77/3ab87757-ad47-1931-72e2-41bc5fb366ad/mzaf_9297157099973596060.plus.aac.p.m4a", year: "2018" },
+    { title: "La Musica Non C'è", artist: "Coez", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b1/bc/92/b1bc928e-03d9-0298-89bb-c11dc0c55b22/mzaf_12667202381547035593.plus.aac.p.m4a", year: "2024" },
+    { title: "90MIN", artist: "Salmo", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/ff/ed/97/ffed97fd-29a4-81b5-9a88-fc0afc9a1153/mzaf_3732992778393640149.plus.aac.p.m4a", year: "2023" },
+    { title: "Vorrei Ma Non Posto", artist: "J-Ax e Fedez", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3d/68/84/3d688486-2aa5-d384-f832-01f75a901f5a/mzaf_15569303741539160973.plus.aac.p.m4a", year: "2016" },
+    { title: "Roma-Bangkok", artist: "Baby K", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/93/09/eb/9309eb9c-575b-d32c-8a1d-a7d378092882/mzaf_7315753604168713670.plus.aac.p.m4a", year: "2015" },
+    { title: "Jambo", artist: "Takagi & Ketra", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3d/49/b9/3d49b9c4-4e91-7100-2d18-b29f5d716208/mzaf_2202183666487616682.plus.aac.p.m4a", year: "2019" },
+    { title: "Mambo Salentino", artist: "Boomdabash", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview124/v4/81/3e/c4/813ec4ea-c12b-817d-d341-683db7abb2d1/mzaf_16618096833618099361.plus.aac.p.m4a", year: "2020" },
+    { title: "Karaoke", artist: "Boomdabash e Alessandra Amoroso", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview124/v4/27/8f/bc/278fbcca-76d3-ee02-569a-8586f857e3de/mzaf_10597048884415890022.plus.aac.p.m4a", year: "2020" },
+    { title: "Non Mi Avete Fatto Niente", artist: "Ermal Meta e Fabrizio Moro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/30/63/d3/3063d344-aaaf-0257-dda1-f53030d42b4d/mzaf_10585356600593268324.plus.aac.p.m4a", year: "2018" },
+    { title: "Cara Ti Amo", artist: "Biagio Antonacci", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0d/c2/56/0dc25666-5b13-ba68-eb08-df56336df41d/mzaf_7066989355341688670.plus.aac.p.m4a", year: "1998" },
+    { title: "Baciami Ancora", artist: "Jovanotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3a/d6/09/3ad6094b-0425-a58a-9fba-e607e8f88912/mzaf_17808324232298283939.plus.aac.p.m4a", year: "2010" },
+    { title: "Smooth Criminal", artist: "Michael Jackson", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/38/7d/84/387d847b-0a17-d7d0-81fa-3d1e2036a0e3/mzaf_1148403634523455455.plus.aac.p.m4a", year: "1987" },
+    { title: "Purple Rain", artist: "Prince", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4a/70/9b/4a709b41-3c29-626a-ca69-44aa907f4705/mzaf_14388295257133509788.plus.aac.p.m4a", year: "1984" },
+    { title: "Girls Just Want to Have Fun", artist: "Cyndi Lauper", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/95/1d/ed/951ded3d-4e31-1452-42b6-cc36070a2204/mzaf_10794841548233618528.plus.aac.p.m4a", year: "1983" },
+    { title: "What's Love Got to Do with It", artist: "Tina Turner", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/09/3e/99/093e99b8-4b68-7644-70ef-0cdcee5240dd/mzaf_5100255688877013829.plus.aac.p.m4a", year: "1984" },
+    { title: "Take On Me", artist: "a-ha", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/14/c0/22/14c02289-d2c8-bc54-564d-9290284add24/mzaf_14928377706706568365.plus.aac.p.m4a", year: "1985" },
+    { title: "Hungry Like the Wolf", artist: "Duran Duran", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3d/89/37/3d8937c0-0af8-8e56-7a05-84eb313bebf1/mzaf_6649517434617225776.plus.aac.p.m4a", year: "1982" },
+    { title: "Every Breath You Take", artist: "The Police", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6c/b4/79/6cb47947-0860-8788-95b1-a2b0a908f342/mzaf_4654925634744235278.plus.aac.p.m4a", year: "1983" },
+    { title: "With or Without You", artist: "U2", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/73/9f/b8/739fb89d-05fc-a158-d34d-578d07213262/mzaf_15599762317871907296.plus.aac.p.m4a", year: "1987" },
+    { title: "Losing My Religion", artist: "R.E.M.", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/06/ee/70/06ee70ca-c0f6-783c-1935-e0be0f3228d4/mzaf_1437283987200939868.plus.aac.p.m4a", year: "1991" },
+    { title: "It's My Life", artist: "Bon Jovi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/37/4c/b6/374cb6b3-1390-b8d5-eb28-702fa32d20ad/mzaf_8791835277619319579.plus.aac.p.m4a", year: "2000" },
+    { title: "Enter Sandman", artist: "Metallica", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/53/8a/fc/538afc1c-b9cd-24ab-b401-2fa8c81abc46/mzaf_3160131754964321707.plus.aac.p.m4a", year: "1991" },
+    { title: "Californication", artist: "Red Hot Chili Peppers", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c7/08/cc/c708ccb1-11b7-843e-8625-a8746b0ec570/mzaf_4563159194272380674.plus.aac.p.m4a", year: "1999" },
+    { title: "Creep", artist: "Radiohead", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1f/18/e2/1f18e22b-264e-88f8-ee89-c196fa9abd7a/mzaf_14184372154331980897.plus.aac.p.m4a", year: "1992" },
+    { title: "Ironic", artist: "Alanis Morissette", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/05/99/bb/0599bb8c-2dc2-14f6-213f-1ee69c72e4ed/mzaf_17860950106664762758.plus.aac.p.m4a", year: "1995" },
+    { title: "No Scrubs", artist: "TLC", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/59/d7/cb/59d7cbad-8695-6bef-5784-05d678ad22ad/mzaf_10240892877744551995.plus.aac.p.m4a", year: "1999" },
+    { title: "Say My Name", artist: "Destiny's Child", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f1/57/eb/f157ebe3-81ce-1480-0d66-2a7efc949b96/mzaf_3068942405661016006.plus.aac.p.m4a", year: "1999" },
+    { title: "Genie in a Bottle", artist: "Christina Aguilera", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e9/63/7c/e9637c84-3cbe-ad95-a5be-b6962ed54e08/mzaf_11300153256112368673.plus.aac.p.m4a", year: "1999" },
+    { title: "Bye Bye Bye", artist: "NSYNC", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6a/a8/c2/6aa8c264-c7f8-5db7-4b52-808abf96156d/mzaf_15046152716316545247.plus.aac.p.m4a", year: "2000" },
+    { title: "Angels", artist: "Robbie Williams", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/65/3b/08/653b0800-b1ac-f311-99df-2eef8734a74a/mzaf_9241683199220794890.plus.aac.p.m4a", year: "1997" },
+    { title: "Rehab", artist: "Amy Winehouse", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c0/7f/37/c07f37f1-a8e1-b093-f643-9e3bae02589b/mzaf_10374144630525520706.plus.aac.p.m4a", year: "2006" },
+    { title: "Poker Face", artist: "Lady Gaga", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/21/a4/9f/21a49f2c-d648-e775-6f3c-0db03b858f92/mzaf_8474670769503861886.plus.aac.p.m4a", year: "2008" },
+    { title: "Firework", artist: "Katy Perry", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ab/27/3b/ab273b22-1eb1-dd49-5332-5ef70c35683b/mzaf_4912325324633099647.plus.aac.p.m4a", year: "2010" },
+    { title: "Diamonds", artist: "Rihanna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/26/97/fb/2697fb36-8ef2-9d18-0a2e-6545947b4445/mzaf_9032202105098805603.plus.aac.p.m4a", year: "2012" },
+    { title: "Halo", artist: "Beyoncé", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bc/cf/16/bccf164e-fa68-11c2-5e03-f87ca8e6e637/mzaf_13683091017583481694.plus.aac.p.m4a", year: "2008" },
+    { title: "Sorry", artist: "Justin Bieber", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/66/eb/29/66eb29c0-c2f9-d9df-8af3-3bf2562c9d7c/mzaf_4099789285264521999.plus.aac.p.m4a", year: "2015" },
+    { title: "Thank U, Next", artist: "Ariana Grande", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/89/96/16/8996169e-2309-a298-f6f0-e7c52fe8e176/mzaf_590631660224715451.plus.aac.p.m4a", year: "2018" },
+    { title: "Closer", artist: "The Chainsmokers", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bd/f9/b9/bdf9b9b2-eaa4-4461-6079-aaacc6df7316/mzaf_17327312786932455493.plus.aac.p.m4a", year: "2016" },
+    { title: "Wake Me Up", artist: "Avicii", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/68/1e/60/681e601f-e1f2-4ebb-37de-adf00bdf57b6/mzaf_8266263075137964740.plus.aac.p.m4a", year: "2013" },
+    { title: "Summer", artist: "Calvin Harris", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c3/32/f1/c332f138-aa3c-52b8-c414-e85111b58bf5/mzaf_12226515580236242706.plus.aac.p.m4a", year: "2014" },
+    { title: "Titanium", artist: "David Guetta", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/45/dd/8f/45dd8ffc-0164-1f70-c53d-bf91a1d80b1a/mzaf_3092057092144618662.plus.aac.p.m4a", year: "2011" },
+    { title: "Give Me Everything", artist: "Pitbull", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/07/7a/58/077a5833-acac-306a-c927-f800f1e09d4d/mzaf_10663174745007601529.plus.aac.p.m4a", year: "2011" },
+    { title: "Chantaje", artist: "Shakira", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ce/25/45/ce254583-d1ac-db76-c02e-a4ceeab5e2de/mzaf_7277323164917214654.plus.aac.p.m4a", year: "2016" },
+    { title: "Bailando", artist: "Enrique Iglesias", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8f/d1/5f/8fd15faf-0ebe-75c1-75b3-490e6e874625/mzaf_15170278430104937002.plus.aac.p.m4a", year: "2008" },
+    { title: "Sugar", artist: "Maroon 5", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1b/3f/68/1b3f68e0-3c42-f367-cd0f-e46c746e0668/mzaf_15052021441666328650.plus.aac.p.m4a", year: "2014" },
+    { title: "Counting Stars", artist: "OneRepublic", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b0/db/7f/b0db7fbe-f8ff-1f67-fe72-ca8185ffbca2/mzaf_15298650366584767800.plus.aac.p.m4a", year: "2013" },
+    { title: "Believer", artist: "Imagine Dragons", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c0/3f/36/c03f367a-b66b-fd0a-a54c-30f8250c4410/mzaf_12768434238801682952.plus.aac.p.m4a", year: "2017" },
+    { title: "Stressed Out", artist: "Twenty One Pilots", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a9/74/e8/a974e8f2-0693-9371-bb6c-87047a486254/mzaf_1898989387861959316.plus.aac.p.m4a", year: "2015" },
+    { title: "Chandelier", artist: "Sia", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f0/de/66/f0de661c-299a-b7ae-80d9-4f35f79875b1/mzaf_10598240417031133475.plus.aac.p.m4a", year: "2014" },
+    { title: "Hello", artist: "Adele", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/10/7e/9d/107e9dc0-c13b-eace-2486-84a3c694b075/mzaf_6267923862748965591.plus.aac.p.m4a", year: "2015" },
+    { title: "Stay With Me", artist: "Sam Smith", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d8/90/ef/d890ef3d-95b8-2224-5ff2-4ed56a359449/mzaf_8285804271834164275.plus.aac.p.m4a", year: "2014" },
+    { title: "Thinking Out Loud", artist: "Ed Sheeran", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/78/a5/f2/78a5f25e-ad1b-718d-82ad-b82e676c1855/mzaf_6133970271589343093.plus.aac.p.m4a", year: "2014" },
+    { title: "Ocean Eyes", artist: "Billie Eilish", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d6/59/2b/d6592b0b-1e7e-4743-b2e4-f2af038fd783/mzaf_7697277787797935735.plus.aac.p.m4a", year: "2016" },
+    { title: "Gli Spari Sopra", artist: "Vasco Rossi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/7e/c8/48/7ec848f6-a8bc-b0e5-1618-98071c8a071b/mzaf_11066209384354403913.plus.aac.p.m4a", year: "1999" },
+    { title: "Ogni Volta", artist: "Vasco Rossi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d4/54/d0/d454d058-a2c1-8591-ba0e-0c70d05b9767/mzaf_18188160909589428138.plus.aac.p.m4a", year: "1982" },
+    { title: "Diavolo in Me", artist: "Zucchero", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/22/f6/66/22f6669b-34c8-0dd7-acaf-299a2e3a1b46/mzaf_2058625483888826330.plus.aac.p.m4a", year: "1986" },
+    { title: "Cose della Vita", artist: "Eros Ramazzotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/60/d6/82/60d68209-c8ae-a2b7-e6da-179c26885b39/mzaf_39495053005738834.plus.aac.p.m4a", year: "1987" },
+    { title: "Incancellabile", artist: "Laura Pausini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fb/8e/ce/fb8ece5f-a382-787f-5674-e49f5363722b/mzaf_3261089983545842359.plus.aac.p.m4a", year: "1996" },
+    { title: "Xdono", artist: "Tiziano Ferro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/84/c9/f5/84c9f59a-99be-afbf-3e7a-e4a564dd4bf2/mzaf_7095115692823151045.plus.aac.p.m4a", year: "2014" },
+    { title: "Bella", artist: "Jovanotti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7f/94/1b/7f941bb2-7b5c-dea1-5dfd-15f1017e228c/mzaf_1994672770019280811.plus.aac.p.m4a", year: "1997" },
+    { title: "Il Sole Anche di Notte", artist: "Ligabue", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/50/f1/c2/50f1c214-9129-5c7b-8084-e5d64eb03332/mzaf_15285842325877084781.plus.aac.p.m4a", year: "2025" },
+    { title: "Logico", artist: "Cesare Cremonini", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/6d/71/68/6d716800-c70f-414a-8658-ad1aa4012167/mzaf_6038451690078203595.plus.aac.p.m4a", year: "2014" },
+    { title: "Non ho l'età", artist: "Gigliola Cinquetti", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/38/c8/4d/38c84d20-7b8c-d5e7-8785-485bdeacc99f/mzaf_8088608971774644696.plus.aac.p.m4a", year: "1964" },
+    { title: "Pensare Male", artist: "Elodie", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/72/b0/49/72b049e5-c3c2-7792-3852-2efdfecc9fa3/mzaf_18220604102868599561.plus.aac.p.m4a", year: "2023" },
+    { title: "Sanremo", artist: "Tananai", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/33/b5/89/33b5894b-28ec-dc68-8e9a-f34a971580ca/mzaf_1229626015263550155.plus.aac.p.m4a", year: "2023" },
+    { title: "La Prima Volta", artist: "Negramaro", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/93/3d/2c/933d2c27-1dd9-4322-8e06-8861bdd95056/mzaf_6739567393760759176.plus.aac.p.m4a", year: "2017" },
+    { title: "Thrift Shop", artist: "Macklemore & Ryan Lewis", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ce/5c/aa/ce5caa72-ff73-221e-cc83-295c23bce434/mzaf_8353999015135739287.plus.aac.p.m4a", year: "2012" },
+    { title: "Can't Hold Us", artist: "Macklemore & Ryan Lewis", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/83/4d/57/834d57bd-505a-2b6a-3a38-cc26f4d34171/mzaf_18284634626678368772.plus.aac.p.m4a", year: "2011" },
+    { title: "Photograph", artist: "Ed Sheeran", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/11/4f/6a/114f6ad0-165c-1e3c-8fbd-df4707d7ae26/mzaf_12480083080052535279.plus.aac.p.m4a", year: "2014" },
+    { title: "Castle on the Hill", artist: "Ed Sheeran", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/07/be/08/07be085d-6f06-8b4e-cea1-f40b4dca3815/mzaf_12958775594313934161.plus.aac.p.m4a", year: "2017" },
+    { title: "We Found Love", artist: "Rihanna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b0/4a/30/b04a30d4-edb9-a31c-2a0d-255c9c0a1b23/mzaf_6763945702626450264.plus.aac.p.m4a", year: "2011" },
+    { title: "Work", artist: "Rihanna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/95/27/c5/9527c58a-b72d-c09e-51c8-0c36531f44a4/mzaf_16889711813657214394.plus.aac.p.m4a", year: "2016" },
+    { title: "Single Ladies", artist: "Beyoncé", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3b/27/a3/3b27a332-48ee-a5b1-1ce5-4b067850f6e6/mzaf_7719939820293883536.plus.aac.p.m4a", year: "2008" },
+    { title: "Roar", artist: "Katy Perry", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/21/a8/76/21a87607-1fe3-2bd2-753c-0b4b73c22b90/mzaf_9666996724668759977.plus.aac.p.m4a", year: "2013" },
+    { title: "Dark Horse", artist: "Katy Perry", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c7/80/b7/c780b757-f2e8-9e40-c5b9-dd28b5fe1296/mzaf_9911645771464051186.plus.aac.p.m4a", year: "2013" },
+    { title: "Just the Way You Are", artist: "Bruno Mars", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5c/36/d3/5c36d391-5880-e0c5-a56e-68ac7d77229b/mzaf_9299593821852203765.plus.aac.p.m4a", year: "2010" },
+    { title: "Grenade", artist: "Bruno Mars", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/56/70/01/567001be-26a3-6c61-cfe2-8184800dc347/mzaf_12349500431513219850.plus.aac.p.m4a", year: "2010" },
+    { title: "Locked Out of Heaven", artist: "Bruno Mars", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/05/04/d5050434-1278-6b8e-9cd8-6261ea319fd1/mzaf_9746689865251353718.plus.aac.p.m4a", year: "2012" },
+    { title: "Love Story", artist: "Taylor Swift", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8b/4c/b3/8b4cb3a5-b1d1-c82c-e6ab-48cc3969d4ff/mzaf_858711921713575608.plus.aac.p.m4a", year: "2021" },
+    { title: "Blank Space", artist: "Taylor Swift", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/79/55/b1/7955b10c-6cb6-462a-861c-8e5cbcacfb76/mzaf_3395570742482345989.plus.aac.p.m4a", year: "2014" },
+    { title: "Set Fire to the Rain", artist: "Adele", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/96/8b/3f/968b3f92-f082-c8c2-47ba-ab7add22dfdc/mzaf_7388168289354543091.plus.aac.p.m4a", year: "2011" },
+    { title: "Cheap Thrills", artist: "Sia", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/89/73/fb/8973fb2c-5417-e56b-30f1-bf5035bb46a2/mzaf_5922398524297774212.plus.aac.p.m4a", year: "2015" },
+    { title: "Starboy", artist: "The Weeknd", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/11/71/d6/1171d6ad-3c96-e027-2af6-58028426588c/mzaf_15137631797407745471.plus.aac.p.m4a", year: "2016" },
+    { title: "Can't Feel My Face", artist: "The Weeknd", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e0/4d/65/e04d6546-d5ae-28bf-51fa-e4e54d737c2f/mzaf_17329746342766146939.plus.aac.p.m4a", year: "2015" },
+    { title: "New Rules", artist: "Dua Lipa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/07/2e/84/072e84d4-2970-034b-0941-60c112f36a2b/mzaf_5630674587159822008.plus.aac.p.m4a", year: "2017" },
+    { title: "Physical", artist: "Dua Lipa", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/87/45/78/874578c1-d683-d1e6-00e4-08848279fa3a/mzaf_17519393520049027931.plus.aac.p.m4a", year: "2020" },
+    { title: "Happier Than Ever", artist: "Billie Eilish", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0a/57/c9/0a57c9db-8368-ad4b-1648-49a621650822/mzaf_6359646670728179887.plus.aac.p.m4a", year: "2021" },
+    { title: "Rockstar", artist: "Post Malone", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/22/37/94/223794d5-e415-e646-a1c6-a52f178f9c82/mzaf_4256851832513251175.plus.aac.p.m4a", year: "2017" },
+    { title: "God's Plan", artist: "Drake", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c6/4a/be/c64abe74-adb4-cff5-005d-0fab3d72a806/mzaf_10276154697254415719.plus.aac.p.m4a", year: "2018" },
+    { title: "One Dance", artist: "Drake", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cb/ee/e3/cbeee354-21e5-2c44-daeb-bcd95e26fe6a/mzaf_5204581280747289469.plus.aac.p.m4a", year: "2016" },
+    { title: "Can't Stop the Feeling!", artist: "Justin Timberlake", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/86/41/2d/86412d20-2f4d-39fc-221b-3f643d7c99c6/mzaf_9909715182585785919.plus.aac.p.m4a", year: "2016" },
+    { title: "SexyBack", artist: "Justin Timberlake", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1a/f4/7b/1af47ba3-a363-5716-4dd9-6aea4fe35e3f/mzaf_13609262275263691829.plus.aac.p.m4a", year: "2006" },
+    { title: "Happy", artist: "Pharrell Williams", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ed/a0/19/eda019cf-2794-66d1-208d-2e2e74c26c3d/mzaf_16469762943852039623.plus.aac.p.m4a", year: "2013" },
+    { title: "Party Rock Anthem", artist: "LMFAO", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/32/da/85/32da8549-f8b9-b04e-a36c-8d8db24080ad/mzaf_15138147331863800823.plus.aac.p.m4a", year: "2011" },
+    { title: "Low", artist: "Flo Rida", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b3/8e/64/b38e64fe-81b4-353a-0912-e849792bd7d5/mzaf_3197818180611327662.plus.aac.p.m4a", year: "2007" },
+    { title: "Whistle", artist: "Flo Rida", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/31/62/c8/3162c81f-58ac-8f22-8d2c-d0281d603ac4/mzaf_12170500586895199679.plus.aac.p.m4a", year: "2012" },
+    { title: "Tik Tok", artist: "Kesha", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ca/c4/5d/cac45d18-3920-16ab-33b9-5b85cc5e394b/mzaf_18125601085374059686.plus.aac.p.m4a", year: "2009" },
+    { title: "Cheerleader", artist: "OMI", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/23/34/38/233438b8-3e59-dcbd-87d8-14d9dc2c4ae0/mzaf_15636383636246184773.plus.aac.p.m4a", year: "2014" },
+    { title: "All About That Bass", artist: "Meghan Trainor", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/58/d1/d9/58d1d97d-2edf-0270-5e28-b4062e010e9b/mzaf_12918959910395918115.plus.aac.p.m4a", year: "2015" },
+    { title: "Temperature", artist: "Sean Paul", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7d/56/11/7d5611a5-360a-4cb5-5934-c9e22aaf2ba3/mzaf_10035810552667838455.plus.aac.p.m4a", year: "2005" },
+    { title: "Talk Dirty", artist: "Jason Derulo", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8a/12/c5/8a12c505-14f7-d8e4-4835-269c170df1e9/mzaf_13425283389958903925.plus.aac.p.m4a", year: "2013" },
+    { title: "Fancy", artist: "Iggy Azalea", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/16/8c/45/168c45b7-99d5-ebd6-d0b1-93c7d1ebae23/mzaf_17396175815496736967.plus.aac.p.m4a", year: "2014" },
+    { title: "Attention", artist: "Charlie Puth", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0b/76/e1/0b76e164-35b8-7fbb-a773-9832f3155532/mzaf_12020704327610118862.plus.aac.p.m4a", year: "2017" },
+    { title: "We Don't Talk Anymore", artist: "Charlie Puth", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a9/05/42/a905420d-535d-e9f7-7885-b8e9c9831b70/mzaf_930790171806791983.plus.aac.p.m4a", year: "2016" },
+    { title: "Pillowtalk", artist: "Zayn", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/78/ba/f8/78baf875-11b0-b73f-a3bb-1c6b1d530fb4/mzaf_3632186116155703482.plus.aac.p.m4a", year: "2016" },
+    { title: "Stitches", artist: "Shawn Mendes", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e8/7c/7d/e87c7ddf-d844-6485-085b-95f15f9ee423/mzaf_12884712290949429165.plus.aac.p.m4a", year: "2015" },
+    { title: "Señorita", artist: "Shawn Mendes e Camila Cabello", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cf/06/d6/cf06d6fd-f7a0-2898-8363-67688df6c14f/mzaf_8234301186390421644.plus.aac.p.m4a", year: "2019" },
+    { title: "Someone You Loved", artist: "Lewis Capaldi", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e5/c8/17/e5c817e2-7830-091f-8686-d6276d5beaeb/mzaf_5586826958480073790.plus.aac.p.m4a", year: "2018" },
+    { title: "Sign of the Times", artist: "Harry Styles", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bd/58/37/bd5837c2-3b3b-5f32-c292-fc0af38f6ea6/mzaf_10433939766410649853.plus.aac.p.m4a", year: "2017" },
+    { title: "Good as Hell", artist: "Lizzo", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/89/6c/a2/896ca254-3673-f66d-261c-30644eb5004a/mzaf_12055454568932010560.plus.aac.p.m4a", year: "2016" },
+    { title: "Kiss Me More", artist: "Doja Cat", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c3/db/9e/c3db9eb5-fed3-eae6-4bcd-baa949cb623d/mzaf_17138382012543023880.plus.aac.p.m4a", year: "2021" },
+    { title: "Wrecking Ball", artist: "Miley Cyrus", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f8/e8/a2/f8e8a23c-b85d-17dd-9625-b39ec26b171f/mzaf_1866607988873686159.plus.aac.p.m4a", year: "2013" },
+    { title: "Flowers", artist: "Miley Cyrus", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/68/9e/f7/689ef7fe-14fe-a846-c87f-7d3b2d6344b1/mzaf_4167137058064023087.plus.aac.p.m4a", year: "2023" },
+    { title: "Super Bass", artist: "Nicki Minaj", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b0/31/80/b03180ac-be20-9366-b4b5-e078bf791737/mzaf_3970609514950194332.plus.aac.p.m4a", year: "2010" },
+    { title: "Bodak Yellow", artist: "Cardi B", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/95/50/61/9550615a-6145-b65c-a696-d735f4b83390/mzaf_3562298962357544356.plus.aac.p.m4a", year: "2017" },
+    { title: "Sicko Mode", artist: "Travis Scott", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d3/91/a1/d391a141-256f-726f-9da1-8aa4e42b3236/mzaf_17761183103753218003.plus.aac.p.m4a", year: "2018" },
+    { title: "HUMBLE.", artist: "Kendrick Lamar", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1f/2e/37/1f2e37be-bdd0-d770-6ea4-091011a6aade/mzaf_2360827885900940865.plus.aac.p.m4a", year: "2017" },
+    { title: "Happier", artist: "Marshmello e Bastille", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fb/3f/e6/fb3fe69b-1f83-dae3-ad86-34b73a50e86c/mzaf_12086156071273718688.plus.aac.p.m4a", year: "2018" },
+    { title: "Faded", artist: "Alan Walker", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ab/18/d9/ab18d9e9-01f0-27ea-3a51-6e08585a0072/mzaf_14299744081264843911.plus.aac.p.m4a", year: "2015" },
+    { title: "Rockabye", artist: "Clean Bandit", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/39/38/4d/39384d6d-7122-6bfd-b2d5-6bfacf883f3f/mzaf_12368290302454098703.plus.aac.p.m4a", year: "2016" },
+    { title: "So What", artist: "P!nk", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/40/fb/fe/40fbfeea-bbbb-06f4-8160-2cdb53fb6f95/mzaf_7144926179958417217.plus.aac.p.m4a", year: "2008" },
+    { title: "All of Me", artist: "John Legend", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ff/94/6c/ff946ca7-e49a-fdf8-ea5b-11e6f56a0417/mzaf_17369156110722174773.plus.aac.p.m4a", year: "2013" },
+    { title: "Love Me Like You Do", artist: "Ellie Goulding", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6f/81/9b/6f819bc4-4aaf-c4a8-2dd3-ff1d8174560a/mzaf_12728576242903871412.plus.aac.p.m4a", year: "2015" },
+    { title: "Lose You to Love Me", artist: "Selena Gomez", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/99/b4/f6/99b4f6a7-2cf0-bce3-a576-1825e603349f/mzaf_15677095240718368265.plus.aac.p.m4a", year: "2019" },
+    { title: "7 rings", artist: "Ariana Grande", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/c8/f3/d5c8f31b-1c8f-93ed-e78b-8c0bce3e8b66/mzaf_14456154925680073521.plus.aac.p.m4a", year: "2019" }
+  ];
+
+  /* =========================================================
+     Squadre globali (nomi/colori/punteggio impostati in
+     index.html) — stesso sistema condiviso usato in tutti gli
+     altri giochi: se già presenti, si parte subito con quei
+     nomi/colori e il punteggio resta sincronizzato tra i giochi.
+     scoreBaseline tiene il punteggio già accumulato prima di
+     questa partita, così si riparte da 0 punti locali senza
+     perdere il totale di serata.
+     ========================================================= */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  let scoreBaseline = [];
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalScore(index, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
+  const TEAM_COLORS = ["#ff2e88", "#4dd9ff", "#00e676", "#ffd600", "#a05bff", "#fb5607"];
+
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+  }
+
+  /* ---- Riferimenti DOM ---- */
+  const gameView = document.getElementById("gameView");
+
+  const scoreGrid = document.getElementById("scoreGrid");
+  const vinylDisc = document.getElementById("vinylDisc");
+  const playerStatus = document.getElementById("playerStatus");
+  const snippetBar = document.getElementById("snippetBar");
+  const snippetTimer = document.getElementById("snippetTimer");
+  const playBtn = document.getElementById("playBtn");
+  const pauseResumeBtn = document.getElementById("pauseResumeBtn");
+  const replayBtn = document.getElementById("replayBtn");
+  const audioPlayer = document.getElementById("audioPlayer");
+
+  const revealPanel = document.getElementById("revealPanel");
+  const revealTitle = document.getElementById("revealTitle");
+  const revealArtist = document.getElementById("revealArtist");
+  const revealYear = document.getElementById("revealYear");
+  const revealBtn = document.getElementById("revealBtn");
+
+  const pointsGrid = document.getElementById("pointsGrid");
+  const nextSongBtn = document.getElementById("nextSongBtn");
+
+  const infoModal = document.getElementById("infoModal");
+  const closeInfoBtn = document.getElementById("closeInfoBtn");
+
+  const SNIPPET_SECONDS = 15;
+  let state = null;
+  let snippetTimerId = null;
+
+  /* ---- Modal Regole ---- */
+  document.querySelectorAll(".openInfoBtn").forEach(btn => {
+    btn.addEventListener("click", () => infoModal.classList.add("active"));
+  });
+  closeInfoBtn.addEventListener("click", () => infoModal.classList.remove("active"));
+  infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoModal.classList.remove("active"); });
+
+  /* ---- Squadre = squadre globali impostate in index.html: niente più
+     scelta squadre qui, si parte sempre con nomi/colori/punteggio già
+     decisi altrove, esattamente come negli altri giochi della suite. ---- */
+  function buildTeamsFromGlobal(){
+    const global = loadGlobalTeams();
+    if (global){
+      const n = Math.min(global.count || global.teams.length, 6);
+      const names = global.teams.slice(0, n).map(t => t.name);
+      const colors = global.teams.slice(0, n).map(t => t.color);
+      scoreBaseline = global.teams.slice(0, n).map(t => t.score || 0);
+      return { names, colors };
+    }
+    scoreBaseline = [0, 0];
+    return { names: ["Squadra 1", "Squadra 2"], colors: [TEAM_COLORS[0], TEAM_COLORS[1]] };
+  }
+
+  /* ---- Avvio partita ---- */
+  function startGame(){
+    const { names, colors } = buildTeamsFromGlobal();
+    state = {
+      teams: names.map((name, i) => ({ name, score: 0, color: colors[i] || TEAM_COLORS[i % TEAM_COLORS.length] })),
+      queue: shuffle(SONGS.map((_, i) => i)),
+      queuePos: 0,
+      currentSongIndex: null,
+      revealed: false,
+      awardedTeams: new Set()
+    };
+
+    renderScoreboard();
+    resetPlayerForNextSong();
+    gameView.style.display = "flex";
+  }
+
+  /* =========================================================
+     TABELLONE PUNTEGGI
+     ========================================================= */
+  function renderScoreboard(){
+    scoreGrid.innerHTML = "";
+    state.teams.forEach((team, i) => {
+      const card = document.createElement("div");
+      card.className = "score-card" + (state.awardedTeams.has(i) ? " just-scored" : "");
+      card.innerHTML = `
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${team.color}; color:${team.color};"></span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+        </div>
+        <div class="score-value">${(scoreBaseline[i] || 0) + team.score}</div>
+      `;
+      scoreGrid.appendChild(card);
+    });
+  }
+
+  scoreGrid.addEventListener("change", (e) => {
+    if (!e.target.classList.contains("team-name")) return;
+    const i = Number(e.target.dataset.index);
+    state.teams[i].name = e.target.value.trim() || `Squadra ${i + 1}`;
+    renderScoreboard();
+    renderPointsGrid();
+  });
+
+  /* =========================================================
+     ASSEGNAZIONE PUNTI — disponibile solo dopo aver premuto
+     "Rivela": ogni squadra ha i propri pulsanti +2/+1 e può
+     essere premiata indipendentemente dalle altre (es. +1 a una
+     squadra per il titolo e +1 a un'altra per l'artista).
+     ========================================================= */
+  function renderPointsGrid(){
+    pointsGrid.innerHTML = state.teams.map((team, i) => `
+      <div class="points-team-row">
+        <span class="points-team-name" style="color:${team.color}">${escapeHtml(team.name)}</span>
+        <div class="points-btns">
+          <button class="point-btn point-btn-2" type="button" data-i="${i}" data-pts="2">+2 Titolo e Artista</button>
+          <button class="point-btn point-btn-1" type="button" data-i="${i}" data-pts="1">+1 Solo Uno</button>
+        </div>
+      </div>
+    `).join("");
+    updatePointsButtonsState();
+  }
+
+  function updatePointsButtonsState(){
+    pointsGrid.querySelectorAll(".point-btn").forEach(b => {
+      const i = Number(b.dataset.i);
+      const awarded = state.awardedTeams.has(i);
+      b.disabled = !state.revealed || awarded;
+      b.classList.toggle("awarded", awarded);
+    });
+  }
+
+  pointsGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".point-btn");
+    if (!btn || btn.disabled) return;
+    awardPoints(Number(btn.dataset.i), Number(btn.dataset.pts));
+  });
+
+  function awardPoints(teamIndex, pts){
+    if (!state.revealed || state.awardedTeams.has(teamIndex)) return;
+    state.awardedTeams.add(teamIndex);
+    state.teams[teamIndex].score += pts;
+    saveGlobalScore(teamIndex, (scoreBaseline[teamIndex] || 0) + state.teams[teamIndex].score);
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+    renderScoreboard();
+    updatePointsButtonsState();
+    playerStatus.textContent = `🎉 ${pts} ${pts === 1 ? "punto" : "punti"} a ${state.teams[teamIndex].name}!`;
+  }
+
+  function revealSong(){
+    if (state.revealed) return;
+    state.revealed = true;
+    audioPlayer.pause();
+    clearInterval(snippetTimerId);
+    vinylDisc.classList.remove("spinning");
+    if (audioPlayer.currentTime < SNIPPET_SECONDS) pauseResumeBtn.textContent = "▶️ Riprendi";
+
+    const song = SONGS[state.currentSongIndex];
+    revealTitle.textContent = song.title;
+    revealArtist.textContent = song.artist;
+    revealYear.textContent = song.year ? `Anno: ${song.year}` : "";
+    revealPanel.classList.add("show");
+    revealBtn.disabled = true;
+
+    updatePointsButtonsState();
+    playerStatus.textContent = "🎯 Brano rivelato! Assegna i punti a chi ha indovinato.";
+  }
+
+  revealBtn.addEventListener("click", revealSong);
+
+  /* =========================================================
+     LETTORE AUDIO — snippet di 15 secondi con barra e timer,
+     interruzione automatica, pausa/ripresa e riascolto a piacere.
+     ========================================================= */
+  function pickNextSongIndex(){
+    if (state.queuePos >= state.queue.length){
+      state.queue = shuffle(SONGS.map((_, i) => i));
+      state.queuePos = 0;
+    }
+    const idx = state.queue[state.queuePos];
+    state.queuePos++;
+    return idx;
+  }
+
+  function resetPlayerForNextSong(){
+    clearInterval(snippetTimerId);
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+
+    state.currentSongIndex = pickNextSongIndex();
+    state.revealed = false;
+    state.awardedTeams = new Set();
+
+    vinylDisc.classList.remove("spinning");
+    playerStatus.textContent = "🎧 Pronti! Premi Riproduci per ascoltare lo snippet misterioso...";
+    snippetBar.style.transition = "none";
+    snippetBar.style.width = "100%";
+    snippetTimer.textContent = SNIPPET_SECONDS + "s";
+    playBtn.style.display = "inline-block";
+    playBtn.disabled = false;
+    pauseResumeBtn.style.display = "none";
+    replayBtn.disabled = true;
+    revealPanel.classList.remove("show");
+    revealBtn.disabled = false;
+
+    renderScoreboard();
+    renderPointsGrid();
+  }
+
+  function playSnippet(){
+    const song = SONGS[state.currentSongIndex];
+    if (audioPlayer.getAttribute("data-src") !== song.audioUrl){
+      audioPlayer.src = song.audioUrl;
+      audioPlayer.setAttribute("data-src", song.audioUrl);
+    }
+    audioPlayer.currentTime = 0;
+    const playPromise = audioPlayer.play();
+    if (playPromise && playPromise.catch){
+      playPromise.catch(() => {
+        playerStatus.textContent = "⚠️ Impossibile riprodurre questo brano. Premi Riproduci per riprovare o Salta.";
+      });
+    }
+    vinylDisc.classList.add("spinning");
+    playerStatus.textContent = "🎶 In riproduzione... indovina Titolo e Artista!";
+    playBtn.style.display = "none";
+    pauseResumeBtn.style.display = "inline-block";
+    pauseResumeBtn.disabled = false;
+    pauseResumeBtn.textContent = "⏸ Pausa";
+    replayBtn.disabled = false;
+
+    snippetBar.style.transition = "none";
+    snippetBar.style.width = "100%";
+    clearInterval(snippetTimerId);
+    snippetTimerId = setInterval(updateSnippetProgress, 100);
+  }
+
+  function updateSnippetProgress(){
+    const t = audioPlayer.currentTime || 0;
+    const remaining = Math.max(0, SNIPPET_SECONDS - t);
+    snippetBar.style.width = (remaining / SNIPPET_SECONDS * 100) + "%";
+    snippetTimer.textContent = Math.ceil(remaining) + "s";
+    if (t >= SNIPPET_SECONDS){
+      audioPlayer.pause();
+      vinylDisc.classList.remove("spinning");
+      clearInterval(snippetTimerId);
+      pauseResumeBtn.disabled = true;
+      pauseResumeBtn.textContent = "⏸ Pausa";
+      if (!state.revealed){
+        playerStatus.textContent = "⏸ Snippet terminato. Riascoltalo o premi Rivela!";
+      }
+    }
+  }
+
+  pauseResumeBtn.addEventListener("click", () => {
+    if (audioPlayer.paused){
+      if (audioPlayer.currentTime >= SNIPPET_SECONDS) return;
+      audioPlayer.play();
+      vinylDisc.classList.add("spinning");
+      pauseResumeBtn.textContent = "⏸ Pausa";
+      if (!state.revealed) playerStatus.textContent = "🎶 In riproduzione... indovina Titolo e Artista!";
+    } else {
+      audioPlayer.pause();
+      vinylDisc.classList.remove("spinning");
+      pauseResumeBtn.textContent = "▶️ Riprendi";
+      if (!state.revealed) playerStatus.textContent = "⏸ In pausa. Riprendi quando vuoi!";
+    }
+  });
+
+  audioPlayer.addEventListener("error", () => {
+    clearInterval(snippetTimerId);
+    vinylDisc.classList.remove("spinning");
+    playerStatus.textContent = "⚠️ Errore nel caricamento del brano. Premi Riproduci per riprovare o passa a un'altra canzone da Prossima Canzone.";
+  });
+
+  playBtn.addEventListener("click", playSnippet);
+  replayBtn.addEventListener("click", playSnippet);
+
+  nextSongBtn.addEventListener("click", resetPlayerForNextSong);
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    const global = loadGlobalTeams();
+    if (!global || !state || !state.teams) return;
+    scoreBaseline = state.teams.map((_, i) => (global.teams[i] ? global.teams[i].score : 0));
+    renderScoreboard();
+  });
+
+  /* ---- Avvio automatico: niente scelta squadre, si parte subito ---- */
+  startGame();
+</script>
+
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5); font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+  }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55); background: rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  @media (max-width: 560px){ .global-score-widget{ bottom: 8px; right: 8px; } .gsw-name{ max-width: 72px; } }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){ try{ var raw=localStorage.getItem(KEY); if(raw){var d=JSON.parse(raw); if(d&&Array.isArray(d.teams)&&d.teams.length>=2) return d;} }catch(e){} return null; }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){ var div=document.createElement("div"); div.textContent = s==null?"":s; return div.innerHTML; }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML=""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0,n).map(function(t,i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:'+esc(t.color||"#4dd9ff")+'"></span>' +
+        '<span class="gsw-name">'+esc(t.name)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">'+(t.score||0)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load(); if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score||0)+d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load(); if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
+</script>
+
+</body>
+</html>

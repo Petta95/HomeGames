@@ -296,7 +296,7 @@
   .history-chip.correct{ border-color: #00e676; color: #00e676; }
   .history-empty{ color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 10px 0; }
 
-  /* ---- Console Game Master ---- */
+  /* ---- Console Petta ---- */
   .gm-console{
     width: 100%; max-width: 620px;
     display: flex; flex-direction: column; gap: 12px;
@@ -427,14 +427,14 @@
 <div class="modal-overlay" id="infoModal">
   <div class="modal-card">
     <div class="modal-title">📖 Come si Gioca</div>
-    <p class="modal-note">Indovina il Numero: il Game Master gestisce tutto da tastiera, proiettando questa schermata sulla TV.</p>
+    <p class="modal-note">Indovina il Numero: Petta gestisce tutto da tastiera, proiettando questa schermata sulla TV.</p>
     <ol>
       <li><strong>Due sfidanti a turno.</strong> Il sistema sceglie una domanda di cultura generale con una risposta numerica reale (es. "In che anno è stato inventato il telefono?") e tiene il numero segreto. Il range cambia in base alla domanda: 0-100 per percentuali, un range storico per anni/date, un range più ampio per conteggi e misure — il range attivo è sempre mostrato sopra il termostato.</li>
-      <li>A turno, ogni giocatore dice ad alta voce un numero. Il Game Master lo digita nel campo in basso e preme <strong>Invio</strong>.</li>
+      <li>A turno, ogni giocatore dice ad alta voce un numero. Petta lo digita nel campo in basso e preme <strong>Invio</strong>.</li>
       <li>Se il numero non è quello segreto, lo schermo mostra <strong>⬆️ PIÙ ALTO</strong> o <strong>⬇️ PIÙ BASSO</strong>, il termostato si restringe sul range ancora possibile e il turno passa automaticamente all'altro giocatore.</li>
       <li>Chi indovina il numero esatto <strong>vince il round</strong> e guadagna un punto: si apre la schermata di vittoria con il numero segreto, i tentativi impiegati e il punteggio generale aggiornato.</li>
       <li>Il <strong>punteggio</strong> di ciascun giocatore resta sempre visibile nelle card in alto e si accumula per tutta la sfida: <strong>"Nuovo Round"</strong> genera una nuova frase e un nuovo numero segreto mantenendo i punti, mentre <strong>"Cambia Giocatori"</strong> azzera tutto per iniziare una nuova sfida.</li>
-      <li><strong>"Rivela / Resetta Round"</strong> serve in caso di problemi: mostra il numero segreto al Game Master e ricomincia il round da capo senza assegnare punti.</li>
+      <li><strong>"Rivela / Resetta Round"</strong> serve in caso di problemi: mostra il numero segreto a Petta e ricomincia il round da capo senza assegnare punti.</li>
     </ol>
     <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
   </div>
@@ -518,7 +518,7 @@
      DATABASE DOMANDE — domande di cultura generale con una
      risposta numerica reale ("answer"). Ogni voce ha anche un
      range "min"-"max" su misura per il tipo di domanda, usato
-     per il termostato e per l'input del Game Master:
+     per il termostato e per l'input di Petta:
        - percentuali            -> 0-100
        - anni/date storiche     -> range storico plausibile
        - conteggi e misure      -> range attorno al valore vero

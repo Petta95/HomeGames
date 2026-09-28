@@ -17,6 +17,6 @@ Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
  - persona-che-corre.jpg  (Persona che Corre (media))
  - lumaca.jpg  (Lumaca (record))
 
-Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti dal Game Master),
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
 quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
 automaticamente un'icona placeholder (nessun errore).
