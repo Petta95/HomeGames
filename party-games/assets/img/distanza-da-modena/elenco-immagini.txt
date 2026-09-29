@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "distanza-da-modena" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - sydney.jpg  (Sydney)
+ - new-york.jpg  (New York)
+ - londra.jpg  (Londra)
+ - parigi.jpg  (Parigi)
+ - palermo.jpg  (Palermo)
+ - napoli.jpg  (Napoli)
+ - roma.jpg  (Roma)
+ - milano.jpg  (Milano)
+ - venezia.jpg  (Venezia)
+ - firenze.jpg  (Firenze)
+ - verona.jpg  (Verona)
+ - parma.jpg  (Parma)
+ - bologna.jpg  (Bologna)
+ - reggio-emilia.jpg  (Reggio Emilia)
+ - carpi.jpg  (Carpi)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

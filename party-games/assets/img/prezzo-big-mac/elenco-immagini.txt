@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "prezzo-big-mac" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - svizzera.jpg  (Svizzera)
+ - norvegia.jpg  (Norvegia)
+ - italia.jpg  (Italia)
+ - stati-uniti.jpg  (Stati Uniti)
+ - regno-unito.jpg  (Regno Unito)
+ - canada.jpg  (Canada)
+ - emirati-arabi.jpg  (Emirati Arabi Uniti)
+ - australia.jpg  (Australia)
+ - messico.jpg  (Messico)
+ - brasile.jpg  (Brasile)
+ - cina.jpg  (Cina)
+ - giappone.jpg  (Giappone)
+ - sudafrica.jpg  (Sudafrica)
+ - india.jpg  (India)
+ - indonesia.jpg  (Indonesia)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

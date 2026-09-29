@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "caffeina-bevande" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - starbucks-venti.jpg  (Caffè Filtro Starbucks Venti (590 ml))
+ - pre-workout.jpg  (Pre-Workout (1 dose))
+ - cold-brew.jpg  (Cold Brew (350 ml))
+ - monster-energy.jpg  (Monster Energy (500 ml))
+ - espresso-doppio.jpg  (Espresso Doppio)
+ - caffe-americano.jpg  (Caffè Americano (tazza 240 ml))
+ - red-bull.jpg  (Red Bull (250 ml))
+ - espresso.jpg  (Espresso)
+ - te-nero.jpg  (Tè Nero (tazza))
+ - pepsi-max.jpg  (Pepsi Max (330 ml))
+ - coca-cola.jpg  (Coca-Cola (330 ml))
+ - te-verde.jpg  (Tè Verde (tazza))
+ - cioccolata-calda.jpg  (Cioccolata Calda (tazza))
+ - caffe-decaffeinato.jpg  (Caffè Decaffeinato)
+ - camomilla.jpg  (Camomilla)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

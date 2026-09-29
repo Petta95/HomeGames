@@ -8,6 +8,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<style>
+  /* Selettore pacchetto domande: Classiche / Spicy +18 */
+  .pack-switch{
+    display: inline-flex; gap: 6px; padding: 5px; margin: 0 auto 18px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 999px; backdrop-filter: blur(12px);
+  }
+  .pack-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.95rem;
+    color: var(--text-muted); background: transparent; border: none;
+    padding: 9px 20px; border-radius: 999px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .pack-btn:hover{ color: #f2f4ff; }
+  .pack-btn.active{ background: var(--accent); color: #06090f; box-shadow: 0 0 18px -4px var(--accent-glow); }
+</style>
 </head>
 <body class="theme-orange">
 
@@ -20,8 +36,13 @@
 </nav>
 
 <main class="stage">
+  <div class="pack-switch" role="group" aria-label="Pacchetto domande">
+    <button type="button" class="pack-btn active" data-pack="classic">🍻 Classiche</button>
+    <button type="button" class="pack-btn" data-pack="spicy">🌶️ Spicy +18</button>
+  </div>
+
   <div class="question-card">
-    <div class="question-eyebrow">Chi è più propenso a...</div>
+    <div class="question-eyebrow" id="questionEyebrow">Chi è più propenso a...</div>
     <p class="question-text" id="questionText">Caricamento...</p>
   </div>
 
@@ -129,6 +150,63 @@
     "Chi si iscriverebbe a un corso strano solo per curiosità e poi lo abbandonerebbe subito?"
   ];
 
+  /* =========================================================
+     PACCHETTO SPICY / +18 — sezione separata, si attiva dal
+     selettore in alto (con conferma la prima volta).
+     ========================================================= */
+  const SPICY_QUESTIONS = [
+    "Chi ha avuto più partner in assoluto?",
+    "Chi ha mandato più messaggi piccanti di cui si è pentito?",
+    "Chi ha fatto la cosa più audace in un luogo pubblico?",
+    "Chi finirebbe a letto con un ex dopo una serata alcolica?",
+    "Chi ha l'app di incontri più attiva sul telefono in questo momento?",
+    "Chi ha avuto l'avventura di una notte più memorabile?",
+    "Chi farebbe il primo passo senza pensarci due volte?",
+    "Chi ha fatto più \"walk of shame\" la mattina dopo?",
+    "Chi ha ricevuto le foto più imbarazzanti da qualcuno che ci provava?",
+    "Chi avrebbe una relazione segreta senza farsi mai scoprire?",
+    "Chi ha baciato più persone nella stessa serata?",
+    "Chi ha un kink segreto che non confesserebbe mai?",
+    "Chi è stato beccato sul più bello da un coinquilino o da un genitore?",
+    "Chi flirterebbe con il/la barista per avere un drink gratis?",
+    "Chi è più rumoroso/a sotto le lenzuola?",
+    "Chi ha la cronologia del browser più compromettente?",
+    "Chi si è svegliato/a senza ricordarsi con chi era la sera prima?",
+    "Chi ha avuto una cotta per il/la partner di un amico?",
+    "Chi ci proverebbe con qualcuno di questo gruppo dopo qualche drink?",
+    "Chi ha fatto sexting durante l'orario di lavoro?",
+    "Chi farebbe uno spogliarello per scommessa?",
+    "Chi ha il miglior \"body count\" nascosto?",
+    "Chi usa la stessa frase da rimorchio da anni?",
+    "Chi ha mentito sul numero di partner avuti?",
+    "Chi ha fatto la figuraccia peggiore durante un momento intimo?",
+    "Chi accetterebbe una proposta indecente per soldi?",
+    "Chi ha avuto più storie estive da una settimana?",
+    "Chi ha scritto a un ex alle 3 di notte più di una volta?",
+    "Chi ha le fantasie più strane?",
+    "Chi si farebbe un tatuaggio in un punto nascosto per qualcuno?",
+    "Chi proverebbe una serata in un locale per scambisti per curiosità?",
+    "Chi ha lasciato qualcuno con un semplice messaggio (o sparendo nel nulla)?",
+    "Chi ha fatto ghosting dopo il primo appuntamento finito a letto?",
+    "Chi è stato/a con qualcuno molto più grande o molto più giovane?",
+    "Chi ha fatto la cosa più piccante in macchina?",
+    "Chi si innamora di chiunque gli/le faccia un complimento?",
+    "Chi ha usato una scusa assurda per non restare a dormire da qualcuno?",
+    "Chi si metterebbe con due persone contemporaneamente?",
+    "Chi è il/la più esperto/a di giochi di ruolo in camera da letto?",
+    "Chi ha mandato un vocale piccante alla persona sbagliata?",
+    "Chi ha avuto un'avventura in vacanza che non ha mai raccontato a nessuno?",
+    "Chi ha tenuto una relazione nascosta agli amici per mesi?",
+    "Chi si è fatto/a beccare da un vicino di casa?",
+    "Chi ha più ex che gli scrivono ancora?",
+    "Chi ha fatto la proposta più sfacciata a un primo appuntamento?",
+    "Chi girerebbe nudo/a per casa anche con ospiti?",
+    "Chi ha una lista di cose piccanti ancora da provare?",
+    "Chi ha avuto una storia con un/una collega?",
+    "Chi finirebbe su un'app di incontri il giorno dopo una rottura?",
+    "Chi reggerebbe meno una settimana di astinenza?"
+  ];
+
   /** Mescola l'array in place (Fisher-Yates) */
   function shuffle(arr){
     for (let i = arr.length - 1; i > 0; i--){
@@ -138,13 +216,37 @@
     return arr;
   }
 
-  let order = shuffle([...QUESTIONS]);
+  let spicy = false;           // sezione attiva: false = classiche, true = Spicy / +18
+  let spicyConfirmed = false;  // conferma +18 chiesta una sola volta per sessione
+  const activeDeck = () => spicy ? SPICY_QUESTIONS : QUESTIONS;
+
+  let order = shuffle([...activeDeck()]);
   let index = 0;
 
   const questionText = document.getElementById("questionText");
+  const questionEyebrow = document.getElementById("questionEyebrow");
   const counter = document.getElementById("counter");
   const nextBtn = document.getElementById("nextBtn");
   const voteBtn = document.getElementById("voteBtn");
+  const packButtons = document.querySelectorAll(".pack-btn");
+
+  /* ---- Selettore pacchetto: Classiche / Spicy +18 ---- */
+  function setPack(wantSpicy){
+    if (wantSpicy === spicy) return;
+    if (wantSpicy && !spicyConfirmed){
+      if (!confirm("🌶️ Pacchetto Spicy / +18\n\nDomande piccanti per adulti: giocatelo solo se tutti i presenti sono maggiorenni e d'accordo. Continuare?")) return;
+      spicyConfirmed = true;
+    }
+    spicy = wantSpicy;
+    document.body.classList.toggle("theme-orange", !spicy);
+    document.body.classList.toggle("theme-red", spicy);
+    packButtons.forEach(b => b.classList.toggle("active", (b.dataset.pack === "spicy") === spicy));
+    questionEyebrow.textContent = spicy ? "🌶️ Spicy +18 — Chi è più propenso a..." : "Chi è più propenso a...";
+    order = shuffle([...activeDeck()]);
+    index = 0;
+    showQuestion();
+  }
+  packButtons.forEach(b => b.addEventListener("click", () => setPack(b.dataset.pack === "spicy")));
 
   function showQuestion(){
     questionText.textContent = order[index];
@@ -155,7 +257,7 @@
     index++;
     if (index >= order.length){
       // Fine del mazzo: rimescola e ricomincia
-      order = shuffle([...QUESTIONS]);
+      order = shuffle([...activeDeck()]);
       index = 0;
     }
     showQuestion();

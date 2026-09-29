@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "eta-celebrita" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - clint-eastwood.jpg  (Clint Eastwood)
+ - sophia-loren.jpg  (Sophia Loren)
+ - morgan-freeman.jpg  (Morgan Freeman)
+ - al-pacino.jpg  (Al Pacino)
+ - paul-mccartney.jpg  (Paul McCartney)
+ - vasco-rossi.jpg  (Vasco Rossi)
+ - madonna.jpg  (Madonna)
+ - tom-cruise.jpg  (Tom Cruise)
+ - brad-pitt.jpg  (Brad Pitt)
+ - jennifer-aniston.jpg  (Jennifer Aniston)
+ - leonardo-dicaprio.jpg  (Leonardo DiCaprio)
+ - cristiano-ronaldo.jpg  (Cristiano Ronaldo)
+ - taylor-swift.jpg  (Taylor Swift)
+ - zendaya.jpg  (Zendaya)
+ - billie-eilish.jpg  (Billie Eilish)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

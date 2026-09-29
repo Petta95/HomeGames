@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "peperoncini-scoville" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - capsaicina-pura.jpg  (Capsaicina Pura)
+ - pepper-x.jpg  (Pepper X)
+ - carolina-reaper.jpg  (Carolina Reaper)
+ - trinidad-moruga-scorpion.jpg  (Trinidad Moruga Scorpion)
+ - bhut-jolokia.jpg  (Bhut Jolokia (Ghost Pepper))
+ - habanero.jpg  (Habanero)
+ - peperoncino-thai.jpg  (Peperoncino Thai)
+ - pepe-di-cayenna.jpg  (Pepe di Cayenna)
+ - peperoncino-calabrese.jpg  (Peperoncino Calabrese)
+ - serrano.jpg  (Serrano)
+ - jalapeno.jpg  (Jalapeño)
+ - salsa-tabasco.jpg  (Salsa Tabasco)
+ - sriracha.jpg  (Sriracha)
+ - poblano.jpg  (Poblano)
+ - peperone-dolce.jpg  (Peperone Dolce)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

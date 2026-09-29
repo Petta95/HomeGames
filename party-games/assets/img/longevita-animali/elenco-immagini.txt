@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "longevita-animali" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - vongola-islandica.jpg  (Vongola Islandica)
+ - squalo-della-groenlandia.jpg  (Squalo della Groenlandia)
+ - balena-della-groenlandia.jpg  (Balena della Groenlandia)
+ - tartaruga-gigante.jpg  (Tartaruga Gigante)
+ - essere-umano.jpg  (Essere Umano)
+ - elefante.jpg  (Elefante)
+ - cacatua.jpg  (Cacatua)
+ - gorilla.jpg  (Gorilla)
+ - cavallo.jpg  (Cavallo)
+ - pesce-rosso.jpg  (Pesce Rosso)
+ - gatto.jpg  (Gatto)
+ - cane.jpg  (Cane)
+ - coniglio.jpg  (Coniglio)
+ - criceto.jpg  (Criceto)
+ - mosca-domestica.jpg  (Mosca Domestica)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

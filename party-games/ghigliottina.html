@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Ghigliottina — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     LA GHIGLIOTTINA — file singolo e autocontenuto: stesso
+     sistema grafico e stessa gestione squadre già usati negli
+     altri giochi della suite (come Sarabanda).
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+    --glass-bg: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --accent: #ffb300;
+    --accent2: #ff3b30;
+    --accent-soft: rgba(255, 179, 0, 0.16);
+    --accent-glow: rgba(255, 179, 0, 0.5);
+    --ok: #00e676;
+    --ok-soft: rgba(0, 230, 118, 0.16);
+    --ko: #ff3b5c;
+    --ko-soft: rgba(255, 59, 92, 0.16);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-blobs{
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.28;
+    animation: float 22s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+  .bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+  @keyframes float{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-25px) scale(1.08); }
+  }
+
+  /* ---- Navbar ---- */
+  .navbar{
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+  }
+  .nav-back{
+    text-decoration: none; color: var(--text-main);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+  .nav-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  }
+  .nav-title .dot{ width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .nav-right{ display: flex; align-items: center; gap: 12px; }
+  .nav-counter{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
+    background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 999px;
+  }
+  .nav-info-btn{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+
+  /* ---- Stage ---- */
+  .stage{
+    max-width: 1100px; margin: 0 auto; padding: 36px 24px 90px;
+    min-height: calc(100vh - 68px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 26px; text-align: center;
+  }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Pulsanti ---- */
+  .btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.1rem;
+    padding: 18px 34px; border-radius: 16px; border: none; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; box-shadow: 0 0 25px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+  .btn-outline{ background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+  .btn-outline:hover{ background: var(--accent-soft); }
+  .btn:active{ transform: scale(0.97); }
+  .btn:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+  .btn-row{ display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Modale regole ---- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    border: 1px solid var(--glass-border); border-radius: 26px; padding: 36px;
+    max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97); transition: transform 0.25s ease; text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.6rem;
+    color: var(--accent); margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  .modal-card ol{
+    padding-left: 22px; display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 24px; line-height: 1.5; font-size: 0.98rem;
+  }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; }
+
+  /* ---- Tabellone punteggi ---- */
+  .score-grid{
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; width: 100%; max-width: 900px;
+  }
+  .score-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px;
+    padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: all 0.3s ease;
+  }
+  .score-card.just-scored{
+    border-color: var(--ok); background: var(--ok-soft);
+    box-shadow: 0 0 30px -6px rgba(0,230,118,0.5); transform: translateY(-4px);
+  }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
+  .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); }
+
+  /* ---- Le 5 parole ---- */
+  .words-grid{
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; width: 100%;
+  }
+  .word-card{
+    position: relative; min-height: 96px; border-radius: 18px;
+    background: var(--glass-bg); border: 2px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: center; padding: 14px 10px;
+    font-family: 'Poppins', sans-serif; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(1rem, 2.1vw, 1.45rem); letter-spacing: 0.5px; word-break: break-word;
+    color: var(--text-muted); transition: all 0.35s ease;
+  }
+  .word-card .word-num{
+    position: absolute; top: 8px; left: 12px; font-size: 0.72rem; font-weight: 800; color: var(--text-muted); opacity: 0.8;
+  }
+  .word-card.shown{
+    color: var(--text-main); border-color: var(--accent);
+    background: linear-gradient(160deg, rgba(255,179,0,0.14), rgba(255,59,48,0.06));
+    box-shadow: 0 0 24px -8px var(--accent-glow);
+    animation: popIn 0.4s ease;
+  }
+  @keyframes popIn{
+    0%{ transform: scale(0.85) rotateX(70deg); opacity: 0.2; }
+    100%{ transform: scale(1) rotateX(0); opacity: 1; }
+  }
+
+  /* ---- Timer ---- */
+  .timer-card{
+    width: 100%; max-width: 640px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .timer-number{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(3rem, 9vw, 4.6rem);
+    line-height: 1; color: var(--accent); text-shadow: 0 0 30px var(--accent-glow);
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-number.danger{ color: var(--ko); text-shadow: 0 0 30px rgba(255,59,92,0.6); animation: pulse 0.6s ease-in-out infinite alternate; }
+  @keyframes pulse{ from{ transform: scale(1); } to{ transform: scale(1.08); } }
+  .timer-bar-track{
+    width: 100%; height: 14px; border-radius: 999px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); overflow: hidden;
+  }
+  .timer-bar-fill{
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.25s linear;
+  }
+  .status-line{
+    font-family: 'Poppins', sans-serif; font-weight: 700;
+    font-size: clamp(1rem, 2.4vw, 1.2rem); min-height: 1.6em;
+  }
+
+  /* ---- Risposte squadre ---- */
+  .answers-section{ width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 12px; }
+  .answers-hint{ color: var(--text-muted); font-weight: 600; font-size: 0.95rem; }
+  .answer-row{
+    display: flex; align-items: center; gap: 12px;
+    background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 16px; padding: 12px 16px;
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .answer-team{
+    display: flex; align-items: center; gap: 8px; min-width: 150px; text-align: left;
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1rem;
+  }
+  .answer-input{
+    flex: 1; min-width: 0;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: 12px;
+    color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.1rem;
+    padding: 12px 14px; text-transform: uppercase;
+  }
+  .answer-input:focus{ outline: none; border-color: var(--accent); }
+  .answer-input:disabled{ opacity: 0.85; }
+  .answer-result{ font-size: 1.5rem; width: 36px; text-align: center; flex-shrink: 0; }
+  .answer-row.correct{ border-color: var(--ok); background: var(--ok-soft); }
+  .answer-row.correct .answer-input{ border-color: var(--ok); color: var(--ok); }
+  .answer-row.wrong{ border-color: var(--ko); background: var(--ko-soft); }
+  .answer-row.wrong .answer-input{ border-color: var(--ko); color: var(--ko); }
+
+  /* ---- Soluzione ---- */
+  .solution-panel{
+    display: none; width: 100%; max-width: 640px;
+    background: var(--ok-soft); border: 2px solid var(--ok); border-radius: 22px;
+    padding: 20px 26px; animation: fadeIn 0.4s ease;
+  }
+  .solution-panel.show{ display: block; }
+  .solution-eyebrow{ font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--ok); margin-bottom: 6px; font-size: 0.85rem; }
+  .solution-word{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.8rem, 5vw, 2.6rem); text-transform: uppercase; letter-spacing: 1px; }
+  .solution-links{ color: var(--text-muted); font-size: 0.92rem; margin-top: 8px; line-height: 1.5; }
+
+  @media (max-width: 760px){
+    .words-grid{ grid-template-columns: 1fr; gap: 8px; }
+    .word-card{ min-height: 56px; padding: 10px; }
+    .answer-row{ flex-wrap: wrap; }
+    .answer-team{ min-width: 0; width: 100%; }
+  }
+  @media (max-width: 600px){
+    .navbar{ padding: 10px 14px; gap: 8px; }
+    .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+    .nav-title{ font-size: 1.05rem; gap: 7px; }
+    .nav-counter{ display: none; }
+    .stage{ padding: 20px 14px 44px; gap: 16px; }
+    .btn{ padding: 14px 22px; font-size: 0.95rem; border-radius: 13px; }
+    .score-grid{ gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .score-value{ font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🔗 La Ghigliottina</span>
+  <div class="nav-right">
+    <span class="nav-counter" id="counter">Ghigliottina 1</span>
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">Come nel gran finale de L'Eredità: 5 parole, una sola parola che le collega tutte.</p>
+    <ol>
+      <li>Premi <strong>"▶ Via!"</strong>: le 5 parole si scoprono una dopo l'altra e parte il <strong>timer di 60 secondi</strong>.</li>
+      <li>Le squadre ragionano e cercano la parola che si lega a <strong>tutte e 5</strong> (modi di dire, parole composte, titoli...).</li>
+      <li>Potete premere <strong>"⏸ Stop"</strong> quando volete (e riprendere se serve). Allo scadere del tempo il timer si ferma da solo.</li>
+      <li>Ogni squadra scrive la sua parola nel proprio campo, poi premi <strong>"🔍 Verifica"</strong>: il campo diventa <strong style="color:#00e676">verde</strong> se è giusta, <strong style="color:#ff3b5c">rosso</strong> se è sbagliata.</li>
+      <li>Ogni squadra che indovina guadagna <strong>+1 punto</strong> in automatico: possono prenderlo anche <strong>entrambe</strong>.</li>
+      <li><strong>"⏭ Prossima Ghigliottina"</strong> passa alla successiva: non si ripetono finché non sono uscite tutte.</li>
+    </ol>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage" id="gameView">
+
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <div class="words-grid" id="wordsGrid"></div>
+
+  <div class="timer-card">
+    <div class="timer-number" id="timerNumber">60</div>
+    <div class="timer-bar-track"><div class="timer-bar-fill" id="timerBar"></div></div>
+    <div class="status-line" id="statusLine">Pronti? Premi Via per scoprire le 5 parole!</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="startBtn">▶ Via!</button>
+      <button class="btn btn-outline" id="stopBtn" style="display:none;">⏸ Stop</button>
+    </div>
+  </div>
+
+  <div class="answers-section">
+    <p class="answers-hint">✍️ Ogni squadra scrive qui la sua parola, poi premi Verifica:</p>
+    <div id="answersGrid" style="display:flex; flex-direction:column; gap:10px;"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="verifyBtn" disabled>🔍 Verifica</button>
+  </div>
+
+  <div class="solution-panel" id="solutionPanel">
+    <div class="solution-eyebrow">🔗 La parola era</div>
+    <div class="solution-word" id="solutionWord"></div>
+    <div class="solution-links" id="solutionLinks"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-outline" id="revealBtn">👁 Mostra Soluzione</button>
+    <button class="btn btn-primary" id="nextBtn">⏭ Prossima Ghigliottina</button>
+  </div>
+</main>
+
+<script>
+  /* =========================================================
+     DATABASE GHIGLIOTTINE — 5 indizi e la parola che li collega.
+     "alt" (opzionale) = altre forme accettate (plurale, ecc.).
+     "links" = spiegazione mostrata con la soluzione.
+     Aggiungi nuove voci qui: non serve toccare altro codice.
+     ========================================================= */
+  const PUZZLES = [
+    { words: ["Bianca", "Campagna", "Riposo", "Chiavi", "Moda"], answer: "Casa", alt: ["Case"], links: "Casa Bianca · casa di campagna · casa di riposo · chiavi di casa · casa di moda" },
+    { words: ["Burro", "Grattugiato", "Carasau", "Casereccio", "Companatico"], answer: "Pane", links: "Pane e burro · pane grattugiato · pane carasau · pane casereccio · pane e companatico" },
+    { words: ["Miele", "Park", "Piena", "Storta", "Nuova"], answer: "Luna", links: "Luna di miele · Luna park · luna piena · avere la luna storta · luna nuova" },
+    { words: ["Spezzato", "Leone", "Oro", "Mano", "Carciofo"], answer: "Cuore", alt: ["Cuori"], links: "Cuore spezzato · cuor di leone · cuore d'oro · mano sul cuore · cuore di carciofo" },
+    { words: ["Neve", "Cristallo", "Piede", "Avvelenata", "Pelo"], answer: "Palla", alt: ["Palle"], links: "Palla di neve · palla di cristallo · palla al piede · palla avvelenata · palla di pelo" },
+    { words: ["Stivali", "Volpe", "Nero", "Sacco", "Persiano"], answer: "Gatto", alt: ["Gatti"], links: "Il gatto con gli stivali · il gatto e la volpe · gatto nero · non dire gatto se non ce l'hai nel sacco · gatto persiano" },
+    { words: ["Occhiali", "Crema", "Colpo", "Mezzanotte", "Raggio"], answer: "Sole", links: "Occhiali da sole · crema solare · colpo di sole · sole di mezzanotte · raggio di sole" },
+    { words: ["Gola", "Frizzante", "Santa", "Pesce", "Bocca"], answer: "Acqua", links: "Acqua alla gola · acqua frizzante · acquasanta · pesce fuor d'acqua · acqua in bocca" },
+    { words: ["Credito", "Identità", "Igienica", "Forbice", "Bianca"], answer: "Carta", alt: ["Carte"], links: "Carta di credito · carta d'identità · carta igienica · carta forbice sasso · carta bianca" },
+    { words: ["Paglia", "Amico", "Prova", "Artificio", "Estintore"], answer: "Fuoco", alt: ["Fuochi"], links: "Fuoco di paglia · fuoco amico · prova del fuoco · fuochi d'artificio · l'estintore spegne il fuoco" },
+    { words: ["Stella", "Frutti", "Lupo", "Mosso", "Goccia"], answer: "Mare", links: "Stella di mare · frutti di mare · lupo di mare · mare mosso · una goccia nel mare" },
+    { words: ["Croce", "Mal", "Coda", "Calda", "Rapa"], answer: "Testa", links: "Testa o croce · mal di testa · testacoda · testa calda · testa di rapa" },
+    { words: ["Denti", "Versato", "Fior", "Scremato", "Caffè"], answer: "Latte", links: "Denti da latte · piangere sul latte versato · fior di latte · latte scremato · caffellatte" },
+    { words: ["Lupo", "Verità", "Asciutta", "Rosa", "Aperta"], answer: "Bocca", links: "In bocca al lupo · Bocca della Verità · restare a bocca asciutta · Bocca di Rosa · a bocca aperta" },
+    { words: ["Cadente", "Polare", "Marina", "Michelin", "Cometa"], answer: "Stella", alt: ["Stelle"], links: "Stella cadente · stella polare · stella marina · stella Michelin · stella cometa" },
+    { words: ["Ruota", "Biscotto", "Colpo", "Cieca", "Quadrifoglio"], answer: "Fortuna", links: "Ruota della fortuna · biscotto della fortuna · colpo di fortuna · la fortuna è cieca · il quadrifoglio porta fortuna" },
+    { words: ["Libero", "Perso", "Pieno", "Previsioni", "Macchina"], answer: "Tempo", links: "Tempo libero · tempo perso · tempo pieno · previsioni del tempo · macchina del tempo" },
+    { words: ["Blu", "Freddo", "Donatore", "Fratelli", "Bistecca"], answer: "Sangue", links: "Sangue blu · a sangue freddo · donatore di sangue · fratelli di sangue · bistecca al sangue" },
+    { words: ["Pinocchio", "Ficcare", "Rosso", "Punta", "Menare"], answer: "Naso", links: "Il naso di Pinocchio · ficcare il naso · naso rosso · punta del naso · menare per il naso" },
+    { words: ["Macchiato", "Corretto", "Moka", "Sospeso", "Tazzina"], answer: "Caffè", alt: ["Caffe"], links: "Caffè macchiato · caffè corretto · caffè della moka · caffè sospeso · tazzina di caffè" },
+    { words: ["Guida", "Materna", "Banco", "Pensiero", "Campanella"], answer: "Scuola", links: "Scuola guida · scuola materna · banco di scuola · scuola di pensiero · la campanella di scuola" },
+    { words: ["Binario", "Fantasma", "Merci", "Perdere", "Frecciarossa"], answer: "Treno", links: "Binario del treno · treno fantasma · treno merci · perdere il treno · il Frecciarossa è un treno" },
+    { words: ["Porco", "Sbagliato", "Atleta", "Porta", "Palla"], answer: "Piede", alt: ["Piedi"], links: "Piede di porco · partire col piede sbagliato · piede d'atleta · mettere un piede nella porta · palla al piede" },
+    { words: ["Bue", "Nudo", "Ciclone", "Chiudere", "Nero"], answer: "Occhio", alt: ["Occhi"], links: "Occhio di bue · a occhio nudo · occhio del ciclone · chiudere un occhio · occhio nero" },
+    { words: ["Finestra", "Blindata", "Gita", "Serratura", "Aperta"], answer: "Porta", alt: ["Porte"], links: "Portafinestra · porta blindata · gita fuori porta · serratura della porta · a porte aperte" },
+    { words: ["Guardia", "Solo", "Gatto", "Freddo", "Cuccia"], answer: "Cane", alt: ["Cani"], links: "Cane da guardia · solo come un cane · come cane e gatto · un freddo cane · la cuccia del cane" },
+    { words: ["Febbre", "Cuore", "Medaglia", "Silenzio", "Nozze"], answer: "Oro", links: "Febbre dell'oro · cuore d'oro · medaglia d'oro · il silenzio è d'oro · nozze d'oro" },
+    { words: ["Italia", "Boa", "Valzer", "Parole", "Prendere"], answer: "Giro", links: "Giro d'Italia · giro di boa · giro di valzer · giro di parole · prendere in giro" },
+    { words: ["Compleanno", "Nuziale", "Ciliegina", "Faccia", "Sacher"], answer: "Torta", links: "Torta di compleanno · torta nuziale · la ciliegina sulla torta · torta in faccia · torta Sacher" },
+    { words: ["Botte", "Brulé", "Casa", "Bicchiere", "Novello"], answer: "Vino", links: "Botte piccola fa vino buono · vin brulé · vino della casa · bicchiere di vino · vino novello" },
+    { words: ["Libera", "Seconda", "Morta", "Freno", "Fuoco"], answer: "Mano", alt: ["Mani"], links: "Mano libera · di seconda mano · mano morta · freno a mano · mettere la mano sul fuoco" },
+    { words: ["Bianca", "Stellata", "Camicia", "Oscar", "Buona"], answer: "Notte", links: "Notte bianca · Notte stellata · camicia da notte · notte degli Oscar · buonanotte" },
+    { words: ["Zucca", "Pepe", "Bagno", "Grosso", "Crosta"], answer: "Sale", links: "Sale in zucca · sale e pepe · sali da bagno · sale grosso · in crosta di sale" },
+    { words: ["Ordine", "Onore", "Libertà", "Crociate", "Ultima"], answer: "Parola", alt: ["Parole"], links: "Parola d'ordine · parola d'onore · libertà di parola · parole crociate · l'ultima parola" },
+    { words: ["Paglia", "Cilindro", "Coniglio", "Alpino", "Cowboy"], answer: "Cappello", alt: ["Cappelli"], links: "Cappello di paglia · cappello a cilindro · il coniglio dal cappello · cappello alpino · cappello da cowboy" },
+    { words: ["Aprile", "Spada", "Palla", "Rosso", "Pagliaccio"], answer: "Pesce", alt: ["Pesci"], links: "Pesce d'aprile · pesce spada · pesce palla · pesce rosso · pesce pagliaccio" },
+    { words: ["Settimo", "Stellato", "Dito", "Apriti", "Grattare"], answer: "Cielo", links: "Al settimo cielo · cielo stellato · toccare il cielo con un dito · apriti cielo · grattacielo" },
+    { words: ["Giallo", "Aperto", "Testo", "Paga", "Mastro"], answer: "Libro", alt: ["Libri"], links: "Libro giallo · libro aperto · libro di testo · libro paga · libro mastro" },
+    { words: ["Dati", "Sangue", "Rapina", "Conto", "Sportello"], answer: "Banca", links: "Banca dati · banca del sangue · rapina in banca · conto in banca · sportello bancario" },
+    { words: ["Occhiello", "Loto", "Arancio", "Vaso", "Petalo"], answer: "Fiore", alt: ["Fiori"], links: "Fiore all'occhiello · fiore di loto · fiori d'arancio · vaso di fiori · petalo di un fiore" },
+    { words: ["Marmotta", "Piatto", "Ordine", "Notte", "Festivo"], answer: "Giorno", alt: ["Giorni"], links: "Il giorno della marmotta · piatto del giorno · ordine del giorno · giorno e notte · giorno festivo" },
+    { words: ["Forte", "Doccia", "Piange", "Sputare", "Portata"], answer: "Piatto", alt: ["Piatti"], links: "Piatto forte · piatto doccia · il piatto piange · sputare nel piatto in cui si mangia · piatto di portata" },
+    { words: ["Dolce", "Stile", "Cani", "Assicurazione", "Punto"], answer: "Vita", links: "La dolce vita · stile di vita · vita da cani · assicurazione sulla vita · punto vita" },
+    { words: ["Oca", "Amici", "Giacca", "Salvare", "Ossa"], answer: "Pelle", links: "Pelle d'oca · amici per la pelle · giacca di pelle · salvare la pelle · pelle e ossa" },
+    { words: ["Fulmine", "Genio", "Scena", "Stato", "Testa"], answer: "Colpo", alt: ["Colpi"], links: "Colpo di fulmine · colpo di genio · colpo di scena · colpo di stato · colpo di testa" },
+    { words: ["Nero", "Mangiare", "Settimana", "Bandiera", "Assegno"], answer: "Bianco", alt: ["Bianca"], links: "Nero su bianco · mangiare in bianco · settimana bianca · bandiera bianca · assegno in bianco" },
+    { words: ["Vendita", "Virgola", "Vista", "Croce", "Messa"], answer: "Punto", links: "Punto vendita · punto e virgola · punto di vista · punto croce · messa a punto" },
+    { words: ["Castelli", "Condizionata", "Camera", "Fritta", "Mandare"], answer: "Aria", links: "Castelli in aria · aria condizionata · camera d'aria · aria fritta · mandare all'aria" },
+    { words: ["Calda", "Rotonda", "Surf", "Periodica", "Carte"], answer: "Tavola", links: "Tavola calda · tavola rotonda · tavola da surf · tavola periodica · carte in tavola" },
+    { words: ["Giro", "Terzo", "Mappa", "Campionato", "Fine"], answer: "Mondo", links: "Il giro del mondo · terzo mondo · mappamondo · campionato del mondo · la fine del mondo" },
+    { words: ["Verde", "Girarsi", "Autostop", "Opponibile", "Like"], answer: "Pollice", alt: ["Pollici"], links: "Pollice verde · girarsi i pollici · il pollice dell'autostop · pollice opponibile · il pollice in su del like" },
+    { words: ["Leone", "Cuori", "Scacco", "Magi", "Nudo"], answer: "Re", links: "Il Re Leone · re di cuori · scacco al re · Re Magi · il re è nudo" },
+    { words: ["Stiro", "Cavallo", "Battere", "Toccare", "Braccio"], answer: "Ferro", links: "Ferro da stiro · ferro di cavallo · battere il ferro finché è caldo · toccare ferro · braccio di ferro" },
+    { words: ["Spalla", "Sotto", "Legno", "Accavallare", "Tavolo"], answer: "Gamba", alt: ["Gambe"], links: "Gambe in spalla · prendere sottogamba · gamba di legno · accavallare le gambe · gamba del tavolo" },
+    { words: ["Brame", "Arrampicarsi", "Allodole", "Sfortuna", "Riflesso"], answer: "Specchio", alt: ["Specchi"], links: "Specchio delle mie brame · arrampicarsi sugli specchi · specchietto per le allodole · specchio rotto, sette anni di sfortuna · il riflesso nello specchio" },
+    { words: ["Santo", "Minato", "Scendere", "Calcio", "Fuori"], answer: "Campo", alt: ["Campi"], links: "Camposanto · campo minato · scendere in campo · campo da calcio · fuoricampo" },
+    { words: ["Anno", "Dare", "Rossa", "Bolletta", "Fascio"], answer: "Luce", alt: ["Luci"], links: "Anno luce · dare alla luce · luce rossa · bolletta della luce · fascio di luce" },
+    { words: ["Alzata", "Guardarsi", "Gambe", "Comica", "Muro"], answer: "Spalla", alt: ["Spalle"], links: "Alzata di spalle · guardarsi le spalle · gambe in spalla · spalla comica · spalle al muro" },
+    { words: ["Pasta", "Giudizio", "Leone", "Stretti", "Fatina"], answer: "Dente", alt: ["Denti"], links: "Pasta al dente · dente del giudizio · dente di leone · a denti stretti · la fatina dei denti" },
+    { words: ["Spaccare", "Tirato", "Angelo", "Rizzare", "Taglio"], answer: "Capello", alt: ["Capelli"], links: "Spaccare il capello in quattro · tirato per i capelli · capelli d'angelo · far rizzare i capelli · taglio di capelli" },
+    { words: ["Rossa", "Punto", "Testa", "Segno", "Sopra"], answer: "Croce", alt: ["Croci"], links: "Croce Rossa · punto croce · testa o croce · segno della croce · metterci una croce sopra" },
+    { words: ["Studio", "Calda", "Valori", "Vita", "Frigo"], answer: "Borsa", alt: ["Borse"], links: "Borsa di studio · borsa dell'acqua calda · borsa valori · o la borsa o la vita · borsa frigo" },
+    { words: ["Violino", "Inglese", "Parola", "Sotto", "Volta"], answer: "Chiave", alt: ["Chiavi"], links: "Chiave di violino · chiave inglese · parola chiave · sotto chiave · chiave di volta" },
+    { words: ["Custode", "Faccia", "Demoni", "Caduto", "Ali"], answer: "Angelo", alt: ["Angeli"], links: "Angelo custode · faccia d'angelo · Angeli e Demoni · angelo caduto · ali d'angelo" },
+    { words: ["Avvocato", "Prada", "Pentole", "Capello", "Tasmania"], answer: "Diavolo", alt: ["Diavoli"], links: "Avvocato del diavolo · Il diavolo veste Prada · il diavolo fa le pentole ma non i coperchi · avere un diavolo per capello · diavolo della Tasmania" },
+    { words: ["Pulcinella", "Professionale", "Agente", "Passaggio", "Voto"], answer: "Segreto", alt: ["Segreti"], links: "Segreto di Pulcinella · segreto professionale · agente segreto · passaggio segreto · voto segreto" },
+    { words: ["Ossa", "Macello", "Griglia", "Pesce", "Trita"], answer: "Carne", links: "In carne e ossa · carne da macello · carne alla griglia · né carne né pesce · carne trita" },
+    { words: ["Pelle", "Fegato", "Giuliva", "Passo", "Piume"], answer: "Oca", alt: ["Oche"], links: "Pelle d'oca · fegato d'oca · oca giuliva · passo dell'oca · piume d'oca" },
+    { words: ["Rosso", "Volante", "Sotto", "Bombardamento", "Persiano"], answer: "Tappeto", alt: ["Tappeti"], links: "Tappeto rosso · tappeto volante · nascondere sotto il tappeto · bombardamento a tappeto · tappeto persiano" },
+    { words: ["Franco", "Armi", "Andare", "Sicuro", "Capitaneria"], answer: "Porto", alt: ["Porti"], links: "Porto franco · porto d'armi · andare in porto · porto sicuro · capitaneria di porto" },
+    { words: ["Gola", "Scorsoio", "Pettine", "Cravatta", "Marinaro"], answer: "Nodo", alt: ["Nodi"], links: "Nodo alla gola · nodo scorsoio · tutti i nodi vengono al pettine · nodo della cravatta · nodo marinaro" },
+    { words: ["Mulino", "Via", "Rosa", "Poppa", "Parlare"], answer: "Vento", alt: ["Venti"], links: "Mulino a vento · Via col vento · rosa dei venti · vento in poppa · parlare al vento" },
+    { words: ["Assoluto", "Mercante", "Fischiano", "Sventola", "Pulce"], answer: "Orecchio", alt: ["Orecchie", "Orecchi"], links: "Orecchio assoluto · fare orecchie da mercante · mi fischiano le orecchie · orecchie a sventola · la pulce nell'orecchio" },
+    { words: ["Fredda", "Nome", "Stellari", "Pace", "Prigioniero"], answer: "Guerra", alt: ["Guerre"], links: "Guerra fredda · nome di guerra · Guerre stellari · Guerra e pace · prigioniero di guerra" },
+    { words: ["Giudice", "Nobel", "Riposa", "Pipa", "Colomba"], answer: "Pace", links: "Giudice di pace · Nobel per la pace · riposa in pace · pipa della pace · colomba della pace" },
+    { words: ["Carrabile", "Falso", "Gambero", "Stare", "Stelvio"], answer: "Passo", alt: ["Passi"], links: "Passo carrabile · passo falso · passo del gambero · stare al passo · Passo dello Stelvio" },
+    { words: ["Nero", "Ozono", "Serratura", "Tappare", "Ciambella"], answer: "Buco", alt: ["Buchi"], links: "Buco nero · buco dell'ozono · buco della serratura · tappare un buco · non tutte le ciambelle riescono col buco" },
+    { words: ["Dubbio", "Governo", "Cono", "Cinesi", "Luce"], answer: "Ombra", alt: ["Ombre"], links: "Senza ombra di dubbio · governo ombra · cono d'ombra · ombre cinesi · luci e ombre" },
+    { words: ["Interdentale", "Spinato", "Perdere", "Segno", "Erba"], answer: "Filo", alt: ["Fili"], links: "Filo interdentale · filo spinato · perdere il filo · per filo e per segno · filo d'erba" },
+    { words: ["Maglia", "Vita", "Nome", "Canina", "Spine"], answer: "Rosa", alt: ["Rose"], links: "Maglia rosa · vedere la vita in rosa · Il nome della rosa · rosa canina · non c'è rosa senza spine" },
+    { words: ["Cavallo", "Tempo", "Ostacoli", "Semplice", "Campestre"], answer: "Corsa", alt: ["Corse"], links: "Cavallo da corsa · corsa contro il tempo · corsa a ostacoli · biglietto di corsa semplice · corsa campestre" },
+    { words: ["Integrazione", "Toracica", "Forte", "Comune", "Risparmio"], answer: "Cassa", alt: ["Casse"], links: "Cassa integrazione · cassa toracica · cassaforte · cassa comune · cassa di risparmio" },
+    { words: ["Castello", "Matrimoniale", "Divano", "Rifare", "Fiume"], answer: "Letto", alt: ["Letti"], links: "Letto a castello · letto matrimoniale · divano letto · rifare il letto · letto del fiume" },
+    { words: ["Mamma", "Guasta", "Sorpresa", "Abito", "Repubblica"], answer: "Festa", alt: ["Feste"], links: "Festa della mamma · guastafeste · festa a sorpresa · abito della festa · Festa della Repubblica" },
+    { words: ["Chigi", "Vetro", "Vecchio", "Giustizia", "Congiura"], answer: "Palazzo", alt: ["Palazzi"], links: "Palazzo Chigi · Palazzo di Vetro · Palazzo Vecchio · Palazzo di Giustizia · congiura di palazzo" },
+    { words: ["Parole", "Azzardo", "Squadra", "Prendersi", "Olimpici"], answer: "Gioco", alt: ["Giochi"], links: "Gioco di parole · gioco d'azzardo · gioco di squadra · prendersi gioco · Giochi Olimpici" },
+    { words: ["Secca", "Macedonia", "Essere", "Candita", "Cestino"], answer: "Frutta", links: "Frutta secca · macedonia di frutta · essere alla frutta · frutta candita · cestino di frutta" },
+    { words: ["Pere", "Fuso", "Forma", "Crosta", "Spalmabile"], answer: "Formaggio", alt: ["Formaggi"], links: "Al contadino non far sapere quant'è buono il formaggio con le pere · formaggio fuso · forma di formaggio · crosta del formaggio · formaggio spalmabile" },
+    { words: ["Pasqua", "Colombo", "Camminare", "Paniere", "Sodo"], answer: "Uovo", alt: ["Uova"], links: "Uovo di Pasqua · uovo di Colombo · camminare sulle uova · rompere le uova nel paniere · uovo sodo" },
+    { words: ["Santo", "Patata", "Presenza", "Squadra", "Libero"], answer: "Spirito", alt: ["Spiriti"], links: "Spirito Santo · spirito di patata · presenza di spirito · spirito di squadra · spirito libero" },
+    { words: ["Sciopero", "Lupi", "Morto", "Chimica", "Mondo"], answer: "Fame", links: "Sciopero della fame · una fame da lupi · morto di fame · fame chimica · fame nel mondo" },
+    { words: ["Profondo", "Arretrato", "Tranquilli", "Malattia", "Ragione"], answer: "Sonno", alt: ["Sonni"], links: "Sonno profondo · sonno arretrato · dormire sonni tranquilli · malattia del sonno · il sonno della ragione genera mostri" },
+    { words: ["Bottiglia", "Rompi", "Debiti", "Maglione", "Giraffa"], answer: "Collo", alt: ["Colli"], links: "Collo di bottiglia · rompicollo · indebitato fino al collo · maglione a collo alto · il collo della giraffa" },
+    { words: ["Paglia", "Cavallo", "Pianoforte", "Rospo", "Occhio"], answer: "Coda", alt: ["Code"], links: "Coda di paglia · coda di cavallo · pianoforte a coda · coda di rospo · con la coda dell'occhio" },
+    { words: ["Uomo", "Tela", "Buco", "Zampe", "Violino"], answer: "Ragno", alt: ["Ragni"], links: "L'Uomo Ragno · tela di ragno · non cavare un ragno dal buco · le otto zampe del ragno · ragno violino" },
+    { words: ["Stilografica", "Lasciarci", "Arrabbiata", "Amico", "Alpini"], answer: "Penna", alt: ["Penne"], links: "Penna stilografica · lasciarci le penne · penne all'arrabbiata · amico di penna · la penna nera degli alpini" },
+    { words: ["Pisa", "Controllo", "Avorio", "Babele", "Scacchi"], answer: "Torre", alt: ["Torri"], links: "Torre di Pisa · torre di controllo · torre d'avorio · Torre di Babele · la torre degli scacchi" },
+    { words: ["Levatoio", "Sospiri", "Brooklyn", "Radio", "Comando"], answer: "Ponte", alt: ["Ponti"], links: "Ponte levatoio · Ponte dei Sospiri · Ponte di Brooklyn · ponte radio · ponte di comando" },
+    { words: ["Facendo", "Codice", "Artista", "Uscita", "Mezza"], answer: "Strada", alt: ["Strade"], links: "Strada facendo · codice della strada · artista di strada · strada senza uscita · a mezza strada" },
+    { words: ["Vocale", "Tagliare", "Saltare", "Giù", "Tirare"], answer: "Corda", alt: ["Corde"], links: "Corde vocali · tagliare la corda · saltare la corda · essere giù di corda · tirare la corda" }
+  ];
+
+  const ROUND_SECONDS = 60;
+  const WORD_REVEAL_MS = 450; // intervallo tra la comparsa di una parola e la successiva
+
+  /* =========================================================
+     Squadre globali (nomi/colori/punteggio impostati in
+     index.html) — stesso sistema condiviso degli altri giochi.
+     scoreBaseline tiene il punteggio già accumulato prima di
+     questa partita, così il totale di serata non si perde.
+     ========================================================= */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  const TEAM_COLORS = ["#ffb300", "#4dd9ff", "#00e676", "#ff2e88", "#a05bff", "#fb5607"];
+  let scoreBaseline = [];
+
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalScore(index, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+  }
+
+  // Confronto tollerante solo su maiuscole, accenti, spazi e apostrofi
+  const DIACRITICS_RE = new RegExp("[" + String.fromCharCode(0x0300) + "-" + String.fromCharCode(0x036f) + "]", "g");
+  function normalizeWord(s){
+    return (s || "").toString().toLowerCase()
+      .normalize("NFD").replace(DIACRITICS_RE, "")
+      .replace(/[^a-z0-9]/g, "");
+  }
+  function isCorrect(input, puzzle){
+    const a = normalizeWord(input);
+    if (!a) return false;
+    return [puzzle.answer, ...(puzzle.alt || [])].some(w => normalizeWord(w) === a);
+  }
+
+  /* ---- Beep via Web Audio API: nessun file audio esterno ---- */
+  function beep(freq, duration, type){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+
+  /* ---- Riferimenti DOM ---- */
+  const scoreGrid = document.getElementById("scoreGrid");
+  const wordsGrid = document.getElementById("wordsGrid");
+  const timerNumber = document.getElementById("timerNumber");
+  const timerBar = document.getElementById("timerBar");
+  const statusLine = document.getElementById("statusLine");
+  const startBtn = document.getElementById("startBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const answersGrid = document.getElementById("answersGrid");
+  const verifyBtn = document.getElementById("verifyBtn");
+  const solutionPanel = document.getElementById("solutionPanel");
+  const solutionWord = document.getElementById("solutionWord");
+  const solutionLinks = document.getElementById("solutionLinks");
+  const revealBtn = document.getElementById("revealBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const counter = document.getElementById("counter");
+  const infoModal = document.getElementById("infoModal");
+  const closeInfoBtn = document.getElementById("closeInfoBtn");
+
+  /* ---- Modal Regole ---- */
+  document.querySelectorAll(".openInfoBtn").forEach(btn => {
+    btn.addEventListener("click", () => infoModal.classList.add("active"));
+  });
+  closeInfoBtn.addEventListener("click", () => infoModal.classList.remove("active"));
+  infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoModal.classList.remove("active"); });
+
+  /* =========================================================
+     STATO DI GIOCO
+     phase: "ready" (parole coperte) → "running" (timer attivo)
+            → "stopped" (timer fermo, si può riprendere)
+            → "done" (verificato o soluzione mostrata)
+     ========================================================= */
+  let state = null;
+  let tickId = null;
+  let revealTimeouts = [];
+
+  function buildTeamsFromGlobal(){
+    const global = loadGlobalTeams();
+    if (global){
+      const n = Math.min(global.count || global.teams.length, 6);
+      scoreBaseline = global.teams.slice(0, n).map(t => t.score || 0);
+      return global.teams.slice(0, n).map((t, i) => ({ name: t.name, color: t.color || TEAM_COLORS[i % TEAM_COLORS.length], score: 0 }));
+    }
+    scoreBaseline = [0, 0];
+    return [
+      { name: "Squadra 1", color: TEAM_COLORS[0], score: 0 },
+      { name: "Squadra 2", color: TEAM_COLORS[1], score: 0 }
+    ];
+  }
+
+  function startGame(){
+    state = {
+      teams: buildTeamsFromGlobal(),
+      queue: shuffle(PUZZLES.map((_, i) => i)),
+      queuePos: 0,
+      round: 0,
+      puzzle: null,
+      phase: "ready",
+      remaining: ROUND_SECONDS,
+      endAt: 0,
+      scoredTeams: new Set()
+    };
+    nextPuzzle();
+  }
+
+  function pickNextPuzzle(){
+    if (state.queuePos >= state.queue.length){
+      state.queue = shuffle(PUZZLES.map((_, i) => i));
+      state.queuePos = 0;
+    }
+    return PUZZLES[state.queue[state.queuePos++]];
+  }
+
+  /* ---- Nuova ghigliottina: parole coperte, timer pieno ---- */
+  function nextPuzzle(){
+    stopTicking();
+    revealTimeouts.forEach(clearTimeout);
+    revealTimeouts = [];
+
+    state.puzzle = pickNextPuzzle();
+    state.round++;
+    state.phase = "ready";
+    state.remaining = ROUND_SECONDS;
+    state.scoredTeams = new Set();
+
+    counter.textContent = `Ghigliottina ${state.round}`;
+    wordsGrid.innerHTML = state.puzzle.words.map((_, i) =>
+      `<div class="word-card" id="word-${i}"><span class="word-num">${i + 1}</span>?</div>`
+    ).join("");
+
+    solutionPanel.classList.remove("show");
+    statusLine.textContent = "Pronti? Premi Via per scoprire le 5 parole!";
+    renderTimer();
+    renderScoreboard();
+    renderAnswers();
+    updateControls();
+  }
+
+  /* ---- Rivela le parole una dopo l'altra, poi parte il timer ---- */
+  function startRound(){
+    if (state.phase !== "ready") return;
+    state.phase = "running";
+    updateControls();
+    statusLine.textContent = "🔗 Trovate la parola che le collega tutte!";
+    state.puzzle.words.forEach((w, i) => {
+      revealTimeouts.push(setTimeout(() => {
+        const card = document.getElementById(`word-${i}`);
+        if (!card) return;
+        card.innerHTML = `<span class="word-num">${i + 1}</span>${escapeHtml(w)}`;
+        card.classList.add("shown");
+        beep(520 + i * 60, 0.12);
+      }, i * WORD_REVEAL_MS));
+    });
+    // il timer parte quando è comparsa l'ultima parola
+    revealTimeouts.push(setTimeout(() => {
+      if (state.phase === "running") startTicking();
+    }, (state.puzzle.words.length - 1) * WORD_REVEAL_MS + 200));
+  }
+
+  function showAllWords(){
+    revealTimeouts.forEach(clearTimeout);
+    revealTimeouts = [];
+    state.puzzle.words.forEach((w, i) => {
+      const card = document.getElementById(`word-${i}`);
+      if (card && !card.classList.contains("shown")){
+        card.innerHTML = `<span class="word-num">${i + 1}</span>${escapeHtml(w)}`;
+        card.classList.add("shown");
+      }
+    });
+  }
+
+  /* ---- Timer basato sull'orologio: preciso anche con tab in background ---- */
+  function startTicking(){
+    stopTicking();
+    state.endAt = Date.now() + state.remaining * 1000;
+    let lastWhole = Math.ceil(state.remaining);
+    tickId = setInterval(() => {
+      state.remaining = Math.max(0, (state.endAt - Date.now()) / 1000);
+      const whole = Math.ceil(state.remaining);
+      if (whole !== lastWhole){
+        lastWhole = whole;
+        if (whole > 0 && whole <= 5) beep(660, 0.12);
+      }
+      renderTimer();
+      if (state.remaining <= 0) timeUp();
+    }, 100);
+  }
+  function stopTicking(){
+    clearInterval(tickId);
+    tickId = null;
+  }
+
+  function stopRound(){
+    if (state.phase !== "running") return;
+    showAllWords();
+    stopTicking();
+    state.phase = "stopped";
+    statusLine.textContent = "⏸ Tempo fermato! Scrivete la parola e premete Verifica (o riprendete il timer).";
+    updateControls();
+    focusFirstInput();
+  }
+
+  function resumeRound(){
+    if (state.phase !== "stopped" || state.remaining <= 0) return;
+    state.phase = "running";
+    statusLine.textContent = "🔗 Trovate la parola che le collega tutte!";
+    startTicking();
+    updateControls();
+  }
+
+  function timeUp(){
+    stopTicking();
+    state.remaining = 0;
+    state.phase = "stopped";
+    renderTimer();
+    beep(180, 0.6, "sawtooth");
+    statusLine.textContent = "⏰ Tempo scaduto! Scrivete la parola e premete Verifica.";
+    updateControls();
+    focusFirstInput();
+  }
+
+  function renderTimer(){
+    const secs = Math.ceil(state.remaining);
+    timerNumber.textContent = secs;
+    timerNumber.classList.toggle("danger", state.phase === "running" && secs <= 10);
+    timerBar.style.width = (state.remaining / ROUND_SECONDS * 100) + "%";
+  }
+
+  /* ---- Pulsanti visibili/attivi in base alla fase ---- */
+  function updateControls(){
+    const p = state.phase;
+    startBtn.style.display = p === "ready" ? "inline-block" : "none";
+    stopBtn.style.display = (p === "running" || (p === "stopped" && state.remaining > 0)) ? "inline-block" : "none";
+    stopBtn.textContent = p === "running" ? "⏸ Stop" : "▶ Riprendi";
+    verifyBtn.disabled = !(p === "running" || p === "stopped");
+    revealBtn.disabled = p === "done";
+    answersGrid.querySelectorAll(".answer-input").forEach(inp => { inp.disabled = p === "done"; });
+  }
+
+  /* =========================================================
+     TABELLONE E RISPOSTE
+     ========================================================= */
+  function renderScoreboard(){
+    scoreGrid.innerHTML = state.teams.map((team, i) => `
+      <div class="score-card${state.scoredTeams.has(i) ? " just-scored" : ""}">
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+        </div>
+        <div class="score-value">${(scoreBaseline[i] || 0) + team.score}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderAnswers(){
+    answersGrid.innerHTML = state.teams.map((team, i) => `
+      <div class="answer-row" id="answer-row-${i}">
+        <div class="answer-team">
+          <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+          <span style="color:${escapeHtml(team.color)}">${escapeHtml(team.name)}</span>
+        </div>
+        <input class="answer-input" type="text" maxlength="30" autocomplete="off" spellcheck="false"
+               data-i="${i}" placeholder="La parola è...">
+        <span class="answer-result" id="answer-result-${i}"></span>
+      </div>
+    `).join("");
+  }
+
+  function focusFirstInput(){
+    const first = answersGrid.querySelector(".answer-input:not(:disabled)");
+    if (first) first.focus();
+  }
+
+  // Invio in un campo: passa al campo successivo, dall'ultimo verifica
+  answersGrid.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || !e.target.classList.contains("answer-input")) return;
+    e.preventDefault();
+    const inputs = [...answersGrid.querySelectorAll(".answer-input")];
+    const pos = inputs.indexOf(e.target);
+    if (pos < inputs.length - 1) inputs[pos + 1].focus();
+    else if (!verifyBtn.disabled) verify();
+  });
+
+  /* ---- Verifica: verde/rosso per ogni squadra, +1 a chi indovina ---- */
+  function verify(){
+    if (!(state.phase === "running" || state.phase === "stopped")) return;
+    showAllWords();
+    stopTicking();
+    state.phase = "done";
+
+    const winners = [];
+    state.teams.forEach((team, i) => {
+      const input = answersGrid.querySelector(`.answer-input[data-i="${i}"]`);
+      const row = document.getElementById(`answer-row-${i}`);
+      const result = document.getElementById(`answer-result-${i}`);
+      const ok = isCorrect(input.value, state.puzzle);
+      row.classList.toggle("correct", ok);
+      row.classList.toggle("wrong", !ok);
+      result.textContent = ok ? "✅" : "❌";
+      if (ok){
+        winners.push(team.name);
+        state.scoredTeams.add(i);
+        team.score += 1;
+        saveGlobalScore(i, (scoreBaseline[i] || 0) + team.score);
+      }
+    });
+
+    if (winners.length){
+      beep(880, 0.25);
+      setTimeout(() => beep(1175, 0.35), 180);
+      statusLine.textContent = winners.length === state.teams.length && winners.length > 1
+        ? "🎉 Tutte le squadre hanno indovinato! +1 a testa!"
+        : `🎉 +1 punto a ${winners.join(" e ")}!`;
+    } else {
+      beep(160, 0.5, "sawtooth");
+      statusLine.textContent = "💀 Nessuno ha indovinato: la ghigliottina è scesa!";
+    }
+
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+    renderScoreboard();
+    showSolution();
+    updateControls();
+  }
+
+  function showSolution(){
+    solutionWord.textContent = state.puzzle.answer;
+    solutionLinks.textContent = state.puzzle.links || "";
+    solutionPanel.classList.add("show");
+  }
+
+  // Mostra la soluzione senza assegnare punti (es. per saltare)
+  function revealWithoutScoring(){
+    if (state.phase === "done") return;
+    showAllWords();
+    stopTicking();
+    state.phase = "done";
+    statusLine.textContent = "👁 Soluzione mostrata: nessun punto assegnato.";
+    showSolution();
+    updateControls();
+  }
+
+  startBtn.addEventListener("click", startRound);
+  stopBtn.addEventListener("click", () => state.phase === "running" ? stopRound() : resumeRound());
+  verifyBtn.addEventListener("click", verify);
+  revealBtn.addEventListener("click", revealWithoutScoring);
+  nextBtn.addEventListener("click", nextPuzzle);
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    const global = loadGlobalTeams();
+    if (!global || !state) return;
+    scoreBaseline = state.teams.map((t, i) => (global.teams[i] ? (global.teams[i].score || 0) - t.score : 0));
+    renderScoreboard();
+  });
+
+  startGame();
+</script>
+
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5); font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+  }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55); background: rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  @media (max-width: 560px){ .global-score-widget{ bottom: 8px; right: 8px; } .gsw-name{ max-width: 72px; } }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){ try{ var raw=localStorage.getItem(KEY); if(raw){var d=JSON.parse(raw); if(d&&Array.isArray(d.teams)&&d.teams.length>=2) return d;} }catch(e){} return null; }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){ var div=document.createElement("div"); div.textContent = s==null?"":s; return div.innerHTML; }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML=""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0,n).map(function(t,i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:'+esc(t.color||"#4dd9ff")+'"></span>' +
+        '<span class="gsw-name">'+esc(t.name)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">'+(t.score||0)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load(); if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score||0)+d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load(); if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
+</script>
+
+</body>
+</html>

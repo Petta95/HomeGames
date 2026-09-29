@@ -228,6 +228,16 @@
      Aggiungi nuove categorie o nuovi elementi qui per espandere
      il gioco: non serve toccare altro codice.
      ========================================================= */
+  /* Età attuale calcolata dalla data di nascita (AAAA-MM-GG), così la
+     categoria "Età delle Celebrità" resta sempre aggiornata. */
+  function ageFrom(birth){
+    const b = new Date(birth + "T00:00:00");
+    const now = new Date();
+    let age = now.getFullYear() - b.getFullYear();
+    if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--;
+    return age;
+  }
+
   const CATEGORIES = [
     {
       id: "vittime-animali", title: "Animali Più Letali",
@@ -882,6 +892,182 @@
         { name: "Pomodoro", slug: "pomodoro", value: 18 },
         { name: "Zucchina", slug: "zucchina", value: 17 },
         { name: "Cetriolo", slug: "cetriolo", value: 15 }
+      ]
+    },
+    {
+      id: "peperoncini-scoville", title: "Piccantezza dei Peperoncini (Scala Scoville)",
+      rule: "Ordina dal più piccante al meno piccante",
+      order: "desc", unit: "SHU",
+      items: [
+        { name: "Capsaicina Pura", slug: "capsaicina-pura", value: 16000000 },
+        { name: "Pepper X", slug: "pepper-x", value: 2693000 },
+        { name: "Carolina Reaper", slug: "carolina-reaper", value: 2200000 },
+        { name: "Trinidad Moruga Scorpion", slug: "trinidad-moruga-scorpion", value: 2009000 },
+        { name: "Bhut Jolokia (Ghost Pepper)", slug: "bhut-jolokia", value: 1041000 },
+        { name: "Habanero", slug: "habanero", value: 350000 },
+        { name: "Peperoncino Thai", slug: "peperoncino-thai", value: 100000 },
+        { name: "Pepe di Cayenna", slug: "pepe-di-cayenna", value: 50000 },
+        { name: "Peperoncino Calabrese", slug: "peperoncino-calabrese", value: 30000 },
+        { name: "Serrano", slug: "serrano", value: 23000 },
+        { name: "Jalapeño", slug: "jalapeno", value: 8000 },
+        { name: "Salsa Tabasco", slug: "salsa-tabasco", value: 2500 },
+        { name: "Sriracha", slug: "sriracha", value: 2200 },
+        { name: "Poblano", slug: "poblano", value: 1500 },
+        { name: "Peperone Dolce", slug: "peperone-dolce", value: 0 }
+      ]
+    },
+    {
+      id: "caffeina-bevande", title: "Caffeina per Bevanda",
+      rule: "Ordina dalla bevanda (porzione tipica) con più caffeina a quella con meno",
+      order: "desc", unit: "mg di caffeina",
+      items: [
+        { name: "Caffè Filtro Starbucks Venti (590 ml)", slug: "starbucks-venti", value: 410 },
+        { name: "Pre-Workout (1 dose)", slug: "pre-workout", value: 300 },
+        { name: "Cold Brew (350 ml)", slug: "cold-brew", value: 200 },
+        { name: "Monster Energy (500 ml)", slug: "monster-energy", value: 160 },
+        { name: "Espresso Doppio", slug: "espresso-doppio", value: 130 },
+        { name: "Caffè Americano (tazza 240 ml)", slug: "caffe-americano", value: 95 },
+        { name: "Red Bull (250 ml)", slug: "red-bull", value: 80 },
+        { name: "Espresso", slug: "espresso", value: 65 },
+        { name: "Tè Nero (tazza)", slug: "te-nero", value: 47 },
+        { name: "Pepsi Max (330 ml)", slug: "pepsi-max", value: 43 },
+        { name: "Coca-Cola (330 ml)", slug: "coca-cola", value: 32 },
+        { name: "Tè Verde (tazza)", slug: "te-verde", value: 28 },
+        { name: "Cioccolata Calda (tazza)", slug: "cioccolata-calda", value: 7 },
+        { name: "Caffè Decaffeinato", slug: "caffe-decaffeinato", value: 3 },
+        { name: "Camomilla", slug: "camomilla", value: 0 }
+      ]
+    },
+    {
+      id: "longevita-animali", title: "Longevità degli Animali",
+      rule: "Ordina dall'animale più longevo (record di età registrato) al meno longevo",
+      order: "desc", unit: "anni",
+      items: [
+        { name: "Vongola Islandica", slug: "vongola-islandica", value: 507 },
+        { name: "Squalo della Groenlandia", slug: "squalo-della-groenlandia", value: 400 },
+        { name: "Balena della Groenlandia", slug: "balena-della-groenlandia", value: 211 },
+        { name: "Tartaruga Gigante", slug: "tartaruga-gigante", value: 190 },
+        { name: "Essere Umano", slug: "essere-umano", value: 122 },
+        { name: "Elefante", slug: "elefante", value: 86 },
+        { name: "Cacatua", slug: "cacatua", value: 83 },
+        { name: "Gorilla", slug: "gorilla", value: 68 },
+        { name: "Cavallo", slug: "cavallo", value: 62 },
+        { name: "Pesce Rosso", slug: "pesce-rosso", value: 43 },
+        { name: "Gatto", slug: "gatto", value: 38 },
+        { name: "Cane", slug: "cane", value: 29 },
+        { name: "Coniglio", slug: "coniglio", value: 18 },
+        { name: "Criceto", slug: "criceto", value: 4 },
+        { name: "Mosca Domestica", slug: "mosca-domestica", value: 0.08 }
+      ]
+    },
+    {
+      id: "peso-animali", title: "Peso degli Animali",
+      rule: "Ordina dall'animale più pesante (adulto medio) al più leggero",
+      order: "desc", unit: "kg",
+      items: [
+        { name: "Balenottera Azzurra", slug: "balenottera-azzurra", value: 150000 },
+        { name: "Squalo Balena", slug: "squalo-balena", value: 19000 },
+        { name: "Elefante Africano", slug: "elefante-africano", value: 6000 },
+        { name: "Orca", slug: "orca", value: 4500 },
+        { name: "Ippopotamo", slug: "ippopotamo", value: 1500 },
+        { name: "Giraffa", slug: "giraffa", value: 1200 },
+        { name: "Orso Polare", slug: "orso-polare", value: 450 },
+        { name: "Leone", slug: "leone", value: 190 },
+        { name: "Gorilla", slug: "gorilla", value: 160 },
+        { name: "Essere Umano", slug: "essere-umano", value: 70 },
+        { name: "Pinguino Imperatore", slug: "pinguino-imperatore", value: 30 },
+        { name: "Gatto", slug: "gatto", value: 4.5 },
+        { name: "Coniglio", slug: "coniglio", value: 2 },
+        { name: "Criceto", slug: "criceto", value: 0.12 },
+        { name: "Colibrì", slug: "colibri", value: 0.003 }
+      ]
+    },
+    {
+      id: "prezzo-big-mac", title: "Prezzo di un Big Mac nel Mondo",
+      rule: "Ordina dal Paese dove il Big Mac costa di più a quello dove costa meno (Big Mac Index 2025, circa)",
+      order: "desc", unit: "$",
+      items: [
+        { name: "Svizzera", slug: "svizzera", value: 7.99 },
+        { name: "Norvegia", slug: "norvegia", value: 6.7 },
+        { name: "Italia", slug: "italia", value: 5.95 },
+        { name: "Stati Uniti", slug: "stati-uniti", value: 5.79 },
+        { name: "Regno Unito", slug: "regno-unito", value: 5.57 },
+        { name: "Canada", slug: "canada", value: 5.35 },
+        { name: "Emirati Arabi Uniti", slug: "emirati-arabi", value: 5.1 },
+        { name: "Australia", slug: "australia", value: 4.75 },
+        { name: "Messico", slug: "messico", value: 4.4 },
+        { name: "Brasile", slug: "brasile", value: 3.9 },
+        { name: "Cina", slug: "cina", value: 3.45 },
+        { name: "Giappone", slug: "giappone", value: 3.1 },
+        { name: "Sudafrica", slug: "sudafrica", value: 2.95 },
+        { name: "India", slug: "india", value: 2.6 },
+        { name: "Indonesia", slug: "indonesia", value: 2.3 }
+      ]
+    },
+    {
+      id: "eta-celebrita", title: "Età Attuale delle Celebrità",
+      rule: "Ordina dalla celebrità più anziana alla più giovane",
+      order: "desc", unit: "anni",
+      items: [
+        { name: "Clint Eastwood", slug: "clint-eastwood", value: ageFrom("1930-05-31") },
+        { name: "Sophia Loren", slug: "sophia-loren", value: ageFrom("1934-09-20") },
+        { name: "Morgan Freeman", slug: "morgan-freeman", value: ageFrom("1937-06-01") },
+        { name: "Al Pacino", slug: "al-pacino", value: ageFrom("1940-04-25") },
+        { name: "Paul McCartney", slug: "paul-mccartney", value: ageFrom("1942-06-18") },
+        { name: "Vasco Rossi", slug: "vasco-rossi", value: ageFrom("1952-02-07") },
+        { name: "Madonna", slug: "madonna", value: ageFrom("1958-08-16") },
+        { name: "Tom Cruise", slug: "tom-cruise", value: ageFrom("1962-07-03") },
+        { name: "Brad Pitt", slug: "brad-pitt", value: ageFrom("1963-12-18") },
+        { name: "Jennifer Aniston", slug: "jennifer-aniston", value: ageFrom("1969-02-11") },
+        { name: "Leonardo DiCaprio", slug: "leonardo-dicaprio", value: ageFrom("1974-11-11") },
+        { name: "Cristiano Ronaldo", slug: "cristiano-ronaldo", value: ageFrom("1985-02-05") },
+        { name: "Taylor Swift", slug: "taylor-swift", value: ageFrom("1989-12-13") },
+        { name: "Zendaya", slug: "zendaya", value: ageFrom("1996-09-01") },
+        { name: "Billie Eilish", slug: "billie-eilish", value: ageFrom("2001-12-18") }
+      ]
+    },
+    {
+      id: "durata-film", title: "Durata dei Film Cult",
+      rule: "Ordina dal film più lungo al più corto",
+      order: "desc", unit: "minuti",
+      items: [
+        { name: "Via col Vento", slug: "via-col-vento", value: 238 },
+        { name: "Lawrence d'Arabia", slug: "lawrence-d-arabia", value: 227 },
+        { name: "Il Signore degli Anelli - Il Ritorno del Re", slug: "il-ritorno-del-re", value: 201 },
+        { name: "Titanic", slug: "titanic", value: 194 },
+        { name: "Il Miglio Verde", slug: "il-miglio-verde", value: 189 },
+        { name: "Avengers: Endgame", slug: "avengers-endgame", value: 181 },
+        { name: "Il Padrino", slug: "il-padrino", value: 175 },
+        { name: "Interstellar", slug: "interstellar", value: 169 },
+        { name: "Pulp Fiction", slug: "pulp-fiction", value: 154 },
+        { name: "Il Cavaliere Oscuro", slug: "il-cavaliere-oscuro", value: 152 },
+        { name: "Forrest Gump", slug: "forrest-gump", value: 142 },
+        { name: "Matrix", slug: "matrix", value: 136 },
+        { name: "Jurassic Park", slug: "jurassic-park", value: 127 },
+        { name: "Ritorno al Futuro", slug: "ritorno-al-futuro", value: 116 },
+        { name: "Il Re Leone", slug: "il-re-leone", value: 88 }
+      ]
+    },
+    {
+      id: "distanza-da-modena", title: "Distanza delle Città da Modena",
+      rule: "Ordina dalla città più lontana da Modena (in linea d'aria) alla più vicina",
+      order: "desc", unit: "km",
+      items: [
+        { name: "Sydney", slug: "sydney", value: 16433 },
+        { name: "New York", slug: "new-york", value: 6627 },
+        { name: "Londra", slug: "londra", value: 1119 },
+        { name: "Parigi", slug: "parigi", value: 803 },
+        { name: "Palermo", slug: "palermo", value: 754 },
+        { name: "Napoli", slug: "napoli", value: 502 },
+        { name: "Roma", slug: "roma", value: 331 },
+        { name: "Milano", slug: "milano", value: 164 },
+        { name: "Venezia", slug: "venezia", value: 140 },
+        { name: "Firenze", slug: "firenze", value: 101 },
+        { name: "Verona", slug: "verona", value: 88 },
+        { name: "Parma", slug: "parma", value: 50 },
+        { name: "Bologna", slug: "bologna", value: 37 },
+        { name: "Reggio Emilia", slug: "reggio-emilia", value: 24 },
+        { name: "Carpi", slug: "carpi", value: 16 }
       ]
     },
   ];

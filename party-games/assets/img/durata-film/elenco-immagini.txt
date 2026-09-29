@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "durata-film" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - via-col-vento.jpg  (Via col Vento)
+ - lawrence-d-arabia.jpg  (Lawrence d'Arabia)
+ - il-ritorno-del-re.jpg  (Il Signore degli Anelli - Il Ritorno del Re)
+ - titanic.jpg  (Titanic)
+ - il-miglio-verde.jpg  (Il Miglio Verde)
+ - avengers-endgame.jpg  (Avengers: Endgame)
+ - il-padrino.jpg  (Il Padrino)
+ - interstellar.jpg  (Interstellar)
+ - pulp-fiction.jpg  (Pulp Fiction)
+ - il-cavaliere-oscuro.jpg  (Il Cavaliere Oscuro)
+ - forrest-gump.jpg  (Forrest Gump)
+ - matrix.jpg  (Matrix)
+ - jurassic-park.jpg  (Jurassic Park)
+ - ritorno-al-futuro.jpg  (Ritorno al Futuro)
+ - il-re-leone.jpg  (Il Re Leone)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).

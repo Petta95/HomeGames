@@ -254,7 +254,91 @@
     "Qual è il suo ricordo più bello con la famiglia?",
     "Quale parola in dialetto usa spesso?",
     "Qual è la prima cosa che nota in una persona nuova?",
-    "Quale gioco da tavolo preferisce in assoluto?"
+    "Quale gioco da tavolo preferisce in assoluto?",
+
+    /* ---- Cosa ordina ---- */
+    "Cosa ordina sempre al sushi (il suo pezzo immancabile)?",
+    "All you can eat: quanti piatti riesce a ordinare prima di arrendersi?",
+    "Cosa ordina al bar per colazione?",
+    "Come prende il caffè (normale, macchiato, lungo, corretto, d'orzo...)?",
+    "Cosa ordina come aperitivo (Spritz, birra, analcolico...)?",
+    "Quale pizza ordina quando non sa cosa prendere?",
+    "In pizzeria: bibita, birra o acqua?",
+    "Cosa ordina al McDonald's (o al fast food)?",
+    "Cosa ordina al kebab o alla piadineria?",
+    "Qual è il dolce che ordina sempre al ristorante?",
+    "Cosa ordina in gelateria: coppetta o cono? E quali gusti?",
+    "Al ristorante cinese o thailandese, qual è il suo piatto fisso?",
+    "Cosa ordina quando fa una consegna a domicilio stanco/a la sera?",
+    "In discoteca o al pub, qual è il suo drink di riferimento?",
+    "Al ristorante, ordina il vino o lascia scegliere agli altri?",
+
+    /* ---- Prime volte ---- */
+    "Dove vi siete conosciuti la prima volta?",
+    "Qual è stata la prima cosa che ha pensato di te?",
+    "Qual è stato il primo viaggio che avete fatto insieme?",
+    "Per cosa avete litigato la prima volta?",
+    "Qual è stato il primo regalo che ti ha fatto?",
+    "Qual è stato il primo film (o serie) che avete visto insieme?",
+    "Qual è stato il primo concerto o evento a cui siete andati insieme?",
+    "Qual è stato il primo ristorante in cui avete mangiato insieme?",
+    "Qual è la prima foto insieme che ricorda?",
+    "Qual è stata la prima figuraccia che ha fatto davanti a te?",
+    "Chi ha scritto per primo all'altro/a?",
+    "In che mese (e anno) vi siete conosciuti?"
+  ];
+
+  /* Domande valide solo per una delle due modalità (amore / amici) */
+  const MODE_QUESTIONS = {
+    amore: [
+      "Dove siete andati al vostro primo appuntamento?",
+      "Com'era vestito/a al primo appuntamento?",
+      "Chi ha dato il primo bacio?",
+      "Chi ha detto per primo \"ti amo\"?",
+      "Qual è stato il primo soprannome che ti ha dato?",
+      "Dove avete passato il primo San Valentino insieme?"
+    ],
+    amici: [
+      "Qual è stata la prima serata fuori che avete fatto insieme?",
+      "Qual è la prima avventura (o disavventura) che avete vissuto insieme?",
+      "In che occasione vi siete sentiti davvero amici per la prima volta?"
+    ]
+  };
+
+  /* =========================================================
+     ROUND "CHI DEI DUE…" — la coppia conta fino a 3 e indica
+     insieme chi dei due corrisponde alla frase: se indicano la
+     stessa persona, punto. Mischiate con le domande classiche.
+     ========================================================= */
+  const CHI_DEI_DUE = [
+    "Chi dei due è più geloso/a?",
+    "Chi dei due cucina meglio?",
+    "Chi dei due chiede scusa per primo dopo un litigio?",
+    "Chi dei due arriva sempre in ritardo?",
+    "Chi dei due spende di più?",
+    "Chi dei due è più disordinato/a?",
+    "Chi dei due guida meglio?",
+    "Chi dei due si addormenta prima davanti a un film?",
+    "Chi dei due passa più tempo al telefono?",
+    "Chi dei due è più permaloso/a?",
+    "Chi dei due ha più pazienza?",
+    "Chi dei due si perde più facilmente?",
+    "Chi dei due è più testardo/a?",
+    "Chi dei due è più romantico/a?",
+    "Chi dei due regge meglio l'alcol?",
+    "Chi dei due ci mette di più a prepararsi per uscire?",
+    "Chi dei due ha più paura dei ragni (o degli insetti)?",
+    "Chi dei due sceglie il ristorante quando uscite?",
+    "Chi dei due ride per primo a una battuta stupida?",
+    "Chi dei due dimentica più spesso date importanti?",
+    "Chi dei due sarebbe sopravvissuto più a lungo su un'isola deserta?",
+    "Chi dei due piange più facilmente guardando un film?",
+    "Chi dei due è più competitivo/a nei giochi?",
+    "Chi dei due mangia di più?",
+    "Chi dei due è il più mattiniero?",
+    "Chi dei due ha i gusti musicali peggiori?",
+    "Chi dei due organizza i viaggi?",
+    "Chi dei due vince di solito le discussioni?"
   ];
 
   function shuffle(arr){
@@ -263,6 +347,15 @@
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+  }
+
+  /* Mazzo della partita: domande classiche + quelle della modalità
+     scelta + round "Chi dei due…", tutto mescolato. */
+  function buildDeck(){
+    const classic = [...QUESTIONS, ...(MODE_QUESTIONS[selectedMode] || [])]
+      .map(text => ({ text, chi: false }));
+    const chi = CHI_DEI_DUE.map(text => ({ text, chi: true }));
+    return shuffle([...classic, ...chi]);
   }
 
   let selectedMode = null;
@@ -325,11 +418,7 @@
       score: 0
     }));
 
-    modeLabel.textContent = selectedMode === "amore"
-      ? "💑 Quanto si conoscono le coppie innamorate?"
-      : "🧑‍🤝‍🧑 Quanto si conoscono le coppie di amici?";
-
-    order = shuffle([...QUESTIONS]);
+    order = buildDeck();
     index = 0;
 
     renderScoreboard();
@@ -370,14 +459,22 @@
 
   /* ---- Navigazione domande ---- */
   function showQuestion(){
-    questionText.textContent = order[index];
+    const q = order[index];
+    questionText.textContent = q.text;
+    if (q.chi){
+      modeLabel.textContent = "👉 Chi dei due… Contate fino a 3 e indicate insieme: stessa persona = punto!";
+    } else {
+      modeLabel.textContent = selectedMode === "amore"
+        ? "💑 Quanto si conoscono le coppie innamorate?"
+        : "🧑‍🤝‍🧑 Quanto si conoscono le coppie di amici?";
+    }
     counter.textContent = `Domanda ${index + 1}/${order.length}`;
   }
 
   nextBtn.addEventListener("click", () => {
     index++;
     if (index >= order.length){
-      order = shuffle([...QUESTIONS]);
+      order = buildDeck();
       index = 0;
     }
     showQuestion();

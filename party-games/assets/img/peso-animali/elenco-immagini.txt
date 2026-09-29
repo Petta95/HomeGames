@@ -1,0 +1,22 @@
+Immagini attese in questa cartella per la categoria "peso-animali" del gioco Ordina.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - balenottera-azzurra.jpg  (Balenottera Azzurra)
+ - squalo-balena.jpg  (Squalo Balena)
+ - elefante-africano.jpg  (Elefante Africano)
+ - orca.jpg  (Orca)
+ - ippopotamo.jpg  (Ippopotamo)
+ - giraffa.jpg  (Giraffa)
+ - orso-polare.jpg  (Orso Polare)
+ - leone.jpg  (Leone)
+ - gorilla.jpg  (Gorilla)
+ - essere-umano.jpg  (Essere Umano)
+ - pinguino-imperatore.jpg  (Pinguino Imperatore)
+ - gatto.jpg  (Gatto)
+ - coniglio.jpg  (Coniglio)
+ - criceto.jpg  (Criceto)
+ - colibri.jpg  (Colibrì)
+
+Nota: ad ogni round vengono estratti a caso solo N elementi dal pool (scelti da Petta),
+quindi non tutte le immagini servono in ogni partita. Se una foto manca, il gioco mostra
+automaticamente un'icona placeholder (nessun errore).
