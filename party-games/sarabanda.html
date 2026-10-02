@@ -240,6 +240,20 @@
   .point-btn-1{ background: #ffd600; }
   .point-btn.awarded{ opacity: 0.55; filter: grayscale(0.4); }
 
+  /* ---- Filtro lingua: Italiano / Internazionale / Entrambi ---- */
+  .lang-switch{
+    display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 5px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 999px;
+  }
+  .lang-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.92rem;
+    color: var(--text-muted); background: transparent; border: none;
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .lang-btn:hover{ color: var(--text-main); }
+  .lang-btn.active{ background: var(--accent); color: #06090f; box-shadow: 0 0 18px -4px var(--accent-glow); }
+
   .bottom-actions{ display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
 
   @media (max-width: 700px){
@@ -286,7 +300,8 @@
     <div class="modal-title">📖 Come si Gioca</div>
     <p class="modal-note">Indovina Titolo e Artista prima degli avversari, ad alta voce!</p>
     <ol>
-      <li>Premi <strong>"▶️ Riproduci Brano"</strong>: parte uno snippet a sorpresa di 15 secondi da un database di oltre 100 canzoni di ogni epoca e genere. Puoi mettere <strong>in pausa</strong> in qualsiasi momento e riprendere quando vuoi, oppure premere <strong>"🔁 Riascolta"</strong> per ripartire da capo.</li>
+      <li>Scegli le canzoni con il filtro in alto: <strong>🇮🇹 Italiano</strong> (solo artisti italiani), <strong>🌍 Internazionale</strong> (solo artisti stranieri) o <strong>🎶 Entrambi</strong>.</li>
+      <li>Premi <strong>"▶️ Riproduci Brano"</strong>: parte uno snippet a sorpresa di 15 secondi da un database di oltre 350 canzoni di ogni epoca e genere. Puoi mettere <strong>in pausa</strong> in qualsiasi momento e riprendere quando vuoi, oppure premere <strong>"🔁 Riascolta"</strong> per ripartire da capo.</li>
       <li>I giocatori prenotano la risposta <strong>ad alta voce</strong> e provano a indovinare Titolo e/o Artista.</li>
       <li>Quando siete pronti, premi <strong>"🎯 Rivela"</strong> per scoprire Titolo, Artista e Anno del brano.</li>
       <li>Dopo la rivelazione, assegna i punti a chi ha indovinato: <strong>+2</strong> se ha indovinato Titolo e Artista, <strong>+1</strong> se ne ha indovinato solo uno. Puoi premiare <strong>entrambe le squadre</strong> nella stessa canzone (es. +1 a una per il titolo, +1 all'altra per l'artista); se nessuno ha indovinato, non assegnare nulla.</li>
@@ -301,6 +316,12 @@
 <main class="stage" id="gameView">
 
   <div class="score-grid" id="scoreGrid"></div>
+
+  <div class="lang-switch" id="langSwitch" role="group" aria-label="Filtro canzoni">
+    <button type="button" class="lang-btn" data-lang="it">🇮🇹 Italiano</button>
+    <button type="button" class="lang-btn" data-lang="int">🌍 Internazionale</button>
+    <button type="button" class="lang-btn active" data-lang="all">🎶 Entrambi</button>
+  </div>
 
   <div class="player-card">
     <div class="vinyl-disc" id="vinylDisc">🎵</div>
@@ -336,7 +357,7 @@
 
 <script>
   /* =========================================================
-     DATABASE BRANI — oltre 100 canzoni italiane e internazionali
+     DATABASE BRANI — oltre 350 canzoni italiane e internazionali
      di ogni epoca e genere. audioUrl è una preview pubblica e
      stabile (iTunes/Apple Music, nessuna chiave richiesta,
      nessun problema di CORS per <audio>).
@@ -643,7 +664,66 @@
     { title: "All of Me", artist: "John Legend", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ff/94/6c/ff946ca7-e49a-fdf8-ea5b-11e6f56a0417/mzaf_17369156110722174773.plus.aac.p.m4a", year: "2013" },
     { title: "Love Me Like You Do", artist: "Ellie Goulding", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6f/81/9b/6f819bc4-4aaf-c4a8-2dd3-ff1d8174560a/mzaf_12728576242903871412.plus.aac.p.m4a", year: "2015" },
     { title: "Lose You to Love Me", artist: "Selena Gomez", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/99/b4/f6/99b4f6a7-2cf0-bce3-a576-1825e603349f/mzaf_15677095240718368265.plus.aac.p.m4a", year: "2019" },
-    { title: "7 rings", artist: "Ariana Grande", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/c8/f3/d5c8f31b-1c8f-93ed-e78b-8c0bce3e8b66/mzaf_14456154925680073521.plus.aac.p.m4a", year: "2019" }
+    { title: "7 rings", artist: "Ariana Grande", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/c8/f3/d5c8f31b-1c8f-93ed-e78b-8c0bce3e8b66/mzaf_14456154925680073521.plus.aac.p.m4a", year: "2019" },
+
+    /* ---- Altri brani internazionali ---- */
+    { title: "Africa", artist: "Toto", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bb/3d/07/bb3d07a3-b3af-2c99-5c9f-eb72796268c2/mzaf_11871467005041854011.plus.aac.p.m4a", year: "1982" },
+    { title: "Don't Stop Believin'", artist: "Journey", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/d5/86/24d5863d-fa9f-ec0c-2f13-d2544a099e0f/mzaf_2942712645288810316.plus.aac.p.m4a", year: "1981" },
+    { title: "Sweet Dreams (Are Made of This)", artist: "Eurythmics", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/65/eb/89/65eb89f3-63b5-51d1-84e9-362ddb0259e1/mzaf_13469396206931835946.plus.aac.p.m4a", year: "1983" },
+    { title: "Under Pressure", artist: "Queen & David Bowie", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/43/b2/b0/43b2b0e9-8816-2004-131c-b438144f0738/mzaf_6572770341166154443.plus.aac.p.m4a", year: "1981" },
+    { title: "Don't Stop Me Now", artist: "Queen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4b/d2/85/4bd2852c-81a9-1da0-01df-31b77705830c/mzaf_17036269860840746883.plus.aac.p.m4a", year: "1978" },
+    { title: "Wake Me Up Before You Go-Go", artist: "Wham!", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/59/d0/df/59d0df1f-b9b0-c1f0-d27e-ad59ee9fe1fa/mzaf_15629855503092199047.plus.aac.p.m4a", year: "1984" },
+    { title: "Last Christmas", artist: "Wham!", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b6/a4/50/b6a45083-acf7-b90f-c42b-21d74007ea80/mzaf_971393386554911620.plus.aac.p.m4a", year: "1984" },
+    { title: "Careless Whisper", artist: "George Michael", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/21/89/59/21895916-e570-019b-1dce-fd19a9e4d6b8/mzaf_253631016813185496.plus.aac.p.m4a", year: "1984" },
+    { title: "Total Eclipse of the Heart", artist: "Bonnie Tyler", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/47/3d/35/473d35b3-b379-12d9-8fbf-88299e3cad7e/mzaf_5191559564499798673.plus.aac.p.m4a", year: "1983" },
+    { title: "Footloose", artist: "Kenny Loggins", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ad/73/f4/ad73f415-8c25-f3ba-2d1f-84796bf6a482/mzaf_6722001418989362696.plus.aac.p.m4a", year: "1984" },
+    { title: "Never Gonna Give You Up", artist: "Rick Astley", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f4/df/d0/f4dfd0bf-357f-558c-07b3-7b59400fff62/mzaf_11202855818963280395.plus.aac.p.m4a", year: "1987" },
+    { title: "Don't You (Forget About Me)", artist: "Simple Minds", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d2/38/f0/d238f015-847a-6a10-09e4-9f00391a59bb/mzaf_6669203872576217423.plus.aac.p.m4a", year: "1985" },
+    { title: "Time After Time", artist: "Cyndi Lauper", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fe/f6/d0/fef6d0c9-47d7-767f-9810-acdf95f60f57/mzaf_12960312341256301484.plus.aac.p.m4a", year: "1984" },
+    { title: "Like a Virgin", artist: "Madonna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/53/7c/ee/537ceef4-ef8b-f822-2863-e754a404cd0b/mzaf_10337818103101697835.plus.aac.p.m4a", year: "1984" },
+    { title: "Vogue", artist: "Madonna", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/35/ab/23/35ab2302-3f06-a322-e306-e86ecf6e6999/mzaf_7353725739896737621.plus.aac.p.m4a", year: "1990" },
+    { title: "Born in the U.S.A.", artist: "Bruce Springsteen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/05/68/bf/0568bf82-02e9-dd99-b3a7-0b4b7a2c2fc9/mzaf_975570673053529263.plus.aac.p.m4a", year: "1984" },
+    { title: "Dancing in the Dark", artist: "Bruce Springsteen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ec/c9/91/ecc99192-1c69-6aa0-5b80-35e5545528cb/mzaf_18148738310915598129.plus.aac.p.m4a", year: "1984" },
+    { title: "I Love Rock 'n' Roll", artist: "Joan Jett & The Blackhearts", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3a/3f/67/3a3f67cf-2d47-2ab2-66a2-368fad813e0e/mzaf_2591657320565347448.plus.aac.p.m4a", year: "1981" },
+    { title: "Jump", artist: "Van Halen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/89/fa/f1/89faf128-b7de-808a-6893-4fc730dcfbe4/mzaf_10903024022773138434.plus.aac.p.m4a", year: "1983" },
+    { title: "Livin' la Vida Loca", artist: "Ricky Martin", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/08/a7/cb/08a7cb6d-0618-3c01-6b80-2b92aaca7406/mzaf_15654413058067067771.plus.aac.p.m4a", year: "1999" },
+    { title: "Barbie Girl", artist: "Aqua", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3d/b7/7d/3db77df0-d9a3-b60e-0714-41fd79b9ebff/mzaf_3692738463507322199.plus.aac.p.m4a", year: "1997" },
+    { title: "Mambo No. 5", artist: "Lou Bega", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/95/12/14/951214ff-a3f2-7b9c-094c-385b382b5a14/mzaf_6010878480642586774.plus.aac.p.m4a", year: "1999" },
+    { title: "Believe", artist: "Cher", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9c/52/d8/9c52d83d-242e-abc4-68fc-273eeb8f0358/mzaf_10714034642820090237.plus.aac.p.m4a", year: "1998" },
+    { title: "Zombie", artist: "The Cranberries", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/35/bb/65/35bb6532-1abe-59e4-9ced-8bee2742ea24/mzaf_15102830936602294569.plus.aac.p.m4a", year: "1994" },
+    { title: "Torn", artist: "Natalie Imbruglia", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/96/be/3b/96be3b9e-035d-3d29-ad16-796ea4495968/mzaf_17099026484635430619.plus.aac.p.m4a", year: "1997" },
+    { title: "Bitter Sweet Symphony", artist: "The Verve", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4a/9d/99/4a9d9976-5824-ba97-2f5d-9291cd53bd20/mzaf_1780484886833355916.plus.aac.p.m4a", year: "1997" },
+    { title: "Song 2", artist: "Blur", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0d/7b/06/0d7b068e-914f-b01a-ef1e-fd21e9b106c6/mzaf_2441215755969695380.plus.aac.p.m4a", year: "1997" },
+    { title: "In the End", artist: "Linkin Park", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d8/dc/11/d8dc116b-7e96-28c7-15db-0cc37e5e3cab/mzaf_12868833223285506199.plus.aac.p.m4a", year: "2000" },
+    { title: "Numb", artist: "Linkin Park", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1f/9d/28/1f9d2810-2ac3-efbd-ef02-623691ff9cd2/mzaf_17560018091772095942.plus.aac.p.m4a", year: "2003" },
+    { title: "Bring Me to Life", artist: "Evanescence", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/dd/fe/35/ddfe35a4-491e-cf31-658c-d0a146402b29/mzaf_1325478918326867414.plus.aac.p.m4a", year: "2003" },
+    { title: "Hey Ya!", artist: "Outkast", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/90/59/7b9059ba-a8f2-2540-5bbb-d63a178bd8ce/mzaf_1797078659976130902.plus.aac.p.m4a", year: "2003" },
+    { title: "Crazy", artist: "Gnarls Barkley", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/be/02/e4/be02e45d-e81a-09e8-4615-9e0f7cfe5ca7/mzaf_12139023665337301104.plus.aac.p.m4a", year: "2005" },
+    { title: "Complicated", artist: "Avril Lavigne", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/82/55/d58255cd-4bd1-c339-1584-591e9d1305ee/mzaf_14546367220838781682.plus.aac.p.m4a", year: "2002" },
+    { title: "...Baby One More Time", artist: "Britney Spears", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2a/ef/e5/2aefe5c7-e83b-07b1-227e-117347aa3006/mzaf_11333878250757508664.plus.aac.p.m4a", year: "1998" },
+    { title: "Oops!...I Did It Again", artist: "Britney Spears", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ee/54/be/ee54be67-0fa0-2f64-75de-04b24ca169d5/mzaf_3093554389572572879.plus.aac.p.m4a", year: "2000" },
+    { title: "Clocks", artist: "Coldplay", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d2/9b/17/d29b173f-546a-606b-378f-8f3c333e81f1/mzaf_3952108508633208951.plus.aac.p.m4a", year: "2002" },
+    { title: "Fix You", artist: "Coldplay", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e5/42/e3/e542e340-a45c-695e-e0b8-6155e222ebc0/mzaf_14955746616030397665.plus.aac.p.m4a", year: "2005" },
+    { title: "Somebody That I Used to Know", artist: "Gotye", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/71/42/87/71428762-0574-9d80-0394-b92d16e03923/mzaf_1498996239017656014.plus.aac.p.m4a", year: "2011" },
+    { title: "Call Me Maybe", artist: "Carly Rae Jepsen", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/00/ad/d5/00add515-720e-9458-4138-e56fee88cce6/mzaf_7746672648460104523.plus.aac.p.m4a", year: "2011" },
+    { title: "Moves Like Jagger", artist: "Maroon 5", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/18/c4/2f/18c42f87-27ee-b6ae-c7a8-f38843495329/mzaf_18090131545377638234.plus.aac.p.m4a", year: "2010" },
+    { title: "Shallow", artist: "Lady Gaga & Bradley Cooper", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0c/cc/ed/0ccced59-6e6f-f0a0-0c9a-d20bfd475052/mzaf_26600833784075363.plus.aac.p.m4a", year: "2018" },
+    { title: "Just Dance", artist: "Lady Gaga", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/16/22/54/162254fd-6ea3-b69f-a53c-dcd76f92048c/mzaf_10868537793490182133.plus.aac.p.m4a", year: "2008" },
+    { title: "drivers license", artist: "Olivia Rodrigo", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/36/62/61/366261be-0996-d73d-de6f-03417867c800/mzaf_8201528327761821135.plus.aac.p.m4a", year: "2021" },
+    { title: "Espresso", artist: "Sabrina Carpenter", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/48/14/5f/48145fa9-a5b6-32a0-45e8-05af48e52b9c/mzaf_6315924685303002328.plus.aac.p.m4a", year: "2024" },
+    { title: "Die With a Smile", artist: "Lady Gaga & Bruno Mars", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/52/0d/14/520d14a5-2b67-dd68-97a6-5c25f3fab4fc/mzaf_11286893972904968122.plus.aac.p.m4a", year: "2024" },
+    { title: "Birds of a Feather", artist: "Billie Eilish", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/34/31/d3/3431d34e-847f-5d66-df83-0bce688d997e/mzaf_18106743962423782018.plus.aac.p.m4a", year: "2024" },
+    { title: "Heat Waves", artist: "Glass Animals", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a3/4c/b9/a34cb911-40fc-5f0c-e862-14bd171a77aa/mzaf_384792072030970151.plus.aac.p.m4a", year: "2020" },
+    { title: "Dance Monkey", artist: "Tones and I", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/45/72/4f/45724fc8-2e85-d5b1-dda0-775958e9b692/mzaf_1626542530959622659.plus.aac.p.m4a", year: "2019" },
+    { title: "Bad Habits", artist: "Ed Sheeran", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bf/62/9f/bf629f86-4992-9fe2-18a6-d50a3c9ba9c9/mzaf_7965418607714501674.plus.aac.p.m4a", year: "2021" },
+    { title: "Easy On Me", artist: "Adele", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4c/08/30/4c08305e-0556-30a1-d1ba-2f916b56d62c/mzaf_10419822985277809788.plus.aac.p.m4a", year: "2021" },
+    { title: "Rasputin", artist: "Boney M.", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/53/a6/24/53a6243c-f880-b608-da26-d66636ad3556/mzaf_14138691262938405373.plus.aac.p.m4a", year: "1978" },
+    { title: "Y.M.C.A.", artist: "Village People", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5d/98/fe/5d98fe1f-27c6-19c0-df61-9548c38a8c81/mzaf_7269313585203455205.plus.aac.p.m4a", year: "1978" },
+    { title: "September", artist: "Earth, Wind & Fire", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/77/93/c4/7793c4f4-a834-97f0-ec38-685e2d3d95d3/mzaf_4969122594945994096.plus.aac.p.m4a", year: "1978" },
+    { title: "Respect", artist: "Aretha Franklin", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/db/e2/93/dbe2937a-f85b-ee1d-9a29-db95be5498f3/mzaf_13347005897562275360.plus.aac.p.m4a", year: "1967" },
+    { title: "Johnny B. Goode", artist: "Chuck Berry", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/16/d8/d6/16d8d658-ae49-013f-363d-30767dd27ca4/mzaf_6604756314526994525.plus.aac.p.m4a", year: "1958" },
+    { title: "Stay", artist: "The Kid LAROI & Justin Bieber", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/25/9a/1c/259a1c5d-c59b-ce1f-8279-c0e644dc2b9e/mzaf_3677842867275398060.plus.aac.p.m4a", year: "2021" },
+    { title: "Sweet Home Alabama", artist: "Lynyrd Skynyrd", audioUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8e/7b/81/8e7b811f-1573-37b5-dda2-b32049bde95a/mzaf_13548159486215683747.plus.aac.p.m4a", year: "1974" }
   ];
 
   /* =========================================================
@@ -655,6 +735,35 @@
      questa partita, così si riparte da 0 punti locali senza
      perdere il totale di serata.
      ========================================================= */
+  /* =========================================================
+     FILTRO ITALIANO / INTERNAZIONALE — un brano è "italiano" se
+     l'artista è italiano (anche se canta in inglese, es. Eiffel 65,
+     Måneskin). Per forzare un singolo brano basta aggiungergli
+     it: true / it: false nel database.
+     ========================================================= */
+  const ITALIAN_ARTISTS = new Set([
+    "Achille Lauro", "Adriano Celentano", "Al Bano e Romina Power", "Annalisa", "Antonello Venditti",
+    "Baby K", "Biagio Antonacci", "Blanco", "Boomdabash", "Boomdabash e Alessandra Amoroso",
+    "Calcutta", "Cesare Cremonini", "Claudio Baglioni", "Coez", "Corona", "Cristina D'Avena",
+    "Domenico Modugno", "Eiffel 65", "Elisa", "Elodie", "Ermal Meta e Fabrizio Moro", "Eros Ramazzotti",
+    "Fabrizio De André", "Fedez", "Francesco De Gregori", "Francesco Gabbani", "Gala", "Gazzelle",
+    "Geolier", "Ghali", "Gianna Nannini", "Gigliola Cinquetti", "Giorgia", "Irama", "Ivano Fossati",
+    "J-Ax e Fedez", "Jovanotti", "Laura Pausini", "Ligabue", "Loredana Bertè", "Luca Carboni",
+    "Lucio Battisti", "Mahmood", "Mahmood Blanco", "Marco Mengoni", "Marracash", "Mina", "Måneskin",
+    "Negramaro", "Nek", "Patty Pravo", "Pino Daniele", "Raffaella Carrà", "Renato Zero",
+    "Riccardo Cocciante", "Rino Gaetano", "Salmo", "Takagi & Ketra", "Tananai", "Thegiornalisti",
+    "Tiziano Ferro", "Toto Cutugno", "Umberto Tozzi", "Vasco Rossi", "Zucchero"
+  ]);
+  function isItalianSong(song){
+    return typeof song.it === "boolean" ? song.it : ITALIAN_ARTISTS.has(song.artist);
+  }
+  let langFilter = "all"; // "it" | "int" | "all"
+  function songPool(){
+    return SONGS.map((_, i) => i).filter(i =>
+      langFilter === "all" || (langFilter === "it") === isItalianSong(SONGS[i])
+    );
+  }
+
   const GLOBAL_TEAMS_KEY = "homeGamesTeams";
   let scoreBaseline = [];
   function loadGlobalTeams(){
@@ -748,7 +857,7 @@
     const { names, colors } = buildTeamsFromGlobal();
     state = {
       teams: names.map((name, i) => ({ name, score: 0, color: colors[i] || TEAM_COLORS[i % TEAM_COLORS.length] })),
-      queue: shuffle(SONGS.map((_, i) => i)),
+      queue: shuffle(songPool()),
       queuePos: 0,
       currentSongIndex: null,
       revealed: false,
@@ -859,7 +968,7 @@
      ========================================================= */
   function pickNextSongIndex(){
     if (state.queuePos >= state.queue.length){
-      state.queue = shuffle(SONGS.map((_, i) => i));
+      state.queue = shuffle(songPool());
       state.queuePos = 0;
     }
     const idx = state.queue[state.queuePos];
@@ -961,6 +1070,17 @@
   replayBtn.addEventListener("click", playSnippet);
 
   nextSongBtn.addEventListener("click", resetPlayerForNextSong);
+
+  /* ---- Filtro lingua: ricostruisce la coda e passa subito a un brano del nuovo gruppo ---- */
+  document.getElementById("langSwitch").addEventListener("click", (e) => {
+    const btn = e.target.closest(".lang-btn");
+    if (!btn || btn.dataset.lang === langFilter) return;
+    langFilter = btn.dataset.lang;
+    document.querySelectorAll(".lang-btn").forEach(b => b.classList.toggle("active", b === btn));
+    state.queue = shuffle(songPool());
+    state.queuePos = 0;
+    resetPlayerForNextSong();
+  });
 
   /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
   window.addEventListener("globalScoreChanged", () => {

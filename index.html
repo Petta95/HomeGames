@@ -27,8 +27,8 @@
     --c-party-soft: rgba(176, 106, 255, 0.18);
     --c-prossimamente: #ffc247;
     --c-prossimamente-soft: rgba(255, 194, 71, 0.18);
-    --c-ispirazione: #2dd4a7;
-    --c-ispirazione-soft: rgba(45, 212, 167, 0.18);
+    --c-misto: #e04fb0;              /* Party + Competizione */
+    --c-misto-soft: rgba(224, 79, 176, 0.18);
 
     --accent: #4dd9ff;
     --glass-border: rgba(255, 255, 255, 0.10);
@@ -483,7 +483,6 @@
     <button class="filter-btn" data-filter="competizione">🔴 Competitivi</button>
     <button class="filter-btn" data-filter="party">🟣 Party / Casual</button>
     <button class="filter-btn" data-filter="prossimamente">🟡 Da Creare</button>
-    <button class="filter-btn" data-filter="ispirazione">🌍 Ispirazione</button>
   </div>
   <button class="random-btn" id="randomBtn">🎲 Scegli a Caso!</button>
 </div>
@@ -621,15 +620,25 @@
      DATI DEI GIOCHI
      Per aggiungere un nuovo gioco basta inserire un nuovo
      oggetto in questo array: la UI si aggiorna da sola.
-     category: "competizione" | "party" | "prossimamente"
+     categories: uno o più tra "competizione" | "party" | "prossimamente".
+     Colore e badge dipendono SOLO dalla tipologia (vedi TYPE_STYLES),
+     così i giochi dello stesso tipo hanno sempre lo stesso colore.
      ========================================================= */
   const GAMES = [
+    {
+      id: "party-collection",
+      icon: "🎉",
+      title: "Party Games Collection",
+      categories: ["party", "competizione"],
+      description: "Lista di minigiochi party-competitivi pronti da giocare: Il Più Probabile, Dilemmi Morali, Chi Si Conosce Meglio, Fire Down, Nomi Cose Città Speed, Ordina, Family Feud, Numero Esatto, Il Picco, Skill Test, Battaglia all'Asta e La Ghigliottina. Perfetti per rompere il ghiaccio e ridere insieme.",
+      link: "party-games/menu.html",
+      extraNote: null
+    },
     {
       id: "pettaquiz",
       icon: "🧠",
       title: "PettaQuiz",
-      category: "competizione",
-      badgeLabel: "🔴 Competizione / Sfida a Squadre",
+      categories: ["party", "competizione"],
       description: "Grande sfida a squadre ricca di minigiochi, quiz di cultura generale, reattività e prove veloci. Vince la squadra con più punti!",
       link: "https://petta95.github.io/pettaquiz/index.html",
       extraNote: null
@@ -638,79 +647,25 @@
       id: "tournament",
       icon: "🏆",
       title: "Tournament",
-      category: "party",
-      badgeLabel: "🟣 Party / No Competizione",
+      categories: ["party"],
       description: "Sfida di votazione a gironi! Scegliamo e votiamo la preferita per ogni categoria (cibo, celebrità, serie tv, ecc.). Nessun vincitore singolo, solo dibattito e divertimento.",
       link: "https://petta95.github.io/Torneo/index.html",
       extraNote: null
-    },
-    {
-      id: "party-collection",
-      icon: "🎉",
-      title: "Party Games Collection",
-      category: "party",
-      badgeLabel: "🟠 Party / Casual",
-      description: "Lista di minigiochi party pronti da giocare: Il Più Probabile, Dilemmi Morali, Chi Si Conosce Meglio, Fire Down, Nomi Cose Città Speed, Ordina, Family Feud, Numero Esatto, Il Picco, Skill Test, Battaglia all'Asta e La Ghigliottina. Perfetti per rompere il ghiaccio e ridere insieme.",
-      link: "party-games/menu.html",
-      extraNote: null,
-      color: "#ff9f4d",
-      colorSoft: "rgba(255, 159, 77, 0.18)"
-    },
-    {
-      id: "world-travel-bucket-list",
-      icon: "🗺️",
-      title: "World Travel Bucket List",
-      category: "ispirazione",
-      badgeLabel: "🌍 Ispirazione / Non Competitivo",
-      description: "Una mappa del mondo per vedere tutti gli stati e segnare dove andare. Non è un gioco, ma una fonte di ispirazione per il prossimo viaggio.",
-      link: "https://petta95.github.io/WorldTravelBucketList/index.html",
-      extraNote: null
-    },
-    {
-      id: "ristoranti-visitati",
-      icon: "🍽️",
-      title: "Ristoranti Visitati",
-      category: "ispirazione",
-      badgeLabel: "🍷 Ispirazione / Ristoranti",
-      description: "L'elenco di tutti i ristoranti provati finora, per tenere traccia di dove siamo già stati e decidere dove tornare (o dove non tornare più).",
-      link: "https://petta95.github.io/4Ristoranti/index_ristoranti.html",
-      extraNote: null,
-      color: "#4361ee",
-      colorSoft: "rgba(67, 97, 238, 0.18)"
-    },
-    {
-      id: "sarabanda",
-      icon: "🎤",
-      title: "Sarabanda",
-      category: "party",
-      badgeLabel: "🩷 Party / Musica a Squadre",
-      description: "Riproduci uno snippet a sorpresa di 15 secondi da oltre 100 canzoni di ogni epoca e genere: chi indovina Titolo e Artista per primo fa più punti della squadra avversaria!",
-      link: "party-games/sarabanda.html",
-      extraNote: null,
-      color: "#ff2e88",
-      colorSoft: "rgba(255, 46, 136, 0.18)"
-    },
-    {
-      id: "ghigliottina",
-      icon: "🔗",
-      title: "La Ghigliottina",
-      category: "party",
-      badgeLabel: "🟡 Party / Parole a Squadre",
-      description: "Il gran finale de L'Eredità: 5 parole e 60 secondi per trovare quella che le collega tutte. Ogni squadra scrive la sua risposta, verde se è giusta e rossa se è sbagliata: +1 a chi indovina, anche a entrambe!",
-      link: "party-games/ghigliottina.html",
-      extraNote: null,
-      color: "#ffb300",
-      colorSoft: "rgba(255, 179, 0, 0.18)"
     }
   ];
 
-  // Mappa categoria -> variabili colore CSS (usate per badge/glow/bordi)
-  const CATEGORY_COLORS = {
-    competizione:   { color: "var(--c-competizione)",   soft: "var(--c-competizione-soft)" },
-    party:          { color: "var(--c-party)",          soft: "var(--c-party-soft)" },
-    prossimamente:  { color: "var(--c-prossimamente)",  soft: "var(--c-prossimamente-soft)" },
-    ispirazione:    { color: "var(--c-ispirazione)",    soft: "var(--c-ispirazione-soft)" }
+  // Tipologia -> colore e badge (usati per badge, glow, bordi e pulsante)
+  const TYPE_STYLES = {
+    "party+competizione": { color: "var(--c-misto)",         soft: "var(--c-misto-soft)",         badge: "🔴🟣 Party & Competizione" },
+    "competizione":       { color: "var(--c-competizione)",  soft: "var(--c-competizione-soft)",  badge: "🔴 Competizione / Sfida a Squadre" },
+    "party":              { color: "var(--c-party)",         soft: "var(--c-party-soft)",         badge: "🟣 Party / No Competizione" },
+    "prossimamente":      { color: "var(--c-prossimamente)", soft: "var(--c-prossimamente-soft)", badge: "🟡 Da Creare" }
   };
+  function gameType(game){
+    const c = game.categories;
+    if (c.includes("party") && c.includes("competizione")) return "party+competizione";
+    return c[0];
+  }
 
   const gridEl = document.getElementById("gamesGrid");
   let currentFilter = "tutti";
@@ -719,17 +674,17 @@
   function createCardElement(game){
     const card = document.createElement("article");
     card.className = "game-card";
-    card.dataset.category = game.category;
+    card.dataset.category = game.categories.join(" ");
     card.dataset.id = game.id;
 
-    const colors = CATEGORY_COLORS[game.category] || {};
-    card.style.setProperty("--card-color", game.color || colors.color || "var(--accent)");
-    card.style.setProperty("--card-color-soft", game.colorSoft || colors.soft || "rgba(77,217,255,0.2)");
+    const style = TYPE_STYLES[gameType(game)] || {};
+    card.style.setProperty("--card-color", style.color || "var(--accent)");
+    card.style.setProperty("--card-color-soft", style.soft || "rgba(77,217,255,0.2)");
 
     card.innerHTML = `
       <div class="card-icon">${game.icon}</div>
       <h2 class="card-title">${game.title}</h2>
-      <span class="card-badge">${game.badgeLabel}</span>
+      <span class="card-badge">${style.badge || ""}</span>
       <p class="card-desc">${game.description}</p>
       ${game.extraNote ? `<span class="card-extra">${game.extraNote}</span>` : ""}
       <a class="play-btn" href="${game.link}" target="_blank" rel="noopener noreferrer">GIOCA ORA ▶</a>
@@ -740,7 +695,7 @@
   /** Ridisegna la griglia applicando il filtro di categoria corrente */
   function renderGames(){
     gridEl.innerHTML = "";
-    const visibleGames = GAMES.filter(g => currentFilter === "tutti" || g.category === currentFilter);
+    const visibleGames = GAMES.filter(g => currentFilter === "tutti" || g.categories.includes(currentFilter));
 
     if (visibleGames.length === 0){
       const empty = document.createElement("div");

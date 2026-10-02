@@ -164,6 +164,20 @@
   .team-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
   .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); }
 
+  /* ---- Selettore livello: Facili / Difficili / Tutte ---- */
+  .level-switch{
+    display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 5px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 999px;
+  }
+  .level-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.92rem;
+    color: var(--text-muted); background: transparent; border: none;
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .level-btn:hover{ color: var(--text-main); }
+  .level-btn.active{ background: var(--accent); color: #06090f; box-shadow: 0 0 18px -4px var(--accent-glow); }
+
   /* ---- Le 5 parole ---- */
   .words-grid{
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; width: 100%;
@@ -289,7 +303,8 @@
     <div class="modal-title">📖 Come si Gioca</div>
     <p class="modal-note">Come nel gran finale de L'Eredità: 5 parole, una sola parola che le collega tutte.</p>
     <ol>
-      <li>Premi <strong>"▶ Via!"</strong>: le 5 parole si scoprono una dopo l'altra e parte il <strong>timer di 60 secondi</strong>.</li>
+      <li>Premi <strong>"▶ Via!"</strong>: le 5 parole si scoprono una dopo l'altra e parte il <strong>timer di 40 secondi</strong>.</li>
+      <li>Con il selettore in alto scegli il livello: <strong>Facili</strong>, <strong>Difficili</strong> o <strong>Tutte</strong>.</li>
       <li>Le squadre ragionano e cercano la parola che si lega a <strong>tutte e 5</strong> (modi di dire, parole composte, titoli...).</li>
       <li>Potete premere <strong>"⏸ Stop"</strong> quando volete (e riprendere se serve). Allo scadere del tempo il timer si ferma da solo.</li>
       <li>Ogni squadra scrive la sua parola nel proprio campo, poi premi <strong>"🔍 Verifica"</strong>: il campo diventa <strong style="color:#00e676">verde</strong> se è giusta, <strong style="color:#ff3b5c">rosso</strong> se è sbagliata.</li>
@@ -305,10 +320,16 @@
 
   <div class="score-grid" id="scoreGrid"></div>
 
+  <div class="level-switch" id="levelSwitch" role="group" aria-label="Livello di difficoltà">
+    <button type="button" class="level-btn" data-level="facile">🟢 Facili</button>
+    <button type="button" class="level-btn active" data-level="difficile">🔴 Difficili</button>
+    <button type="button" class="level-btn" data-level="tutte">🎲 Tutte</button>
+  </div>
+
   <div class="words-grid" id="wordsGrid"></div>
 
   <div class="timer-card">
-    <div class="timer-number" id="timerNumber">60</div>
+    <div class="timer-number" id="timerNumber">40</div>
     <div class="timer-bar-track"><div class="timer-bar-fill" id="timerBar"></div></div>
     <div class="status-line" id="statusLine">Pronti? Premi Via per scoprire le 5 parole!</div>
     <div class="btn-row">
@@ -343,6 +364,7 @@
      DATABASE GHIGLIOTTINE — 5 indizi e la parola che li collega.
      "alt" (opzionale) = altre forme accettate (plurale, ecc.).
      "links" = spiegazione mostrata con la soluzione.
+     level: "difficile" per le ghigliottine difficili (senza = facile).
      Aggiungi nuove voci qui: non serve toccare altro codice.
      ========================================================= */
   const PUZZLES = [
@@ -445,10 +467,56 @@
     { words: ["Pisa", "Controllo", "Avorio", "Babele", "Scacchi"], answer: "Torre", alt: ["Torri"], links: "Torre di Pisa · torre di controllo · torre d'avorio · Torre di Babele · la torre degli scacchi" },
     { words: ["Levatoio", "Sospiri", "Brooklyn", "Radio", "Comando"], answer: "Ponte", alt: ["Ponti"], links: "Ponte levatoio · Ponte dei Sospiri · Ponte di Brooklyn · ponte radio · ponte di comando" },
     { words: ["Facendo", "Codice", "Artista", "Uscita", "Mezza"], answer: "Strada", alt: ["Strade"], links: "Strada facendo · codice della strada · artista di strada · strada senza uscita · a mezza strada" },
-    { words: ["Vocale", "Tagliare", "Saltare", "Giù", "Tirare"], answer: "Corda", alt: ["Corde"], links: "Corde vocali · tagliare la corda · saltare la corda · essere giù di corda · tirare la corda" }
+    { words: ["Vocale", "Tagliare", "Saltare", "Giù", "Tirare"], answer: "Corda", alt: ["Corde"], links: "Corde vocali · tagliare la corda · saltare la corda · essere giù di corda · tirare la corda" },
+
+    /* ---- Difficili ---- */
+    { words: ["Marzo", "Pappardelle", "Tartaruga", "Salmì", "Meccanica"], answer: "Lepre", alt: ["Lepri"], links: "La Lepre Marzolina · pappardelle alla lepre · la lepre e la tartaruga · lepre in salmì · la lepre meccanica delle corse dei levrieri", level: "difficile" },
+    { words: ["Testardo", "Calcio", "Lavorare", "Soma", "Alpini"], answer: "Mulo", alt: ["Muli"], links: "Testardo come un mulo · il calcio del mulo · lavorare come un mulo · il mulo, bestia da soma · i muli degli alpini", level: "difficile" },
+    { words: ["Orecchio", "Mercato", "Circo", "Messi", "Acqua"], answer: "Pulce", alt: ["Pulci"], links: "La pulce nell'orecchio · mercato delle pulci · il circo delle pulci · Messi detto \"la Pulga\" · la pulce d'acqua", level: "difficile" },
+    { words: ["Uva", "Deserto", "Pollaio", "Argentata", "Zorro"], answer: "Volpe", alt: ["Volpi"], links: "La volpe e l'uva · la Volpe del Deserto (Rommel) · la volpe nel pollaio · volpe argentata · \"Zorro\" in spagnolo significa volpe", level: "difficile" },
+    { words: ["Pelo", "Wall Street", "Gubbio", "Solitario", "Mannaro"], answer: "Lupo", alt: ["Lupi"], links: "Il lupo perde il pelo ma non il vizio · The Wolf of Wall Street · il lupo di Gubbio · lupo solitario · lupo mannaro", level: "difficile" },
+    { words: ["Cenerentola", "Sale", "Fiori", "Mantova", "Halloween"], answer: "Zucca", alt: ["Zucche"], links: "La carrozza-zucca di Cenerentola · avere sale in zucca · fiori di zucca · i tortelli di zucca mantovani · la zucca di Halloween", level: "difficile" },
+    { words: ["Bollente", "Divano", "Mister", "Novella", "Dolce"], answer: "Patata", alt: ["Patate"], links: "Patata bollente · patata da divano (couch potato) · Mister Potato · patate novelle · patata dolce", level: "difficile" },
+    { words: ["Torta", "Tira", "Vignola", "Maraschino", "Clafoutis"], answer: "Ciliegia", alt: ["Ciliegie", "Ciliegina"], links: "La ciliegina sulla torta · una ciliegia tira l'altra · le ciliegie di Vignola · ciliegie al maraschino · il clafoutis di ciliegie", level: "difficile" },
+    { words: ["Bastone", "Coniglio", "Pupazzo", "Pel", "Vista"], answer: "Carota", alt: ["Carote"], links: "Il bastone e la carota · la carota di Bugs Bunny · il naso del pupazzo di neve · Pel di Carota · la carota fa bene alla vista", level: "difficile" },
+    { words: ["Tropea", "Shrek", "Orologio", "Lacrime", "Strati"], answer: "Cipolla", alt: ["Cipolle"], links: "Cipolla di Tropea · \"gli orchi sono come le cipolle\" (Shrek) · orologio a cipolla · tagliare la cipolla fa lacrimare · la cipolla è fatta a strati", level: "difficile" },
+    { words: ["Moscata", "Cocco", "Guscio", "Schiaccianoci", "Sorrento"], answer: "Noce", alt: ["Noci"], links: "Noce moscata · noce di cocco · in un guscio di noce · Lo Schiaccianoci · le noci di Sorrento", level: "difficile" },
+    { words: ["Gioco", "Reggere", "Motore", "Cera", "Compleanno"], answer: "Candela", alt: ["Candele", "Candeline"], links: "Il gioco non vale la candela · reggere la candela · la candela del motore · candela di cera · le candeline di compleanno", level: "difficile" },
+    { words: ["Messaggio", "Collo", "Genio", "Fondo", "Vetro"], answer: "Bottiglia", alt: ["Bottiglie"], links: "Messaggio in bottiglia · collo di bottiglia · il genio della bottiglia · occhiali a fondo di bottiglia · bottiglia di vetro", level: "difficile" },
+    { words: ["Corona", "Cerume", "Sughero", "Basso", "Sapere"], answer: "Tappo", alt: ["Tappi"], links: "Tappo a corona · tappo di cerume · tappo di sughero · essere un tappo (basso) · il vino che sa di tappo", level: "difficile" },
+    { words: ["Scaccia", "Fisso", "Garofano", "Giubbotto", "Bara"], answer: "Chiodo", alt: ["Chiodi"], links: "Chiodo scaccia chiodo · chiodo fisso · chiodi di garofano · il chiodo (giubbotto di pelle) · l'ultimo chiodo sulla bara", level: "difficile" },
+    { words: ["Pesce", "Incudine", "Thor", "Falce", "Pneumatico"], answer: "Martello", alt: ["Martelli"], links: "Pesce martello · tra l'incudine e il martello · il martello di Thor · falce e martello · martello pneumatico", level: "difficile" },
+    { words: ["Damocle", "Laser", "Incrociare", "Pesce", "Mangiatore"], answer: "Spada", alt: ["Spade"], links: "La spada di Damocle · spada laser · incrociare le spade · pesce spada · il mangiatore di spade", level: "difficile" },
+    { words: ["Lucido", "Corno", "Sassolino", "Grosse", "Tacco"], answer: "Scarpa", alt: ["Scarpe"], links: "Lucido da scarpe · il corno per le scarpe (calzascarpe) · togliersi un sassolino dalla scarpa · scarpe grosse, cervello fino · il tacco della scarpa", level: "difficile" },
+    { words: ["Sfida", "Velluto", "Calzare", "Portiere", "Boxe"], answer: "Guanto", alt: ["Guanti"], links: "Lanciare il guanto di sfida · pugno di ferro in guanto di velluto · calzare come un guanto · i guanti del portiere · guantoni da boxe", level: "difficile" },
+    { words: ["Befana", "Ferri", "Pippi", "Rete", "Smagliatura"], answer: "Calza", alt: ["Calze"], links: "La calza della Befana · i ferri da calza · Pippi Calzelunghe · calze a rete · la smagliatura nella calza", level: "difficile" },
+    { words: ["Attaccare", "Asola", "Automatico", "Rosa", "Giacca"], answer: "Bottone", alt: ["Bottoni"], links: "Attaccare bottone · il bottone entra nell'asola · bottone automatico · bottone di rosa (bocciolo) · i bottoni della giacca", level: "difficile" },
+    { words: ["Anni", "Soldatini", "Cappa", "Filo", "Benzina"], answer: "Piombo", links: "Anni di piombo · soldatini di piombo · una cappa di piombo · filo a piombo · benzina senza piombo", level: "difficile" },
+    { words: ["Nozze", "Vivo", "Piatto", "Cucchiaio", "Capelli"], answer: "Argento", links: "Nozze d'argento · avere l'argento vivo addosso · servire su un piatto d'argento · nato col cucchiaio d'argento · capelli d'argento", level: "difficile" },
+    { words: ["Murano", "Soffiato", "Scarpetta", "Lana", "Fibra"], answer: "Vetro", alt: ["Vetri"], links: "Vetro di Murano · vetro soffiato · la scarpetta di vetro di Cenerentola · lana di vetro · fibra di vetro", level: "difficile" },
+    { words: ["Notte", "Boemia", "Rocca", "Soffitto", "Swarovski"], answer: "Cristallo", alt: ["Cristalli"], links: "La notte dei cristalli · cristallo di Boemia · cristallo di rocca · il soffitto di cristallo · i cristalli Swarovski", level: "difficile" },
+    { words: ["Temperino", "Copiativa", "Occhi", "Gomma", "Mina"], answer: "Matita", alt: ["Matite"], links: "Il temperino per la matita · matita copiativa · matita per gli occhi · matita e gomma · la mina della matita", level: "difficile" },
+    { words: ["Pane", "Arabica", "Forare", "Scorta", "Masticare"], answer: "Gomma", alt: ["Gomme"], links: "Gomma pane · gomma arabica · forare una gomma · la gomma di scorta · gomma da masticare", level: "difficile" },
+    { words: ["Regolatore", "Bar", "Sano", "Primo", "Terra"], answer: "Piano", alt: ["Piani"], links: "Piano regolatore · piano bar · chi va piano va sano e va lontano · primo piano · piano terra", level: "difficile" },
+    { words: ["Piano", "Marmi", "Apache", "Sesso", "Mano"], answer: "Forte", links: "Pianoforte · Forte dei Marmi · Forte Apache · il sesso forte · dare man forte", level: "difficile" },
+    { words: ["Numero", "Fata", "Invidia", "Lanterna", "Semaforo"], answer: "Verde", links: "Numero verde · la fata verde (l'assenzio) · verde d'invidia · Lanterna Verde · il verde del semaforo", level: "difficile" },
+    { words: ["Lavoro", "Pecora", "Venerdì", "Cigno", "Lista"], answer: "Nero", alt: ["Nera"], links: "Lavoro in nero · pecora nera · Black Friday (venerdì nero) · Il cigno nero · lista nera", level: "difficile" },
+    { words: ["Cappuccetto", "Allarme", "Mar", "Codice", "Gambero"], answer: "Rosso", alt: ["Rossa"], links: "Cappuccetto Rosso · allarme rosso · Mar Rosso · codice rosso · rosso come un gambero", level: "difficile" },
+    { words: ["Svedese", "Comandi", "Clinico", "Scozzese", "Cornice"], answer: "Quadro", alt: ["Quadri"], links: "Quadro svedese · quadro comandi · quadro clinico · tessuto scozzese a quadri · la cornice del quadro", level: "difficile" },
+    { words: ["Silenzio", "Recupero", "Contati", "Ultimo", "Spaccare"], answer: "Minuto", alt: ["Minuti"], links: "Minuto di silenzio · minuti di recupero · avere i minuti contati · all'ultimo minuto · spaccare il minuto", level: "difficile" },
+    { words: ["Breve", "Lumi", "Furto", "Matrimonio", "Fine"], answer: "Secolo", alt: ["Secoli"], links: "Il secolo breve · il secolo dei Lumi · il furto del secolo · il matrimonio del secolo · fine secolo", level: "difficile" },
+    { words: ["Oz", "Merlino", "Otelma", "Forest", "Cilindro"], answer: "Mago", alt: ["Maghi"], links: "Il mago di Oz · mago Merlino · Mago Otelma · Mago Forest · il cilindro del mago", level: "difficile" },
+    { words: ["Komodo", "Giorgio", "Cinese", "Ivan", "Smaug"], answer: "Drago", alt: ["Draghi"], links: "Drago di Komodo · San Giorgio e il drago · il drago del capodanno cinese · Ivan Drago (Rocky IV) · Smaug, il drago dello Hobbit", level: "difficile" },
+    { words: ["Ambulanza", "Ulisse", "Copenaghen", "Starbucks", "Canto"], answer: "Sirena", alt: ["Sirene"], links: "La sirena dell'ambulanza · Ulisse e le sirene · la Sirenetta di Copenaghen · la sirena nel logo Starbucks · il canto delle sirene", level: "difficile" },
+    { words: ["Strega", "Settebello", "Manico", "Nuova", "Quidditch"], answer: "Scopa", alt: ["Scope"], links: "La scopa della strega · il settebello nel gioco della scopa · manico di scopa · scopa nuova scopa bene · le scope del Quidditch", level: "difficile" },
+    { words: ["Giustizia", "Ago", "Commerciale", "Piatto", "Settembre"], answer: "Bilancia", alt: ["Bilance"], links: "La bilancia della giustizia · l'ago della bilancia · bilancia commerciale · il piatto della bilancia · il segno della Bilancia inizia a settembre", level: "difficile" },
+    { words: ["Cristalleria", "Memoria", "Rosa", "Annibale", "Dumbo"], answer: "Elefante", alt: ["Elefanti"], links: "Un elefante in una cristalleria · memoria da elefante · vedere gli elefanti rosa · gli elefanti di Annibale · Dumbo, l'elefantino volante", level: "difficile" },
+    { words: ["Troia", "Battaglia", "Vapore", "Donato", "Dondolo"], answer: "Cavallo", alt: ["Cavalli"], links: "Il cavallo di Troia · cavallo di battaglia · cavallo vapore · a caval donato non si guarda in bocca · cavallo a dondolo", level: "difficile" },
+    { words: ["Bianca", "Cieca", "Naso", "Tsé-tsé", "Cremlino"], answer: "Mosca", alt: ["Mosche"], links: "Mosca bianca · mosca cieca · saltare la mosca al naso · mosca tsé-tsé · il Cremlino è a Mosca", level: "difficile" },
+    { words: ["Biblioteca", "Gigio", "Trappola", "Appartamento", "Laboratorio"], answer: "Topo", alt: ["Topi"], links: "Topo di biblioteca · Topo Gigio · trappola per topi · topo d'appartamento (ladro) · topo da laboratorio", level: "difficile" }
   ];
 
-  const ROUND_SECONDS = 60;
+  const ROUND_SECONDS = 40;
   const WORD_REVEAL_MS = 450; // intervallo tra la comparsa di una parola e la successiva
 
   /* =========================================================
@@ -554,6 +622,13 @@
             → "stopped" (timer fermo, si può riprendere)
             → "done" (verificato o soluzione mostrata)
      ========================================================= */
+  let levelFilter = "difficile"; // "facile" | "difficile" | "tutte"
+  function puzzlePool(){
+    return PUZZLES.map((_, i) => i).filter(i =>
+      levelFilter === "tutte" || (PUZZLES[i].level || "facile") === levelFilter
+    );
+  }
+
   let state = null;
   let tickId = null;
   let revealTimeouts = [];
@@ -575,7 +650,7 @@
   function startGame(){
     state = {
       teams: buildTeamsFromGlobal(),
-      queue: shuffle(PUZZLES.map((_, i) => i)),
+      queue: shuffle(puzzlePool()),
       queuePos: 0,
       round: 0,
       puzzle: null,
@@ -589,7 +664,7 @@
 
   function pickNextPuzzle(){
     if (state.queuePos >= state.queue.length){
-      state.queue = shuffle(PUZZLES.map((_, i) => i));
+      state.queue = shuffle(puzzlePool());
       state.queuePos = 0;
     }
     return PUZZLES[state.queue[state.queuePos++]];
@@ -828,6 +903,17 @@
   verifyBtn.addEventListener("click", verify);
   revealBtn.addEventListener("click", revealWithoutScoring);
   nextBtn.addEventListener("click", nextPuzzle);
+
+  /* ---- Selettore livello: nuova coda e nuova ghigliottina del livello scelto ---- */
+  document.getElementById("levelSwitch").addEventListener("click", (e) => {
+    const btn = e.target.closest(".level-btn");
+    if (!btn || btn.dataset.level === levelFilter) return;
+    levelFilter = btn.dataset.level;
+    document.querySelectorAll(".level-btn").forEach(b => b.classList.toggle("active", b === btn));
+    state.queue = shuffle(puzzlePool());
+    state.queuePos = 0;
+    nextPuzzle();
+  });
 
   /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
   window.addEventListener("globalScoreChanged", () => {
