@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duello Lampo — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     DUELLO LAMPO — file singolo e autocontenuto: stesso
+     sistema grafico e stessa gestione squadre/punteggi degli
+     altri giochi della suite (come Sarabanda e La Ghigliottina).
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+    --glass-bg: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --accent: #00e5ff;
+    --accent2: #7c4dff;
+    --accent-soft: rgba(0, 229, 255, 0.14);
+    --accent-glow: rgba(0, 229, 255, 0.5);
+    --ok: #00e676;
+    --ok-soft: rgba(0, 230, 118, 0.16);
+    --ko: #ff3b5c;
+    --ko-soft: rgba(255, 59, 92, 0.16);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-blobs{
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.28;
+    animation: float 22s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+  .bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+  @keyframes float{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-25px) scale(1.08); }
+  }
+
+  /* ---- Navbar ---- */
+  .navbar{
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+  }
+  .nav-back{
+    text-decoration: none; color: var(--text-main);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+  .nav-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  }
+  .nav-title .dot{ width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .nav-right{ display: flex; align-items: center; gap: 12px; }
+  .nav-counter{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
+    background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 999px;
+  }
+  .nav-info-btn{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+
+  /* ---- Stage ---- */
+  .stage{
+    max-width: 1000px; margin: 0 auto; padding: 30px 24px 90px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 22px; text-align: center;
+  }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Pulsanti ---- */
+  .btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem;
+    padding: 15px 28px; border-radius: 16px; border: none; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; box-shadow: 0 0 25px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+  .btn-outline{ background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+  .btn-outline:hover{ background: var(--accent-soft); }
+  .btn-small{ padding: 10px 18px; font-size: 0.92rem; border-radius: 12px; }
+  .btn:active{ transform: scale(0.97); }
+  .btn:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+  .btn-row{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Modale regole ---- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    border: 1px solid var(--glass-border); border-radius: 26px; padding: 36px;
+    max-width: 660px; width: 100%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97); transition: transform 0.25s ease; text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.6rem;
+    color: var(--accent); margin-bottom: 18px;
+  }
+  .modal-card ol{
+    padding-left: 22px; display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 24px; line-height: 1.5; font-size: 0.98rem;
+  }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; }
+
+  /* ---- Tabellone punteggi ---- */
+  .score-grid{
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; width: 100%; max-width: 900px;
+  }
+  .score-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px;
+    padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: all 0.3s ease;
+  }
+  .score-card.just-scored{
+    border-color: var(--ok); background: var(--ok-soft);
+    box-shadow: 0 0 30px -6px rgba(0,230,118,0.5); transform: translateY(-4px);
+  }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
+  .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); }
+
+  /* ---- Filtro tipi di sfida ---- */
+  .types-panel{ width: 100%; max-width: 900px; }
+  .types-panel summary{
+    cursor: pointer; color: var(--text-muted); font-weight: 700; font-size: 0.92rem;
+    list-style: none; padding: 6px; user-select: none;
+  }
+  .types-panel summary::-webkit-details-marker{ display: none; }
+  .types-chips{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+  .type-chip{
+    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.85rem;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-muted);
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .type-chip.on{ background: var(--accent-soft); border-color: var(--accent); color: var(--text-main); }
+
+  /* ---- Carta sfida ---- */
+  .challenge-card{
+    width: 100%; max-width: 860px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-radius: 28px; padding: 30px 28px;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    box-shadow: 0 0 50px -14px var(--accent-glow);
+    animation: fadeIn 0.4s ease;
+  }
+  .type-badge{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--accent);
+    background: var(--accent-soft); border: 1px solid var(--accent); padding: 7px 16px; border-radius: 999px;
+  }
+  .prompt{
+    font-family: 'Poppins', sans-serif; font-weight: 800;
+    font-size: clamp(1.25rem, 3.2vw, 1.9rem); line-height: 1.35; max-width: 760px;
+  }
+  .prompt.big{ font-size: clamp(2rem, 7vw, 3.6rem); letter-spacing: 3px; }
+  .prompt.hidden-until-start{ color: var(--text-muted); font-size: 1.1rem; }
+  .hint{ color: var(--text-muted); font-size: 0.95rem; line-height: 1.45; max-width: 680px; }
+
+  .widget{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+
+  /* ---- Timer generico ---- */
+  .timer-box{ width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .timer-number{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2.6rem; line-height: 1;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  .timer-number.danger{ color: var(--ko); }
+  .timer-bar-track{ width: 100%; height: 12px; border-radius: 999px; background: var(--glass-bg); border: 1px solid var(--glass-border); overflow: hidden; }
+  .timer-bar-fill{ height: 100%; width: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.2s linear; }
+
+  /* ---- Soluzione ---- */
+  .solution{
+    display: none; width: 100%; max-width: 760px;
+    background: var(--ok-soft); border: 2px solid var(--ok); border-radius: 20px; padding: 18px 22px;
+    animation: fadeIn 0.35s ease;
+  }
+  .solution.show{ display: block; }
+  .solution-eyebrow{ font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--ok); font-size: 0.8rem; margin-bottom: 6px; }
+  .solution-text{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: clamp(1.1rem, 2.6vw, 1.5rem); line-height: 1.4; }
+  .solution-note{ color: var(--text-muted); margin-top: 6px; font-size: 0.92rem; line-height: 1.45; }
+
+  /* ---- Risultati per squadra (cronometro, simon, stima...) ---- */
+  .results{ width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 8px; }
+  .result-row{
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 14px; padding: 10px 16px;
+  }
+  .result-row.best{ border-color: var(--ok); background: var(--ok-soft); }
+  .result-row.bad{ border-color: var(--ko); background: var(--ko-soft); }
+  .result-name{ display: flex; align-items: center; gap: 8px; font-family: 'Poppins', sans-serif; font-weight: 800; }
+  .result-value{ font-family: 'Poppins', sans-serif; font-weight: 800; color: var(--text-main); }
+  .result-input{
+    flex: 1; min-width: 0; max-width: 260px;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: 10px;
+    color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem; padding: 9px 12px;
+  }
+  .result-input:focus{ outline: none; border-color: var(--accent); }
+
+  /* ---- Cronometro cieco ---- */
+  .stopwatch{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(3rem, 12vw, 5.5rem);
+    color: var(--accent); font-variant-numeric: tabular-nums; text-shadow: 0 0 30px var(--accent-glow);
+  }
+  .stopwatch.blind{ color: var(--text-muted); text-shadow: none; animation: pulse 1s ease-in-out infinite alternate; }
+  @keyframes pulse{ from{ opacity: 0.45; } to{ opacity: 1; } }
+
+  /* ---- Memoria ---- */
+  .memo-grid{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; max-width: 560px; }
+  .memo-cell{
+    aspect-ratio: 1; border-radius: 16px; background: rgba(0,0,0,0.22); border: 1px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: center; font-size: clamp(1.8rem, 6vw, 2.8rem);
+  }
+
+  /* ---- Simon ---- */
+  .simon-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 340px; }
+  .simon-pad{
+    aspect-ratio: 1; border-radius: 22px; border: none; cursor: pointer; opacity: 0.35;
+    transition: opacity 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .simon-pad.lit{ opacity: 1; transform: scale(1.04); box-shadow: 0 0 40px currentColor; }
+  .simon-pad:disabled{ cursor: default; }
+  .simon-status{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.15rem; min-height: 1.5em; }
+
+  /* ---- Riflessi ---- */
+  .reflex-light{
+    width: 100%; max-width: 640px; height: 170px; border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.6rem, 5vw, 2.6rem);
+    background: rgba(255,255,255,0.06); border: 2px solid var(--glass-border); transition: background 0.05s ease;
+  }
+  .reflex-light.wait{ background: rgba(255, 59, 92, 0.25); border-color: var(--ko); }
+  .reflex-light.go{ background: #00e676; color: #06090f; border-color: #00e676; box-shadow: 0 0 60px rgba(0,230,118,0.7); }
+  .reflex-zones{ display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 640px; }
+  .reflex-zone{
+    min-height: 110px; border-radius: 20px; border: 3px solid; cursor: pointer;
+    background: rgba(0,0,0,0.25); color: var(--text-main);
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    user-select: none; -webkit-user-select: none; touch-action: manipulation;
+  }
+  .reflex-zone .key{ font-size: 1.6rem; font-weight: 900; }
+  .reflex-zone.winner{ background: var(--ok-soft); }
+  .reflex-zone.false-start{ background: var(--ko-soft); opacity: 0.6; }
+
+  /* ---- Puntini ---- */
+  .dots-canvas{ width: 100%; max-width: 560px; aspect-ratio: 4 / 3; border-radius: 20px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); }
+
+  /* ---- Paroliere ---- */
+  .letters{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .letter-tile{
+    width: 58px; height: 58px; border-radius: 14px;
+    background: linear-gradient(160deg, #f5e6c4, #e6cf9a); color: #3b2a12;
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.9rem;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 #b89a5e;
+  }
+
+  /* ---- Assegnazione punti ---- */
+  .points-section{ width: 100%; max-width: 860px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .points-hint{ color: var(--text-muted); font-weight: 600; font-size: 0.95rem; }
+  .points-grid{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .point-toggle{
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1rem;
+    background: var(--glass-bg); color: var(--text-main);
+    border: 2px solid var(--glass-border); border-radius: 14px; padding: 12px 18px; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .point-toggle:hover{ border-color: var(--accent); }
+  .point-toggle.on{ background: var(--ok-soft); border-color: var(--ok); box-shadow: 0 0 20px -6px rgba(0,230,118,0.6); }
+  .point-toggle .mark{ font-size: 1.1rem; }
+  .points-summary{ color: var(--text-muted); font-size: 0.92rem; min-height: 1.3em; }
+
+  @media (max-width: 600px){
+    .navbar{ padding: 10px 14px; gap: 8px; }
+    .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+    .nav-title{ font-size: 1.05rem; gap: 7px; }
+    .nav-counter{ display: none; }
+    .stage{ padding: 18px 14px 44px; gap: 16px; }
+    .btn{ padding: 13px 20px; font-size: 0.95rem; border-radius: 13px; }
+    .challenge-card{ padding: 22px 16px; border-radius: 22px; }
+    .score-grid{ gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .score-value{ font-size: 1.6rem; }
+    .memo-grid{ gap: 6px; }
+    .letter-tile{ width: 46px; height: 46px; font-size: 1.5rem; }
+    .result-row{ flex-wrap: wrap; }
+    .result-input{ max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>⚔️ Duello Lampo</span>
+  <div class="nav-right">
+    <span class="nav-counter" id="counter">Sfida 1</span>
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">Una raffica di sfide brevi e diverse tra loro: logica, parole, memoria, riflessi e colpo d'occhio.</p>
+    <ol>
+      <li>Ogni turno esce una <strong>sfida a caso</strong>: indovinelli, logica, sequenze, calcolo lampo, doppi sensi, anagrammi, intruso, cronometro cieco, memoria, Simon, riflessi, stima e paroliere.</li>
+      <li>Le sfide a voce si risolvono <strong>ad alta voce</strong>: chi risponde giusto per primo vince. Premi <strong>"👁 Mostra soluzione"</strong> per controllare.</li>
+      <li>Le sfide interattive (cronometro, Simon, riflessi, stima, paroliere) misurano il risultato di ogni squadra ed <strong>evidenziano in automatico</strong> chi ha fatto meglio.</li>
+      <li>In fondo seleziona chi prende il punto con i pulsanti <strong>+1</strong>: puoi premiare <strong>una squadra, entrambe o nessuna</strong>.</li>
+      <li><strong>"⏭ Assegna e prossima sfida"</strong> assegna i punti selezionati e passa alla sfida successiva.</li>
+      <li>Con <strong>"⚙️ Tipi di sfida"</strong> puoi escludere i tipi che non vi piacciono.</li>
+    </ol>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage" id="gameView">
+
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <details class="types-panel">
+    <summary>⚙️ Tipi di sfida (tocca per scegliere)</summary>
+    <div class="types-chips" id="typesChips"></div>
+  </details>
+
+  <section class="challenge-card" id="challengeCard">
+    <div class="type-badge" id="typeBadge"></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="hint" id="hint"></div>
+
+    <div class="widget" id="widget"></div>
+
+    <div class="timer-box" id="timerBox" style="display:none;">
+      <div class="timer-number" id="timerNumber">30</div>
+      <div class="timer-bar-track"><div class="timer-bar-fill" id="timerBar"></div></div>
+      <div class="btn-row">
+        <button class="btn btn-outline btn-small" id="timerBtn">▶ Avvia timer</button>
+      </div>
+    </div>
+
+    <div class="solution" id="solution">
+      <div class="solution-eyebrow">✅ Soluzione</div>
+      <div class="solution-text" id="solutionText"></div>
+      <div class="solution-note" id="solutionNote"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline btn-small" id="revealBtn">👁 Mostra soluzione</button>
+    </div>
+  </section>
+
+  <div class="points-section">
+    <p class="points-hint">Chi prende il punto? (una squadra, più squadre o nessuna)</p>
+    <div class="points-grid" id="pointsGrid"></div>
+    <div class="points-summary" id="pointsSummary"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline btn-small" id="noneBtn">🙅 Nessuno</button>
+      <button class="btn btn-primary" id="nextBtn">⏭ Assegna e prossima sfida</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  /* =========================================================
+     TIPI DI SFIDA — etichetta mostrata sulla carta.
+     ========================================================= */
+  const TYPES = {
+    indovinello: { label: "🧩 Indovinello" },
+    logica:      { label: "🧠 Logica & Trabocchetti" },
+    sequenza:    { label: "🔢 Sequenza da completare" },
+    calcolo:     { label: "➗ Calcolo Lampo" },
+    elenco:      { label: "🗣️ Elenco a Tempo" },
+    anagramma:   { label: "🔀 Anagramma" },
+    intruso:     { label: "🕵️ Trova l'Intruso" },
+    stima:       { label: "📏 Stima a Occhio" },
+    puntini:     { label: "⚫ Quanti Puntini?" },
+    cronometro:  { label: "⏱️ Cronometro Cieco" },
+    memoria:     { label: "👀 Memoria" },
+    simon:       { label: "🎵 Simon" },
+    riflessi:    { label: "⚡ Riflessi" },
+    paroliere:   { label: "🔤 Paroliere" }
+  };
+
+  /* =========================================================
+     DATABASE SFIDE — aggiungi voci a questi array per
+     ampliare il gioco senza toccare il resto del codice.
+     ========================================================= */
+  const INDOVINELLI = [
+    { q: "Più è grande, meno si vede. Cos'è?", a: "Il buio" },
+    { q: "Ha i denti ma non morde. Cos'è?", a: "Il pettine" },
+    { q: "Ha un occhio solo ma non vede. Cos'è?", a: "L'ago" },
+    { q: "Corre ma non ha gambe, ha un letto ma non dorme, ha una bocca ma non parla. Cos'è?", a: "Il fiume" },
+    { q: "Più ne togli, più diventa grande. Cos'è?", a: "La buca" },
+    { q: "Sale sempre ma non scende mai. Cos'è?", a: "L'età" },
+    { q: "Ha il collo ma non ha la testa. Cos'è?", a: "La bottiglia" },
+    { q: "Ha città ma non case, foreste ma non alberi, acqua ma non pesci. Cos'è?", a: "La mappa (cartina geografica)" },
+    { q: "Si bagna mentre asciuga. Cos'è?", a: "L'asciugamano" },
+    { q: "La puoi dare a qualcuno e tenerla lo stesso. Cos'è?", a: "La parola (una promessa)" },
+    { q: "Ti segue di giorno e sparisce di notte. Cos'è?", a: "L'ombra" },
+    { q: "Ha 13 cuori ma nessun altro organo. Cos'è?", a: "Un mazzo di carte francesi" },
+    { q: "Sono leggero come una piuma, ma nemmeno l'uomo più forte riesce a trattenermi per più di qualche minuto. Cosa sono?", a: "Il respiro" },
+    { q: "Cosa c'è al centro di Parigi?", a: "La lettera R" },
+    { q: "Si trova una volta in un minuto, due volte in un momento e mai in cento anni. Cos'è?", a: "La lettera M" },
+    { q: "Ho i tasti ma non apro porte, ho lo spazio ma non ho stanze, puoi entrare ma non uscire. Cosa sono?", a: "La tastiera del computer" },
+    { q: "Se mi hai vuoi condividermi; se mi condividi, non mi hai più. Cosa sono?", a: "Un segreto" },
+    { q: "Va su e giù ma non si muove mai. Cos'è?", a: "La scala" },
+    { q: "Ha un pollice e quattro dita ma non è vivo. Cos'è?", a: "Il guanto" },
+    { q: "Si può rompere senza toccarla e senza vederla. Cos'è?", a: "Una promessa" },
+    { q: "Più la lavi, più diventa sporca. Cos'è?", a: "L'acqua" },
+    { q: "Cammina con quattro gambe al mattino, due a mezzogiorno e tre la sera. Chi è?", a: "L'uomo (indovinello della Sfinge: gattona, cammina, poi usa il bastone)" },
+    { q: "Appena pronunci il mio nome, mi rompi. Cosa sono?", a: "Il silenzio" },
+    { q: "Ha le lancette e il quadrante, gira sempre ma non si stacca mai dal muro. Cos'è?", a: "L'orologio" },
+    { q: "Lo compri per mangiare ma non lo mangi mai. Cos'è?", a: "Il piatto (o le posate)" },
+    { q: "Sta in un angolo ma gira tutto il mondo. Cos'è?", a: "Il francobollo" },
+    { q: "Ha i fogli ma non è un albero, ha il dorso ma non è un animale. Cos'è?", a: "Il libro" },
+    { q: "Più è caldo, più è fresco. Cos'è?", a: "Il pane" },
+    { q: "Ha una testa e una coda ma non ha il corpo. Cos'è?", a: "La moneta" },
+    { q: "Ha la testa ma non pensa, ha i denti ma non mangia. Cos'è?", a: "L'aglio (testa e spicchi)" },
+    { q: "Ha una gamba sola e un cappello, ma non è un uomo. Cos'è?", a: "Il fungo" },
+    { q: "Ha tanti occhi ma non vede, ha la buccia ma non è un frutto. Cos'è?", a: "La patata" },
+    { q: "Vola senza ali e piange senza occhi. Cos'è?", a: "La nuvola" },
+    { q: "Ha un cuore che non batte. Cos'è?", a: "Il carciofo" },
+    { q: "Ha quattro gambe ma non cammina mai. Cos'è?", a: "Il tavolo (o la sedia)" },
+    { q: "Entra asciutta ed esce bagnata: più resta dentro, più diventa forte. Cos'è?", a: "La bustina del tè" },
+    { q: "Lo fai ogni notte senza volerlo e la mattina spesso non lo ricordi. Cos'è?", a: "Il sogno" },
+    { q: "Ti appartiene, ma gli altri lo usano molto più di te. Cos'è?", a: "Il tuo nome" },
+    { q: "Ha radici che nessuno vede, è più alta degli alberi ma non cresce mai. Cos'è?", a: "La montagna" },
+    { q: "Mangia tutto e cresce, ma se beve muore. Cos'è?", a: "Il fuoco" },
+    { q: "Riempie una stanza ma non occupa spazio. Cos'è?", a: "La luce" },
+    { q: "Nasce alta e muore bassa. Cos'è?", a: "La candela" },
+    { q: "Si alza la mattina e va a dormire la sera, ma non ha un letto. Cos'è?", a: "Il sole" },
+    { q: "Ha la corona ma non è un re, ha le squame ma non è un pesce. Cos'è?", a: "L'ananas" },
+    { q: "Sta sempre in mezzo al letto ma non dorme mai. Cos'è?", a: "La doppia T (le due T in mezzo a «letto»)" },
+    { q: "Più ne fai, più ne lasci dietro di te. Cosa sono?", a: "I passi (le impronte)" },
+    { q: "Ha un ago ma non cuce, indica la strada ma non cammina. Cos'è?", a: "La bussola" },
+    { q: "Si apre quando piove e si chiude quando smette, ma non è una finestra. Cos'è?", a: "L'ombrello" },
+    { q: "Ha le corde ma non è un'altalena, si suona ma non è un campanello. Cos'è?", a: "La chitarra" },
+    { q: "È sempre davanti a te, ma non puoi vederlo. Cos'è?", a: "Il futuro" }
+  ];
+
+  const LOGICA = [
+    { q: "Il padre di Maria ha 5 figlie: Lala, Lele, Lili, Lolo… Come si chiama la quinta?", a: "Maria" },
+    { q: "Due padri e due figli vanno a pescare e prendono 3 pesci, uno a testa. Com'è possibile?", a: "Sono in tre: nonno, padre e figlio" },
+    { q: "Padre e figlio fanno un incidente. In ospedale il chirurgo dice: «Non posso operarlo, è mio figlio». Chi è il chirurgo?", a: "La madre" },
+    { q: "In una gara superi il secondo. In che posizione sei?", a: "Secondo" },
+    { q: "In una gara superi l'ultimo. In che posizione sei?", a: "È impossibile: nessuno può superare l'ultimo" },
+    { q: "Quanti mesi hanno 28 giorni?", a: "Tutti e 12" },
+    { q: "Un gallo depone un uovo in cima a un tetto spiovente. Da che parte rotola?", a: "Da nessuna: i galli non depongono uova" },
+    { q: "Quanti animali di ogni specie portò Mosè sull'arca?", a: "Nessuno: fu Noè, non Mosè" },
+    { q: "Un contadino ha 17 pecore. Muoiono tutte tranne 9. Quante ne restano?", a: "9" },
+    { q: "Hai 3 mele e ne prendi 2. Quante mele hai?", a: "2 (quelle che hai preso)" },
+    { q: "Quante volte puoi sottrarre 5 da 25?", a: "Una volta sola: dopo non è più 25, ma 20" },
+    { q: "Una mazza e una palla costano 1,10 € in tutto. La mazza costa 1 € in più della palla. Quanto costa la palla?", a: "5 centesimi (la mazza costa 1,05 €)" },
+    { q: "5 macchine producono 5 pezzi in 5 minuti. Quanto ci mettono 100 macchine a produrre 100 pezzi?", a: "5 minuti" },
+    { q: "Su un lago le ninfee raddoppiano ogni giorno e coprono tutto il lago in 48 giorni. In quanti giorni ne coprono metà?", a: "47 giorni" },
+    { q: "Una lumaca è in fondo a un pozzo di 10 metri. Di giorno sale di 3 metri, di notte scivola giù di 2. In quanti giorni esce?", a: "8 giorni (all'alba dell'8° giorno è a 7 m e in giornata arriva a 10)" },
+    { q: "Un orologio a pendolo batte 6 rintocchi in 5 secondi. Quanto ci mette a batterne 12?", a: "11 secondi (tra 6 rintocchi ci sono 5 intervalli da 1 secondo)" },
+    { q: "Un mattone pesa 1 kg più mezzo mattone. Quanto pesa un mattone?", a: "2 kg" },
+    { q: "Hai 3 interruttori fuori da una stanza chiusa con una lampadina. Puoi entrare una sola volta. Come scopri quale interruttore la accende?", a: "Accendi il 1° per qualche minuto, spegnilo, accendi il 2° ed entra: accesa = 2°, spenta ma calda = 1°, spenta e fredda = 3°" },
+    { q: "Sei al buio e hai un solo fiammifero. C'è una candela, una lampada a olio e un camino. Cosa accendi per primo?", a: "Il fiammifero" },
+    { q: "Una donna spara al marito, lo tiene sott'acqua per 5 minuti e poi lo appende. Dopo vanno a cena insieme. Com'è possibile?", a: "Gli ha scattato una foto, l'ha sviluppata e appesa ad asciugare" },
+    { q: "Un uomo spinge la sua auto fino a un albergo e dice al proprietario che è in bancarotta. Perché?", a: "Sta giocando a Monopoly" },
+    { q: "Un uomo esce sotto la pioggia senza ombrello né cappello, ma non si bagna nemmeno un capello. Come?", a: "È calvo" },
+    { q: "Qual era la montagna più alta del mondo prima che venisse scoperto l'Everest?", a: "L'Everest: era già la più alta, anche se non lo sapevamo" },
+    { q: "Un uomo guarda una foto e dice: «Non ho fratelli né sorelle, ma il padre di quest'uomo è il figlio di mio padre». Chi c'è nella foto?", a: "Suo figlio" },
+    { q: "Se 3 gatti catturano 3 topi in 3 minuti, quanti gatti servono per catturare 100 topi in 100 minuti?", a: "3 gatti" },
+    { q: "Un aereo precipita esattamente sul confine tra Italia e Francia. Dove seppelliscono i sopravvissuti?", a: "Da nessuna parte: i sopravvissuti non si seppelliscono" },
+    { q: "Di che colore era il cavallo bianco di Napoleone?", a: "Bianco" },
+    { q: "In una stanza ci sono 4 angoli. In ogni angolo c'è un gatto, davanti a ogni gatto ci sono 3 gatti. Quanti gatti ci sono in tutto?", a: "4" },
+    { q: "Un medico ti dà 3 pastiglie da prendere una ogni mezz'ora. Quanto tempo durano?", a: "Un'ora (la 1ª subito, la 2ª dopo 30 minuti, la 3ª dopo un'ora)" },
+    { q: "Un treno elettrico va verso nord, il vento soffia da est. In che direzione va il fumo?", a: "Da nessuna parte: un treno elettrico non fa fumo" },
+    { q: "Cosa pesa di più: un chilo di piume o un chilo di ferro?", a: "Pesano uguale: un chilo" },
+    { q: "Un padre e un figlio hanno insieme 36 anni. Il padre ha 30 anni più del figlio. Quanti anni ha il figlio?", a: "3 anni (il padre ne ha 33)" },
+    { q: "Se 2 persone scavano 2 buche in 2 ore, quante buche scavano 4 persone in 4 ore?", a: "8 buche" },
+    { q: "Quante volte compare la cifra 9 scrivendo tutti i numeri da 1 a 100?", a: "20 volte (9, 19, 29… 89 e poi 90–99, dove il 99 ne ha due)" },
+    { q: "Un idraulico e un elettricista sono in fila. Uno dei due è il padre del figlio dell'altro. Com'è possibile?", a: "Sono marito e moglie" },
+    { q: "Un cane è legato a una corda lunga 5 metri, eppure raggiunge un osso a 10 metri di distanza. Come?", a: "L'altra estremità della corda non è legata a niente" },
+    { q: "Un uomo nasce nel 1975 e muore nel 1975 a 30 anni. Com'è possibile?", a: "1975 è il numero della stanza d'ospedale, non l'anno" },
+    { q: "Quanti «secondi» ci sono in un anno?", a: "12: il 2 gennaio, il 2 febbraio, il 2 marzo… (trabocchetto!)" },
+    { q: "Alcuni mesi hanno 31 giorni. Quanti mesi hanno 30 giorni?", a: "11: tutti tranne febbraio" },
+    { q: "Un ragazzo cade da una scala alta 20 metri e non si fa niente. Come?", a: "È caduto dal primo gradino" },
+    { q: "Lanci una palla e questa torna da te senza rimbalzare e senza essere legata a niente. Come?", a: "L'hai lanciata verso l'alto" },
+    { q: "Dividi 30 per mezzo e aggiungi 10. Quanto ottieni?", a: "70 (30 ÷ 0,5 = 60, + 10)" },
+    { q: "Un treno lungo 1 km viaggia a 60 km/h ed entra in una galleria lunga 1 km. Quanto tempo serve perché ne esca completamente?", a: "2 minuti (deve percorrere 2 km)" },
+    { q: "Il giorno dopo l'altro ieri era lunedì. Che giorno è oggi?", a: "Martedì" },
+    { q: "Un orso fa 1 km verso sud, 1 km verso est e 1 km verso nord, e si ritrova al punto di partenza. Di che colore è?", a: "Bianco: è al Polo Nord, quindi è un orso polare" },
+    { q: "Hai due monete che fanno 30 centesimi in tutto, e una delle due non è da 10 centesimi. Quali sono?", a: "Una da 20 e una da 10: è l'altra a non essere da 10!" },
+    { q: "Un uomo ha 10 figli maschi e ogni figlio ha una sorella. Quanti figli ha in tutto?", a: "11 (la sorella è la stessa per tutti)" },
+    { q: "Un orologio segna le 3:15. Che angolo formano le due lancette?", a: "7,5 gradi (la lancetta delle ore si è già spostata di un quarto d'ora)" },
+    { q: "Hai 9 monete identiche, ma una è più pesante, e una bilancia a due piatti. Quante pesate servono, al minimo, per trovarla sicuramente?", a: "2 pesate (3 contro 3, poi 1 contro 1)" },
+    { q: "Quante volte in 24 ore le lancette delle ore e dei minuti si sovrappongono?", a: "22 volte" },
+    { q: "Una bottiglia con il tappo costa 11 €. La bottiglia costa 10 € più del tappo. Quanto costa il tappo?", a: "50 centesimi (la bottiglia costa 10,50 €)" }
+  ];
+
+  const SEQUENZE = [
+    { q: "2, 4, 8, 16, …", a: "32", note: "Ogni numero raddoppia" },
+    { q: "L, M, M, G, V, …", a: "S", note: "Iniziali dei giorni della settimana: Sabato" },
+    { q: "1, 1, 2, 3, 5, 8, …", a: "13", note: "Fibonacci: ogni numero è la somma dei due precedenti" },
+    { q: "1, 4, 9, 16, 25, …", a: "36", note: "Quadrati: 1², 2², 3²…" },
+    { q: "2, 3, 5, 7, 11, …", a: "13", note: "Numeri primi" },
+    { q: "G, F, M, A, M, G, …", a: "L", note: "Iniziali dei mesi: Luglio" },
+    { q: "U, D, T, Q, C, S, S, O, …", a: "N", note: "Uno, Due, Tre… Nove" },
+    { q: "1, 3, 6, 10, 15, …", a: "21", note: "Numeri triangolari: +2, +3, +4, +5, +6" },
+    { q: "2, 6, 12, 20, 30, …", a: "42", note: "+4, +6, +8, +10, +12 (n × (n+1))" },
+    { q: "1, 8, 27, 64, …", a: "125", note: "Cubi: 1³, 2³, 3³, 4³, 5³" },
+    { q: "81, 27, 9, 3, …", a: "1", note: "Ogni numero si divide per 3" },
+    { q: "1, 11, 21, 1211, 111221, …", a: "312211", note: "Ogni termine «legge» il precedente: tre 1, due 2, un 1" },
+    { q: "2, 5, 10, 17, 26, …", a: "37", note: "n² + 1" },
+    { q: "1, 2, 6, 24, 120, …", a: "720", note: "Fattoriali: ×2, ×3, ×4, ×5, ×6" },
+    { q: "10, 9, 7, 4, …", a: "0", note: "−1, −2, −3, −4" },
+    { q: "7, 10, 8, 11, 9, 12, …", a: "10", note: "+3, −2, +3, −2…" },
+    { q: "1, 2, 4, 7, 11, 16, …", a: "22", note: "+1, +2, +3, +4, +5, +6" },
+    { q: "3, 4, 7, 11, 18, 29, …", a: "47", note: "Ogni numero è la somma dei due precedenti" },
+    { q: "P, S, T, Q, Q, S, S, O, …", a: "N", note: "Primo, Secondo, Terzo… Nono" },
+    { q: "M, V, T, M, G, S, U, …", a: "N", note: "Pianeti in ordine dal Sole: Nettuno" },
+    { q: "D, R, M, F, S, L, …", a: "S", note: "Note musicali: Do, Re, Mi, Fa, Sol, La, Si" },
+    { q: "R, A, G, V, A, I, …", a: "V", note: "Colori dell'arcobaleno: Rosso, Arancione, Giallo, Verde, Azzurro, Indaco, Violetto" },
+    { q: "31, 28, 31, 30, 31, …", a: "30", note: "Giorni dei mesi: Giugno ha 30 giorni" },
+    { q: "1, 2, 3, 5, 8, 13, 21, 34, …", a: "55", note: "Fibonacci" },
+    { q: "100, 81, 64, 49, …", a: "36", note: "Quadrati decrescenti: 10², 9², 8², 7², 6²" },
+    { q: "1, 4, 13, 40, …", a: "121", note: "× 3 + 1" },
+    { q: "2, 4, 12, 48, …", a: "240", note: "×2, ×3, ×4, ×5" },
+    { q: "I, V, X, L, C, …", a: "D", note: "Numeri romani in ordine: 1, 5, 10, 50, 100, 500" },
+    { q: "5, 10, 20, 50, 100, 200, …", a: "500", note: "Tagli delle banconote in euro" },
+    { q: "1, 3, 7, 15, 31, …", a: "63", note: "× 2 + 1" },
+    { q: "1, 5, 14, 30, 55, …", a: "91", note: "Somma dei quadrati: +4, +9, +16, +25, +36" },
+    { q: "1, 2, 3, 6, 11, 20, …", a: "37", note: "Ogni numero è la somma dei tre precedenti" },
+    { q: "8, 6, 7, 5, 6, 4, …", a: "5", note: "−2, +1, −2, +1…" },
+    { q: "3, 9, 27, 81, …", a: "243", note: "× 3" },
+    { q: "60, 30, 20, 15, 12, …", a: "10", note: "60 diviso 1, 2, 3, 4, 5, 6" },
+    { q: "1, 4, 27, 256, …", a: "3125", note: "1¹, 2², 3³, 4⁴, 5⁵" },
+    { q: "D, Q, S, O, D, …", a: "D", note: "Due, Quattro, Sei, Otto, Dieci, Dodici" },
+    { q: "2, 3, 5, 9, 17, …", a: "33", note: "× 2 − 1" },
+    { q: "1, 9, 25, 49, …", a: "81", note: "Quadrati dei numeri dispari: 1², 3², 5², 7², 9²" },
+    { q: "11, 13, 17, 19, 23, …", a: "29", note: "Numeri primi" },
+    { q: "4, 9, 19, 39, …", a: "79", note: "× 2 + 1" },
+    { q: "A, T, G, C, L, …", a: "V", note: "Segni zodiacali: Ariete, Toro, Gemelli, Cancro, Leone, Vergine" }
+  ];
+
+  const ELENCHI = [
+    { q: "Dimmi 6 parole con due significati diversi.", a: "Gola, riso, pesca, calcio, rombo, collo, credenza, miglio, vite, lira, mora, botte, tasso, piano, lima, sale, pianta, porta, fine…", time: 40 },
+    { q: "Dimmi 4 coppie di parole che cambiano significato spostando l'accento.", a: "Àncora / ancóra · prìncipi / princìpi · pèsca / pésca · bòtte / bótte · cómpito / compìto · sùbito / subìto · càpitano / capitàno", time: 45 },
+    { q: "Dimmi 5 parole che contengono tutte e 5 le vocali.", a: "Aiuole, educazione, automobile, pneumatico, sequoia, euforia, equatoriale", time: 45 },
+    { q: "Dimmi 5 parole palindrome (si leggono uguali al contrario).", a: "Anna, otto, osso, radar, ingegni, ottetto, esse, ama, aveva, oro", time: 40 },
+    { q: "Dimmi 6 parole composte che iniziano con «capo».", a: "Capolavoro, capoluogo, capodanno, capogiro, capostazione, capotavola, capofamiglia, capoclasse, capotreno", time: 30 },
+    { q: "Dimmi 6 parole che finiscono in «-ista».", a: "Dentista, barista, turista, pianista, artista, regista, tassista, ciclista, giornalista, farmacista", time: 25 },
+    { q: "Dimmi 5 parole che iniziano con «contra».", a: "Contrabbando, contraccolpo, contraddire, contrasto, contrattacco, contraffatto, contrabbasso, contraccettivo", time: 35 },
+    { q: "Dimmi 6 Stati senza sbocco sul mare.", a: "Svizzera, Austria, Ungheria, Repubblica Ceca, Slovacchia, Lussemburgo, Serbia, Bolivia, Paraguay, Mongolia, Nepal, Afghanistan…", time: 40 },
+    { q: "Dimmi 4 modi di dire italiani che contengono un animale.", a: "In bocca al lupo · Cane che abbaia non morde · Prendere due piccioni con una fava · Avere una memoria da elefante · Essere una mosca bianca…", time: 40 },
+    { q: "Dimmi 6 parole che sono anche nomi propri di persona.", a: "Rosa, Margherita, Viola, Gioia, Speranza, Bianca, Serena, Vittoria, Fortunato, Felice, Gemma…", time: 35 },
+    { q: "Dimmi 5 parole che iniziano e finiscono con la stessa lettera.", a: "Aria, acqua, ancora, amaca, area, otto, osso, oro, esse, onesto", time: 35 },
+    { q: "Dimmi 5 parole che contengono la parola «oro».", a: "Pomodoro, tesoro, lavoro, decoro, alloro, coro, toro, moro, sonoro…", time: 30 },
+    { q: "Dimmi 5 parole di una sola sillaba.", a: "Re, tre, blu, sci, già, più, qui, là, me, te, gru, tram, sport…", time: 30 },
+    { q: "Dimmi 6 città italiane che finiscono con la «a».", a: "Roma, Genova, Bologna, Verona, Padova, Pisa, Ancona, Catania, Siena, Ravenna, Cremona…", time: 25 },
+    { q: "Dimmi 5 parole italiane che finiscono con la «u».", a: "Tribù, virtù, gioventù, più, giù, gnu, blu, gru, menù, caucciù", time: 35 },
+    { q: "Dimmi 6 animali con una lettera doppia nel nome.", a: "Gatto, cavallo, coccodrillo, pappagallo, giraffa, gallina, scoiattolo, cammello, anatroccolo, coccinella", time: 35 },
+    { q: "Dimmi 4 Paesi europei la cui capitale inizia con la stessa lettera del Paese.", a: "Belgio – Bruxelles · Lussemburgo – Lussemburgo · Andorra – Andorra la Vella · Monaco – Monaco · San Marino – San Marino", time: 40 },
+    { q: "Dimmi 6 film con un numero nel titolo.", a: "Apollo 13, 300, Seven, 1917, 8 Mile, 2001: Odissea nello spazio, Ocean's Eleven, I Fantastici 4, La carica dei 101, 127 ore", time: 35 },
+    { q: "Dimmi 6 sport che si giocano con una pallina più piccola di un pugno.", a: "Tennis, golf, ping pong, squash, padel, baseball, cricket, biliardo, hockey su prato", time: 35 },
+    { q: "Dimmi 5 parole con «gl» pronunciato duro (come in «glicine»).", a: "Glicine, glicemia, glicerina, gloria, globo, inglese, glutine, anglicano, negligenza", time: 40 },
+    { q: "Dimmi 6 strumenti musicali a fiato.", a: "Flauto, clarinetto, oboe, fagotto, tromba, trombone, sassofono, corno, tuba, ottavino", time: 30 },
+    { q: "Dimmi 5 parole con due plurali di significato diverso (es. bracci/braccia).", a: "Braccio, osso, muro, dito, labbro, membro, corno, filo, gesto, lenzuolo", time: 45 },
+    { q: "Dimmi 6 capoluoghi di regione italiani.", a: "Roma, Milano, Napoli, Torino, Venezia, Bologna, Firenze, Genova, Bari, Palermo, Cagliari, Trento, Trieste, Perugia, Ancona, L'Aquila, Potenza, Catanzaro, Campobasso, Aosta", time: 25 },
+    { q: "Dimmi 5 personaggi dei Promessi Sposi.", a: "Renzo, Lucia, Don Abbondio, Don Rodrigo, l'Innominato, Fra Cristoforo, Perpetua, Agnese, la Monaca di Monza, il Griso, l'Azzeccagarbugli", time: 35 },
+    { q: "Dimmi 5 «falsi amici» inglesi (parole che sembrano italiane ma significano altro).", a: "Camera (stanza → macchina fotografica), library (biblioteca), factory (fabbrica), pretend (fingere), sensible (assennato), actually (in realtà), eventually (alla fine), parents (genitori), educated (istruito)", time: 45 },
+    { q: "Dimmi 6 vini italiani DOC o DOCG.", a: "Barolo, Barbaresco, Brunello di Montalcino, Chianti, Amarone, Prosecco, Lambrusco, Franciacorta, Montepulciano d'Abruzzo, Vermentino di Gallura", time: 35 },
+    { q: "Dimmi 5 oggetti che hanno i «denti».", a: "Pettine, sega, ingranaggio, cerniera lampo, rastrello, chiave", time: 35 },
+    { q: "Dimmi 6 parole che iniziano con «tra» o «tras».", a: "Trasloco, trasporto, tramonto, traghetto, trapano, trattore, trasparente, trampolino, tramezzino", time: 30 },
+    { q: "Dimmi 5 personaggi della Divina Commedia.", a: "Virgilio, Beatrice, Caronte, Paolo e Francesca, Ulisse, il Conte Ugolino, Farinata, Minosse, Catone, Piccarda", time: 35 },
+    { q: "Dimmi 6 colori che sono anche nomi di frutti o fiori.", a: "Arancione, pesca, viola, lilla, ciclamino, glicine, lavanda, ciliegia, prugna, fucsia, malva", time: 35 },
+    { q: "Dimmi 6 parole tronche (con l'accento sull'ultima sillaba).", a: "Città, caffè, perché, virtù, papà, università, lunedì, però, tivù, ragù", time: 30 }
+  ];
+
+  const ANAGRAMMI = [
+    "BAMBINO", "FRAGOLA", "OMBRELLO", "GIRASOLE", "TARTARUGA", "ELICOTTERO", "CIOCCOLATO", "BIBLIOTECA",
+    "POMODORO", "FARFALLA", "LAVATRICE", "TELEFONO", "CALENDARIO", "FRIGORIFERO", "AQUILONE", "PINGUINO",
+    "COCCODRILLO", "ASTRONAUTA", "MONTAGNA", "RISTORANTE", "TEMPORALE", "PIANOFORTE", "CAVOLFIORE",
+    "DINOSAURO", "MATRIMONIO", "VACANZA", "AUTOSTRADA", "GIRAFFA", "PANETTONE", "TERMOMETRO", "IPPOPOTAMO",
+    "ARCOBALENO", "LAMPADINA", "CAPPUCCINO", "ASCENSORE", "ZANZARA", "PAPPAGALLO", "OROLOGIO", "CONCHIGLIA",
+    "SCOIATTOLO", "MARGHERITA", "CAMPANILE", "BICICLETTA", "SPUMANTE", "LAVAGNA", "TRAMONTO", "UNIVERSO",
+    "PRIMAVERA", "FORMAGGIO", "SEMAFORO",
+    "CASTELLO", "PANCHINA", "CARAMELLA", "LAMPONE", "TEMPESTA", "CANGURO", "FORMICA", "SPECCHIO", "ARANCIA", "CUSCINO", "LUMACA", "FINESTRA", "CAMMELLO", "ANGURIA", "POLTRONA", "PIPISTRELLO", "MAGLIONE", "CROCIERA", "PATENTE", "FARMACIA"
+  ];
+
+  const INTRUSI = [
+    { q: "Mercurio · Venere · Plutone · Marte", a: "Plutone", note: "Dal 2006 non è più considerato un pianeta" },
+    { q: "Violino · Viola · Violoncello · Chitarra", a: "Chitarra", note: "Gli altri si suonano con l'archetto" },
+    { q: "Balena · Delfino · Squalo · Orca", a: "Squalo", note: "È un pesce, gli altri sono mammiferi" },
+    { q: "Pomodoro · Peperone · Zucchina · Carota", a: "Carota", note: "È una radice; gli altri sono frutti in senso botanico" },
+    { q: "Roma · Parigi · Sydney · Madrid", a: "Sydney", note: "Non è una capitale (la capitale dell'Australia è Canberra)" },
+    { q: "Pinguino · Struzzo · Kiwi · Gabbiano", a: "Gabbiano", note: "Gli altri non sanno volare" },
+    { q: "Rame · Oro · Bronzo · Argento", a: "Bronzo", note: "È una lega (rame + stagno), gli altri sono elementi" },
+    { q: "Pianoforte · Arpa · Chitarra · Tromba", a: "Tromba", note: "È uno strumento a fiato, gli altri hanno le corde" },
+    { q: "Leonardo · Raffaello · Michelangelo · Caravaggio", a: "Caravaggio", note: "Gli altri sono anche Tartarughe Ninja (la quarta è Donatello)" },
+    { q: "2 · 3 · 5 · 9 · 11", a: "9", note: "Non è un numero primo" },
+    { q: "Tokyo · Kyoto · Osaka · Seul", a: "Seul", note: "È in Corea del Sud, le altre in Giappone" },
+    { q: "Settembre · Ottobre · Novembre · Agosto", a: "Agosto", note: "Gli altri prendono il nome da un numero (7, 8, 9 in latino)" },
+    { q: "Norvegia · Svezia · Danimarca · Germania", a: "Germania", note: "Non è un Paese scandinavo" },
+    { q: "Pipistrello · Aquila · Gufo · Falco", a: "Pipistrello", note: "È un mammifero, gli altri sono uccelli" },
+    { q: "Ragno · Formica · Ape · Mosca", a: "Ragno", note: "È un aracnide (8 zampe), gli altri sono insetti (6 zampe)" },
+    { q: "Spagnolo · Portoghese · Rumeno · Inglese", a: "Inglese", note: "Non è una lingua neolatina" },
+    { q: "Fragola · Anguria · Melone · Mela", a: "Fragola", note: "Ha i semi all'esterno" },
+    { q: "Everest · K2 · Kilimangiaro · Lhotse", a: "Kilimangiaro", note: "È in Africa, gli altri sono nell'Himalaya/Karakorum" },
+    { q: "Nilo · Danubio · Reno · Senna", a: "Nilo", note: "Non scorre in Europa" },
+    { q: "Ottagono · Esagono · Pentagono · Cubo", a: "Cubo", note: "È un solido, gli altri sono figure piane" },
+    { q: "Cane · Lupo · Volpe · Gatto", a: "Gatto", note: "Gli altri sono canidi" },
+    { q: "Firenze · Pisa · Siena · Perugia", a: "Perugia", note: "È in Umbria, le altre in Toscana" },
+    { q: "Triangolo · Quadrato · Cerchio · Pentagono", a: "Cerchio", note: "Non è un poligono: non ha lati" },
+    { q: "Picasso · Dalí · Miró · Monet", a: "Monet", note: "È francese, gli altri sono spagnoli" },
+    { q: "Marte · Giove · Saturno · Luna", a: "Luna", note: "È un satellite, gli altri sono pianeti" },
+    { q: "Rosso · Giallo · Blu · Verde", a: "Verde", note: "Non è un colore primario (in pittura)" },
+    { q: "Ferrari · Lamborghini · Maserati · Porsche", a: "Porsche", note: "È tedesca, le altre italiane" },
+    { q: "Shakespeare · Dante · Petrarca · Boccaccio", a: "Shakespeare", note: "Non è italiano" },
+    { q: "Topo · Criceto · Coniglio · Scoiattolo", a: "Coniglio", note: "È un lagomorfo, gli altri sono roditori" },
+    { q: "Lince · Leopardo · Ghepardo · Iena", a: "Iena", note: "Non è un felino" },
+    { q: "Febbraio · Aprile · Giugno · Novembre", a: "Febbraio", note: "Gli altri hanno 30 giorni" },
+    { q: "Prosecco · Barolo · Champagne · Chianti", a: "Champagne", note: "È francese, gli altri italiani" },
+    { q: "Brasile · Argentina · Messico · Cile", a: "Messico", note: "Non è in Sud America" },
+    { q: "Ottone · Bronzo · Acciaio · Ferro", a: "Ferro", note: "È un elemento, gli altri sono leghe" },
+    { q: "Tonno · Salmone · Delfino · Merluzzo", a: "Delfino", note: "È un mammifero, gli altri sono pesci" },
+    { q: "16 · 25 · 36 · 48", a: "48", note: "Non è un quadrato perfetto" },
+    { q: "Mozart · Beethoven · Bach · Verdi", a: "Verdi", note: "È italiano, gli altri di lingua tedesca" },
+    { q: "Gemelli · Leone · Orione · Pesci", a: "Orione", note: "Non è un segno zodiacale" },
+    { q: "Oro · Platino · Diamante · Argento", a: "Diamante", note: "Non è un metallo" },
+    { q: "Atene · Sparta · Corinto · Cartagine", a: "Cartagine", note: "Non era una città greca (era in Nord Africa)" },
+    { q: "Sonetto · Haiku · Romanzo · Limerick", a: "Romanzo", note: "Non è un componimento in versi" }
+  ];
+
+  const STIME = [
+    { q: "Quanti km è lungo il fiume Po?", a: 652, unit: "km" },
+    { q: "Quante ossa ha il corpo umano adulto?", a: 206, unit: "ossa" },
+    { q: "Quanti tasti ha un pianoforte?", a: 88, unit: "tasti" },
+    { q: "In che anno è stata inaugurata la Torre Eiffel?", a: 1889, unit: "" },
+    { q: "Quanti metri è alto il Burj Khalifa?", a: 828, unit: "metri" },
+    { q: "Quanti metri è alta la Ghirlandina di Modena?", a: 89, unit: "metri" },
+    { q: "Quanti km è lunga una maratona? (con i decimali!)", a: 42.195, unit: "km" },
+    { q: "Quanti km è lunga la circonferenza della Terra all'Equatore?", a: 40075, unit: "km" },
+    { q: "Quanti anni aveva Mozart quando è morto?", a: 35, unit: "anni" },
+    { q: "Quanti cuori ha un polpo?", a: 3, unit: "cuori" },
+    { q: "Quanti metri è profonda la Fossa delle Marianne (punto più profondo)?", a: 10935, unit: "metri" },
+    { q: "Quante tessere ha un domino classico?", a: 28, unit: "tessere" },
+    { q: "Quanti litri di sangue ha in media un adulto?", a: 5, unit: "litri" },
+    { q: "Quanti minuti dura una partita NBA (tempo regolamentare)?", a: 48, unit: "minuti" },
+    { q: "In che anno è uscito il primo iPhone?", a: 2007, unit: "" },
+    { q: "Quanti Paesi fanno parte dell'Unione Europea?", a: 27, unit: "Paesi" },
+    { q: "Quanti km è lunga la Grande Muraglia cinese (misura ufficiale)?", a: 21196, unit: "km" },
+    { q: "A quanti gradi bolle l'acqua in cima all'Everest (circa)?", a: 70, unit: "°C" },
+    { q: "Quanti km ci sono in linea d'aria tra Milano e Roma?", a: 477, unit: "km" },
+    { q: "Quante caselle ha una scacchiera?", a: 64, unit: "caselle" },
+    { q: "Quanti denti ha un adulto con i denti del giudizio?", a: 32, unit: "denti" },
+    { q: "In che anno è caduto il Muro di Berlino?", a: 1989, unit: "" },
+    { q: "Quanti Paesi ci sono nel mondo riconosciuti dall'ONU?", a: 193, unit: "Paesi" },
+    { q: "Quanti metri è alta la Torre Eiffel (con antenne)?", a: 330, unit: "metri" },
+    { q: "Quanti giorni dura la gestazione di un elefante (circa)?", a: 660, unit: "giorni" },
+    { q: "Quanti km è lungo il Nilo?", a: 6650, unit: "km" },
+    { q: "Quanti abitanti ha Modena (circa)?", a: 185000, unit: "abitanti" },
+    { q: "In che anno è stata fondata la Fiat?", a: 1899, unit: "" },
+    { q: "Quanti metri è alto il Monte Bianco?", a: 4806, unit: "metri" },
+    { q: "Quanti km dista in media la Luna dalla Terra?", a: 384400, unit: "km" },
+    { q: "In che anno l'uomo è sbarcato sulla Luna?", a: 1969, unit: "" },
+    { q: "Quanti gol ha segnato Messi con il Barcellona (tutte le competizioni)?", a: 672, unit: "gol" },
+    { q: "Quanti cromosomi ha una cellula umana?", a: 46, unit: "cromosomi" },
+    { q: "Quanti battiti al minuto fa in media un cuore adulto a riposo?", a: 70, unit: "battiti" },
+    { q: "Quanti litri d'acqua servono per produrre 1 kg di carne di manzo (circa)?", a: 15400, unit: "litri" },
+    { q: "Quanti versi ha la Divina Commedia?", a: 14233, unit: "versi" },
+    { q: "Quanti canti ha la Divina Commedia?", a: 100, unit: "canti" },
+    { q: "In che anno a.C. è stata fondata Roma secondo la tradizione?", a: 753, unit: "a.C." },
+    { q: "Quanti metri è lungo un campo da calcio di Serie A (misura più comune)?", a: 105, unit: "metri" },
+    { q: "Quanti giocatori ci sono in campo, in totale, in una partita di rugby a 15?", a: 30, unit: "giocatori" },
+    { q: "Quante isole compongono le Maldive (circa)?", a: 1190, unit: "isole" },
+    { q: "Quanti gradi ha la superficie del Sole (circa)?", a: 5500, unit: "°C" },
+    { q: "Quanti miliardi di anni ha l'universo (circa)?", a: 13.8, unit: "miliardi di anni" },
+    { q: "Quante lingue ufficiali ha la Svizzera?", a: 4, unit: "lingue" },
+    { q: "In che anno è stato inventato il World Wide Web?", a: 1989, unit: "" },
+    { q: "Quanti Oscar ha vinto il film Titanic?", a: 11, unit: "Oscar" },
+    { q: "Quante calorie hanno 100 g di Nutella (circa)?", a: 539, unit: "kcal" },
+    { q: "Quanti secondi ci sono in un giorno?", a: 86400, unit: "secondi" }
+  ];
+
+  const MEMO_POOL = ["🍎","🚗","🎸","🐶","⚽","🌵","🍕","📱","🎩","🐙","🚀","🍩","🔑","🌈","🦁","🎈","☂️","🧲","🍌","🐢",
+    "🎲","🧀","🚲","🐸","🍔","🎯","🦋","🕯️","📚","🍉","🐧","⏰","🎁","🧦","🍓","🦄","🛶","🍦","🐝","🔔",
+    "🧸","🥥","🎻","🐳","🌻","🍄","🪁","⚓","🧁","🦊","🥨","🏀","🐞","🪑","🍋","🎧","🦀","🥑","🛼","🧩"];
+
+  const SIMON_COLORS = [
+    { name: "rosso", color: "#ff3b5c", freq: 330 },
+    { name: "blu",   color: "#2979ff", freq: 392 },
+    { name: "verde", color: "#00e676", freq: 494 },
+    { name: "giallo",color: "#ffd600", freq: 587 }
+  ];
+
+  // Quante volte ogni sfida "generata" compare nel mazzo
+  const GENERATED_COPIES = { calcolo: 10, puntini: 5, cronometro: 6, memoria: 5, simon: 5, riflessi: 6, paroliere: 5 };
+
+  /* =========================================================
+     Squadre globali (nomi/colori/punteggio impostati in
+     index.html) — stesso sistema condiviso degli altri giochi.
+     ========================================================= */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  const TEAM_COLORS = ["#00e5ff", "#ff2e88", "#00e676", "#ffd600", "#a05bff", "#fb5607"];
+  const REFLEX_KEYS = ["A", "L", "Q", "P", "Z", "M"];
+  let scoreBaseline = [];
+
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalScore(index, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
+  /* ---- Utilità ---- */
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+  }
+  function formatNum(n){
+    return Number.isInteger(n) ? n.toLocaleString("it-IT") : n.toLocaleString("it-IT", { maximumFractionDigits: 3 });
+  }
+  // Accetta "185.000", "185000", "42,195", "42.195" (se non sono migliaia)
+  function parseNum(s){
+    let t = (s || "").toString().trim().replace(/\s/g, "");
+    if (!t) return NaN;
+    if (t.includes(",")) t = t.replace(/\./g, "").replace(",", ".");
+    else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+    return Number(t);
+  }
+
+  function beep(freq, duration, type){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+
+  /* ---- Riferimenti DOM ---- */
+  const scoreGrid = document.getElementById("scoreGrid");
+  const typesChips = document.getElementById("typesChips");
+  const challengeCard = document.getElementById("challengeCard");
+  const typeBadge = document.getElementById("typeBadge");
+  const promptEl = document.getElementById("prompt");
+  const hintEl = document.getElementById("hint");
+  const widget = document.getElementById("widget");
+  const timerBox = document.getElementById("timerBox");
+  const timerNumber = document.getElementById("timerNumber");
+  const timerBar = document.getElementById("timerBar");
+  const timerBtn = document.getElementById("timerBtn");
+  const solutionEl = document.getElementById("solution");
+  const solutionText = document.getElementById("solutionText");
+  const solutionNote = document.getElementById("solutionNote");
+  const revealBtn = document.getElementById("revealBtn");
+  const pointsGrid = document.getElementById("pointsGrid");
+  const pointsSummary = document.getElementById("pointsSummary");
+  const noneBtn = document.getElementById("noneBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const counter = document.getElementById("counter");
+  const infoModal = document.getElementById("infoModal");
+  const closeInfoBtn = document.getElementById("closeInfoBtn");
+
+  document.querySelectorAll(".openInfoBtn").forEach(btn => {
+    btn.addEventListener("click", () => infoModal.classList.add("active"));
+  });
+  closeInfoBtn.addEventListener("click", () => infoModal.classList.remove("active"));
+  infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoModal.classList.remove("active"); });
+
+  /* =========================================================
+     STATO DI GIOCO
+     ========================================================= */
+  let teams = [];
+  let enabledTypes = new Set(Object.keys(TYPES));
+  let deck = [];
+  let deckPos = 0;
+  let round = 0;
+  let card = null;          // sfida corrente
+  let selected = new Set(); // squadre a cui dare il punto
+  let lastScored = new Set();
+  let cleanupFns = [];      // timer/listener da fermare quando si cambia sfida
+
+  function buildTeamsFromGlobal(){
+    const global = loadGlobalTeams();
+    if (global){
+      const n = Math.min(global.count || global.teams.length, 6);
+      scoreBaseline = global.teams.slice(0, n).map(t => t.score || 0);
+      return global.teams.slice(0, n).map((t, i) => ({ name: t.name, color: t.color || TEAM_COLORS[i % TEAM_COLORS.length], score: 0 }));
+    }
+    scoreBaseline = [0, 0];
+    return [
+      { name: "Squadra 1", color: TEAM_COLORS[0], score: 0 },
+      { name: "Squadra 2", color: TEAM_COLORS[1], score: 0 }
+    ];
+  }
+
+  /* ---- Mazzo: sfide statiche + sfide generate, mescolate ---- */
+  function buildDeck(){
+    const cards = [];
+    const add = (type, list) => { if (enabledTypes.has(type)) list.forEach(item => cards.push({ type, ...item })); };
+    add("indovinello", INDOVINELLI);
+    add("logica", LOGICA);
+    add("sequenza", SEQUENZE);
+    add("elenco", ELENCHI);
+    add("intruso", INTRUSI);
+    add("stima", STIME);
+    if (enabledTypes.has("anagramma")) ANAGRAMMI.forEach(w => cards.push({ type: "anagramma", word: w }));
+    Object.entries(GENERATED_COPIES).forEach(([type, n]) => {
+      if (enabledTypes.has(type)) for (let i = 0; i < n; i++) cards.push({ type });
+    });
+    deck = shuffle(cards);
+    // evita due sfide dello stesso tipo di fila quando possibile
+    for (let i = 1; i < deck.length; i++){
+      if (deck[i].type === deck[i - 1].type){
+        const j = deck.findIndex((c, k) => k > i && c.type !== deck[i - 1].type);
+        if (j > 0) [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+    }
+    deckPos = 0;
+  }
+
+  function renderTypeChips(){
+    typesChips.innerHTML = Object.entries(TYPES).map(([key, t]) =>
+      `<button type="button" class="type-chip${enabledTypes.has(key) ? " on" : ""}" data-type="${key}">${t.label}</button>`
+    ).join("");
+  }
+  typesChips.addEventListener("click", (e) => {
+    const chip = e.target.closest(".type-chip");
+    if (!chip) return;
+    const key = chip.dataset.type;
+    if (enabledTypes.has(key)){
+      if (enabledTypes.size === 1) return; // almeno un tipo attivo
+      enabledTypes.delete(key);
+    } else {
+      enabledTypes.add(key);
+    }
+    renderTypeChips();
+    buildDeck();
+    nextCard(false);
+  });
+
+  /* =========================================================
+     TABELLONE E PUNTI
+     ========================================================= */
+  function renderScoreboard(){
+    scoreGrid.innerHTML = teams.map((team, i) => `
+      <div class="score-card${lastScored.has(i) ? " just-scored" : ""}">
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+        </div>
+        <div class="score-value">${(scoreBaseline[i] || 0) + team.score}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderPoints(){
+    pointsGrid.innerHTML = teams.map((team, i) => `
+      <button type="button" class="point-toggle${selected.has(i) ? " on" : ""}" data-i="${i}">
+        <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+        <span>${escapeHtml(team.name)}</span>
+        <span class="mark">${selected.has(i) ? "✅ +1" : "+1"}</span>
+      </button>
+    `).join("");
+    const names = [...selected].sort().map(i => teams[i].name);
+    pointsSummary.textContent = names.length ? `Punto a: ${names.join(", ")}` : "Nessun punto selezionato";
+  }
+
+  pointsGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".point-toggle");
+    if (!btn) return;
+    const i = Number(btn.dataset.i);
+    if (selected.has(i)) selected.delete(i); else selected.add(i);
+    renderPoints();
+  });
+  noneBtn.addEventListener("click", () => { selected.clear(); renderPoints(); });
+
+  // Suggerimento automatico (risultati misurati): preseleziona i migliori
+  function suggestWinners(indices){
+    selected = new Set(indices);
+    renderPoints();
+  }
+
+  function applyPoints(){
+    lastScored = new Set(selected);
+    selected.forEach(i => {
+      teams[i].score += 1;
+      saveGlobalScore(i, (scoreBaseline[i] || 0) + teams[i].score);
+    });
+    if (selected.size) beep(880, 0.2);
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+  }
+
+  nextBtn.addEventListener("click", () => {
+    applyPoints();
+    nextCard(true);
+  });
+
+  /* =========================================================
+     TIMER GENERICO (per le sfide a voce)
+     ========================================================= */
+  let timerState = null;
+  function setupTimer(seconds, onStart){
+    timerBox.style.display = seconds ? "flex" : "none";
+    if (!seconds){ timerState = null; return; }
+    timerState = { total: seconds, remaining: seconds, running: false, endAt: 0, id: null, started: false, onStart };
+    timerNumber.textContent = seconds;
+    timerNumber.classList.remove("danger");
+    timerBar.style.width = "100%";
+    timerBtn.textContent = `▶ Avvia timer (${seconds}s)`;
+    timerBtn.disabled = false;
+  }
+  function stopTimer(){
+    if (timerState && timerState.id){ clearInterval(timerState.id); timerState.id = null; }
+    if (timerState) timerState.running = false;
+  }
+  timerBtn.addEventListener("click", () => {
+    if (!timerState) return;
+    if (timerState.running){
+      stopTimer();
+      timerBtn.textContent = "▶ Riprendi";
+      return;
+    }
+    if (timerState.remaining <= 0) return;
+    if (!timerState.started){
+      timerState.started = true;
+      if (timerState.onStart) timerState.onStart();
+    }
+    timerState.running = true;
+    timerState.endAt = Date.now() + timerState.remaining * 1000;
+    timerBtn.textContent = "⏸ Pausa";
+    let lastWhole = Math.ceil(timerState.remaining);
+    timerState.id = setInterval(() => {
+      timerState.remaining = Math.max(0, (timerState.endAt - Date.now()) / 1000);
+      const whole = Math.ceil(timerState.remaining);
+      timerNumber.textContent = whole;
+      timerNumber.classList.toggle("danger", whole <= 5);
+      timerBar.style.width = (timerState.remaining / timerState.total * 100) + "%";
+      if (whole !== lastWhole){
+        lastWhole = whole;
+        if (whole > 0 && whole <= 3) beep(660, 0.1);
+      }
+      if (timerState.remaining <= 0){
+        stopTimer();
+        beep(200, 0.5, "sawtooth");
+        timerBtn.textContent = "⏰ Tempo scaduto";
+        timerBtn.disabled = true;
+      }
+    }, 100);
+  });
+
+  /* ---- Soluzione ---- */
+  function setSolution(text, note){
+    solutionText.textContent = text || "";
+    solutionNote.textContent = note || "";
+    solutionEl.classList.remove("show");
+    revealBtn.style.display = text ? "inline-block" : "none";
+    revealBtn.disabled = false;
+  }
+  function showSolution(){
+    solutionEl.classList.add("show");
+    revealBtn.disabled = true;
+  }
+  revealBtn.addEventListener("click", () => {
+    if (card && card.onReveal) card.onReveal();
+    showSolution();
+  });
+
+  /* =========================================================
+     CAMBIO SFIDA
+     ========================================================= */
+  function cleanup(){
+    stopTimer();
+    cleanupFns.forEach(fn => { try { fn(); } catch(e){} });
+    cleanupFns = [];
+  }
+
+  function nextCard(countRound){
+    cleanup();
+    if (deckPos >= deck.length) buildDeck();
+    card = { ...deck[deckPos++] };
+    if (countRound || round === 0) round++;
+    counter.textContent = `Sfida ${round}`;
+    selected = new Set();
+    renderScoreboard();
+    lastScored = new Set();
+    renderPoints();
+    renderCard();
+    challengeCard.style.animation = "none";
+    void challengeCard.offsetWidth;
+    challengeCard.style.animation = "";
+  }
+
+  function renderCard(){
+    typeBadge.textContent = TYPES[card.type].label;
+    promptEl.className = "prompt";
+    promptEl.textContent = "";
+    hintEl.textContent = "";
+    widget.innerHTML = "";
+    setSolution("", "");
+    setupTimer(0);
+    (RENDERERS[card.type] || RENDERERS.indovinello)();
+  }
+
+  /* =========================================================
+     RENDERER DEI TIPI DI SFIDA
+     ========================================================= */
+  const RENDERERS = {
+    /* ---- Sfide a voce con soluzione ---- */
+    indovinello(){
+      promptEl.textContent = card.q;
+      hintEl.textContent = "Chi indovina per primo, ad alta voce, prende il punto.";
+      setupTimer(45);
+      setSolution(card.a);
+    },
+    logica(){
+      promptEl.textContent = card.q;
+      hintEl.textContent = "Ragionate bene: spesso la risposta ovvia è quella sbagliata!";
+      setupTimer(45);
+      setSolution(card.a);
+    },
+    sequenza(){
+      promptEl.textContent = card.q;
+      promptEl.classList.add("big");
+      hintEl.textContent = "Qual è l'elemento successivo? Chi lo dice per primo vince.";
+      setupTimer(40);
+      setSolution(card.a, card.note);
+    },
+    elenco(){
+      promptEl.textContent = card.q;
+      hintEl.textContent = "A turno o a raffica: vince chi completa l'elenco per primo (o chi ne dice di più allo scadere).";
+      setupTimer(card.time || 40);
+      setSolution(card.a, "Alcune risposte valide");
+    },
+    intruso(){
+      promptEl.textContent = card.q;
+      promptEl.classList.add("big");
+      promptEl.style.fontSize = "clamp(1.4rem, 4vw, 2.2rem)";
+      cleanupFns.push(() => { promptEl.style.fontSize = ""; });
+      hintEl.textContent = "Quale non c'entra con gli altri, e perché? Serve anche il motivo giusto!";
+      setupTimer(30);
+      setSolution(card.a, card.note);
+    },
+    anagramma(){
+      const word = card.word;
+      let scrambled = word;
+      for (let tries = 0; tries < 20 && scrambled === word; tries++){
+        scrambled = shuffle(word.split("")).join("");
+      }
+      promptEl.textContent = scrambled.split("").join(" ");
+      promptEl.classList.add("big");
+      hintEl.textContent = `Riordina le lettere: è una parola italiana di ${word.length} lettere.`;
+      setupTimer(30);
+      setSolution(word.charAt(0) + word.slice(1).toLowerCase());
+    },
+    calcolo(){
+      const { text, result } = generateCalc();
+      promptEl.textContent = "Premi «Via» per vedere il calcolo: avete 10 secondi!";
+      promptEl.classList.add("hidden-until-start");
+      hintEl.textContent = "Attenzione all'ordine delle operazioni: prima × e ÷, poi + e −.";
+      setupTimer(10, () => {
+        promptEl.classList.remove("hidden-until-start");
+        promptEl.classList.add("big");
+        promptEl.textContent = text + " = ?";
+      });
+      setSolution(String(result));
+      card.onReveal = () => {
+        promptEl.classList.remove("hidden-until-start");
+        promptEl.classList.add("big");
+        promptEl.textContent = text + " = " + result;
+      };
+    },
+
+    /* ---- Stima numerica: input per squadra, vince il più vicino ---- */
+    stima(){
+      promptEl.textContent = card.q;
+      hintEl.textContent = "Ogni squadra scrive la sua stima: vince chi si avvicina di più.";
+      setupTimer(30);
+      renderGuessInputs(card.a, card.unit);
+      setSolution(formatNum(card.a) + (card.unit ? " " + card.unit : ""));
+    },
+
+    puntini(){
+      const n = rand(35, 140);
+      promptEl.textContent = "Quanti puntini ci sono?";
+      hintEl.textContent = "I puntini restano visibili solo 3 secondi. Poi ogni squadra scrive la sua stima.";
+      widget.innerHTML = `
+        <canvas class="dots-canvas" id="dotsCanvas" width="800" height="600"></canvas>
+        <button class="btn btn-primary" id="dotsBtn">👁 Mostra per 3 secondi</button>
+      `;
+      const canvas = document.getElementById("dotsCanvas");
+      const ctx = canvas.getContext("2d");
+      const dots = [];
+      let guard = 0;
+      while (dots.length < n && guard++ < 20000){
+        const x = rand(20, 780), y = rand(20, 580);
+        if (dots.every(d => (d.x - x) ** 2 + (d.y - y) ** 2 > 26 * 26)) dots.push({ x, y });
+      }
+      const drawDots = (visible) => {
+        ctx.clearRect(0, 0, 800, 600);
+        if (!visible){
+          ctx.fillStyle = "rgba(255,255,255,0.35)";
+          ctx.font = "bold 42px Poppins, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("❓", 400, 315);
+          return;
+        }
+        ctx.fillStyle = "#00e5ff";
+        dots.forEach(d => { ctx.beginPath(); ctx.arc(d.x, d.y, 8, 0, Math.PI * 2); ctx.fill(); });
+      };
+      drawDots(false);
+      const btn = document.getElementById("dotsBtn");
+      btn.addEventListener("click", () => {
+        btn.disabled = true;
+        drawDots(true);
+        const t = setTimeout(() => drawDots(false), 3000);
+        cleanupFns.push(() => clearTimeout(t));
+      });
+      const total = dots.length;
+      card.onReveal = () => drawDots(true);
+      renderGuessInputs(total, "puntini");
+      setSolution(total + " puntini");
+    },
+
+    /* ---- Cronometro cieco ---- */
+    cronometro(){
+      const target = pick([5, 7, 10, 12, 15]);
+      promptEl.textContent = `Ferma il cronometro esattamente a ${target},00 secondi!`;
+      hintEl.textContent = "Il tempo è visibile solo per il primo secondo, poi sparisce. A turno ogni squadra fa il suo tentativo (puoi usare anche la barra spaziatrice per fermarlo).";
+      const results = new Array(teams.length).fill(null);
+      let current = -1, startAt = 0, rafId = null;
+      widget.innerHTML = `
+        <div class="stopwatch" id="sw">0,00</div>
+        <div class="btn-row" id="swBtns"></div>
+        <div class="results" id="swResults"></div>
+      `;
+      const sw = document.getElementById("sw");
+      const swBtns = document.getElementById("swBtns");
+      const swResults = document.getElementById("swResults");
+
+      const renderButtons = () => {
+        if (current >= 0){
+          swBtns.innerHTML = `<button class="btn btn-primary" id="swStop">⏹ STOP (${escapeHtml(teams[current].name)})</button>`;
+          document.getElementById("swStop").addEventListener("click", stop);
+        } else {
+          swBtns.innerHTML = teams.map((t, i) => `
+            <button class="btn btn-outline btn-small" data-i="${i}" ${results[i] !== null ? "disabled" : ""}>▶ Tocca a ${escapeHtml(t.name)}</button>
+          `).join("");
+          swBtns.querySelectorAll("button").forEach(b => b.addEventListener("click", () => start(Number(b.dataset.i))));
+        }
+      };
+      const renderResults = () => {
+        const done = results.map((r, i) => ({ r, i })).filter(x => x.r !== null);
+        const bestDiff = done.length ? Math.min(...done.map(x => Math.abs(x.r - target))) : null;
+        swResults.innerHTML = done.map(({ r, i }) => {
+          const diff = r - target;
+          const best = Math.abs(diff) === bestDiff;
+          return `<div class="result-row${best ? " best" : ""}">
+            <span class="result-name"><span class="team-dot" style="background:${escapeHtml(teams[i].color)};color:${escapeHtml(teams[i].color)}"></span>${escapeHtml(teams[i].name)}</span>
+            <span class="result-value">${r.toFixed(2).replace(".", ",")} s (${diff >= 0 ? "+" : "−"}${Math.abs(diff).toFixed(2).replace(".", ",")})</span>
+          </div>`;
+        }).join("");
+        if (done.length === teams.length){
+          suggestWinners(done.filter(x => Math.abs(x.r - target) === bestDiff).map(x => x.i));
+        }
+      };
+      const tick = () => {
+        const t = (performance.now() - startAt) / 1000;
+        if (t < 1){ sw.textContent = t.toFixed(2).replace(".", ","); sw.classList.remove("blind"); }
+        else { sw.textContent = "??,??"; sw.classList.add("blind"); }
+        rafId = requestAnimationFrame(tick);
+      };
+      function start(i){
+        current = i;
+        startAt = performance.now();
+        beep(520, 0.1);
+        renderButtons();
+        tick();
+      }
+      function stop(){
+        if (current < 0) return;
+        cancelAnimationFrame(rafId);
+        const t = (performance.now() - startAt) / 1000;
+        results[current] = Math.round(t * 100) / 100;
+        sw.classList.remove("blind");
+        sw.textContent = results[current].toFixed(2).replace(".", ",");
+        current = -1;
+        beep(880, 0.12);
+        renderButtons();
+        renderResults();
+      }
+      const onKey = (e) => {
+        if (e.code === "Space" && current >= 0){ e.preventDefault(); stop(); }
+      };
+      document.addEventListener("keydown", onKey);
+      cleanupFns.push(() => { document.removeEventListener("keydown", onKey); cancelAnimationFrame(rafId); });
+      renderButtons();
+    },
+
+    /* ---- Memoria ---- */
+    memoria(){
+      const items = shuffle(MEMO_POOL).slice(0, 15);
+      promptEl.textContent = "Memorizza i 15 oggetti!";
+      hintEl.textContent = "Restano visibili 20 secondi. Poi ogni squadra scrive su un foglio (o dice a turno) tutti quelli che ricorda: vince chi ne ricorda di più.";
+      widget.innerHTML = `
+        <div class="memo-grid" id="memoGrid"></div>
+        <div class="timer-number" id="memoTimer" style="font-size:2rem;">20</div>
+        <div class="btn-row"><button class="btn btn-primary" id="memoBtn">👁 Mostra per 20 secondi</button></div>
+      `;
+      const grid = document.getElementById("memoGrid");
+      const memoTimer = document.getElementById("memoTimer");
+      const draw = (visible) => {
+        grid.innerHTML = items.map(e => `<div class="memo-cell">${visible ? e : "❓"}</div>`).join("");
+      };
+      draw(false);
+      const btn = document.getElementById("memoBtn");
+      btn.addEventListener("click", () => {
+        btn.disabled = true;
+        draw(true);
+        const end = Date.now() + 20000;
+        const id = setInterval(() => {
+          const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+          memoTimer.textContent = left;
+          if (left <= 3 && left > 0) beep(660, 0.08);
+          if (left <= 0){
+            clearInterval(id);
+            draw(false);
+            beep(200, 0.4, "sawtooth");
+            memoTimer.textContent = "✍️ Scrivete!";
+          }
+        }, 250);
+        cleanupFns.push(() => clearInterval(id));
+      });
+      setSolution(items.join("  "), "Contate quanti oggetti ha ricordato ogni squadra");
+      card.onReveal = () => draw(true);
+    },
+
+    /* ---- Simon ---- */
+    simon(){
+      const sequence = Array.from({ length: 40 }, () => rand(0, 3));
+      const results = new Array(teams.length).fill(null);
+      let current = -1, level = 0, inputPos = 0, accepting = false;
+      promptEl.textContent = "Ripeti la sequenza di colori!";
+      hintEl.textContent = "A turno: la sequenza (uguale per tutti) si allunga di un colore a ogni livello. Al primo errore il turno finisce. Vince chi arriva più lontano.";
+      widget.innerHTML = `
+        <div class="simon-status" id="simonStatus">Scegli chi inizia</div>
+        <div class="simon-grid" id="simonGrid">
+          ${SIMON_COLORS.map((c, i) => `<button class="simon-pad" data-i="${i}" style="background:${c.color}; color:${c.color};" disabled aria-label="${c.name}"></button>`).join("")}
+        </div>
+        <div class="btn-row" id="simonBtns"></div>
+        <div class="results" id="simonResults"></div>
+      `;
+      const status = document.getElementById("simonStatus");
+      const pads = [...document.querySelectorAll(".simon-pad")];
+      const btns = document.getElementById("simonBtns");
+      const resultsEl = document.getElementById("simonResults");
+      const timeouts = [];
+      cleanupFns.push(() => timeouts.forEach(clearTimeout));
+
+      const flash = (i, ms) => {
+        pads[i].classList.add("lit");
+        beep(SIMON_COLORS[i].freq, ms / 1000 * 0.9);
+        timeouts.push(setTimeout(() => pads[i].classList.remove("lit"), ms));
+      };
+      const renderButtons = () => {
+        btns.innerHTML = current >= 0 ? "" : teams.map((t, i) => `
+          <button class="btn btn-outline btn-small" data-i="${i}" ${results[i] !== null ? "disabled" : ""}>▶ Tocca a ${escapeHtml(t.name)}</button>
+        `).join("");
+        btns.querySelectorAll("button").forEach(b => b.addEventListener("click", () => startTurn(Number(b.dataset.i))));
+      };
+      const renderResults = () => {
+        const done = results.map((r, i) => ({ r, i })).filter(x => x.r !== null);
+        const best = done.length ? Math.max(...done.map(x => x.r)) : null;
+        resultsEl.innerHTML = done.map(({ r, i }) => `
+          <div class="result-row${r === best ? " best" : ""}">
+            <span class="result-name"><span class="team-dot" style="background:${escapeHtml(teams[i].color)};color:${escapeHtml(teams[i].color)}"></span>${escapeHtml(teams[i].name)}</span>
+            <span class="result-value">${r} ${r === 1 ? "colore" : "colori"}</span>
+          </div>`).join("");
+        if (done.length === teams.length) suggestWinners(done.filter(x => x.r === best).map(x => x.i));
+      };
+      const playLevel = () => {
+        accepting = false;
+        pads.forEach(p => p.disabled = true);
+        status.textContent = `${teams[current].name} — livello ${level}: guarda…`;
+        const speed = Math.max(260, 620 - level * 25);
+        for (let k = 0; k < level; k++){
+          timeouts.push(setTimeout(() => flash(sequence[k], speed * 0.75), 600 + k * speed));
+        }
+        timeouts.push(setTimeout(() => {
+          accepting = true;
+          inputPos = 0;
+          pads.forEach(p => p.disabled = false);
+          status.textContent = `${teams[current].name} — tocca a te! (${level} ${level === 1 ? "colore" : "colori"})`;
+        }, 600 + level * speed));
+      };
+      function startTurn(i){
+        current = i;
+        level = 1;
+        renderButtons();
+        playLevel();
+      }
+      function endTurn(score){
+        results[current] = score;
+        accepting = false;
+        pads.forEach(p => p.disabled = true);
+        status.textContent = `${teams[current].name}: ${score} ${score === 1 ? "colore" : "colori"} ripetuti`;
+        current = -1;
+        renderButtons();
+        renderResults();
+      }
+      pads.forEach((pad, i) => pad.addEventListener("click", () => {
+        if (!accepting) return;
+        flash(i, 220);
+        if (i !== sequence[inputPos]){
+          beep(150, 0.5, "sawtooth");
+          endTurn(level - 1);
+          return;
+        }
+        inputPos++;
+        if (inputPos === level){
+          accepting = false;
+          if (level >= sequence.length){ endTurn(level); return; }
+          level++;
+          timeouts.push(setTimeout(playLevel, 700));
+        }
+      }));
+      renderButtons();
+    },
+
+    /* ---- Riflessi ---- */
+    riflessi(){
+      promptEl.textContent = "Premi appena diventa VERDE!";
+      hintEl.textContent = "Ogni squadra ha il suo pulsante (o il tasto indicato sulla tastiera). Chi preme prima del verde fa falsa partenza ed è eliminato.";
+      let phase = "idle"; // idle | wait | go | done
+      let goAt = 0, timeoutId = null;
+      const falseStart = new Set();
+      const times = {};
+      widget.innerHTML = `
+        <div class="reflex-light" id="light">Pronti?</div>
+        <div class="reflex-zones" id="zones">
+          ${teams.map((t, i) => `
+            <div class="reflex-zone" data-i="${i}" style="border-color:${escapeHtml(t.color)};">
+              <span class="key" style="color:${escapeHtml(t.color)}">${REFLEX_KEYS[i]}</span>
+              <span>${escapeHtml(t.name)}</span>
+              <span class="zone-res" id="zoneRes-${i}"></span>
+            </div>`).join("")}
+        </div>
+        <div class="btn-row"><button class="btn btn-primary" id="reflexBtn">▶ Via!</button></div>
+      `;
+      const light = document.getElementById("light");
+      const btn = document.getElementById("reflexBtn");
+      const zones = [...document.querySelectorAll(".reflex-zone")];
+
+      const finishIfNeeded = () => {
+        const alive = teams.map((_, i) => i).filter(i => !falseStart.has(i));
+        const pressed = Object.keys(times).map(Number);
+        if (phase === "go" && (pressed.length >= alive.length || pressed.length > 0 && Date.now() - goAt > 1500)){
+          phase = "done";
+          const best = pressed.length ? Math.min(...pressed.map(i => times[i])) : null;
+          pressed.forEach(i => { if (times[i] === best) zones[i].classList.add("winner"); });
+          suggestWinners(pressed.filter(i => times[i] === best));
+          light.textContent = pressed.length ? "🏁 Fatto!" : "Nessuno ha premuto";
+          btn.disabled = false;
+          btn.textContent = "🔁 Rigioca";
+        }
+      };
+      const press = (i) => {
+        if (i >= teams.length || falseStart.has(i) || times[i] !== undefined) return;
+        if (phase === "wait"){
+          falseStart.add(i);
+          zones[i].classList.add("false-start");
+          document.getElementById(`zoneRes-${i}`).textContent = "❌ Falsa partenza";
+          beep(150, 0.3, "sawtooth");
+          if (falseStart.size === teams.length){
+            clearTimeout(timeoutId);
+            phase = "done";
+            light.className = "reflex-light";
+            light.textContent = "Tutti eliminati! 😅";
+            btn.disabled = false;
+            btn.textContent = "🔁 Rigioca";
+            suggestWinners([]);
+          }
+          return;
+        }
+        if (phase !== "go") return;
+        times[i] = Date.now() - goAt;
+        document.getElementById(`zoneRes-${i}`).textContent = `${times[i]} ms`;
+        finishIfNeeded();
+        if (phase === "go") setTimeout(finishIfNeeded, 1600);
+      };
+      zones.forEach(z => z.addEventListener("pointerdown", (e) => { e.preventDefault(); press(Number(z.dataset.i)); }));
+      const onKey = (e) => {
+        const idx = REFLEX_KEYS.indexOf(e.key.toUpperCase());
+        if (idx >= 0 && (phase === "wait" || phase === "go")){ e.preventDefault(); press(idx); }
+      };
+      document.addEventListener("keydown", onKey);
+      cleanupFns.push(() => { document.removeEventListener("keydown", onKey); clearTimeout(timeoutId); });
+
+      btn.addEventListener("click", () => {
+        // reset per nuova manche
+        falseStart.clear();
+        Object.keys(times).forEach(k => delete times[k]);
+        zones.forEach((z, i) => { z.classList.remove("winner", "false-start"); document.getElementById(`zoneRes-${i}`).textContent = ""; });
+        selected.clear(); renderPoints();
+        btn.disabled = true;
+        phase = "wait";
+        light.className = "reflex-light wait";
+        light.textContent = "Aspetta…";
+        timeoutId = setTimeout(() => {
+          phase = "go";
+          goAt = Date.now();
+          light.className = "reflex-light go";
+          light.textContent = "ORA!";
+          beep(1000, 0.15, "square");
+        }, rand(2000, 6000));
+      });
+    },
+
+    /* ---- Paroliere ---- */
+    paroliere(){
+      const letters = generateLetters();
+      promptEl.textContent = "Trova la parola più lunga con queste lettere!";
+      hintEl.textContent = "Ogni lettera si usa al massimo quante volte compare. 60 secondi, poi ogni squadra scrive la sua parola: il gioco controlla le lettere, voi controllate che la parola esista!";
+      widget.innerHTML = `
+        <div class="letters">${letters.map(l => `<div class="letter-tile">${l}</div>`).join("")}</div>
+        <div class="results" id="parResults">
+          ${teams.map((t, i) => `
+            <div class="result-row" id="parRow-${i}">
+              <span class="result-name"><span class="team-dot" style="background:${escapeHtml(t.color)};color:${escapeHtml(t.color)}"></span>${escapeHtml(t.name)}</span>
+              <input class="result-input" data-i="${i}" placeholder="La tua parola" autocomplete="off" spellcheck="false">
+              <span class="result-value" id="parVal-${i}"></span>
+            </div>`).join("")}
+        </div>
+        <div class="btn-row"><button class="btn btn-outline btn-small" id="parCheck">🔍 Controlla parole</button></div>
+      `;
+      setupTimer(60);
+      document.getElementById("parCheck").addEventListener("click", () => {
+        const scores = teams.map((_, i) => {
+          const input = document.querySelector(`#parResults input[data-i="${i}"]`);
+          const word = input.value.trim().toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z]/g, "");
+          const row = document.getElementById(`parRow-${i}`);
+          const val = document.getElementById(`parVal-${i}`);
+          row.classList.remove("best", "bad");
+          if (!word){ val.textContent = "—"; return 0; }
+          const pool = [...letters];
+          const ok = word.split("").every(ch => {
+            const k = pool.indexOf(ch);
+            if (k < 0) return false;
+            pool.splice(k, 1);
+            return true;
+          });
+          if (!ok){ row.classList.add("bad"); val.textContent = "❌ lettere non valide"; return 0; }
+          val.textContent = `${word.length} lettere`;
+          return word.length;
+        });
+        const best = Math.max(...scores);
+        if (best > 0){
+          scores.forEach((s, i) => { if (s === best) document.getElementById(`parRow-${i}`).classList.add("best"); });
+          suggestWinners(scores.map((s, i) => s === best ? i : -1).filter(i => i >= 0));
+        } else {
+          suggestWinners([]);
+        }
+      });
+    }
+  };
+
+  /* ---- Input stima per squadra + evidenziazione del più vicino ---- */
+  function renderGuessInputs(answer, unit){
+    widget.insertAdjacentHTML("beforeend", `
+      <div class="results" id="guessResults">
+        ${teams.map((t, i) => `
+          <div class="result-row" id="guessRow-${i}">
+            <span class="result-name"><span class="team-dot" style="background:${escapeHtml(t.color)};color:${escapeHtml(t.color)}"></span>${escapeHtml(t.name)}</span>
+            <input class="result-input" data-i="${i}" inputmode="decimal" placeholder="La vostra stima" autocomplete="off">
+            <span class="result-value" id="guessVal-${i}"></span>
+          </div>`).join("")}
+      </div>
+    `);
+    const prevReveal = card.onReveal;
+    card.onReveal = () => {
+      if (prevReveal) prevReveal();
+      const diffs = teams.map((_, i) => {
+        const v = parseNum(document.querySelector(`#guessResults input[data-i="${i}"]`).value);
+        const out = document.getElementById(`guessVal-${i}`);
+        if (isNaN(v)){ out.textContent = "—"; return Infinity; }
+        const d = Math.abs(v - answer);
+        out.textContent = `scarto ${formatNum(Math.round(d * 1000) / 1000)}`;
+        return d;
+      });
+      const best = Math.min(...diffs);
+      if (best !== Infinity){
+        diffs.forEach((d, i) => { if (d === best) document.getElementById(`guessRow-${i}`).classList.add("best"); });
+        suggestWinners(diffs.map((d, i) => d === best ? i : -1).filter(i => i >= 0));
+      }
+    };
+  }
+
+  /* ---- Generatore di calcoli (risultato sempre intero) ---- */
+  function generateCalc(){
+    const forms = [
+      () => { const a = rand(6, 19), b = rand(3, 9), d = rand(2, 9), k = rand(2, 12);
+              return { text: `${a} × ${b} − ${d * k} ÷ ${d}`, result: a * b - k }; },
+      () => { const a = rand(10, 60), b = rand(3, 12), c = rand(3, 12), d = rand(5, 30);
+              return { text: `${a} + ${b} × ${c} − ${d}`, result: a + b * c - d }; },
+      () => { const a = rand(5, 25), b = rand(5, 25), c = rand(3, 9), d = rand(2, 40);
+              return { text: `(${a} + ${b}) × ${c} − ${d}`, result: (a + b) * c - d }; },
+      () => { const a = rand(7, 15), b = rand(3, 9), c = rand(3, 9);
+              return { text: `${a}² − ${b} × ${c}`, result: a * a - b * c }; },
+      () => { const b = rand(2, 9), k = rand(3, 15), c = rand(2, 9), d = rand(3, 12);
+              return { text: `${b * k} ÷ ${b} + ${c} × ${d}`, result: k + c * d }; },
+      () => { const a = rand(100, 400), b = rand(11, 19), c = rand(4, 9);
+              return { text: `${a} − ${b} × ${c}`, result: a - b * c }; }
+    ];
+    return pick(forms)();
+  }
+
+  /* ---- Lettere del paroliere: frequenze italiane, almeno 4 vocali ---- */
+  function generateLetters(){
+    const vowels = "AAAEEEIIIOOOU";
+    const consonants = "LLLNNNRRRSSSTTTCCDDPPMMVGBFZ";
+    const out = [];
+    for (let i = 0; i < 4; i++) out.push(pick(vowels));
+    for (let i = 0; i < 5; i++) out.push(pick(consonants));
+    return shuffle(out);
+  }
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    const global = loadGlobalTeams();
+    if (!global) return;
+    scoreBaseline = teams.map((t, i) => (global.teams[i] ? (global.teams[i].score || 0) - t.score : 0));
+    renderScoreboard();
+  });
+
+  /* ---- Avvio ---- */
+  teams = buildTeamsFromGlobal();
+  renderTypeChips();
+  buildDeck();
+  nextCard(false);
+</script>
+
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5); font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+  }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55); background: rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  @media (max-width: 560px){ .global-score-widget{ bottom: 8px; right: 8px; } .gsw-name{ max-width: 72px; } }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){ try{ var raw=localStorage.getItem(KEY); if(raw){var d=JSON.parse(raw); if(d&&Array.isArray(d.teams)&&d.teams.length>=2) return d;} }catch(e){} return null; }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){ var div=document.createElement("div"); div.textContent = s==null?"":s; return div.innerHTML; }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML=""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0,n).map(function(t,i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:'+esc(t.color||"#4dd9ff")+'"></span>' +
+        '<span class="gsw-name">'+esc(t.name)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">'+(t.score||0)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load(); if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score||0)+d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load(); if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
+</script>
+
+</body>
+</html>
