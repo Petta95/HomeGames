@@ -253,6 +253,15 @@
   }
   .lang-btn:hover{ color: var(--text-main); }
   .lang-btn.active{ background: var(--accent); color: #06090f; box-shadow: 0 0 18px -4px var(--accent-glow); }
+  .lang-switch[hidden]{ display: none; }
+  /* Sotto-filtro della categoria Film/Serie TV/Cartoni */
+  .media-switch{ margin-top: -8px; }
+  .media-switch .lang-btn{ font-size: 0.84rem; padding: 7px 14px; }
+  .reveal-work-tag{
+    display: inline-block; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 999px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    margin-bottom: 6px;
+  }
 
   .bottom-actions{ display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
 
@@ -300,11 +309,11 @@
     <div class="modal-title">📖 Come si Gioca</div>
     <p class="modal-note">Indovina Titolo e Artista prima degli avversari, ad alta voce!</p>
     <ol>
-      <li>Scegli le canzoni con il filtro in alto: <strong>🇮🇹 Italiano</strong> (solo artisti italiani), <strong>🌍 Internazionale</strong> (solo artisti stranieri) o <strong>🎶 Entrambi</strong>.</li>
+      <li>Scegli le canzoni con il filtro in alto: <strong>🇮🇹 Italiano</strong> (solo artisti italiani), <strong>🌍 Internazionale</strong> (solo artisti stranieri) o <strong>🎶 Entrambi</strong>. Con <strong>🎬 Film/Serie TV/Cartoni</strong> si gioca con colonne sonore, sigle e canzoni iconiche di film, serie TV, cartoni Disney (in italiano) e anime, e si può restringere a una sola delle quattro famiglie.</li>
       <li>Premi <strong>"▶️ Riproduci Brano"</strong>: parte uno snippet a sorpresa di 15 secondi da un database di oltre 350 canzoni di ogni epoca e genere. Puoi mettere <strong>in pausa</strong> in qualsiasi momento e riprendere quando vuoi, oppure premere <strong>"🔁 Riascolta"</strong> per ripartire da capo.</li>
       <li>I giocatori prenotano la risposta <strong>ad alta voce</strong> e provano a indovinare Titolo e/o Artista.</li>
       <li>Quando siete pronti, premi <strong>"🎯 Rivela"</strong> per scoprire Titolo, Artista e Anno del brano.</li>
-      <li>Dopo la rivelazione, assegna i punti a chi ha indovinato: <strong>+2</strong> se ha indovinato Titolo e Artista, <strong>+1</strong> se ne ha indovinato solo uno. Puoi premiare <strong>entrambe le squadre</strong> nella stessa canzone (es. +1 a una per il titolo, +1 all'altra per l'artista); se nessuno ha indovinato, non assegnare nulla.</li>
+      <li>Dopo la rivelazione, assegna i punti a chi ha indovinato: <strong>+2</strong> se ha indovinato Titolo e Artista, <strong>+1</strong> se ne ha indovinato solo uno. Nella categoria <strong>🎬 Film/Serie TV/Cartoni</strong> conta soprattutto l'opera: <strong>+1</strong> per il film, la serie o il cartone giusto, <strong>+2</strong> se si indovina anche il titolo del brano o il compositore/interprete. Puoi premiare <strong>entrambe le squadre</strong> nella stessa canzone (es. +1 a una per il titolo, +1 all'altra per l'artista); se nessuno ha indovinato, non assegnare nulla.</li>
       <li><strong>"⏭ Prossima Canzone"</strong> è sempre disponibile: puoi passare al brano successivo anche senza rivelare la risposta.</li>
       <li>Le canzoni già uscite non si ripetono finché non sono state proposte tutte quelle del database.</li>
     </ol>
@@ -321,6 +330,14 @@
     <button type="button" class="lang-btn" data-lang="it">🇮🇹 Italiano</button>
     <button type="button" class="lang-btn" data-lang="int">🌍 Internazionale</button>
     <button type="button" class="lang-btn active" data-lang="all">🎶 Entrambi</button>
+    <button type="button" class="lang-btn" data-lang="media">🎬 Film/Serie TV/Cartoni</button>
+  </div>
+  <div class="lang-switch media-switch" id="mediaSwitch" role="group" aria-label="Tipo di colonna sonora" hidden>
+    <button type="button" class="lang-btn active" data-media="all">🍿 Tutti</button>
+    <button type="button" class="lang-btn" data-media="film">🎬 Film</button>
+    <button type="button" class="lang-btn" data-media="serie">📺 Serie TV</button>
+    <button type="button" class="lang-btn" data-media="disney">🏰 Disney</button>
+    <button type="button" class="lang-btn" data-media="anime">🐉 Anime e cartoni</button>
   </div>
 
   <div class="player-card">
@@ -727,6 +744,187 @@
   ];
 
   /* =========================================================
+     CATEGORIA FILM / SERIE TV / CARTONI — colonne sonore, sigle e
+     canzoni iconiche. media = "film" | "serie" | "disney" | "anime",
+     work = l'opera da indovinare. Questi brani compaiono solo con
+     il filtro 🎬, mai in Italiano/Internazionale/Entrambi.
+     ========================================================= */
+  const MEDIA_SONGS = [
+    {"title": "Cornfield Chase", "artist": "Hans Zimmer", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3a/ee/23/3aee2300-f6f7-a006-e20f-28092e814cbe/mzaf_1624587954644600228.plus.aac.p.m4a", "year": "2014", "media": "film", "work": "Interstellar"},
+    {"title": "Why So Serious?", "artist": "Hans Zimmer & James Newton Howard", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/aa/0f/ca/aa0fca74-ce24-57df-6772-7ba277463e81/mzaf_14043384064245367361.plus.aac.p.m4a", "year": "2008", "media": "film", "work": "Il cavaliere oscuro"},
+    {"title": "He's a Pirate", "artist": "Klaus Badelt", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/76/0f/14/760f14dd-bc4f-3ce9-05ca-75ce8b2982fb/mzaf_3389900659346103080.plus.aac.p.m4a", "year": "2003", "media": "film", "work": "Pirati dei Caraibi"},
+    {"title": "James Bond Theme", "artist": "Monty Norman", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/06/72/23/067223d3-48bb-a2d9-2c5d-0a07a6c2266e/mzaf_4447374998433111803.plus.aac.p.m4a", "year": "1962", "media": "film", "work": "James Bond"},
+    {"title": "Raiders March", "artist": "John Williams", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3c/d5/1d/3cd51d95-0ee5-f5fe-ced2-12d8a854361b/mzaf_2431570209513524121.plus.aac.p.m4a", "year": "1981", "media": "film", "work": "Indiana Jones"},
+    {"title": "Main Title", "artist": "John Williams", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/13/3c/56/133c5673-f604-b5a0-5900-5554a8ba28be/mzaf_18109723686947546641.plus.aac.p.m4a", "year": "1977", "media": "film", "work": "Star Wars"},
+    {"title": "Theme from Jurassic Park", "artist": "John Williams", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f1/35/b0/f135b050-e26f-1bee-8f24-67b755164d03/mzaf_4917044184840233126.plus.aac.p.m4a", "year": "1993", "media": "film", "work": "Jurassic Park"},
+    {"title": "Hedwig's Theme", "artist": "John Williams", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/81/ee/ae/81eeae0a-da63-1fc7-42c1-21b498b85de8/mzaf_13621452881875123588.plus.aac.p.m4a", "year": "2001", "media": "film", "work": "Harry Potter"},
+    {"title": "Concerning Hobbits", "artist": "Howard Shore", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cd/1e/2c/cd1e2c74-a074-aa60-ec24-8abee7dcec43/mzaf_12399500222028997548.plus.aac.p.m4a", "year": "2001", "media": "film", "work": "Il Signore degli Anelli"},
+    {"title": "The Power of Love", "artist": "Huey Lewis and the News", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/73/1e/31/731e311f-820f-7855-3ccd-21a2fe5d06c2/mzaf_12448959661475577246.plus.aac.p.m4a", "year": "1985", "media": "film", "work": "Ritorno al futuro"},
+    {"title": "Gonna Fly Now", "artist": "Bill Conti", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ea/02/6d/ea026df4-5a5d-f6a0-c526-2a9958c4c22a/mzaf_6885755452086543650.plus.aac.p.m4a", "year": "1976", "media": "film", "work": "Rocky"},
+    {"title": "Mission: Impossible", "artist": "Lalo Schifrin", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/83/8a/ca/838aca12-a4f0-43da-167a-c2fc2685ec0f/mzaf_16106560851238552269.plus.aac.p.m4a", "year": "1966", "media": "film", "work": "Mission: Impossible"},
+    {"title": "Now We Are Free", "artist": "Hans Zimmer & Lisa Gerrard", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/08/1c/62/081c6242-de2e-80ef-d1d6-51c21620fbf1/mzaf_8911425336835289037.plus.aac.p.m4a", "year": "2000", "media": "film", "work": "Il Gladiatore"},
+    {"title": "Main Title", "artist": "John Williams", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ab/67/f4/ab67f441-b14f-1902-f353-4100c6e932aa/mzaf_4470349713199856556.plus.aac.p.m4a", "year": "1975", "media": "film", "work": "Lo squalo"},
+    {"title": "Flying Theme", "artist": "John Williams", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/85/61/fd/8561fd78-4349-ede6-d633-50c146ffa43b/mzaf_15209395579821267615.plus.aac.p.m4a", "year": "1982", "media": "film", "work": "E.T. l'extra-terrestre"},
+    {"title": "Ghostbusters", "artist": "Ray Parker Jr.", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/63/8b/e3/638be3a1-2f5e-5cff-9b58-085e3b793cbd/mzaf_10733010531783613784.plus.aac.p.m4a", "year": "1984", "media": "film", "work": "Ghostbusters"},
+    {"title": "Danger Zone", "artist": "Kenny Loggins", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8d/c8/19/8dc81935-5620-0b29-3f4c-acc3f6479796/mzaf_14998514993249023640.plus.aac.p.m4a", "year": "1986", "media": "film", "work": "Top Gun"},
+    {"title": "Take My Breath Away", "artist": "Berlin", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fb/74/fb/fb74fb0b-83f3-186a-4833-e0ebdb86cf10/mzaf_6965137412837280913.plus.aac.p.m4a", "year": "1986", "media": "film", "work": "Top Gun"},
+    {"title": "You're the One That I Want", "artist": "John Travolta & Olivia Newton-John", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f0/c9/3a/f0c93aff-230f-a7f6-d1b6-37ebcc02d62c/mzaf_5514414658492873704.plus.aac.p.m4a", "year": "1978", "media": "film", "work": "Grease"},
+    {"title": "(I've Had) The Time of My Life", "artist": "Bill Medley & Jennifer Warnes", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/41/f3/49/41f34968-bfb6-7253-58f6-e2d56b0e0979/mzaf_6987448208011331365.plus.aac.p.m4a", "year": "1987", "media": "film", "work": "Dirty Dancing"},
+    {"title": "City of Stars", "artist": "Ryan Gosling", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f7/4f/81/f74f8197-ef23-cf20-4afe-3f94654bd4ac/mzaf_3015711300938368315.plus.aac.p.m4a", "year": "2016", "media": "film", "work": "La La Land"},
+    {"title": "Time", "artist": "Hans Zimmer", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e0/1d/a4/e01da4a2-a75f-7ebf-9971-3d49e17efc57/mzaf_10500078769097048384.plus.aac.p.m4a", "year": "2010", "media": "film", "work": "Inception"},
+    {"title": "Il buono, il brutto, il cattivo", "artist": "Ennio Morricone", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0f/b3/38/0fb33873-6414-4797-91ca-99a408a124a9/mzaf_8953908913732167856.plus.aac.p.m4a", "year": "1966", "media": "film", "work": "Il buono, il brutto, il cattivo"},
+    {"title": "C'era una volta il West", "artist": "Ennio Morricone & Edda Dell'Orso", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2d/9c/51/2d9c5150-5d48-496c-21c1-5b29f430b2a1/mzaf_1887774323445046395.plus.aac.p.m4a", "year": "1968", "media": "film", "work": "C'era una volta il West"},
+    {"title": "Nuovo cinema paradiso", "artist": "Ennio Morricone", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview71/v4/04/59/7b/04597bda-f9db-4ff7-3d2d-325df59a7d2e/mzaf_1563285688986947522.plus.aac.p.m4a", "year": "1988", "media": "film", "work": "Nuovo Cinema Paradiso"},
+    {"title": "La vita è bella", "artist": "Nicola Piovani", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/1d/c1/da/1dc1daf4-0361-c735-3eb9-15d71c7ff392/mzaf_2164466108628583131.plus.aac.p.m4a", "year": "1997", "media": "film", "work": "La vita è bella"},
+    {"title": "All Star", "artist": "Smash Mouth", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8b/2c/42/8b2c42eb-a194-0327-eeb4-caaaa14ee61b/mzaf_13415710220894021381.plus.aac.p.m4a", "year": "2001", "media": "film", "work": "Shrek"},
+    {"title": "I'm a Believer", "artist": "Smash Mouth", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8a/fe/70/8afe70e7-668f-b674-7cb9-c91653486c6f/mzaf_12130408814718476286.plus.aac.p.m4a", "year": "2001", "media": "film", "work": "Shrek"},
+    {"title": "The Avengers", "artist": "Alan Silvestri", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bf/a7/9f/bfa79f79-b635-0f8c-d72f-e59db79108af/mzaf_9009025771638181825.plus.aac.p.m4a", "year": "2012", "media": "film", "work": "Avengers"},
+    {"title": "The Pink Panther Theme", "artist": "Henry Mancini", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/c7/6f/24c76f94-1636-73d5-81f6-e3e47e0fff1b/mzaf_5332735104775495241.plus.aac.p.m4a", "year": "1963", "media": "film", "work": "La Pantera Rosa"},
+    {"title": "Skyfall", "artist": "Adele", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6c/48/0e/6c480edc-89f5-a9cf-b309-63c5237efe92/mzaf_3142604484249449871.plus.aac.p.m4a", "year": "2012", "media": "film", "work": "Skyfall (007)"},
+    {"title": "Superman - Main Theme", "artist": "John Williams", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bc/75/93/bc759353-afbe-d813-9f96-4d7fe78918d5/mzaf_2573904274854061997.plus.aac.p.m4a", "year": "1978", "media": "film", "work": "Superman"},
+    {"title": "Forrest Gump Suite", "artist": "Alan Silvestri", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cf/03/5f/cf035f70-4ea7-05d3-dc19-e9fd61fe3712/mzaf_13825196697094444997.plus.aac.p.m4a", "year": "1994", "media": "film", "work": "Forrest Gump"},
+    {"title": "Misirlou", "artist": "Dick Dale", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/68/6a/3e/686a3eaa-d9fa-f5bb-3ad0-41d5ff1242d3/mzaf_1754524748973980427.plus.aac.p.m4a", "year": "1994", "media": "film", "work": "Pulp Fiction"},
+    {"title": "Bang Bang (My Baby Shot Me Down)", "artist": "Nancy Sinatra", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9c/76/4e/9c764e06-f21e-85b3-4362-a28bf2d8f0ca/mzaf_6151014352599621928.plus.aac.p.m4a", "year": "2003", "media": "film", "work": "Kill Bill"},
+    {"title": "Hooked On a Feeling", "artist": "Blue Swede & Björn Skifs", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/13/2e/5c/132e5c06-0153-744c-4fce-7347b5023dbe/mzaf_16236958159127056163.plus.aac.p.m4a", "year": "2014", "media": "film", "work": "Guardiani della Galassia"},
+    {"title": "Reality", "artist": "Richard Sanderson", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/75/6a/54/756a5431-3824-52e1-3c0a-c2846b6e0df4/mzaf_13915807686240340827.plus.aac.p.m4a", "year": "1980", "media": "film", "work": "Il tempo delle mele"},
+    {"title": "Flashdance… What A Feeling", "artist": "Irene Cara", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/36/70/fd/3670fd61-c3be-5652-f583-92b28e71a43a/mzaf_11282840968900551131.plus.aac.p.m4a", "year": "1983", "media": "film", "work": "Flashdance"},
+    {"title": "I Don't Want to Miss a Thing", "artist": "Aerosmith", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2b/cc/11/2bcc117d-4af2-16e7-d6d6-ada6daf94b89/mzaf_4404710048553507758.plus.aac.p.m4a", "year": "1998", "media": "film", "work": "Armageddon"},
+    {"title": "I Will Always Love You", "artist": "Whitney Houston", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b8/62/8e/b8628e33-44b4-c29d-c681-17cb1c81f0d7/mzaf_4326728538320140755.plus.aac.p.m4a", "year": "1992", "media": "film", "work": "Guardia del corpo"},
+    {"title": "Oh, Pretty Woman", "artist": "Roy Orbison", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bc/45/c5/bc45c5e4-61d9-8074-df34-6117fb8146c2/mzaf_17905078581365919431.plus.aac.p.m4a", "year": "1990", "media": "film", "work": "Pretty Woman"},
+    {"title": "Mamma Mia", "artist": "Meryl Streep", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/22/9b/c4/229bc444-8a11-5cd4-e88e-329606c66e64/mzaf_7300248637054509010.plus.aac.p.m4a", "year": "2008", "media": "film", "work": "Mamma Mia!"},
+    {"title": "Suddenly I See", "artist": "KT Tunstall", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/eb/a9/bf/eba9bffa-354a-8652-c96a-8dd80c1c6b23/mzaf_4165674357668011622.plus.aac.p.m4a", "year": "2006", "media": "film", "work": "Il diavolo veste Prada"},
+    {"title": "She", "artist": "Elvis Costello", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a6/a1/46/a6a146ac-8050-7bb1-27cf-69b4f30a7146/mzaf_13020144836976813487.plus.aac.p.m4a", "year": "1999", "media": "film", "work": "Notting Hill"},
+    {"title": "Unchained Melody", "artist": "The Righteous Brothers", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c7/ee/8b/c7ee8b9f-d163-f583-1d95-0e480255a28b/mzaf_16782687670938493222.plus.aac.p.m4a", "year": "1990", "media": "film", "work": "Ghost"},
+    {"title": "Men In Black", "artist": "Will Smith", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/df/76/60/df7660a8-6330-d384-2df7-c3ac9566bd8c/mzaf_5968128030680647840.plus.aac.p.m4a", "year": "1997", "media": "film", "work": "Men in Black"},
+    {"title": "Lose Yourself", "artist": "Eminem", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/13/5a/61/135a6154-8ca2-0523-1fa2-f4ac0ea9e1e7/mzaf_13242749689945681184.plus.aac.p.m4a", "year": "2002", "media": "film", "work": "8 Mile"},
+    {"title": "Let It Go", "artist": "Idina Menzel", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/43/5f/36/435f3609-ddd5-bc10-3dbb-ddf5872b93ce/mzaf_9461789858996596537.plus.aac.p.m4a", "year": "2013", "media": "film", "work": "Frozen"},
+    {"title": "Barbie World (with Aqua)", "artist": "Nicki Minaj & Ice Spice", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/19/5d/13/195d1394-c91a-27cd-63a2-c783361eb975/mzaf_11304170247462285205.plus.aac.p.m4a", "year": "2023", "media": "film", "work": "Barbie"},
+    {"title": "Can You Hear the Music", "artist": "Ludwig Göransson", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0d/b0/b8/0db0b839-4fbc-2bb6-e280-3c9dc1302cf2/mzaf_12466660795519790459.plus.aac.p.m4a", "year": "2023", "media": "film", "work": "Oppenheimer"},
+    {"title": "Circle of Life", "artist": "Elton John", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f2/34/dc/f234dc60-9940-c49a-0d95-88e80c41f131/mzaf_15300188754417833089.plus.aac.p.m4a", "year": "1994", "media": "film", "work": "Il Re Leone"},
+    {"title": "Profondo rosso", "artist": "Goblin", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/02/39/d0/0239d048-314c-cceb-376c-f7acb0d17c38/mzaf_2091216037046427483.plus.aac.p.m4a", "year": "1975", "media": "film", "work": "Profondo rosso"},
+    {"title": "Amici miei", "artist": "Carlo Rustichelli", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/71/aa/f0/71aaf08f-95e5-ad97-bdee-7367b47ce73e/mzaf_14329696620426058291.plus.aac.p.m4a", "year": "1975", "media": "film", "work": "Amici miei"},
+    {"title": "Chariots of Fire", "artist": "Vangelis", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/30/88/44/308844c4-a813-aa22-1da2-c5cd7657adad/mzaf_11412573995450483451.plus.aac.p.m4a", "year": "1981", "media": "film", "work": "Momenti di gloria"},
+    {"title": "Blade Runner Blues", "artist": "Vangelis", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/38/0b/bb/380bbb87-b000-73f5-34f0-432cc7803109/mzaf_3031386695797448077.plus.aac.p.m4a", "year": "1982", "media": "film", "work": "Blade Runner"},
+    {"title": "Hymn to the Sea", "artist": "James Horner", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f8/04/a8/f804a84b-f05d-f726-16ed-1cb7f804c679/mzaf_9033381706815778113.plus.aac.p.m4a", "year": "1997", "media": "film", "work": "Titanic"},
+    {"title": "Comptine d'un autre été, l'après-midi", "artist": "Yann Tiersen", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/62/54/5e/62545ee7-29dc-5b25-345a-976d2be8ad6e/mzaf_13593239243179866678.plus.aac.p.m4a", "year": "2001", "media": "film", "work": "Il favoloso mondo di Amélie"},
+    {"title": "Jack Sparrow", "artist": "Hans Zimmer", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/5d/9f/d55d9f9d-f757-8bc7-7884-de31d0e10130/mzaf_6341470117852937710.plus.aac.p.m4a", "year": "2006", "media": "film", "work": "Pirati dei Caraibi"},
+    {"title": "Paul's Dream", "artist": "Hans Zimmer", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9f/5e/3d/9f5e3da8-e698-31b3-c4e4-5964df457951/mzaf_11074540054311181787.plus.aac.p.m4a", "year": "2021", "media": "film", "work": "Dune"},
+    {"title": "The Breaking of the Fellowship", "artist": "Howard Shore", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/76/63/a5/7663a5f1-8ba5-b962-6934-e341b554f2de/mzaf_3265949809881181091.plus.aac.p.m4a", "year": "2001", "media": "film", "work": "Il Signore degli Anelli"},
+    {"title": "Main Title", "artist": "Ramin Djawadi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/61/28/ad/6128ade4-d49a-3811-df92-b231bb3b3803/mzaf_1140403213038657471.plus.aac.p.m4a", "year": "2011", "media": "serie", "work": "Il Trono di Spade"},
+    {"title": "Superman", "artist": "Lazlo Bane", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/0e/7a/81/0e7a8140-c4be-4349-f090-ca5275307c62/mzaf_14106798017072802250.plus.aac.p.m4a", "year": "2001", "media": "serie", "work": "Scrubs"},
+    {"title": "Breaking Bad", "artist": "Dave Porter", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2f/d2/4c/2fd24c76-fe15-1674-7199-dc6348b712eb/mzaf_17815772063370693887.plus.aac.p.m4a", "year": "2008", "media": "serie", "work": "Breaking Bad"},
+    {"title": "I'll Be There for You", "artist": "The Rembrandts", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a2/04/8f/a2048f47-0881-3310-e174-86e438338f4e/mzaf_11003106221760999590.plus.aac.p.m4a", "year": "1994", "media": "serie", "work": "Friends"},
+    {"title": "Stranger Things", "artist": "Kyle Dixon & Michael Stein", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c5/ce/6a/c5ce6acb-160b-de87-1831-e64677b11275/mzaf_17733386572512726172.plus.aac.p.m4a", "year": "2016", "media": "serie", "work": "Stranger Things"},
+    {"title": "My Life Is Going On", "artist": "Cecilia Krull", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e2/6e/05/e26e0594-3ab3-e068-d81b-c2be00c1a308/mzaf_3692129303798161724.plus.aac.p.m4a", "year": "2017", "media": "serie", "work": "La casa di carta"},
+    {"title": "Bella Ciao", "artist": "Manu Pilas", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ca/47/9b/ca479b14-5c55-22e1-4afe-c5497735df66/mzaf_18311470039273782382.plus.aac.p.m4a", "year": "2017", "media": "serie", "work": "La casa di carta"},
+    {"title": "Twin Peaks Theme", "artist": "Angelo Badalamenti", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/85/e3/3d/85e33d82-6a63-0117-5907-931677ba10e3/mzaf_17387001389429707570.plus.aac.p.m4a", "year": "1990", "media": "serie", "work": "Twin Peaks"},
+    {"title": "The X-Files Theme", "artist": "Mark Snow & Chris Carter", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/db/2b/05/db2b055a-a4ae-43dd-1a76-a8506d327e76/mzaf_16942281551703488024.plus.aac.p.m4a", "year": "1993", "media": "serie", "work": "X-Files"},
+    {"title": "Teardrop", "artist": "Massive Attack", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a3/a6/91/a3a691b0-8e49-399d-2585-ddcd6694c9f2/mzaf_16325826545413166648.plus.aac.p.m4a", "year": "2004", "media": "serie", "work": "Dr. House"},
+    {"title": "The Fresh Prince of Bel Air", "artist": "DJ Jazzy Jeff & The Fresh Prince", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f1/d1/ae/f1d1ae4f-2bb1-e562-dc74-28d1ee6e209c/mzaf_16668810951528105959.plus.aac.p.m4a", "year": "1990", "media": "serie", "work": "Willy, il principe di Bel-Air"},
+    {"title": "Big Bang Theory Theme", "artist": "Barenaked Ladies", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c4/ae/a0/c4aea056-8fc5-fff9-6c61-74fe6f7734ca/mzaf_170073029966653320.plus.aac.p.m4a", "year": "2007", "media": "serie", "work": "The Big Bang Theory"},
+    {"title": "Hey Beautiful", "artist": "The Solids", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4b/1c/c4/4b1cc426-276b-10b7-850a-1821acd609f0/mzaf_5309022754103130642.plus.aac.p.m4a", "year": "2005", "media": "serie", "work": "How I Met Your Mother"},
+    {"title": "I Don't Want to Wait", "artist": "Paula Cole", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/8d/09/d7/8d09d7c6-1e28-b837-2e44-ebd92f105021/mzaf_55253566503105541.plus.aac.p.m4a", "year": "1998", "media": "serie", "work": "Dawson's Creek"},
+    {"title": "CALIFORNIA", "artist": "Phantom Planet", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cf/41/15/cf4115fb-b6d4-1c5f-d0c0-2632af17e6fa/mzaf_15106166899979344966.plus.aac.p.m4a", "year": "2003", "media": "serie", "work": "The O.C."},
+    {"title": "Where You Lead I Will Follow", "artist": "Carole King", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/31/ba/82/31ba828e-81eb-7ec9-b274-efb7b42796f7/mzaf_16597999968554914458.plus.aac.p.m4a", "year": "2000", "media": "serie", "work": "Una mamma per amica"},
+    {"title": "Goo Goo Muck", "artist": "The Cramps", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/26/8e/b6/268eb63d-b228-a040-3934-61840bd07c84/mzaf_12426396297438116241.plus.aac.p.m4a", "year": "2022", "media": "serie", "work": "Mercoledì"},
+    {"title": "Red Right Hand", "artist": "Nick Cave", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/17/f7/6c/17f76cb2-edcf-1f9a-36e1-91d22aed1cf4/mzaf_650125541615225564.plus.aac.p.m4a", "year": "2013", "media": "serie", "work": "Peaky Blinders"},
+    {"title": "Woke Up This Morning", "artist": "Alabama 3", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/38/4b/17/384b1764-619a-725d-0f82-38d17c27889a/mzaf_17812759547458040962.plus.aac.p.m4a", "year": "1999", "media": "serie", "work": "I Soprano"},
+    {"title": "SHERlocked", "artist": "David Arnold & Michael Price", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6f/a0/7d/6fa07d63-16ae-b54c-14bc-3dd007ad4479/mzaf_1083475285289279628.plus.aac.p.m4a", "year": "2010", "media": "serie", "work": "Sherlock"},
+    {"title": "Main Title Theme - Westworld", "artist": "Ramin Djawadi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ce/de/8b/cede8b3f-4137-c6f1-e17a-3b0f619f7ed4/mzaf_9634988424484271208.plus.aac.p.m4a", "year": "2016", "media": "serie", "work": "Westworld"},
+    {"title": "The Mandalorian", "artist": "Ludwig Göransson", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7f/7f/06/7f7f0624-697c-a5a6-28ba-0315c7565139/mzaf_6538370982614567471.plus.aac.p.m4a", "year": "2019", "media": "serie", "work": "The Mandalorian"},
+    {"title": "If I Had a Heart", "artist": "Fever Ray", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b3/56/62/b35662b3-c294-cae1-83c0-7997c2e69d0b/mzaf_31383231768757932.plus.aac.p.m4a", "year": "2013", "media": "serie", "work": "Vikings"},
+    {"title": "Far From Any Road", "artist": "The Handsome Family", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/24/ae/94/24ae94f1-b166-fd69-61cf-eb4546d48a5b/mzaf_13456387978333004458.plus.aac.p.m4a", "year": "2014", "media": "serie", "work": "True Detective"},
+    {"title": "Tuyo", "artist": "Rodrigo Amarante", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7a/8c/a5/7a8ca5c1-7a64-e96e-bed9-c4fa079a9141/mzaf_13979939506381741705.plus.aac.p.m4a", "year": "2015", "media": "serie", "work": "Narcos"},
+    {"title": "Way Back then", "artist": "Jung Jae Il", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d7/20/ad/d720ad12-4218-a259-63f9-da61e54ad95d/mzaf_849333195698017388.plus.aac.p.m4a", "year": "2021", "media": "serie", "work": "Squid Game"},
+    {"title": "Cosy In the Rocket", "artist": "Psapp", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/Music7/v4/43/2c/4f/432c4fe6-f75a-5b36-b7db-bc5bf68387eb/mzaf_6315104109118700012.plus.aac.p.m4a", "year": "2005", "media": "serie", "work": "Grey's Anatomy"},
+    {"title": "I'm Always Here", "artist": "Jimi Jamison", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e0/09/99/e009995c-8991-6bc6-0f53-6ecccc8082de/mzaf_18063509472486356408.plus.aac.p.m4a", "year": "1989", "media": "serie", "work": "Baywatch"},
+    {"title": "Happy Days", "artist": "Pratt & McClain", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/2f/8e/55/2f8e55cd-59d3-19e8-8152-005d61c0a557/mzaf_10657507389411991378.plus.aac.p.m4a", "year": "1974", "media": "serie", "work": "Happy Days"},
+    {"title": "Succession", "artist": "Nicholas Britell", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1a/56/0d/1a560db6-2ec9-e160-3bc5-bbb3bb9940ea/mzaf_10340756199296060404.plus.aac.p.m4a", "year": "2018", "media": "serie", "work": "Succession"},
+    {"title": "The Crown Main Title", "artist": "Hans Zimmer", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2f/63/08/2f630821-052b-713c-8f0b-1c84aebd5d7f/mzaf_6859402035942869099.plus.aac.p.m4a", "year": "2016", "media": "serie", "work": "The Crown"},
+    {"title": "Downton Abbey - The Suite", "artist": "John Lunn & The Chamber Orchestra of London", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b2/c2/c2/b2c2c214-48b2-f331-359c-3cd8e70e012c/mzaf_13550784924962864349.plus.aac.p.m4a", "year": "2010", "media": "serie", "work": "Downton Abbey"},
+    {"title": "'O Mar For", "artist": "Matteo Paolillo, Lolloflow & Raiz", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/dc/4f/4b/dc4f4b60-94d7-e399-9ceb-e31fec0c55ca/mzaf_11376702235895905784.plus.aac.p.m4a", "year": "2020", "media": "serie", "work": "Mare Fuori"},
+    {"title": "Gli occhi del cuore, una storia nuova", "artist": "Elio e le Storie Tese", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/27/ce/98/27ce9874-8151-189e-810e-17724f8e782c/mzaf_16201283951497117301.plus.aac.p.m4a", "year": "2007", "media": "serie", "work": "Boris"},
+    {"title": "Nuje vulimme 'na speranza", "artist": "NTO", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c6/5b/9d/c65b9d29-254d-3ad7-5134-4ea526d8753d/mzaf_2899200360540746896.plus.aac.p.m4a", "year": "2014", "media": "serie", "work": "Gomorra"},
+    {"title": "All for Us", "artist": "Labrinth & Zendaya", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3e/29/65/3e2965a3-eef9-c513-952c-af55c8f57ed9/mzaf_17469689629727910482.plus.aac.p.m4a", "year": "2019", "media": "serie", "work": "Euphoria"},
+    {"title": "The Last of Us", "artist": "Gustavo Santaolalla", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/18/bb/7a/18bb7a0a-10bd-13d7-8d71-78a1c407a5f5/mzaf_7015665378801919271.plus.aac.p.m4a", "year": "2023", "media": "serie", "work": "The Last of Us"},
+    {"title": "Light of the Seven", "artist": "Ramin Djawadi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3d/d7/6a/3dd76a51-66a6-32d6-55e6-6378fa2db72f/mzaf_10087025944876857986.plus.aac.p.m4a", "year": "2011", "media": "serie", "work": "Il Trono di Spade"},
+    {"title": "Life and Death", "artist": "Michael Giacchino", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/78/f0/c5/78f0c531-4645-2b67-92ed-3f34ea810ada/mzaf_17473079462362298520.plus.aac.p.m4a", "year": "2004", "media": "serie", "work": "Lost"},
+    {"title": "Sei Dentro Me", "artist": "Phil Collins & Marisa Luca", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9e/20/d4/9e20d4f4-bfe8-e2d7-304d-cdbdd61a3deb/mzaf_16432410865446086627.plus.aac.p.m4a", "year": "1999", "media": "disney", "work": "Tarzan"},
+    {"title": "Farò di Te un Uomo", "artist": "Cast italiano di Mulan", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8e/ef/ac/8eefacd6-a3e4-937f-5c2f-918ab5d029a8/mzaf_6670862822421312367.plus.aac.p.m4a", "year": "1998", "media": "disney", "work": "Mulan"},
+    {"title": "Riflesso", "artist": "Cast italiano di Mulan", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1a/93/a3/1a93a368-8236-bdfb-1774-e654676d983d/mzaf_3316817341356173325.plus.aac.p.m4a", "year": "1998", "media": "disney", "work": "Mulan"},
+    {"title": "Il cerchio della vita", "artist": "Cheryl Porter & Lebo M", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c4/57/02/c45702b6-f050-f8e8-0e1a-1c680cfef09a/mzaf_2294541126617590034.plus.aac.p.m4a", "year": "1994", "media": "disney", "work": "Il Re Leone"},
+    {"title": "Hakuna Matata", "artist": "Cast italiano del Re Leone", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/59/be/48/59be489a-6640-b160-1cf4-7a25448ade6b/mzaf_16493071070193860958.plus.aac.p.m4a", "year": "1994", "media": "disney", "work": "Il Re Leone"},
+    {"title": "Voglio diventare presto un re", "artist": "Cast italiano del Re Leone", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b7/2d/76/b72d76fe-2c00-067a-cca2-40f15973a8fe/mzaf_13957472068812068253.plus.aac.p.m4a", "year": "1994", "media": "disney", "work": "Il Re Leone"},
+    {"title": "L'amore è nell'aria stasera", "artist": "Marco Mengoni, Elisa Toffoli e altri", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f8/1c/10/f81c10e3-259c-4b2e-b16d-715ce5c17f57/mzaf_14724917680829334309.plus.aac.p.m4a", "year": "2019", "media": "disney", "work": "Il Re Leone (2019)"},
+    {"title": "Un amico come me", "artist": "Marco Manca", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/44/44/c2/4444c21f-d5db-aa9c-a1a6-a88d3f8c8399/mzaf_3375497450597222520.plus.aac.p.m4a", "year": "2019", "media": "disney", "work": "Aladdin (2019)"},
+    {"title": "La Bella e la Bestia", "artist": "Fiamma Izzo, Giovanna Rapattoni e altri", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/6e/de/40/6ede4090-cfcb-9693-4a1e-95408a5f0cf3/mzaf_2178765300089413415.plus.aac.p.m4a", "year": "1991", "media": "disney", "work": "La Bella e la Bestia"},
+    {"title": "Stia Con Noi", "artist": "Vittorio Amandola", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/47/17/28/47172881-89b2-2ee1-c7fd-124fa7c999da/mzaf_3112395160060178938.plus.aac.p.m4a", "year": "1991", "media": "disney", "work": "La Bella e la Bestia"},
+    {"title": "All'alba sorgerò", "artist": "Serena Autieri", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ba/f1/69/baf16976-1c43-41dd-1cf2-5c3020be6b62/mzaf_6535054359353603143.plus.aac.p.m4a", "year": "2013", "media": "disney", "work": "Frozen"},
+    {"title": "Facciamo un pupazzo insieme?", "artist": "Lucrezia Cesari, Serena Rossi & Elisa Rinaldi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a2/e5/f3/a2e5f33f-dece-bfac-ae2b-7d833247f2f2/mzaf_13497512379691385071.plus.aac.p.m4a", "year": "2013", "media": "disney", "work": "Frozen"},
+    {"title": "Non si nomina Bruno", "artist": "Cast italiano di Encanto", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c2/29/6d/c2296d03-5602-29fb-95f3-30a69bb3c0f0/mzaf_13155698779951978810.plus.aac.p.m4a", "year": "2021", "media": "disney", "work": "Encanto"},
+    {"title": "Oltre l'orizzonte", "artist": "Chiara Grispo", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/48/7e/57/487e57e6-0941-2241-a13d-392698e576f4/mzaf_10577587458831054596.plus.aac.p.m4a", "year": "2016", "media": "disney", "work": "Oceania"},
+    {"title": "Prego", "artist": "Sergio Sylvestre", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7e/aa/f3/7eaaf3f9-8744-204e-a84b-b936261bfe78/mzaf_8561298106691123592.plus.aac.p.m4a", "year": "2016", "media": "disney", "work": "Oceania"},
+    {"title": "Lo stretto indispensabile", "artist": "Luigi Palma & Tony De Falco", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/5b/ab/d55bab85-689c-7f4b-2062-08003a708168/mzaf_9088489129004522613.plus.aac.p.m4a", "year": "1967", "media": "disney", "work": "Il libro della giungla"},
+    {"title": "Voglio essere come te", "artist": "Lorenzo Spadoni, Luigi Palma & Tony De Falco", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fb/8b/88/fb8b8894-0fbb-af94-93ff-66828dbb5172/mzaf_9093206440909176147.plus.aac.p.m4a", "year": "1967", "media": "disney", "work": "Il libro della giungla"},
+    {"title": "Un poco di zucchero", "artist": "Tina Centi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/bb/e6/01/bbe60133-d4a7-001b-a0ad-5e3a903c9e29/mzaf_8915404008927491840.plus.aac.p.m4a", "year": "1964", "media": "disney", "work": "Mary Poppins"},
+    {"title": "I colori del vento", "artist": "Manuela Villa", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/56/f5/1c/56f51c48-16d1-e304-ae6c-d6596889d22c/mzaf_13038606174435319574.plus.aac.p.m4a", "year": "1995", "media": "disney", "work": "Pocahontas"},
+    {"title": "Un Amico In Me", "artist": "Riccardo Cocciante", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3a/cd/68/3acd6890-b251-1a34-d5a4-eba8130efe83/mzaf_1949166101558619683.plus.aac.p.m4a", "year": "1995", "media": "disney", "work": "Toy Story"},
+    {"title": "Ricordami", "artist": "Michele Bravi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/da/c9/08/dac90889-b475-0ecd-7ede-750e5f5cc5da/mzaf_12122180489544566188.plus.aac.p.m4a", "year": "2017", "media": "disney", "work": "Coco"},
+    {"title": "Bibbidi-Bobbidi-Bu", "artist": "Lydia Simoneschi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview114/v4/3d/6e/19/3d6e19c2-458a-e5b0-6302-abc731630279/mzaf_4921932870034409817.plus.aac.p.m4a", "year": "1950", "media": "disney", "work": "Cenerentola"},
+    {"title": "Una Stella Cade", "artist": "Riccardo Billi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview124/v4/4a/02/46/4a0246b2-081d-b7e9-4b38-912a5f301968/mzaf_5425761198364478285.plus.aac.p.m4a", "year": "1940", "media": "disney", "work": "Pinocchio"},
+    {"title": "Ehi-Ho!", "artist": "The Pietro Carapellucci Choir", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3c/52/e0/3c52e0d3-d1da-e72b-686b-26641c95a738/mzaf_6573134423795228328.plus.aac.p.m4a", "year": "1937", "media": "disney", "work": "Biancaneve"},
+    {"title": "Luci del paradiso / Fiamme dell'inferno", "artist": "Eros Pagni & Massimo Ranieri", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/50/cb/e750cb1a-5ba1-1b14-29e1-00b5e3b09950/mzaf_11823323838345169528.plus.aac.p.m4a", "year": "1996", "media": "disney", "work": "Il Gobbo di Notre Dame"},
+    {"title": "A un passo dai miei sogni", "artist": "Karima", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/11/53/e0/1153e050-8ee3-2674-27bd-48fcee0c4db6/mzaf_9231064858989375262.plus.aac.p.m4a", "year": "2009", "media": "disney", "work": "La principessa e il ranocchio"},
+    {"title": "Il mondo è mio", "artist": "Cast italiano di Aladdin", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/81/b6/3b/81b63b33-9e83-f9fa-d7bc-2fafde29bffc/mzaf_6594984305595811507.plus.aac.p.m4a", "year": "1992", "media": "disney", "work": "Aladdin"},
+    {"title": "Il principe Alì", "artist": "Gigi Proietti", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6a/5a/2b/6a5a2b13-5dfb-1cff-3389-4ac9db9c28e2/mzaf_13756370709629371123.plus.aac.p.m4a", "year": "1992", "media": "disney", "work": "Aladdin"},
+    {"title": "In fondo al mar", "artist": "Ronny Grant", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/60/e8/fc/60e8fca7-8d61-9789-8326-8eba57428602/mzaf_8862259882799514832.plus.aac.p.m4a", "year": "1989", "media": "disney", "work": "La Sirenetta"},
+    {"title": "Baciala", "artist": "Ronny Grant", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/5c/3a/c2/5c3ac202-27f1-7f10-dea9-0807b9aafb74/mzaf_12328196516327478775.plus.aac.p.m4a", "year": "1989", "media": "disney", "work": "La Sirenetta"},
+    {"title": "Per lei mi batterò", "artist": "Cast italiano di Mulan", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bc/80/44/bc804476-4d04-c446-9a9d-037ea3435915/mzaf_15908971779812685190.plus.aac.p.m4a", "year": "1998", "media": "disney", "work": "Mulan"},
+    {"title": "Supercalifragilistichespiralidoso", "artist": "Oreste Lionello & Tina Centi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/d2/3c/a0/d23ca07b-b12b-3e44-5d0b-d0b59315baf3/mzaf_4458512986567853392.plus.aac.p.m4a", "year": "1964", "media": "disney", "work": "Mary Poppins"},
+    {"title": "Al di fuori di me", "artist": "Phil Collins", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/20/a9/a4/20a9a482-9caf-54f1-a902-354b72ca6f9f/mzaf_5878951640259187399.plus.aac.p.m4a", "year": "1999", "media": "disney", "work": "Tarzan"},
+    {"title": "In tuo figlio", "artist": "Phil Collins", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/Music7/v4/7f/47/83/7f4783d6-174e-3f60-b96b-cdcae35f10dc/mzaf_8642305795786218785.plus.aac.p.m4a", "year": "1999", "media": "disney", "work": "Tarzan"},
+    {"title": "Posso farcela", "artist": "Alex Baroni", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0c/92/26/0c9226df-1cc9-b613-7bd2-ed828a50d292/mzaf_3848542380199310318.plus.aac.p.m4a", "year": "1997", "media": "disney", "work": "Hercules"},
+    {"title": "Ieri era zero", "artist": "Cast italiano di Hercules", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cf/53/60/cf53604d-0476-dfbe-24ba-b79128820295/mzaf_17526702410345949857.plus.aac.p.m4a", "year": "1997", "media": "disney", "work": "Hercules"},
+    {"title": "Ti vada o no", "artist": "Barbara Cola e le Muse", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/04/48/00/044800a8-6b95-be24-2c33-faf8f965bd80/mzaf_12862355534115439586.plus.aac.p.m4a", "year": "1997", "media": "disney", "work": "Hercules"},
+    {"title": "L'ultima speranza", "artist": "Giancarlo Magalli", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b4/b3/ec/b4b3ec7e-4f04-a27e-c0d4-0424744edec9/mzaf_11317421320288091199.plus.aac.p.m4a", "year": "1997", "media": "disney", "work": "Hercules"},
+    {"title": "Pokemon", "artist": "Giorgio Vanni", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ce/39/17/ce391728-0be0-9d2f-7acc-f40869cdb6ac/mzaf_499368294333429305.plus.aac.p.m4a", "year": "1997", "media": "anime", "work": "Pokémon"},
+    {"title": "Pokémon Theme", "artist": "Jason Paige", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ab/e7/a5/abe7a559-a50e-2028-181b-78f38b2fe008/mzaf_4245764207713231770.plus.aac.p.m4a", "year": "1997", "media": "anime", "work": "Pokémon"},
+    {"title": "Cha-La Head-Cha-La", "artist": "Hironobu Kageyama", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8e/93/c2/8e93c207-0258-43a4-5b09-9189cef530b6/mzaf_15641348911856609509.plus.aac.p.m4a", "year": "1989", "media": "anime", "work": "Dragon Ball Z"},
+    {"title": "Blue Bird", "artist": "Ikimonogakari", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9a/a5/c3/9aa5c3d6-b763-a852-e3f2-60f5270f196e/mzaf_13214537326205111491.plus.aac.p.m4a", "year": "2007", "media": "anime", "work": "Naruto Shippuden"},
+    {"title": "We Are!", "artist": "Kitadani Hiroshi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8f/24/81/8f24812e-465c-4499-bf29-bdd6c0bd13ff/mzaf_17985712931854519957.plus.aac.p.m4a", "year": "1999", "media": "anime", "work": "One Piece"},
+    {"title": "All'arrembaggio!", "artist": "Cristina D'Avena", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ca/2b/0c/ca2b0c78-4c9e-8944-fc3a-e3dd5f7731e0/mzaf_18243241475661555399.plus.aac.p.m4a", "year": "1999", "media": "anime", "work": "One Piece"},
+    {"title": "Guren no Yumiya", "artist": "Linked Horizon", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2a/40/a2/2a40a2cb-db11-cba9-1cf5-3af116422559/mzaf_13163169508142169061.plus.aac.p.m4a", "year": "2013", "media": "anime", "work": "L'attacco dei giganti"},
+    {"title": "The WORLD", "artist": "NIGHTMARE", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b4/d5/af/b4d5af01-a506-72d1-ffd9-ca06850eb413/mzaf_18420713273840677382.plus.aac.p.m4a", "year": "2006", "media": "anime", "work": "Death Note"},
+    {"title": "Sailor Moon", "artist": "Cristina D'Avena", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/88/89/52/88895235-1ff7-9ea6-d89f-1a5180974ce9/mzaf_1597074115471119354.plus.aac.p.m4a", "year": "1992", "media": "anime", "work": "Sailor Moon"},
+    {"title": "Theme from Lupin III", "artist": "Yuji Ohno & Lupintic Five", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bd/4d/fe/bd4dfef9-3816-9d59-bf53-1553a53c5f5d/mzaf_8087605501558078635.plus.aac.p.m4a", "year": "1977", "media": "anime", "work": "Lupin III"},
+    {"title": "Ai Wo Torimodose", "artist": "Crystal King", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview113/v4/3e/9d/f7/3e9df7df-7fee-5364-dd4d-e01f9ff75767/mzaf_15219283070346403294.plus.aac.p.m4a", "year": "1984", "media": "anime", "work": "Ken il guerriero"},
+    {"title": "A Cruel Angel's Thesis", "artist": "Yoko Takahashi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bc/73/1b/bc731b20-2b4a-aa0a-08e3-cdead8d612bf/mzaf_2050640833676529854.plus.aac.p.m4a", "year": "1995", "media": "anime", "work": "Neon Genesis Evangelion"},
+    {"title": "Gurenge", "artist": "LiSA", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d7/45/22/d7452274-6107-7ace-420b-1b509d55d067/mzaf_15546458713313472040.plus.aac.p.m4a", "year": "2019", "media": "anime", "work": "Demon Slayer"},
+    {"title": "Kaikai Kitan", "artist": "Eve", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b1/b9/99/b1b999d6-2533-85f0-7eda-3b51122f5fdc/mzaf_5590574589561084646.plus.aac.p.m4a", "year": "2020", "media": "anime", "work": "Jujutsu Kaisen"},
+    {"title": "THE DAY", "artist": "Porno Graffitti", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e0/90/71/e0907193-9a44-3592-146b-93736a689cfb/mzaf_1339523069479240305.plus.aac.p.m4a", "year": "2016", "media": "anime", "work": "My Hero Academia"},
+    {"title": "unravel", "artist": "TK from Ling tosite sigure", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/47/d8/df/47d8df4c-f4ea-aa54-ca53-a7028c14e009/mzaf_10498383233375963447.plus.aac.p.m4a", "year": "2014", "media": "anime", "work": "Tokyo Ghoul"},
+    {"title": "again", "artist": "YUI", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/52/1b/de/521bde3d-8424-1394-6483-5399fe9bdcd5/mzaf_7017228999404591967.plus.aac.p.m4a", "year": "2009", "media": "anime", "work": "Fullmetal Alchemist: Brotherhood"},
+    {"title": "Doraemon", "artist": "Cristina D'Avena", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/29/a9/1b/29a91b61-0762-c44f-dd16-b3ad100f5463/mzaf_15764378794980194773.plus.aac.p.m4a", "year": "1979", "media": "anime", "work": "Doraemon"},
+    {"title": "Lady Oscar", "artist": "I Cavalieri Del Re", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/80/25/e4/8025e438-d5a7-4723-a714-c6641ecfc40c/mzaf_5240922790574659559.plus.aac.p.m4a", "year": "1979", "media": "anime", "work": "Lady Oscar"},
+    {"title": "Detective Conan", "artist": "Giorgio Vanni", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2f/e5/2f/2fe52fd0-ffe8-94a7-92d5-8709eaeb5eee/mzaf_7074744527842962801.plus.aac.p.m4a", "year": "1996", "media": "anime", "work": "Detective Conan"},
+    {"title": "departure!", "artist": "Masatoshi Ono", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/56/e5/97/56e5974a-21f7-efdc-dd50-b46269ac9738/mzaf_16570227010377914572.plus.aac.p.m4a", "year": "2011", "media": "anime", "work": "Hunter x Hunter"},
+    {"title": "One Summer's Day", "artist": "Joe Hisaishi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/93/df/c7/93dfc7e9-1dfb-2cad-753e-d94045af1cb6/mzaf_8912103099424665116.plus.aac.p.m4a", "year": "2001", "media": "anime", "work": "La città incantata"},
+    {"title": "Totoro", "artist": "Joe Hisaishi", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/68/17/246817d9-5f5a-8b7b-2529-71ae72567a33/mzaf_12833270588066119220.plus.aac.p.m4a", "year": "1988", "media": "anime", "work": "Il mio vicino Totoro"},
+    {"title": "Tank!", "artist": "SEAT BELTS", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5c/c4/94/5cc494a0-7e75-79cf-e48b-b100cbdd174e/mzaf_15399371244227236105.plus.aac.p.m4a", "year": "1998", "media": "anime", "work": "Cowboy Bebop"},
+    {"title": "KICK BACK", "artist": "Kenshi Yonezu", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/86/2d/45/862d4572-805c-3a72-49a4-905a8c327888/mzaf_14805576631717868964.plus.aac.p.m4a", "year": "2022", "media": "anime", "work": "Chainsaw Man"},
+    {"title": "Mixed Nuts", "artist": "OFFICIAL HIGE DANDISM", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/30/64/fd/3064fd37-4b3d-5701-ff4b-0b0f104cc972/mzaf_15083708845954640504.plus.aac.p.m4a", "year": "2022", "media": "anime", "work": "Spy x Family"},
+    {"title": "Asterisk", "artist": "Orange Range", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/15/1d/68/151d6865-cfcd-8763-ceef-d21d02499f12/mzaf_2400936301138394563.plus.aac.p.m4a", "year": "2004", "media": "anime", "work": "Bleach"},
+    {"title": "Kiss Me Licia", "artist": "Cristina D'Avena", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/11/95/69/119569e0-14a9-98e6-c393-ca24336ae73e/mzaf_9410609592840234443.plus.aac.p.m4a", "year": "1985", "media": "anime", "work": "Kiss me Licia"},
+    {"title": "Occhi di Gatto", "artist": "Bambole Di Pezza & Cristina D'Avena", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/41/50/e7/4150e7dd-6e5b-3ccd-9146-6e5bc9894505/mzaf_16224768962692032449.plus.aac.p.m4a", "year": "1985", "media": "anime", "work": "Occhi di gatto"},
+    {"title": "Pollon, Pollon combina guai", "artist": "Cristina D'Avena", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/87/23/b9/8723b9c2-7b75-4d27-e847-a618b38a0da6/mzaf_16934615017588911406.plus.aac.p.m4a", "year": "1982", "media": "anime", "work": "Pollon"},
+    {"title": "Holly e Benji due fuoriclasse", "artist": "Paolo Picutti & Stefano Bersola", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/bf/55/06/bf5506d6-36cd-b910-6470-baa80012726c/mzaf_7978336606487260116.plus.aac.p.m4a", "year": "1983", "media": "anime", "work": "Holly e Benji"},
+    {"title": "Ufo Robot", "artist": "Actarus", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e6/fc/cb/e6fccb4c-b337-8abf-edfc-edb8b802ceb8/mzaf_16116419988381335125.plus.aac.p.m4a", "year": "1978", "media": "anime", "work": "Goldrake"},
+    {"title": "Dragon Ball", "artist": "Giorgio Vanni", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1a/82/cc/1a82cc3a-a732-3118-7666-443dce682115/mzaf_1889142634112506681.plus.aac.p.m4a", "year": "1986", "media": "anime", "work": "Dragon Ball"},
+    {"title": "Dragon Ball GT", "artist": "Giorgio Vanni", "audioUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/de/9b/62/de9b62ab-b634-4292-f824-1c6dfd598259/mzaf_6300590722396163413.plus.aac.p.m4a", "year": "1996", "media": "anime", "work": "Dragon Ball GT"}
+  ];
+  SONGS.push(...MEDIA_SONGS);
+
+  /* =========================================================
      Squadre globali (nomi/colori/punteggio impostati in
      index.html) — stesso sistema condiviso usato in tutti gli
      altri giochi: se già presenti, si parte subito con quei
@@ -757,12 +955,19 @@
   function isItalianSong(song){
     return typeof song.it === "boolean" ? song.it : ITALIAN_ARTISTS.has(song.artist);
   }
-  let langFilter = "all"; // "it" | "int" | "all"
+  let langFilter = "all"; // "it" | "int" | "all" | "media"
+  let mediaFilter = "all";  // "all" | "film" | "serie" | "disney" | "anime"
   function songPool(){
-    return SONGS.map((_, i) => i).filter(i =>
-      langFilter === "all" || (langFilter === "it") === isItalianSong(SONGS[i])
-    );
+    return SONGS.map((_, i) => i).filter(i => {
+      const song = SONGS[i];
+      if (langFilter === "media") return !!song.media && (mediaFilter === "all" || song.media === mediaFilter);
+      if (song.media) return false;
+      return langFilter === "all" || (langFilter === "it") === isItalianSong(song);
+    });
   }
+  const MEDIA_LABELS = { film: "🎬 Film", serie: "📺 Serie TV", disney: "🏰 Disney", anime: "🐉 Anime e cartoni" };
+  const currentSong = () => (state && state.currentSongIndex != null ? SONGS[state.currentSongIndex] : null);
+  const isMediaSong = () => { const s = currentSong(); return !!(s && s.media); };
 
   const GLOBAL_TEAMS_KEY = "homeGamesTeams";
   let scoreBaseline = [];
@@ -907,8 +1112,8 @@
       <div class="points-team-row">
         <span class="points-team-name" style="color:${team.color}">${escapeHtml(team.name)}</span>
         <div class="points-btns">
-          <button class="point-btn point-btn-2" type="button" data-i="${i}" data-pts="2">+2 Titolo e Artista</button>
-          <button class="point-btn point-btn-1" type="button" data-i="${i}" data-pts="1">+1 Solo Uno</button>
+          <button class="point-btn point-btn-2" type="button" data-i="${i}" data-pts="2">${isMediaSong() ? "+2 Opera e Brano" : "+2 Titolo e Artista"}</button>
+          <button class="point-btn point-btn-1" type="button" data-i="${i}" data-pts="1">${isMediaSong() ? "+1 Solo l'Opera" : "+1 Solo Uno"}</button>
         </div>
       </div>
     `).join("");
@@ -950,14 +1155,21 @@
     if (audioPlayer.currentTime < SNIPPET_SECONDS) pauseResumeBtn.textContent = "▶️ Riprendi";
 
     const song = SONGS[state.currentSongIndex];
-    revealTitle.textContent = song.title;
-    revealArtist.textContent = song.artist;
-    revealYear.textContent = song.year ? `Anno: ${song.year}` : "";
+    if (song.media){
+      /* Colonne sonore: in primo piano l'opera, sotto il brano e chi lo firma */
+      revealTitle.innerHTML = `<span class="reveal-work-tag">${MEDIA_LABELS[song.media]}</span><br>${escapeHtml(song.work)}`;
+      revealArtist.textContent = `«${song.title}» — ${song.artist}`;
+      revealYear.textContent = song.year ? `Anno: ${song.year}` : "";
+    } else {
+      revealTitle.textContent = song.title;
+      revealArtist.textContent = song.artist;
+      revealYear.textContent = song.year ? `Anno: ${song.year}` : "";
+    }
     revealPanel.classList.add("show");
     revealBtn.disabled = true;
 
     updatePointsButtonsState();
-    playerStatus.textContent = "🎯 Brano rivelato! Assegna i punti a chi ha indovinato.";
+    playerStatus.textContent = song.media ? "🎯 Rivelato! Assegna i punti a chi ha riconosciuto l'opera." : "🎯 Brano rivelato! Assegna i punti a chi ha indovinato.";
   }
 
   revealBtn.addEventListener("click", revealSong);
@@ -1015,7 +1227,7 @@
       });
     }
     vinylDisc.classList.add("spinning");
-    playerStatus.textContent = "🎶 In riproduzione... indovina Titolo e Artista!";
+    playerStatus.textContent = song.media ? "🍿 In riproduzione... da quale film, serie o cartone viene?" : "🎶 In riproduzione... indovina Titolo e Artista!";
     playBtn.style.display = "none";
     pauseResumeBtn.style.display = "inline-block";
     pauseResumeBtn.disabled = false;
@@ -1051,7 +1263,7 @@
       audioPlayer.play();
       vinylDisc.classList.add("spinning");
       pauseResumeBtn.textContent = "⏸ Pausa";
-      if (!state.revealed) playerStatus.textContent = "🎶 In riproduzione... indovina Titolo e Artista!";
+      if (!state.revealed) playerStatus.textContent = isMediaSong() ? "🍿 In riproduzione... da quale film, serie o cartone viene?" : "🎶 In riproduzione... indovina Titolo e Artista!";
     } else {
       audioPlayer.pause();
       vinylDisc.classList.remove("spinning");
@@ -1076,7 +1288,19 @@
     const btn = e.target.closest(".lang-btn");
     if (!btn || btn.dataset.lang === langFilter) return;
     langFilter = btn.dataset.lang;
-    document.querySelectorAll(".lang-btn").forEach(b => b.classList.toggle("active", b === btn));
+    document.querySelectorAll("#langSwitch .lang-btn").forEach(b => b.classList.toggle("active", b === btn));
+    document.getElementById("mediaSwitch").hidden = langFilter !== "media";
+    state.queue = shuffle(songPool());
+    state.queuePos = 0;
+    resetPlayerForNextSong();
+  });
+
+  /* ---- Sotto-filtro Film / Serie TV / Disney / Anime ---- */
+  document.getElementById("mediaSwitch").addEventListener("click", (e) => {
+    const btn = e.target.closest(".lang-btn");
+    if (!btn || btn.dataset.media === mediaFilter) return;
+    mediaFilter = btn.dataset.media;
+    document.querySelectorAll("#mediaSwitch .lang-btn").forEach(b => b.classList.toggle("active", b === btn));
     state.queue = shuffle(songPool());
     state.queuePos = 0;
     resetPlayerForNextSong();
