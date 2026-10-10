@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Stecca — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     LA STECCA — "Higher Number Showdown". File singolo e
+     autocontenuto con lo stesso sistema grafico e la stessa
+     gestione squadre/punteggi globali degli altri giochi.
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+    --glass-bg: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --accent: #00f5a0;
+    --accent2: #00b8ff;
+    --accent-soft: rgba(0, 245, 160, 0.16);
+    --accent-glow: rgba(0, 245, 160, 0.5);
+    --ok: #00e676;
+    --ok-soft: rgba(0, 230, 118, 0.16);
+    --ko: #ff3b5c;
+    --ko-soft: rgba(255, 59, 92, 0.16);
+    --warn: #ffd600;
+    --warn-soft: rgba(255, 214, 0, 0.14);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden]{ display: none !important; }
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-blobs{
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.26;
+    animation: float 22s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+  .bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+  @keyframes float{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-25px) scale(1.08); }
+  }
+
+  /* ---- Navbar ---- */
+  .navbar{
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+  }
+  .nav-back{
+    text-decoration: none; color: var(--text-main);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+  .nav-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  }
+  .nav-title .dot{ width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .nav-right{ display: flex; align-items: center; gap: 10px; }
+  .nav-counter{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
+    background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 999px;
+  }
+  .nav-info-btn{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+
+  /* ---- Stage ---- */
+  .stage{
+    max-width: 1100px; margin: 0 auto; padding: 32px 24px 100px;
+    min-height: calc(100vh - 68px);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    gap: 24px; text-align: center;
+  }
+  .view{ width: 100%; display: none; flex-direction: column; align-items: center; gap: 22px; animation: fadeIn 0.4s ease; }
+  .view.active{ display: flex; }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  .section-title{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.4rem, 3.4vw, 2rem);
+  }
+  .section-title span{
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .muted{ color: var(--text-muted); font-weight: 600; }
+
+  /* ---- Pulsanti ---- */
+  .btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem;
+    padding: 16px 30px; border-radius: 16px; border: none; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; box-shadow: 0 0 25px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+  .btn-outline{ background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+  .btn-outline:hover{ background: var(--accent-soft); }
+  .btn-ghost{ background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
+  .btn-ghost:hover{ border-color: var(--accent); color: var(--accent); }
+  .btn-small{ padding: 9px 14px; font-size: 0.85rem; border-radius: 11px; }
+  .btn:active{ transform: scale(0.97); }
+  .btn:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+  .btn-row{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Switch (stesso stile dei filtri degli altri giochi) ---- */
+  .switch{
+    display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 5px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 999px;
+  }
+  .switch-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem;
+    color: var(--text-muted); background: transparent; border: none;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .switch-btn:hover{ color: var(--text-main); }
+  .switch-btn.active{ background: var(--accent); color: #06090f; box-shadow: 0 0 18px -4px var(--accent-glow); }
+  .setup-row{ display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; }
+  .setup-label{ font-weight: 700; color: var(--text-muted); font-size: 0.9rem; }
+  .team-select{
+    background: rgba(0,0,0,0.3); color: var(--text-main); border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 9px 12px; font-family: 'Poppins', sans-serif; font-weight: 700;
+  }
+
+  /* ---- Tabellone punteggi (2 squadre) ---- */
+  .score-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 760px; }
+  .score-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px;
+    padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: all 0.3s ease;
+  }
+  .score-card.just-scored{
+    border-color: var(--ok); background: var(--ok-soft);
+    box-shadow: 0 0 30px -6px rgba(0,230,118,0.5); transform: translateY(-4px);
+  }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
+  .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); line-height: 1.1; }
+  .score-sub{ font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+  .pips{ display: flex; gap: 5px; justify-content: center; }
+  .pips i{ width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); }
+  .pips i.on{ background: var(--warn); border-color: var(--warn); box-shadow: 0 0 10px var(--warn); }
+
+  /* ---- Scelta categoria ---- */
+  .cat-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; width: 100%; }
+  .cat-card{
+    background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 20px;
+    padding: 18px 16px; cursor: pointer; text-align: left; color: var(--text-main);
+    display: flex; flex-direction: column; gap: 6px; transition: all 0.22s ease; font-family: inherit;
+  }
+  .cat-card:hover{ border-color: var(--accent); box-shadow: 0 0 28px -8px var(--accent-glow); transform: translateY(-4px); }
+  .cat-card.used{ opacity: 0.55; }
+  .cat-icon{ font-size: 2rem; }
+  .cat-name{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.08rem; }
+  .cat-desc{ color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; }
+  .cat-meta{ display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: auto; }
+  .cat-played{
+    font-size: 0.72rem; font-weight: 800; color: var(--warn); background: var(--warn-soft);
+    border: 1px solid var(--warn); padding: 3px 9px; border-radius: 999px;
+  }
+  .cat-unit{
+    align-self: flex-start; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent); padding: 3px 9px; border-radius: 999px;
+  }
+
+  /* ---- Manche ---- */
+  .cat-header{ display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .cat-header .cat-title{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.3rem, 3.2vw, 1.9rem); }
+  .cat-header .cat-rule{ color: var(--text-muted); font-weight: 600; max-width: 640px; line-height: 1.4; }
+  .progress-dots{ display: flex; gap: 10px; justify-content: center; }
+  .progress-dots span{
+    width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.95rem;
+    background: var(--glass-bg); border: 2px solid var(--glass-border); color: var(--text-muted); transition: all 0.3s ease;
+  }
+  .progress-dots span.done{ border-color: var(--accent); color: var(--accent); }
+  .progress-dots span.current{ background: var(--accent); color: #06090f; border-color: var(--accent); box-shadow: 0 0 18px var(--accent-glow); transform: scale(1.12); }
+
+  .element-card{
+    width: 100%; max-width: 640px; border-radius: 26px; padding: 22px 24px;
+    background: linear-gradient(160deg, rgba(0,245,160,0.14), rgba(0,184,255,0.06));
+    border: 2px solid var(--accent); box-shadow: 0 0 50px -14px var(--accent-glow);
+  }
+  .element-card.pop{ animation: popIn 0.45s ease; }
+  @keyframes popIn{
+    0%{ transform: scale(0.85) rotateX(60deg); opacity: 0.2; }
+    100%{ transform: scale(1) rotateX(0); opacity: 1; }
+  }
+  .element-eyebrow{ font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); font-size: 0.82rem; }
+  .element-name{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.9rem, 6vw, 3.2rem); line-height: 1.1; margin-top: 4px; }
+  .element-emoji{ font-size: clamp(2.2rem, 6vw, 3.2rem); line-height: 1; }
+  .flag{ height: 1em; width: auto; border-radius: 6px; vertical-align: -0.12em; box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
+  table.summary .flag, .master-row .flag{ height: 0.95em; border-radius: 3px; }
+
+  .duel{ display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; width: 100%; align-items: stretch; }
+  .vs{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--accent);
+    display: flex; align-items: center; justify-content: center; text-shadow: 0 0 18px var(--accent-glow);
+  }
+  .team-panel{
+    position: relative; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px;
+    background: var(--glass-bg); border: 2px solid var(--glass-border); transition: border-color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+  }
+  .team-panel.leading{ border-color: var(--ok); background: var(--ok-soft); box-shadow: 0 0 34px -10px rgba(0,230,118,0.6); }
+  .lead-badge{
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--ok); color: #04210f; font-weight: 900; font-size: 0.72rem; letter-spacing: 0.5px;
+    padding: 4px 12px; border-radius: 999px; display: none; white-space: nowrap;
+  }
+  .team-panel.leading .lead-badge{ display: block; animation: popIn 0.35s ease; }
+  .panel-head{ display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.05rem; }
+  .panel-total{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1; font-variant-numeric: tabular-nums; }
+  .panel-total small{ display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .panel-total.bump{ animation: bump 0.5s ease; }
+  @keyframes bump{ 40%{ transform: scale(1.12); } }
+  .answer-input{
+    width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 12px;
+    color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.1rem;
+    padding: 12px 14px; text-align: center;
+  }
+  .answer-input:focus{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .answer-input.secret{ -webkit-text-security: disc; }
+  .answer-input:disabled{ opacity: 0.9; }
+  .result-box{
+    min-height: 74px; border-radius: 14px; padding: 10px 12px; background: rgba(0,0,0,0.22);
+    border: 1px dashed var(--glass-border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .result-box.found{ border-style: solid; border-color: rgba(0,245,160,0.45); }
+  .result-box.missing{ border-style: solid; border-color: var(--warn); background: var(--warn-soft); }
+  .result-name{ font-weight: 800; font-size: 0.98rem; }
+  .result-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.35rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .result-note{ font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
+  .result-box.missing .result-note{ color: var(--warn); }
+  .edit-btn{
+    margin-top: 2px; font-size: 0.78rem; font-weight: 800; cursor: pointer; border-radius: 999px; padding: 5px 12px;
+    background: transparent; color: var(--text-muted); border: 1px solid var(--glass-border); transition: all 0.2s ease;
+  }
+  .edit-btn:hover{ color: var(--warn); border-color: var(--warn); }
+  .result-box.missing .edit-btn{ color: #06090f; background: var(--warn); border-color: var(--warn); }
+
+  .best-box{
+    width: 100%; max-width: 760px; border-radius: 16px; padding: 12px 16px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); font-size: 0.92rem; color: var(--text-muted); line-height: 1.6;
+  }
+  .best-box b{ color: var(--text-main); }
+  .tools-row{ display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Riepilogo manche ---- */
+  .summary-card{
+    width: 100%; max-width: 900px; border-radius: 24px; padding: 18px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); overflow-x: auto;
+  }
+  table.summary{ width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 0.95rem; }
+  table.summary th{ font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 800; padding: 4px 8px; }
+  table.summary td{ background: rgba(0,0,0,0.2); padding: 10px 8px; vertical-align: middle; }
+  table.summary td:first-child{ border-radius: 12px 0 0 12px; text-align: left; font-weight: 800; }
+  table.summary td:last-child{ border-radius: 0 12px 12px 0; }
+  table.summary .ans{ font-weight: 700; }
+  table.summary .val{ font-family: 'Poppins', sans-serif; font-weight: 800; color: var(--accent); white-space: nowrap; }
+  table.summary .miss{ color: var(--warn); }
+  table.summary tfoot td{ background: transparent; font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.25rem; padding-top: 12px; }
+  table.summary .win{ color: var(--ok); }
+  .mini-edit{ background: none; border: none; cursor: pointer; font-size: 0.95rem; opacity: 0.7; }
+  .mini-edit:hover{ opacity: 1; transform: scale(1.15); }
+  .winner-banner{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.3rem, 3.6vw, 2rem);
+    padding: 14px 26px; border-radius: 18px; background: var(--ok-soft); border: 2px solid var(--ok); color: var(--ok);
+  }
+  .winner-banner.tie{ background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+
+  /* ---- Modali ---- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    background-color: #0f1426;
+    border: 1px solid var(--glass-border); border-radius: 26px; padding: 30px;
+    max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97); transition: transform 0.25s ease; text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.5rem;
+    color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .modal-card ol{ padding-left: 22px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; line-height: 1.5; font-size: 0.98rem; }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 18px; line-height: 1.45; }
+  .master-card .modal-title{ color: var(--warn); }
+  .master-info{ display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin-bottom: 16px; font-size: 0.95rem; }
+  .master-info dt{ color: var(--text-muted); font-weight: 700; }
+  .master-info dd{ font-weight: 800; }
+  .field{ display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label{ font-weight: 800; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+  .field select, .field input{
+    width: 100%; background: rgba(0,0,0,0.35); border: 1px solid var(--glass-border); border-radius: 12px;
+    color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1rem; padding: 12px 14px;
+  }
+  .field select:focus, .field input:focus{ outline: none; border-color: var(--warn); }
+  .field .hint{ font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
+  .field .preview{ font-size: 0.9rem; color: var(--warn); font-weight: 800; min-height: 1.2em; }
+  .or-sep{ text-align: center; color: var(--text-muted); font-weight: 800; font-size: 0.8rem; margin: -2px 0 12px; }
+  .check{ display: flex; gap: 8px; align-items: center; font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin-bottom: 16px; }
+  .master-list{ display: flex; flex-direction: column; gap: 8px; }
+  .master-row{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; align-items: center; background: rgba(0,0,0,0.25); border-radius: 12px; padding: 8px 10px; font-size: 0.88rem; }
+  .master-row b{ font-family: 'Poppins', sans-serif; }
+  .master-cell{ display: flex; justify-content: space-between; gap: 6px; align-items: center; }
+
+  .win-card{ text-align: center; }
+  .win-card .modal-title{ justify-content: center; font-size: clamp(1.5rem, 4vw, 2.1rem); }
+  .win-trophy{ font-size: 4.5rem; animation: popIn 0.5s ease; }
+  .win-name{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.7rem, 5vw, 2.6rem); margin: 6px 0; }
+  .win-sub{ color: var(--text-muted); font-weight: 600; margin-bottom: 20px; line-height: 1.5; }
+
+  /* ---- Coriandoli ---- */
+  .confetti{ position: fixed; inset: 0; pointer-events: none; z-index: 2000; overflow: hidden; }
+  .confetti i{
+    position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; opacity: 0.95;
+    animation: fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform: translate(var(--dx), 110vh) rotate(var(--rot)); opacity: 0.9; }
+  }
+
+  .toast{
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0;
+    background: rgba(15,20,38,0.96); border: 1px solid var(--glass-border); color: var(--text-main);
+    padding: 12px 18px; border-radius: 14px; font-weight: 700; z-index: 3000; transition: all 0.3s ease; pointer-events: none;
+  }
+  .toast.show{ opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 760px){
+    .duel{ grid-template-columns: 1fr; }
+    .vs{ font-size: 1.2rem; }
+    .master-row{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px){
+    .navbar{ padding: 10px 14px; gap: 8px; }
+    .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+    .nav-title{ font-size: 1.05rem; gap: 7px; }
+    .nav-counter{ display: none; }
+    .stage{ padding: 20px 14px 60px; gap: 16px; }
+    .btn{ padding: 14px 22px; font-size: 0.95rem; border-radius: 13px; }
+    .score-value{ font-size: 1.6rem; }
+    .progress-dots span{ width: 32px; height: 32px; }
+    .modal-card{ padding: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>📈 La Stecca</span>
+  <div class="nav-right">
+    <span class="nav-counter" id="counter">Manche 1</span>
+    <button class="nav-info-btn" id="masterNavBtn" type="button" title="Pannello Master">🛠️</button>
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">Higher Number Showdown: due squadre, una categoria, 5 elementi. Vince chi somma il numero più alto!</p>
+    <ol>
+      <li>Scegli una delle <strong>20 categorie</strong> (o estraila a caso con 🎲): per esempio <strong>Popolazione Città</strong>. Una categoria può riuscire più volte nella stessa partita: gli elementi cambiano, così non si ripetono gli stessi Paesi o temi.</li>
+      <li>Compaiono <strong>5 elementi</strong> uno alla volta (es. Spagna, Italia, Giappone…). Per ognuno le due squadre scrivono una risposta: per la Spagna una squadra scrive "Barcellona", l'altra "Madrid". Le risposte sono nascoste con i pallini finché non premi <strong>🔍 Rivela</strong>.</li>
+      <li>Il gioco cerca ogni risposta nel database e ne mostra il <strong>valore</strong> (es. abitanti di Madrid ≈ 3,3 milioni), che si <strong>somma</strong> al totale della squadra per quella manche. Non contano maiuscole e accenti, e sono accettati piccoli errori o parole troncate ("Giappon", "Barcelona").</li>
+      <li>Dopo i 5 elementi, chi ha il <strong>totale più alto vince la manche</strong> e guadagna <strong>+1 punto</strong> nel tabellone generale della serata.</li>
+      <li><strong>Pannello Master 🛠️</strong>: se una risposta è valida ma non è nel database (o il valore è sbagliato), premi <strong>✏️ Modifica / Aggiungi valore</strong>, inserisci il numero corretto e i totali si ricalcolano da soli. Puoi correggere anche dal riepilogo, prima di assegnare il punto.</li>
+      <li>Scegli all'inizio a quante manche vinte si arriva (3, 5 o senza limite): chi ci arriva per prima vince <strong>La Stecca</strong>!</li>
+    </ol>
+    <p class="modal-note">I valori sono indicativi (dati reali o stime aggiornate circa al 2025): in caso di dubbio decide il Master.</p>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ MODAL MASTER (correzione singola risposta) ============ -->
+<div class="modal-overlay" id="masterModal">
+  <div class="modal-card master-card">
+    <div class="modal-title">🛠️ Pannello Master</div>
+    <dl class="master-info">
+      <dt>Squadra</dt><dd id="mTeam"></dd>
+      <dt>Elemento</dt><dd id="mElement"></dd>
+      <dt>Risposta scritta</dt><dd id="mTyped"></dd>
+      <dt>Valore attuale</dt><dd id="mCurrent"></dd>
+    </dl>
+    <div class="field">
+      <label for="mSelect">Abbina a una risposta del database</label>
+      <select id="mSelect"></select>
+    </div>
+    <div class="or-sep">— OPPURE —</div>
+    <div class="field">
+      <label for="mValue">Valore manuale</label>
+      <input id="mValue" type="text" inputmode="decimal" autocomplete="off" placeholder="es. 185000 · 1,6 mln · 185k">
+      <span class="hint" id="mHint"></span>
+      <span class="preview" id="mPreview"></span>
+    </div>
+    <label class="check"><input type="checkbox" id="mRemember" checked> Ricorda questa risposta e il suo valore per le prossime partite su questo dispositivo</label>
+    <div class="btn-row" style="justify-content:flex-end">
+      <button class="btn btn-ghost btn-small" id="mZero" type="button">Vale 0</button>
+      <button class="btn btn-ghost btn-small" id="mCancel" type="button">Annulla</button>
+      <button class="btn btn-primary btn-small" id="mApply" type="button">✅ Applica e ricalcola</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL MASTER (tutte le risposte della manche) ============ -->
+<div class="modal-overlay" id="masterListModal">
+  <div class="modal-card master-card">
+    <div class="modal-title">🛠️ Pannello Master</div>
+    <p class="modal-note" id="mlNote">Tutte le risposte già rivelate in questa manche: tocca ✏️ per correggere un valore.</p>
+    <div class="master-list" id="mlList"></div>
+    <div class="btn-row" style="justify-content:flex-end; margin-top:16px">
+      <button class="btn btn-ghost btn-small" id="mlClose" type="button">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL VITTORIA (manche e partita) ============ -->
+<div class="modal-overlay" id="winModal">
+  <div class="modal-card win-card">
+    <div class="win-trophy" id="wTrophy">🏆</div>
+    <div class="modal-title" id="wTitle">Manche vinta!</div>
+    <div class="win-name" id="wName"></div>
+    <p class="win-sub" id="wSub"></p>
+    <div class="btn-row" id="wButtons"></div>
+  </div>
+</div>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage">
+
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <!-- 1. Scelta categoria -->
+  <section class="view active" id="setupView">
+    <div class="section-title">Scegli la <span>categoria</span></div>
+    <div class="setup-row" id="teamPickRow" hidden>
+      <span class="setup-label">Sfida:</span>
+      <select class="team-select" id="pickA"></select>
+      <span class="setup-label">contro</span>
+      <select class="team-select" id="pickB"></select>
+    </div>
+    <div class="setup-row">
+      <span class="setup-label">Vince chi arriva a:</span>
+      <div class="switch" id="targetSwitch">
+        <button type="button" class="switch-btn active" data-target="3">3 manche</button>
+        <button type="button" class="switch-btn" data-target="5">5 manche</button>
+        <button type="button" class="switch-btn" data-target="0">Senza limite</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="randomCatBtn" type="button">🎲 Estrai una categoria a caso</button>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <!-- 2. Manche: 5 elementi -->
+  <section class="view" id="playView">
+    <div class="cat-header">
+      <div class="cat-title" id="catTitle"></div>
+      <div class="cat-rule" id="catRule"></div>
+    </div>
+    <div class="progress-dots" id="progressDots"></div>
+    <div class="element-card" id="elementCard">
+      <div class="element-eyebrow" id="elementEyebrow"></div>
+      <div class="element-emoji" id="elementEmoji"></div>
+      <div class="element-name" id="elementName"></div>
+    </div>
+    <div class="duel" id="duel"></div>
+    <div class="best-box" id="bestBox" hidden></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="revealBtn" type="button">🔍 Rivela i valori</button>
+      <button class="btn btn-primary" id="nextBtn" type="button" hidden>Prossimo elemento ➜</button>
+    </div>
+    <div class="tools-row">
+      <button class="btn btn-ghost btn-small" id="secretBtn" type="button">🙈 Risposte nascoste</button>
+      <button class="btn btn-ghost btn-small" id="abortBtn" type="button">↩ Cambia categoria</button>
+    </div>
+  </section>
+
+  <!-- 3. Riepilogo manche -->
+  <section class="view" id="summaryView">
+    <div class="section-title">Risultato della <span>manche</span></div>
+    <div class="muted" id="summaryCat"></div>
+    <div class="summary-card"><table class="summary" id="summaryTable"></table></div>
+    <div class="winner-banner" id="winnerBanner"></div>
+    <p class="muted" id="summaryHint">Il Master può ancora correggere i valori con ✏️ prima di confermare.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="confirmBtn" type="button">🏆 Conferma e assegna il punto</button>
+      <button class="btn btn-primary" id="newMancheBtn" type="button" hidden>▶ Nuova manche</button>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* =========================================================
+     DATABASE CATEGORIE — valori reali o stimati (indicativi,
+     aggiornati circa al 2025). Ogni elemento ha una lista di
+     risposte nel formato "Nome|valore|alias1|alias2...".
+     fmt: "big" (mila/mln/mld), "int", "dec1" (1 decimale).
+     ========================================================= */
+  const CATEGORIES = [
+    {
+      id: "citta", icon: "🏙️", name: "Popolazione Città", unit: "abitanti", fmt: "big",
+      rule: "Scrivete una città di questo Paese: vince chi somma più abitanti.",
+      elements: [
+        { n: "Italia", e: "🇮🇹", i: ["Roma|2750000","Milano|1370000","Napoli|910000","Torino|840000","Palermo|630000","Genova|560000","Bologna|390000","Firenze|360000","Bari|315000","Catania|300000","Verona|255000","Venezia|250000","Messina|220000","Padova|207000","Trieste|199000","Brescia|197000","Parma|196000","Prato|195000","Taranto|188000","Modena|185000","Reggio Emilia|171000","Reggio Calabria|170000","Perugia|162000","Ravenna|155000","Livorno|153000","Rimini|150000","Cagliari|149000","Foggia|147000","Ferrara|130000","Salerno|127000","Latina|127000","Sassari|123000","Monza|123000","Bergamo|120000","Pescara|118000","Trento|118000","Vicenza|110000","Bolzano|107000","Piacenza|103000","Novara|101000","Ancona|99000","Udine|98000","Arezzo|97000","Lecce|94000","Pisa|89000","Lucca|89000","Catanzaro|84000","Como|83000","Pavia|71000","L'Aquila|69000|aquila","Potenza|64000","Cosenza|64000","Matera|59000","Siena|53000","Mantova|49000","Campobasso|47000","Aosta|33000"] },
+        { n: "Spagna", e: "🇪🇸", i: ["Madrid|3330000","Barcellona|1660000|barcelona|barca","Valencia|800000|valenza","Siviglia|685000|sevilla","Saragozza|680000|zaragoza","Malaga|580000","Murcia|465000","Palma di Maiorca|420000|palma|palma de mallorca","Las Palmas|380000","Bilbao|345000","Alicante|340000","Cordova|320000|cordoba","Valladolid|298000","Vigo|293000","Granada|230000","Pamplona|205000","San Sebastian|188000|donostia","Salamanca|144000","Cadice|112000|cadiz","Santiago de Compostela|98000|santiago","Toledo|85000","Ibiza|50000"] },
+        { n: "Germania", e: "🇩🇪", i: ["Berlino|3700000|berlin","Amburgo|1900000|hamburg","Monaco di Baviera|1500000|monaco|munchen|munich","Colonia|1080000|koln","Francoforte|770000|frankfurt","Stoccarda|630000|stuttgart","Dusseldorf|630000","Lipsia|610000|leipzig","Dortmund|590000","Essen|580000","Brema|570000|bremen","Dresda|560000|dresden","Hannover|545000","Norimberga|520000|nurnberg|nuremberg","Bonn|330000","Heidelberg|160000","Wolfsburg|125000"] },
+        { n: "Francia", e: "🇫🇷", i: ["Parigi|2100000|paris","Marsiglia|870000|marseille","Lione|520000|lyon","Tolosa|500000|toulouse","Nizza|340000|nice","Nantes|320000","Montpellier|300000","Strasburgo|290000|strasbourg","Bordeaux|260000","Lilla|235000|lille","Rennes|225000","Reims|180000","Tolone|180000|toulon","Digione|160000|dijon","Grenoble|158000","Avignone|91000|avignon","Cannes|74000"] },
+        { n: "Regno Unito", e: "🇬🇧", i: ["Londra|8900000|london","Birmingham|1150000","Leeds|810000","Glasgow|630000","Sheffield|560000","Manchester|550000","Edimburgo|520000|edinburgh","Liverpool|500000","Bristol|470000","Leicester|370000","Cardiff|360000","Belfast|345000","Nottingham|320000","Newcastle|300000","Brighton|280000","Southampton|250000","Oxford|160000","Cambridge|145000"] },
+        { n: "Stati Uniti", e: "🇺🇸", i: ["New York|8300000|nyc","Los Angeles|3800000|la","Chicago|2660000","Houston|2300000","Phoenix|1650000","Philadelphia|1550000|filadelfia","San Antonio|1500000","San Diego|1390000","Dallas|1300000","Austin|980000","Jacksonville|970000","San Francisco|810000","Seattle|750000","Denver|715000","Nashville|690000","Washington|680000","Las Vegas|660000","Boston|650000","Detroit|630000","Atlanta|510000","Miami|450000","New Orleans|365000","Orlando|320000"] },
+        { n: "Giappone", e: "🇯🇵", i: ["Tokyo|14000000|tokio","Yokohama|3770000","Osaka|2750000","Nagoya|2330000","Sapporo|1960000","Fukuoka|1600000","Kawasaki|1540000","Kobe|1500000","Kyoto|1450000","Saitama|1340000","Hiroshima|1200000","Sendai|1100000","Nagasaki|400000","Nara|350000","Naha|320000"] },
+        { n: "Brasile", e: "🇧🇷", i: ["San Paolo|11450000|sao paulo","Rio de Janeiro|6210000|rio","Brasilia|2820000","Fortaleza|2430000","Salvador|2420000|salvador de bahia","Belo Horizonte|2320000","Manaus|2060000","Curitiba|1770000","Recife|1490000","Goiania|1430000","Porto Alegre|1330000","Belem|1300000","Natal|750000","Florianopolis|540000"] },
+        { n: "Australia", e: "🇦🇺", i: ["Sydney|5300000","Melbourne|5200000","Brisbane|2600000","Perth|2200000","Adelaide|1400000","Gold Coast|720000","Canberra|470000","Hobart|250000","Darwin|150000","Cairns|160000"] },
+        { n: "Cina", e: "🇨🇳", i: ["Shanghai|24900000","Pechino|21900000|beijing","Chengdu|20900000","Canton|18700000|guangzhou","Shenzhen|17600000","Tianjin|13900000","Wuhan|13600000","Xi'an|12900000|xian","Hangzhou|12200000","Nanchino|9300000|nanjing","Hong Kong|7500000","Macao|680000|macau"] },
+        { n: "India", e: "🇮🇳", i: ["Mumbai|12400000|bombay","Delhi|11000000|nuova delhi|new delhi","Bangalore|8400000|bengaluru","Hyderabad|6800000","Ahmedabad|5600000","Chennai|4650000|madras","Calcutta|4500000|kolkata","Surat|4470000","Pune|3100000","Jaipur|3050000","Lucknow|2800000","Agra|1580000","Varanasi|1200000|benares"] },
+        { n: "Russia", e: "🇷🇺", i: ["Mosca|13000000|moscow","San Pietroburgo|5600000|pietroburgo","Novosibirsk|1630000","Ekaterinburg|1540000","Kazan|1310000","Nizhny Novgorod|1210000|nizhnij novgorod","Chelyabinsk|1180000|celjabinsk","Samara|1160000","Rostov sul Don|1140000|rostov","Vladivostok|600000","Kaliningrad|490000","Soci|450000|sochi","Murmansk|270000"] },
+        { n: "Messico", e: "🇲🇽", i: ["Città del Messico|9200000|mexico city|citta del messico","Tijuana|1920000","León|1720000|leon","Puebla|1690000","Ecatepec|1650000","Guadalajara|1390000","Monterrey|1140000","Mérida|990000|merida","Cancún|890000|cancun","Acapulco|780000","Oaxaca|270000"] },
+        { n: "Argentina", e: "🇦🇷", i: ["Buenos Aires|3120000","Córdoba|1500000|cordoba","Rosario|1000000","La Plata|770000","Mar del Plata|680000","Salta|620000","San Miguel de Tucumán|550000|tucuman","Bariloche|135000|san carlos de bariloche","Mendoza|115000","Ushuaia|80000"] },
+        { n: "Canada", e: "🇨🇦", i: ["Toronto|2790000","Montréal|1760000|montreal","Calgary|1310000","Ottawa|1020000","Edmonton|1010000","Winnipeg|750000","Mississauga|720000","Vancouver|660000","Québec|550000|quebec","Halifax|440000","Victoria|92000"] },
+        { n: "Turchia", e: "🇹🇷", i: ["Istanbul|15600000","Ankara|5800000","Smirne|4400000|izmir","Bursa|3200000","Antalya|2700000|adalia","Konya|2300000","Adana|2270000","Gaziantep|2150000","Trebisonda|820000|trabzon","Bodrum|200000"] },
+        { n: "Egitto", e: "🇪🇬", i: ["Il Cairo|10000000|cairo","Alessandria|5400000|alessandria d'egitto","Giza|4400000","Port Said|750000","Suez|750000","Luxor|500000","Assuan|290000|aswan","Hurghada|250000","Sharm el-Sheikh|73000|sharm"] },
+        { n: "Paesi Bassi", e: "🇳🇱", i: ["Amsterdam|930000","Rotterdam|670000","L'Aia|560000|aja|den haag","Utrecht|370000","Eindhoven|240000","Groninga|240000|groningen","Tilburg|225000","Haarlem|165000","Maastricht|122000","Delft|105000"] },
+        { n: "Svizzera", e: "🇨🇭", i: ["Zurigo|440000|zurich","Ginevra|205000|geneve","Basilea|175000|basel","Losanna|145000|lausanne","Berna|135000|bern","Winterthur|120000","Lucerna|83000|luzern","San Gallo|76000","Lugano|63000","Locarno|16000","Zermatt|5800","St. Moritz|5000|saint moritz|st moritz"] },
+        { n: "Portogallo", e: "🇵🇹", i: ["Lisbona|550000|lisboa","Vila Nova de Gaia|300000|gaia","Porto|235000|oporto","Braga|195000","Amadora|175000","Coimbra|140000","Funchal|105000","Aveiro|80000","Faro|65000","Évora|53000|evora"] },
+        { n: "Grecia", e: "🇬🇷", i: ["Atene|640000|athens","Salonicco|320000|thessaloniki","Patrasso|215000","Heraklion|180000|candia|iraklio","Larissa|145000","Volos|145000","Rodi|50000","Corfù|32000|corfu","Santorini|15000|thira","Mykonos|10000|mikonos"] },
+        { n: "Corea del Sud", e: "🇰🇷", i: ["Seul|9400000|seoul","Busan|3300000","Incheon|3000000","Daegu|2380000","Daejeon|1440000","Gwangju|1420000","Suwon|1200000","Ulsan|1110000","Jeju|490000"] },
+        { n: "Austria", e: "🇦🇹", i: ["Vienna|2000000|wien","Graz|300000","Linz|210000","Salisburgo|155000|salzburg","Innsbruck|132000","Klagenfurt|102000","Villach|64000","Bregenz|30000"] },
+        { n: "Polonia", e: "🇵🇱", i: ["Varsavia|1860000|warszawa","Cracovia|800000|krakow","Breslavia|670000|wroclaw","Łódź|655000|lodz","Poznań|540000|poznan","Danzica|470000|gdansk","Stettino|390000|szczecin","Lublino|330000|lublin","Katowice|280000"] },
+        { n: "Sudafrica", e: "🇿🇦", i: ["Johannesburg|5600000","Città del Capo|4700000|cape town|citta del capo","Durban|3900000","Pretoria|2900000","Gqeberha|1150000|port elizabeth","Bloemfontein|560000","Stellenbosch|190000"] }
+      ]
+    },
+    {
+      id: "instagram", icon: "📸", name: "Follower Instagram", unit: "mln follower", fmt: "int",
+      rule: "Scrivete un VIP, una squadra o un brand dell'ambito: vince chi somma più follower (in milioni).",
+      elements: [
+        { n: "Calciatori", e: "⚽", i: ["Cristiano Ronaldo|650|ronaldo|cr7","Lionel Messi|505|messi","Neymar|230|neymar jr","David Beckham|88|beckham","Kylian Mbappe|125|mbappe","Karim Benzema|77|benzema","Ronaldinho|75","Marcelo|70","Sergio Ramos|66|ramos","Mohamed Salah|64|salah","Zlatan Ibrahimovic|63|ibrahimovic|zlatan","Paul Pogba|60|pogba","Vinicius Jr|55|vinicius","Paulo Dybala|50|dybala","Erling Haaland|45|haaland","Lamine Yamal|40|yamal","Jude Bellingham|40|bellingham","Francesco Totti|12|totti","Gianluigi Buffon|11|buffon"] },
+        { n: "Cantanti internazionali", e: "🎤", i: ["Selena Gomez|420|selena","Ariana Grande|375|ariana","Beyonce|315","Justin Bieber|295|bieber","Taylor Swift|280|taylor","Jennifer Lopez|250|j lo|jlo","Nicki Minaj|225|nicki","Miley Cyrus|215|miley","Rihanna|150","Billie Eilish|120|billie","Shakira|90","Dua Lipa|88|dua","Bad Bunny|50","Ed Sheeran|50|sheeran","The Weeknd|30|weeknd"] },
+        { n: "Attori", e: "🎬", i: ["Dwayne Johnson|395|the rock|rock","Zendaya|180","Gal Gadot|106","Vin Diesel|95","Emma Watson|73","Will Smith|70","Tom Holland|68","Leonardo DiCaprio|62|dicaprio","Chris Hemsworth|59|hemsworth","Robert Downey Jr|57|downey|robert downey","Jennifer Aniston|44|aniston","Jason Statham|38|statham","Margot Robbie|30|robbie","Johnny Depp|29|depp","Tom Cruise|13|cruise"] },
+        { n: "VIP italiani", e: "🇮🇹", i: ["Khaby Lame|80|khaby","Chiara Ferragni|29|ferragni","Gianluca Vacchi|22|vacchi","Fedez|14","Belen Rodriguez|11|belen","Elettra Lamborghini|8|elettra","Laura Pausini|5|pausini","Elodie|5","Damiano David|5|damiano","Sfera Ebbasta|4.5|sfera","Fiorello|2"] },
+        { n: "Brand di moda", e: "👗", i: ["Nike|300","Victoria's Secret|74|victorias secret","Chanel|60","Zara|60","Louis Vuitton|56|lv","Gucci|52","Dior|49","H&M|38|hm|h e m","Prada|37","Versace|34","Dolce & Gabbana|32|dolce e gabbana|d&g|dolce gabbana","Adidas|30","Fendi|25","Armani|19|giorgio armani","Balenciaga|15"] },
+        { n: "Squadre di calcio", e: "🏟️", i: ["Real Madrid|180|real","Barcellona|130|barcelona|barca","Paris Saint-Germain|70|psg","Manchester United|65|man united|united","Juventus|60|juve","Manchester City|55|city|man city","Liverpool|50","Chelsea|45","Bayern Monaco|42|bayern","Arsenal|30","Al Nassr|25","Milan|17|ac milan","Inter|13|internazionale","Roma|10|as roma","Napoli|7"] },
+        { n: "Auto e supercar", e: "🏎️", i: ["Lamborghini|50","BMW|40","Mercedes-Benz|40|mercedes","Porsche|35","Ferrari|30","Audi|30","McLaren|18","Bugatti|18","Tesla|12","Rolls-Royce|7|rolls royce","Fiat|3"] }
+      ]
+    },
+    {
+      id: "spotify", icon: "🎧", name: "Stream su Spotify", unit: "mln stream", fmt: "int",
+      rule: "Scrivete una canzone dell'artista: vince chi somma più ascolti su Spotify (in milioni).",
+      elements: [
+        { n: "The Weeknd", e: "🌙", i: ["Blinding Lights|4900","Starboy|3500","Save Your Tears|2600","The Hills|2300","Die For You|2300","I Feel It Coming|1700","Can't Feel My Face|1500|cant feel my face"] },
+        { n: "Ed Sheeran", e: "🎸", i: ["Shape of You|4200","Perfect|3400","Photograph|2400","Thinking Out Loud|2300","Bad Habits|2000","Shivers|1400","Castle on the Hill|1300"] },
+        { n: "Taylor Swift", e: "💜", i: ["Cruel Summer|2700","Blank Space|2000","Anti-Hero|1900|antihero","Shake It Off|1700","Lover|1500","Love Story|1300","Style|1200","cardigan|1100"] },
+        { n: "Drake", e: "🦉", i: ["One Dance|3700","God's Plan|2700|gods plan","In My Feelings|1500","Hotline Bling|1500","Passionfruit|1300","Nice For What|1000"] },
+        { n: "Coldplay", e: "🌌", i: ["Something Just Like This|2700","Yellow|2300","Viva La Vida|2200","The Scientist|2000","A Sky Full of Stars|2000|sky full of stars","Paradise|1700","Fix You|1500","Hymn for the Weekend|1500","My Universe|1000"] },
+        { n: "Billie Eilish", e: "🖤", i: ["Birds of a Feather|3000","lovely|3000","bad guy|3000","when the party's over|1500|when the partys over","Ocean Eyes|1300","What Was I Made For?|1100|what was i made for"] },
+        { n: "Imagine Dragons", e: "🐉", i: ["Believer|3000","Thunder|2400","Demons|2000","Radioactive|2000","Enemy|1700","Bones|1100"] },
+        { n: "Eminem", e: "🎙️", i: ["Love The Way You Lie|2400","Lose Yourself|2300","Without Me|2100","Mockingbird|2000","'Till I Collapse|2000|till i collapse","The Real Slim Shady|1500|real slim shady","Superman|1000"] },
+        { n: "Dua Lipa", e: "💃", i: ["Don't Start Now|2700|dont start now","One Kiss|2100","Levitating|2000","New Rules|2000","Dance The Night|1100","Houdini|800"] },
+        { n: "Måneskin", e: "🔥", i: ["Beggin'|2000|beggin","I Wanna Be Your Slave|1100","Zitti e buoni|400","Mammamia|300","Torna a casa|300","Coraline|230","Supermodel|200"] },
+        { n: "Sfera Ebbasta", e: "💎", i: ["Baby|160","Calipso|140","Tran Tran|110","Rockstar|90","Mademoiselle|90","Bottiglie privè|80|bottiglie prive","Ciny|60"] }
+      ]
+    },
+    {
+      id: "imdb", icon: "⭐", name: "Voti IMDb", unit: "★", fmt: "dec1",
+      rule: "Scrivete un titolo: vince chi somma il voto IMDb più alto.",
+      elements: [
+        { n: "Christopher Nolan", e: "🌀", i: ["Il cavaliere oscuro|9.0|the dark knight|cavaliere oscuro","Inception|8.8","Interstellar|8.7","The Prestige|8.5|prestige","Memento|8.4","Il cavaliere oscuro - Il ritorno|8.4|the dark knight rises|dark knight rises","Oppenheimer|8.3","Batman Begins|8.2","Dunkirk|7.8","Following|7.4","Tenet|7.3","Insomnia|7.2"] },
+        { n: "Quentin Tarantino", e: "🩸", i: ["Pulp Fiction|8.9","Django Unchained|8.5|django","Bastardi senza gloria|8.4|inglourious basterds","Le iene|8.3|reservoir dogs","Kill Bill Vol. 1|8.2|kill bill|kill bill 1","Kill Bill Vol. 2|8.0|kill bill 2","The Hateful Eight|7.8|hateful eight","C'era una volta a Hollywood|7.6|once upon a time in hollywood","Jackie Brown|7.5","A prova di morte|7.0|death proof"] },
+        { n: "Film Marvel", e: "🦸", i: ["Avengers: Endgame|8.4|endgame","Avengers: Infinity War|8.4|infinity war","Spider-Man: No Way Home|8.2|no way home","Guardiani della Galassia|8.0|guardians of the galaxy|guardiani","The Avengers|8.0|avengers","Iron Man|7.9","Thor: Ragnarok|7.9|ragnarok","Guardiani della Galassia Vol. 3|7.9|guardiani 3","Captain America: Civil War|7.8|civil war","Captain America: The Winter Soldier|7.7|winter soldier","Deadpool & Wolverine|7.6|deadpool e wolverine","Doctor Strange|7.5","Black Panther|7.3","Ant-Man|7.3|antman","Captain Marvel|6.8","Eternals|6.3","Thor: Love and Thunder|6.2|love and thunder"] },
+        { n: "Pixar", e: "💡", i: ["Coco|8.4","WALL-E|8.4|wall e|walle","Toy Story|8.3","Up|8.3","Toy Story 3|8.3","Alla ricerca di Nemo|8.2|nemo|finding nemo","Inside Out|8.1","Ratatouille|8.1","Monsters & Co.|8.1|monsters e co|monsters inc","Gli Incredibili|8.0|incredibili","Soul|8.0","Inside Out 2|7.6","Luca|7.4","Cars|7.2","Ribelle - The Brave|7.1|ribelle|brave","Elemental|7.0"] },
+        { n: "Serie TV", e: "📺", i: ["Breaking Bad|9.5","Chernobyl|9.3","The Wire|9.3","Il Trono di Spade|9.2|game of thrones|trono di spade|got","I Soprano|9.2|the sopranos|soprano","Sherlock|9.1","Better Call Saul|9.0","The Office|9.0","Friends|8.9","True Detective|8.9","Peaky Blinders|8.8","Stranger Things|8.7","Dark|8.7","The Last of Us|8.7","The Crown|8.6","Lost|8.3","How I Met Your Mother|8.3|himym","La casa di carta|8.2|la casa de papel|money heist","The Big Bang Theory|8.2|big bang theory","Squid Game|8.0","Mercoledì|8.0|wednesday|mercoledi"] },
+        { n: "Steven Spielberg", e: "🦖", i: ["Schindler's List|9.0|schindlers list","Salvate il soldato Ryan|8.6|saving private ryan|soldato ryan","I predatori dell'arca perduta|8.4|indiana jones|predatori dell arca perduta","Jurassic Park|8.2","Lo squalo|8.1|jaws","Prova a prendermi|8.1|catch me if you can","E.T. l'extra-terrestre|7.9|et","Minority Report|7.6","Munich|7.5","The Fabelmans|7.5|fabelmans","Ready Player One|7.4","Lincoln|7.3","La guerra dei mondi|6.5|war of the worlds"] },
+        { n: "Horror", e: "👻", i: ["Alien|8.5","Psyco|8.5|psycho","Shining|8.4|the shining","La cosa|8.2|the thing","L'esorcista|8.1|esorcista|the exorcist","Get Out|7.8|scappa","Halloween|7.7","Saw - L'enigmista|7.6|saw","The Conjuring|7.5|evocazioni","Scream|7.4","Nightmare|7.4|nightmare on elm street","Hereditary|7.3","It|7.3","The Ring|7.1","Paranormal Activity|6.3"] },
+        { n: "Film italiani", e: "🍝", i: ["Il buono, il brutto, il cattivo|8.8|il buono il brutto il cattivo","La vita è bella|8.6|la vita e bella","Nuovo Cinema Paradiso|8.5","C'era una volta il West|8.5|cera una volta il west","Ladri di biciclette|8.3","La dolce vita|8.0","Il sorpasso|8.0","Amici miei|7.9","La grande bellezza|7.7","Perfetti sconosciuti|7.7","Il postino|7.7","Mediterraneo|7.4","Lo chiamavano Jeeg Robot|7.0|jeeg robot","Quo vado?|6.6|quo vado"] }
+      ]
+    },
+    {
+      id: "altezza", icon: "📏", name: "Altezza (cm)", unit: "cm", fmt: "int",
+      rule: "Scrivete un personaggio della categoria: vince chi somma più centimetri.",
+      elements: [
+        { n: "Cestisti NBA", e: "🏀", i: ["Manute Bol|231","Yao Ming|229","Victor Wembanyama|224|wembanyama|wemby","Kareem Abdul-Jabbar|218|kareem|abdul jabbar","Shaquille O'Neal|216|shaq|o neal|oneal","Kevin Durant|211|durant","Giannis Antetokounmpo|211|giannis","Nikola Jokic|211|jokic","Danilo Gallinari|208|gallinari","LeBron James|206|lebron","Magic Johnson|206|magic","Larry Bird|206|bird","Luka Doncic|201|doncic|luka","Dennis Rodman|201|rodman","Michael Jordan|198|jordan","Kobe Bryant|198|kobe","Stephen Curry|188|curry|steph curry","Allen Iverson|183|iverson","Muggsy Bogues|160|bogues"] },
+        { n: "Attori di Hollywood", e: "🎬", i: ["Dwayne Johnson|196|the rock","Jason Momoa|193|momoa","Liam Neeson|193|neeson","Chris Hemsworth|190|hemsworth","Hugh Jackman|188|jackman","Arnold Schwarzenegger|188|schwarzenegger|arnold","Keanu Reeves|186|keanu","Leonardo DiCaprio|183|dicaprio","Tom Hanks|183|hanks","Vin Diesel|182","Brad Pitt|180|pitt","Nicole Kidman|180|kidman","Zendaya|178","Timothée Chalamet|178|chalamet|timothee","Robert Downey Jr|174|downey","Tom Holland|173|holland","Tom Cruise|170|cruise","Margot Robbie|168|robbie","Daniel Radcliffe|165|radcliffe","Kevin Hart|163|hart","Scarlett Johansson|160|johansson|scarlett","Danny DeVito|147|devito|de vito"] },
+        { n: "Calciatori", e: "⚽", i: ["Peter Crouch|201|crouch","Thibaut Courtois|200|courtois","Gianluigi Donnarumma|196|donnarumma","Erling Haaland|195|haaland","Zlatan Ibrahimovic|195|ibrahimovic|zlatan","Virgil van Dijk|193|van dijk","Gianluigi Buffon|192|buffon","Romelu Lukaku|191|lukaku","Harry Kane|188|kane","Cristiano Ronaldo|187|ronaldo|cr7","Francesco Totti|180|totti","Kylian Mbappe|178|mbappe","Andrea Pirlo|177|pirlo","Neymar|175","Pelé|173|pele","Luka Modric|172|modric","Lionel Messi|170|messi","Diego Maradona|165|maradona","Lorenzo Insigne|163|insigne"] },
+        { n: "Cantanti", e: "🎤", i: ["Harry Styles|183|styles","Drake|182","Taylor Swift|180|taylor","Freddie Mercury|177|mercury","Justin Bieber|175|bieber","Mick Jagger|175|jagger","Ed Sheeran|173|sheeran","Rihanna|173","Eminem|173","The Weeknd|173|weeknd","Dua Lipa|173","Elton John|173","Bruno Mars|165","Billie Eilish|161|billie","Prince|157","Shakira|157","Lady Gaga|155|gaga","Ariana Grande|153|ariana"] },
+        { n: "Personaggi storici", e: "📜", i: ["Pietro il Grande|203|pietro","Charles de Gaulle|196|de gaulle","Abraham Lincoln|193|lincoln","Donald Trump|190|trump","George Washington|188|washington","Barack Obama|187|obama","John F. Kennedy|183|kennedy|jfk","Albert Einstein|175|einstein","Benito Mussolini|169|mussolini","Napoleone|168|napoleone bonaparte|bonaparte","Winston Churchill|168|churchill","Gandhi|164|mahatma gandhi","Elisabetta II|163|regina elisabetta|elisabetta","Regina Vittoria|152|vittoria"] },
+        { n: "Piloti di Formula 1", e: "🏎️", i: ["Alexander Albon|186|albon","Esteban Ocon|186|ocon","George Russell|185|russell","Max Verstappen|181|verstappen","Charles Leclerc|180|leclerc","Carlos Sainz|178|sainz","Nico Rosberg|178|rosberg","Ayrton Senna|176|senna","Sebastian Vettel|175|vettel","Kimi Raikkonen|175|raikkonen|kimi","Lewis Hamilton|174|hamilton","Michael Schumacher|174|schumacher","Fernando Alonso|171|alonso","Lando Norris|170|norris","Yuki Tsunoda|159|tsunoda"] },
+        { n: "Tennisti", e: "🎾", i: ["Reilly Opelka|211|opelka","John Isner|208|isner","Daniil Medvedev|198|medvedev","Alexander Zverev|198|zverev","Matteo Berrettini|196|berrettini","Jannik Sinner|191|sinner","Andy Murray|191|murray","Novak Djokovic|188|djokovic|nole","Maria Sharapova|188|sharapova","Rafael Nadal|185|nadal|rafa","Roger Federer|185|federer","Lorenzo Musetti|185|musetti","Carlos Alcaraz|183|alcaraz","Serena Williams|175|serena","Diego Schwartzman|170|schwartzman"] }
+      ]
+    },
+    {
+      id: "boxoffice", icon: "💰", name: "Incassi al Box Office", unit: "mln $", fmt: "int",
+      rule: "Scrivete un film: vince chi somma più incassi mondiali (in milioni di dollari).",
+      elements: [
+        { n: "James Cameron", e: "🌊", i: ["Avatar|2923","Avatar - La via dell'acqua|2320|avatar 2|la via dell acqua|avatar la via dell acqua","Titanic|2264","Terminator 2|520|terminator 2 il giorno del giudizio","True Lies|378","Aliens - Scontro finale|183|aliens","The Abyss|90|abyss","Terminator|78"] },
+        { n: "Marvel", e: "🦸", i: ["Avengers: Endgame|2799|endgame","Avengers: Infinity War|2052|infinity war","Spider-Man: No Way Home|1922|no way home","The Avengers|1521|avengers","Avengers: Age of Ultron|1405|age of ultron","Black Panther|1349","Deadpool & Wolverine|1338|deadpool e wolverine","Iron Man 3|1215","Captain America: Civil War|1153|civil war","Spider-Man: Far From Home|1132|far from home","Captain Marvel|1131","Doctor Strange nel Multiverso della Follia|955|doctor strange 2|multiverso della follia","Thor: Ragnarok|855|ragnarok","Guardiani della Galassia Vol. 3|845|guardiani 3","Iron Man|585","Ant-Man|519|antman","L'incredibile Hulk|265|hulk|incredibile hulk"] },
+        { n: "Film d'animazione", e: "🧸", i: ["Ne Zha 2|2200|nezha 2","Inside Out 2|1699","Il Re Leone (2019)|1663|re leone 2019","Frozen II|1453|frozen 2","Super Mario Bros. - Il film|1362|super mario|mario","Frozen|1284","Gli Incredibili 2|1243|incredibili 2","Minions|1159","Toy Story 4|1073","Toy Story 3|1067","Oceania 2|1059|moana 2","Cattivissimo me 3|1035|cattivissimo me","Alla ricerca di Dory|1029|dory","Zootropolis|1024|zootopia","Il Re Leone|968|re leone","Shrek 2|932","Coco|814","Up|735","Kung Fu Panda|632","Ratatouille|624","Shrek|488"] },
+        { n: "Film anni '90", e: "📼", i: ["Titanic|2264","Jurassic Park|1104","Star Wars: Episodio I|1027|la minaccia fantasma|episodio 1|episodio i","Il Re Leone|968|re leone","Independence Day|817","Forrest Gump|678","Il sesto senso|673|sesto senso","Il mondo perduto|618|jurassic park 2","Men in Black|589","Armageddon|553","Terminator 2|520","Ghost|505","Aladdin|504","Mamma ho perso l'aereo|477|mamma ho perso l aereo|home alone","Matrix|467|the matrix","Pretty Woman|463","Mission: Impossible|457|mission impossible","Toy Story|394"] },
+        { n: "Steven Spielberg", e: "🦖", i: ["Jurassic Park|1104","E.T. l'extra-terrestre|793|et","Indiana Jones e il regno del teschio di cristallo|791|teschio di cristallo","Il mondo perduto|618","La guerra dei mondi|603|war of the worlds","Ready Player One|583","Salvate il soldato Ryan|482|soldato ryan","Lo squalo|476|jaws","Indiana Jones e l'ultima crociata|474|ultima crociata","I predatori dell'arca perduta|390|predatori dell arca perduta","Minority Report|358","Prova a prendermi|352|catch me if you can","Indiana Jones e il tempio maledetto|333|tempio maledetto","Schindler's List|322|schindlers list","Lincoln|275"] },
+        { n: "Christopher Nolan", e: "🌀", i: ["Il cavaliere oscuro - Il ritorno|1081|the dark knight rises|il ritorno","Il cavaliere oscuro|1006|the dark knight|cavaliere oscuro","Oppenheimer|976","Inception|839","Interstellar|758","Dunkirk|527","Batman Begins|373","Tenet|365","Insomnia|114","The Prestige|110|prestige","Memento|40"] },
+        { n: "Harry Potter", e: "⚡", i: ["I doni della morte - Parte 2|1342|doni della morte 2|parte 2","La pietra filosofale|1024|pietra filosofale","I doni della morte - Parte 1|977|doni della morte 1|parte 1","L'ordine della Fenice|942|ordine della fenice","Il principe mezzosangue|934|principe mezzosangue","Il calice di fuoco|897|calice di fuoco","La camera dei segreti|880|camera dei segreti","Il prigioniero di Azkaban|797|prigioniero di azkaban|azkaban","Animali fantastici|814|animali fantastici e dove trovarli"] }
+      ]
+    },
+    {
+      id: "calorie", icon: "🍔", name: "Calorie del Cibo", unit: "kcal/100g", fmt: "int",
+      rule: "Scrivete un alimento della categoria: vince chi somma più calorie (per 100 g, bevande per 100 ml).",
+      elements: [
+        { n: "Fast food", e: "🍟", i: ["Onion rings|410|anelli di cipolla","Patatine fritte|312|patatine|french fries","Chicken nuggets|296|nuggets","Hot dog|290","Pizza margherita|270|pizza","Cheeseburger|263","Big Mac|257","Hamburger|250","Arancino|250|arancina","Kebab|215"] },
+        { n: "Frutta", e: "🍎", i: ["Cocco|354","Datteri|282|dattero","Avocado|160","Banana|89","Fico|74|fichi","Cachi|70|caco","Uva|69","Ciliegie|63|ciliegia","Kiwi|61","Mango|60","Pera|57","Mirtilli|57|mirtillo","Mela|52","Ananas|50","Arancia|47","Pesca|39","Melone|34","Fragola|32|fragole","Anguria|30|cocomero","Limone|29"] },
+        { n: "Dolci italiani", e: "🍰", i: ["Pandoro|410","Cornetto|410|brioche|croissant","Sfogliatella|400","Crostata|400","Savoiardi|390","Cannolo siciliano|380|cannolo|cannoli","Cassata|370","Maritozzo|360","Torta della nonna|350","Panettone|335","Tiramisù|283|tiramisu","Babà|280|baba","Panna cotta|230","Gelato|220","Zuppa inglese|180"] },
+        { n: "Formaggi", e: "🧀", i: ["Mascarpone|450","Grana Padano|398|grana","Parmigiano Reggiano|392|parmigiano","Pecorino romano|387|pecorino","Emmental|380","Provolone|351","Gorgonzola|350","Fontina|343","Brie|334","Scamorza|334","Taleggio|315","Camembert|300","Stracchino|300","Feta|264","Mozzarella|253","Burrata|250","Philadelphia|250","Ricotta|146"] },
+        { n: "Bevande", e: "🥤", i: ["Grappa|280","Whisky|250","Vodka|231","Rum|231","Limoncello|300","Spritz|125","Vino rosso|85|vino","Champagne|76","Prosecco|75","Latte intero|64|latte","Red Bull|46","Succo d'arancia|45|succo di arancia|spremuta","Birra|43","Coca-Cola|42|coca cola|coca","Tè freddo|30|te freddo|the freddo","Caffè espresso|2|caffe|espresso|caffè","Acqua|0"] },
+        { n: "Frutta secca", e: "🥜", i: ["Noci di macadamia|718|macadamia","Noci pecan|691|pecan","Pinoli|673","Noci brasiliane|656|noci del brasile","Noci|654","Nocciole|628","Mandorle|579","Arachidi|567|noccioline","Pistacchi|560","Anacardi|553","Uvetta|299|uva passa","Datteri secchi|282","Fichi secchi|249","Albicocche secche|241","Castagne|196"] },
+        { n: "Salumi", e: "🥓", i: ["Lardo|890","Guanciale|650","Nduja|500|'nduja","Pancetta|450","Salame|400","Coppa|400|capocollo","Mortadella|311","Speck|300","Prosciutto crudo|270|crudo","Wurstel|270|würstel","Culatello|250","Prosciutto cotto|215|cotto","Bresaola|151"] }
+      ]
+    },
+    {
+      id: "metri", icon: "🏔️", name: "Altezza in metri", unit: "m", fmt: "int",
+      rule: "Scrivete un grattacielo, un monumento o una montagna: vince chi somma più metri.",
+      elements: [
+        { n: "Grattacieli", e: "🏢", i: ["Burj Khalifa|828","Merdeka 118|679|merdeka","Shanghai Tower|632","Abraj Al-Bait|601|torre dell orologio della mecca","Ping An Finance Center|599|ping an","Lotte World Tower|555|lotte","One World Trade Center|541|one world trade|freedom tower","Taipei 101|508|taipei","Petronas Towers|452|petronas|torri petronas","Empire State Building|443|empire state","Willis Tower|442|sears tower","Burj Al Arab|321","Chrysler Building|319|chrysler","The Shard|310|shard","Torre Unicredit|231|unicredit","Palazzo Lombardia|161"] },
+        { n: "Monumenti e torri", e: "🗼", i: ["Tokyo Skytree|634|skytree","CN Tower|553","Torre Eiffel|330|eiffel","Space Needle|184","Sagrada Família|172|sagrada familia","Mole Antonelliana|167|mole","Piramide di Cheope|139|cheope|grande piramide","Cupola di San Pietro|136|san pietro","Duomo di Milano|108|duomo","Campanile di San Marco|99|san marco","Big Ben|96|elizabeth tower","Statua della Libertà|93|statua della liberta","Campanile di Giotto|85|giotto","Tower Bridge|65","Torre di Pisa|56|torre pendente","Colosseo|48","Cristo Redentore|38"] },
+        { n: "Montagne d'Europa", e: "⛰️", i: ["Elbrus|5642","Monte Bianco|4806|mont blanc|bianco","Monte Rosa|4634|rosa","Cervino|4478|matterhorn","Jungfrau|4158","Gran Paradiso|4061","Eiger|3967","Ortles|3905","Monviso|3841|viso","Grossglockner|3798","Adamello|3539","Mulhacén|3479|mulhacen","Etna|3357","Marmolada|3343","Zugspitze|2962","Olimpo|2918","Gran Sasso|2912|corno grande","Ben Nevis|1345"] },
+        { n: "Montagne del mondo", e: "🗻", i: ["Everest|8849","K2|8611","Kangchenjunga|8586","Lhotse|8516","Makalu|8485","Nanga Parbat|8126","Annapurna|8091","Aconcagua|6961","Chimborazo|6263","Denali|6190|mckinley","Cotopaxi|5897","Kilimangiaro|5895|kilimanjaro","Monte Vinson|4892|vinson","Mauna Kea|4207","Monte Fuji|3776|fuji","Monte Kosciuszko|2228|kosciuszko"] },
+        { n: "Vulcani", e: "🌋", i: ["Ojos del Salado|6893","Cotopaxi|5897","Kilimangiaro|5895|kilimanjaro","Elbrus|5642","Popocatépetl|5426|popocatepetl","Mauna Loa|4169","Monte Fuji|3776|fuji","Teide|3715","Etna|3357","Monte Sant'Elena|2549|st helens|sant elena","Eyjafjallajökull|1651|eyjafjallajokull","Hekla|1491","Pinatubo|1486","Vesuvio|1281","Stromboli|924","Vulcano|501"] }
+      ]
+    },
+    {
+      id: "velocita", icon: "⚡", name: "Velocità Massima", unit: "km/h", fmt: "int",
+      rule: "Scrivete un animale o un mezzo della categoria: vince chi somma più km/h.",
+      elements: [
+        { n: "Animali terrestri", e: "🐆", i: ["Ghepardo|110","Antilope americana|88|pronghorn","Cavallo|88","Leone|80","Gnu|80","Gazzella|80","Levriero|72","Lepre|72","Canguro|71","Struzzo|70","Zebra|65","Giraffa|60","Lupo|60","Orso grizzly|56|grizzly|orso","Rinoceronte|55","Gatto|48","Usain Bolt|45|uomo|bolt","Elefante|40","Ippopotamo|30","Tartaruga|0.3","Bradipo|0.2"] },
+        { n: "Uccelli", e: "🦅", i: ["Falco pellegrino|390|falco","Aquila reale|320|aquila","Albatro|127","Piccione|90","Anatra|88|germano reale","Struzzo|70","Gufo|60","Gabbiano|60","Colibrì|54|colibri"] },
+        { n: "Auto", e: "🏎️", i: ["Koenigsegg Jesko Absolut|531|koenigsegg|jesko","SSC Tuatara|455|tuatara","Bugatti Chiron Super Sport|440|bugatti chiron|chiron|bugatti","Rimac Nevera|412|rimac|nevera","Bugatti Veyron|407|veyron","McLaren Speedtail|403|speedtail","Lamborghini Revuelto|350|revuelto|lamborghini","Ferrari LaFerrari|350|laferrari","Ferrari SF90|340|sf90|ferrari","Porsche 911 Turbo S|330|porsche 911|porsche","Tesla Model S Plaid|322|tesla|model s","Ford Mustang GT|250|mustang","Fiat 500|160|500|cinquecento","Fiat Panda|155|panda","Ape Piaggio|60|ape"] },
+        { n: "Treni", e: "🚄", i: ["Shanghai Maglev|431|maglev","Fuxing|350","TGV|320","Shinkansen|320","AVE|310","Frecciarossa|300|frecciarossa 1000","Italo|300","Eurostar|300","ICE|300","Treno regionale|160|regionale"] },
+        { n: "Animali marini", e: "🐬", i: ["Pesce vela|110","Pesce spada|97","Marlin|80","Squalo mako|74|mako","Tonno rosso|70|tonno","Orca|56","Squalo bianco|56|grande squalo bianco","Delfino|55","Pinguino|36","Balena azzurra|30|balenottera azzurra"] }
+      ]
+    },
+    {
+      id: "superficie", icon: "🗺️", name: "Superficie dei Paesi", unit: "km²", fmt: "big",
+      rule: "Scrivete un Paese del continente: vince chi somma più chilometri quadrati.",
+      elements: [
+        { n: "Europa", e: "🇪🇺", i: ["Russia|17098246","Ucraina|603550","Francia|551695","Spagna|505990","Svezia|450295","Norvegia|385207","Germania|357588","Finlandia|338455","Polonia|312696","Italia|302073","Regno Unito|242495|inghilterra|uk","Romania|238397","Grecia|131957","Islanda|103000","Portogallo|92212","Austria|83879","Irlanda|70273","Croazia|56594","Danimarca|42933","Paesi Bassi|41850|olanda","Svizzera|41285","Belgio|30689","Lussemburgo|2586","San Marino|61","Malta|316","Vaticano|0.44|citta del vaticano"] },
+        { n: "Africa", e: "🌍", i: ["Algeria|2381741","Repubblica Democratica del Congo|2344858|congo|rd congo","Sudan|1886068","Libia|1759540","Ciad|1284000","Niger|1267000","Angola|1246700","Mali|1240192","Sudafrica|1221037","Etiopia|1104300","Egitto|1002450","Tanzania|945087","Nigeria|923768","Madagascar|587041","Kenya|580367","Marocco|446550","Ghana|238533","Senegal|196722","Tunisia|163610","Seychelles|459"] },
+        { n: "Asia", e: "🌏", i: ["Cina|9596961","India|3287263","Kazakistan|2724900","Arabia Saudita|2149690","Indonesia|1904569","Iran|1648195","Mongolia|1564116","Pakistan|881913","Turchia|783562","Myanmar|676578|birmania","Thailandia|513120","Giappone|377975","Vietnam|331212","Filippine|300000","Nepal|147181","Corea del Sud|100210|corea","Israele|22072","Singapore|734","Maldive|300"] },
+        { n: "Americhe", e: "🌎", i: ["Canada|9984670","Stati Uniti|9833520|usa|america","Brasile|8515767","Argentina|2780400","Groenlandia|2166086","Messico|1964375","Perù|1285216|peru","Colombia|1141748","Bolivia|1098581","Venezuela|916445","Cile|756102","Paraguay|406752","Ecuador|283561","Uruguay|176215","Cuba|109884","Panama|75417","Costa Rica|51100","Giamaica|10991"] },
+        { n: "Oceania", e: "🦘", i: ["Australia|7692024","Papua Nuova Guinea|462840|papua","Nuova Zelanda|268021","Isole Salomone|28896|salomone","Figi|18274|fiji","Vanuatu|12189","Samoa|2842","Kiribati|811","Tonga|747","Tuvalu|26","Nauru|21"] }
+      ]
+    },
+    {
+      id: "abitanti", icon: "👥", name: "Popolazione Nazioni", unit: "abitanti", fmt: "big",
+      rule: "Scrivete una nazione della zona: vince chi somma più abitanti.",
+      elements: [
+        { n: "Europa", e: "🇪🇺", i: ["Russia|144000000","Germania|84500000","Francia|68400000","Regno Unito|68000000|inghilterra|uk","Italia|59000000","Spagna|48600000","Polonia|36600000","Romania|19000000","Paesi Bassi|17900000|olanda","Belgio|11800000","Portogallo|10600000","Svezia|10500000","Grecia|10400000","Austria|9100000","Svizzera|8900000","Danimarca|5900000","Finlandia|5600000","Norvegia|5500000","Irlanda|5300000","Croazia|3900000","Malta|560000","Islanda|390000","San Marino|34000","Vaticano|800"] },
+        { n: "Asia", e: "🌏", i: ["India|1440000000","Cina|1410000000","Indonesia|280000000","Pakistan|245000000","Bangladesh|173000000","Giappone|124000000","Filippine|115000000","Vietnam|100000000","Iran|89000000","Turchia|85000000","Thailandia|71000000","Corea del Sud|51700000|corea","Arabia Saudita|33000000","Nepal|30000000","Israele|9900000","Singapore|6000000","Mongolia|3400000","Qatar|2700000","Maldive|520000"] },
+        { n: "Africa", e: "🌍", i: ["Nigeria|225000000","Etiopia|127000000","Egitto|112000000","Repubblica Democratica del Congo|105000000|congo|rd congo","Tanzania|67000000","Sudafrica|62000000","Kenya|55000000","Sudan|48000000","Algeria|46000000","Marocco|37000000","Ghana|34000000","Madagascar|30000000","Senegal|18000000","Tunisia|12000000","Libia|7000000","Capo Verde|500000","Seychelles|120000"] },
+        { n: "Americhe", e: "🌎", i: ["Stati Uniti|335000000|usa|america","Brasile|216000000","Messico|129000000","Colombia|52000000","Argentina|46000000","Canada|40000000","Perù|34000000|peru","Venezuela|28000000","Cile|19600000","Ecuador|18000000","Bolivia|12000000","Cuba|11000000","Costa Rica|5200000","Panama|4400000","Uruguay|3400000","Giamaica|2800000"] },
+        { n: "Oceania", e: "🦘", i: ["Australia|26600000","Papua Nuova Guinea|10300000|papua","Nuova Zelanda|5200000","Figi|930000|fiji","Isole Salomone|740000|salomone","Vanuatu|330000","Samoa|220000","Tonga|100000","Nauru|12000","Tuvalu|11000"] },
+        { n: "Europa orientale e Balcani", e: "🏰", i: ["Ucraina|37000000","Romania|19000000","Repubblica Ceca|10900000|cechia","Ungheria|9600000","Bielorussia|9200000","Serbia|6600000","Bulgaria|6400000","Slovacchia|5400000","Croazia|3900000","Bosnia ed Erzegovina|3200000|bosnia","Lituania|2800000","Albania|2400000","Moldavia|2400000","Slovenia|2100000","Lettonia|1900000","Macedonia del Nord|1800000|macedonia","Kosovo|1600000","Estonia|1400000","Montenegro|620000"] },
+        { n: "Medio Oriente", e: "🕌", i: ["Iran|89000000","Turchia|85000000","Iraq|45000000","Yemen|34000000","Arabia Saudita|33000000","Siria|23000000","Giordania|11300000","Emirati Arabi Uniti|10000000|emirati|eau","Israele|9900000","Libano|5400000","Oman|4600000","Kuwait|4300000","Qatar|2700000","Bahrein|1500000|bahrain","Cipro|1300000"] }
+      ]
+    },
+    {
+      id: "trofei", icon: "🏆", name: "Trofei Vinti", unit: "titoli", fmt: "int",
+      rule: "Scrivete una squadra o un campione: vince chi somma più titoli (dati fino al 2025).",
+      elements: [
+        { n: "Scudetti (Serie A)", e: "🇮🇹", i: ["Juventus|36|juve","Inter|20|internazionale","Milan|19","Genoa|9","Torino|7","Bologna|7","Pro Vercelli|7","Napoli|4","Roma|3","Lazio|2","Fiorentina|2","Cagliari|1","Verona|1|hellas verona","Sampdoria|1","Casale|1","Novese|1"] },
+        { n: "Champions League", e: "🌟", i: ["Real Madrid|15|real","Milan|7","Bayern Monaco|6|bayern","Liverpool|6","Barcellona|5|barcelona|barca","Ajax|4","Inter|3","Manchester United|3|united","Juventus|2|juve","Benfica|2","Chelsea|2","Porto|2","Nottingham Forest|2","Manchester City|1|city","Paris Saint-Germain|1|psg","Borussia Dortmund|1|dortmund","Marsiglia|1","Celtic|1","Amburgo|1","Aston Villa|1","Feyenoord|1","PSV|1","Stella Rossa|1","Steaua Bucarest|1|steaua"] },
+        { n: "Mondiali di calcio", e: "🌍", i: ["Brasile|5","Germania|4","Italia|4","Argentina|3","Francia|2","Uruguay|2","Inghilterra|1","Spagna|1","Olanda|0|paesi bassi","Croazia|0","Portogallo|0"] },
+        { n: "Titoli mondiali F1 (piloti)", e: "🏁", i: ["Lewis Hamilton|7|hamilton","Michael Schumacher|7|schumacher","Juan Manuel Fangio|5|fangio","Max Verstappen|4|verstappen","Sebastian Vettel|4|vettel","Alain Prost|4|prost","Ayrton Senna|3|senna","Niki Lauda|3|lauda","Nelson Piquet|3|piquet","Jackie Stewart|3|stewart","Jack Brabham|3|brabham","Fernando Alonso|2|alonso","Mika Hakkinen|2|hakkinen","Alberto Ascari|2|ascari","Jim Clark|2|clark","Kimi Raikkonen|1|raikkonen","Nico Rosberg|1|rosberg","Jenson Button|1|button","Nigel Mansell|1|mansell"] },
+        { n: "Slam di tennis (singolare)", e: "🎾", i: ["Novak Djokovic|24|djokovic","Rafael Nadal|22|nadal","Roger Federer|20|federer","Pete Sampras|14|sampras","Roy Emerson|12|emerson","Bjorn Borg|11|borg","Rod Laver|11|laver","Andre Agassi|8|agassi","Ivan Lendl|8|lendl","Jimmy Connors|8|connors","John McEnroe|7|mcenroe","Carlos Alcaraz|6|alcaraz","Jannik Sinner|4|sinner","Andy Murray|3|murray","Stan Wawrinka|3|wawrinka","Daniil Medvedev|1|medvedev"] },
+        { n: "Palloni d'Oro", e: "🥇", i: ["Lionel Messi|8|messi","Cristiano Ronaldo|5|cr7","Michel Platini|3|platini","Johan Cruijff|3|cruijff|cruyff","Marco van Basten|3|van basten","Franz Beckenbauer|2|beckenbauer","Alfredo Di Stéfano|2|di stefano","Ronaldo|2|il fenomeno|ronaldo nazario","Kevin Keegan|2|keegan","Karl-Heinz Rummenigge|2|rummenigge","Gianni Rivera|1|rivera","Roberto Baggio|1|baggio","Fabio Cannavaro|1|cannavaro","Kakà|1|kaka","Zinedine Zidane|1|zidane","Ronaldinho|1","Luka Modric|1|modric","Karim Benzema|1|benzema","Rodri|1","Ousmane Dembélé|1|dembele","George Weah|1|weah"] }
+      ]
+    },
+    {
+      id: "alcol", icon: "🍸", name: "Gradazione Alcolica", unit: "% vol", fmt: "dec1",
+      rule: "Scrivete una bevanda della categoria: vince chi somma più gradi.",
+      elements: [
+        { n: "Superalcolici", e: "🥃", i: ["Everclear|95","Assenzio|70","Mezcal|45","Vodka|40","Gin|40","Whisky|40|whiskey","Rum|40","Grappa|40","Cognac|40","Sambuca|40","Tequila|38","Brandy|38"] },
+        { n: "Liquori italiani", e: "🍋", i: ["Strega|40|liquore strega","Fernet-Branca|39|fernet","Amaro del Capo|35|del capo","Jägermeister|35|jagermeister|jager","Limoncello|30","Mirto|30","Averna|29","Amaretto|28|amaretto di saronno|disaronno","Campari|25","Amaro Montenegro|23|montenegro","Baileys|17","Martini Rosso|15|martini","Aperol|11"] },
+        { n: "Vini", e: "🍷", i: ["Porto|20","Marsala|18","Sherry|17","Amarone|15.5|amarone della valpolicella","Primitivo|14.5|primitivo di manduria","Barolo|14","Brunello di Montalcino|14|brunello","Chianti|13","Champagne|12","Prosecco|11","Lambrusco|10.5","Moscato d'Asti|5.5|moscato"] },
+        { n: "Cocktail", e: "🍹", i: ["Old Fashioned|32","Manhattan|30","Martini Dry|28|martini cocktail|dry martini","Margarita|27","Negroni|24","Long Island Iced Tea|22|long island","Cosmopolitan|22","Daiquiri|20","Caipirinha|20","Americano|15","Mojito|13","Piña Colada|13|pina colada","Moscow Mule|11","Spritz|8|aperol spritz","Bellini|8"] },
+        { n: "Birre", e: "🍺", i: ["Westvleteren 12|10.2|westvleteren","Chimay Blu|9|chimay","Tennent's Super|9|tennents|tennent s","Duvel|8.5","Leffe Blonde|6.6|leffe","Paulaner Hefe-Weissbier|5.5|paulaner","Heineken|5","Menabrea|4.8","Beck's|4.8|becks","Peroni|4.7","Ichnusa|4.7","Moretti|4.6|birra moretti","Corona|4.5","Guinness|4.2"] }
+      ]
+    },
+    {
+      id: "peso", icon: "🐘", name: "Peso degli Animali", unit: "kg", fmt: "big",
+      rule: "Scrivete un animale della categoria: vince chi somma più chili (peso medio di un adulto).",
+      elements: [
+        { n: "Animali marini", e: "🐋", i: ["Balenottera azzurra|150000|balena azzurra","Balena franca|80000","Capodoglio|45000","Orca|6000","Elefante marino|3500","Narvalo|1500","Beluga|1400","Tricheco|1200","Lamantino|500","Delfino|200","Foca|100"] },
+        { n: "Animali della savana e del bosco", e: "🦁", i: ["Elefante africano|6000|elefante","Rinoceronte bianco|2300|rinoceronte","Ippopotamo|1500","Giraffa|1200","Bisonte|900","Alce|500","Coccodrillo|500|coccodrillo marino","Orso polare|450","Zebra|350","Tigre|220","Leone|190","Gorilla|160","Struzzo|120","Panda gigante|100|panda","Canguro|85","Ghepardo|50","Lupo|40"] },
+        { n: "Razze di cani", e: "🐕", i: ["San Bernardo|80","Alano|70|mastino tedesco","Mastino napoletano|70","Terranova|65","Rottweiler|55","Dobermann|40","Pastore tedesco|35","Labrador|32","Golden retriever|32|golden","Husky|25|siberian husky","Border collie|18","Bulldog francese|12","Beagle|11","Bassotto|9","Carlino|7|pug","Yorkshire|3","Barboncino toy|3|barboncino","Chihuahua|2.5"] },
+        { n: "Animali della fattoria", e: "🐄", i: ["Toro|900","Mucca|650|vacca","Bufala|550","Cavallo|500","Mulo|400","Asino|250","Maiale|150","Lama|150","Pecora|70","Alpaca|65","Capra|60","Tacchino|10","Oca|6","Coniglio|4","Anatra|3","Gallina|2.5"] },
+        { n: "Uccelli", e: "🐦", i: ["Struzzo|120","Casuario|60","Emù|45|emu","Pinguino imperatore|30|pinguino","Condor delle Ande|12|condor","Cigno|12","Pellicano|10","Albatro urlatore|9|albatro","Tacchino selvatico|8","Aquila reale|5|aquila","Gufo reale|3|gufo","Fenicottero|3","Ara|1.2|pappagallo","Piccione|0.35","Colibrì|0.003|colibri"] }
+      ]
+    },
+    {
+      id: "fiumi", icon: "🌊", name: "Lunghezza dei Fiumi", unit: "km", fmt: "int",
+      rule: "Scrivete un fiume della zona: vince chi somma più chilometri.",
+      elements: [
+        { n: "Italia", e: "🇮🇹", i: ["Po|652","Adige|410","Tevere|405","Adda|313","Oglio|280","Tanaro|276","Ticino|248","Arno|241","Piave|220","Reno|212","Tagliamento|178","Volturno|175","Brenta|174","Ofanto|170","Ombrone|161","Liri-Garigliano|158|liri|garigliano","Basento|149","Aterno-Pescara|145|pescara|aterno","Isonzo|136","Lambro|130","Simeto|113","Serchio|111","Aniene|99"] },
+        { n: "Europa", e: "🇪🇺", i: ["Volga|3530","Danubio|2850|danube","Ural|2428","Dnepr|2201|dnipro|dnieper","Don|1870","Dnestr|1362|dniester","Reno|1233|rhine","Elba|1094|elbe","Vistola|1047","Tago|1007|tejo|tajo","Loira|1006|loire","Mosa|925|meuse","Ebro|910","Duero|897|douro","Oder|854","Rodano|812|rhone","Senna|777|seine","Guadalquivir|657","Po|652","Garonna|529|garonne","Shannon|360","Tamigi|346|thames"] },
+        { n: "Asia", e: "🌏", i: ["Yangtze|6300|fiume azzurro|chang jiang","Fiume Giallo|5464|huang he","Lena|4400","Mekong|4350","Ob|3650","Yenisei|3487|enisej","Indo|3180|indus","Brahmaputra|2900","Amur|2824","Eufrate|2800","Gange|2525","Amu Darya|2540","Syr Darya|2212","Irrawaddy|2170","Tigri|1850","Giordano|251"] },
+        { n: "Africa", e: "🌍", i: ["Nilo|6650","Congo|4700","Niger|4180","Zambesi|2574|zambezi","Orange|2200|orange river","Limpopo|1750","Okavango|1600","Volta|1500","Nilo Azzurro|1450","Senegal|1086","Ubangi|1060"] },
+        { n: "Americhe", e: "🌎", i: ["Rio delle Amazzoni|6400|amazzoni|amazon","Paraná|4880|parana","Missouri|3767","Mississippi|3730","Yukon|3190","Rio Grande|3051","São Francisco|2830|sao francisco","Colorado|2330","Orinoco|2140","Columbia|2000","Mackenzie|1738","Ohio|1579","Magdalena|1528","San Lorenzo|1197|saint lawrence"] },
+        { n: "Oceania", e: "🦘", i: ["Murray|2508","Murrumbidgee|1485","Darling|1472","Lachlan|1448","Sepik|1126","Fly|1050","Waikato|425","Clutha|338"] }
+      ]
+    },
+    {
+      id: "distanza", icon: "🧭", name: "Distanza da Roma", unit: "km", fmt: "int",
+      rule: "Scrivete una città della zona: vince chi somma più chilometri in linea d'aria da Roma.",
+      elements: [
+        { n: "Capitali europee", e: "🇪🇺", i: ["Parigi|1105|paris", "Londra|1434|london", "Madrid|1364", "Berlino|1183|berlin", "Lisbona|1863|lisboa", "Atene|1051", "Vienna|764|wien", "Praga|921", "Varsavia|1315", "Stoccolma|1976", "Oslo|2006", "Helsinki|2201", "Copenaghen|1532|copenhagen", "Dublino|1886|dublin", "Amsterdam|1296", "Bruxelles|1173", "Berna|689", "Budapest|808", "Mosca|2375|moscow", "Reykjavik|3302", "Bucarest|1137", "Kiev|1675|kyiv", "La Valletta|690|valletta", "Tirana|612", "Lubiana|489|ljubljana", "Zagabria|517|zagreb", "Belgrado|718", "Sofia|894"] },
+        { n: "Asia e Medio Oriente", e: "🌏", i: ["Tokyo|9852|tokio", "Pechino|8125|beijing", "Nuova Delhi|5916|delhi", "Bangkok|8829", "Seul|8966|seoul", "Singapore|10017", "Manila|10390", "Giacarta|10827|jakarta", "Hanoi|8730", "Kathmandu|6634", "Teheran|3410", "Riad|3671|riyadh", "Doha|4014", "Abu Dhabi|4298", "Dubai|4321", "Gerusalemme|2304", "Baghdad|2945", "Kabul|4930", "Ulan Bator|6983|ulaanbaatar", "Islamabad|5288", "Ankara|1721", "Kuala Lumpur|9708", "Taipei|9610"] },
+        { n: "Africa", e: "🌍", i: ["Il Cairo|2132|cairo", "Tunisi|601|tunis", "Algeri|992", "Rabat|1902", "Marrakech|2144", "Tripoli|1004", "Dakar|4170", "Abuja|3684", "Nairobi|5390", "Addis Abeba|4473|addis ababa", "Città del Capo|8453|cape town", "Pretoria|7694", "Kinshasa|5161", "Luanda|5643", "Accra|4227", "Antananarivo|7657", "Khartoum|3508", "Mogadiscio|5509", "Kampala|5040", "Bamako|3811", "Zanzibar|5993"] },
+        { n: "Americhe", e: "🌎", i: ["Washington|7217", "New York|6890|nyc", "Città del Messico|10240|mexico city", "Ottawa|6729", "Buenos Aires|11152", "Brasilia|8906", "Rio de Janeiro|9198|rio", "Santiago del Cile|11910|santiago", "Lima|10861", "Bogotà|9374|bogota", "Caracas|8357", "L'Avana|8698|avana|havana", "Los Angeles|10189", "Montevideo|11031", "Quito|10101", "La Paz|10474", "Panama|9507", "San Francisco|10047", "Anchorage|8439", "Ushuaia|13177", "Miami|8339", "Toronto|7081"] },
+        { n: "Città italiane", e: "🇮🇹", i: ["Milano|477", "Napoli|188", "Torino|524", "Palermo|427", "Genova|400", "Bologna|303", "Firenze|231", "Bari|375", "Venezia|394", "Trieste|429", "Cagliari|412", "Reggio Calabria|500", "Lecce|506", "Aosta|595", "Bolzano|519", "Udine|467", "Catania|536", "Pescara|155", "Perugia|135", "Ancona|208", "Lampedusa|712", "Sassari|354", "Trento|477", "Verona|411", "Siracusa|588", "Modena|331"] }
+      ]
+    },
+    {
+      id: "durata", icon: "⏱️", name: "Durata dei Film", unit: "min", fmt: "int",
+      rule: "Scrivete un film della categoria: vince chi somma più minuti di durata.",
+      elements: [
+        { n: "Christopher Nolan", e: "🌀", i: ["Oppenheimer|180","Interstellar|169","Il cavaliere oscuro - Il ritorno|164|the dark knight rises|il ritorno","Il cavaliere oscuro|152|the dark knight|cavaliere oscuro","Tenet|150","Inception|148","Batman Begins|140","The Prestige|130|prestige","Insomnia|118","Memento|113","Dunkirk|106","Following|69"] },
+        { n: "Marvel", e: "🦸", i: ["Avengers: Endgame|181|endgame","Black Panther: Wakanda Forever|161|wakanda forever","Eternals|156","Guardiani della Galassia Vol. 3|150|guardiani 3","Avengers: Infinity War|149|infinity war","Spider-Man: No Way Home|148|no way home","Captain America: Civil War|147|civil war","The Avengers|143|avengers","Avengers: Age of Ultron|141|age of ultron","Black Panther|134","Thor: Ragnarok|130|ragnarok","Deadpool & Wolverine|128|deadpool e wolverine","Iron Man|126","Captain Marvel|123","Ant-Man|117|antman","Doctor Strange|115"] },
+        { n: "Il Signore degli Anelli e Lo Hobbit", e: "💍", i: ["Il ritorno del re|201|ritorno del re","Le due torri|179|due torri","La compagnia dell'anello|178|compagnia dell anello","Un viaggio inaspettato|169|viaggio inaspettato","La desolazione di Smaug|161|desolazione di smaug|smaug","La battaglia delle cinque armate|144|cinque armate"] },
+        { n: "Harry Potter", e: "⚡", i: ["La camera dei segreti|161|camera dei segreti","Il calice di fuoco|157|calice di fuoco","Il principe mezzosangue|153|principe mezzosangue","La pietra filosofale|152|pietra filosofale","I doni della morte - Parte 1|146|doni della morte 1|parte 1","Il prigioniero di Azkaban|142|azkaban","L'ordine della Fenice|138|ordine della fenice","I doni della morte - Parte 2|130|doni della morte 2|parte 2"] },
+        { n: "Classici Disney", e: "🏰", i: ["Fantasia|125","Oceania|107","Frozen|102","Encanto|102","Rapunzel|100","Hercules|93","Aladdin|90","Pinocchio|88","Il Re Leone|88|re leone","Mulan|88","Tarzan|88","Biancaneve e i sette nani|83|biancaneve","La Sirenetta|83|sirenetta","La carica dei 101|79|carica dei 101","Il libro della giungla|78|libro della giungla","Peter Pan|77","La bella addormentata nel bosco|75|bella addormentata","Cenerentola|74","Bambi|70","Dumbo|64"] },
+        { n: "Kolossal e grandi classici", e: "🎞️", i: ["Via col vento|238","Lawrence d'Arabia|228|lawrence d arabia","Ben-Hur|212|ben hur","The Irishman|209|irishman","Killers of the Flower Moon|206","Il Padrino - Parte II|202|padrino 2|il padrino 2","Schindler's List|195|schindlers list","Titanic|194","Avatar - La via dell'acqua|192|avatar 2","Braveheart|178","Il Padrino|175|padrino","Avatar|162","Il Gladiatore|155|gladiatore","Pulp Fiction|154","Forrest Gump|142","Barbie|114"] }
+      ]
+    },
+    {
+      id: "stadi", icon: "🏟️", name: "Capienza degli Stadi", unit: "posti", fmt: "big",
+      rule: "Scrivete uno stadio o un'arena della categoria: vince chi somma più posti.",
+      elements: [
+        { n: "Stadi di Serie A", e: "🇮🇹", i: ["San Siro|75817|giuseppe meazza|meazza","Stadio Olimpico|70634|olimpico","San Nicola|58270","Diego Armando Maradona|54726|maradona|san paolo","Artemio Franchi|43147|franchi","Allianz Stadium|41507|juventus stadium|allianz","Bentegodi|39211|marcantonio bentegodi","Dall'Ara|38279|renato dall ara|dall ara","Luigi Ferraris|36599|marassi|ferraris","Renzo Barbera|36365|barbera","Via del Mare|31533","Olimpico Grande Torino|27958|grande torino","Stadio Friuli|25144|friuli|bluenergy","Gewiss Stadium|24950|gewiss","Tardini|22352|ennio tardini","Mapei Stadium|21584|mapei","Unipol Domus|16416","Sinigaglia|13602"] },
+        { n: "Stadi europei", e: "🇪🇺", i: ["Camp Nou|99354|nou camp","Wembley|90000","Santiago Bernabéu|83186|bernabeu","Signal Iduna Park|81365|westfalenstadion","Luzhniki|81000","Stade de France|80698","Allianz Arena|75024","Olympiastadion|74475|olympiastadion berlino","Old Trafford|74310","Metropolitano|70460|wanda metropolitano","Estádio da Luz|64642|da luz|luz","Tottenham Hotspur Stadium|62850|tottenham","Veltins-Arena|62271|veltins","Anfield|61276","Celtic Park|60411","Emirates Stadium|60704|emirates","Johan Cruijff Arena|55500|amsterdam arena|cruijff arena","Etihad Stadium|53400|etihad","Parco dei Principi|47929|parc des princes"] },
+        { n: "Stadi di Premier League", e: "🏴", i: ["Old Trafford|74310","Tottenham Hotspur Stadium|62850|tottenham","London Stadium|62500|stadio olimpico di londra","Anfield|61276","Emirates Stadium|60704|emirates","Etihad Stadium|53400|etihad","Hill Dickinson Stadium|52888|everton stadium","St James' Park|52305|st james park","Stadium of Light|49000","Villa Park|42640","Stamford Bridge|40343","Elland Road|37645","Amex Stadium|31876|amex","Molineux|31750","City Ground|30404","Craven Cottage|29600","Selhurst Park|25486"] },
+        { n: "Stadi del mondo", e: "🌍", i: ["Narendra Modi Stadium|132000|narendra modi","Rungrado 1° Maggio|114000|rungrado","Michigan Stadium|107601|the big house","Beaver Stadium|106572","Ohio Stadium|102780","Melbourne Cricket Ground|100024|mcg","FNB Stadium|94736|soccer city","Lusail Stadium|88966|lusail","Azteca|87523|estadio azteca","Bukit Jalil|87411","Monumental|85018|river plate|mas monumental","MetLife Stadium|82500|metlife","AT&T Stadium|80000|at e t stadium","Maracanã|78838|maracana","La Bombonera|54000|bombonera"] },
+        { n: "Arene e palazzetti", e: "🎤", i: ["Philippine Arena|55000","Accor Arena|20300|bercy","O2 Arena|20000|o2","Madison Square Garden|19500|madison","Sphere|17600|sphere las vegas","Inalpi Arena|15657|pala alpitour|palaolimpico","Arena di Verona|13000|arena","Unipol Forum|12700|mediolanum forum|forum di assago","Palazzo dello Sport|11200|palaeur|palazzetto dello sport","Unipol Arena|11000|unipol arena bologna"] }
+      ]
+    },
+    {
+      id: "eta", icon: "🎂", name: "Età dei Personaggi", unit: "anni", fmt: "int",
+      rule: "Scrivete un personaggio della categoria: vince chi somma più anni di età (calcolata sull'anno di nascita).",
+      elements: [
+        { n: "Cantanti italiani", e: "🎤", i: ["Adriano Celentano|y1938|celentano","Mina|y1940","Al Bano|y1943|albano","Gianni Morandi|y1944|morandi","Vasco Rossi|y1952|vasco","Zucchero|y1955","Ligabue|y1960","Eros Ramazzotti|y1963|ramazzotti|eros","Jovanotti|y1966","Giorgia|y1971","Laura Pausini|y1974|pausini","Tiziano Ferro|y1980|ferro","Annalisa|y1985","Marco Mengoni|y1988|mengoni","Elodie|y1990","Mahmood|y1992","Sfera Ebbasta|y1992|sfera","Damiano David|y1999|damiano","Blanco|y2003"] },
+        { n: "Attori di Hollywood", e: "🎬", i: ["Clint Eastwood|y1930|eastwood","Morgan Freeman|y1937|freeman","Al Pacino|y1940|pacino","Harrison Ford|y1942|ford","Robert De Niro|y1943|de niro","Meryl Streep|y1949|streep","Denzel Washington|y1954|denzel","Tom Hanks|y1956|hanks","Brad Pitt|y1963|pitt","Johnny Depp|y1963|depp","Keanu Reeves|y1964|keanu","Dwayne Johnson|y1972|the rock","Leonardo DiCaprio|y1974|dicaprio","Ryan Gosling|y1980|gosling","Scarlett Johansson|y1984|johansson","Jennifer Lawrence|y1990|lawrence","Margot Robbie|y1990|robbie","Timothée Chalamet|y1995|chalamet","Tom Holland|y1996|holland","Zendaya|y1996"] },
+        { n: "Calciatori", e: "⚽", i: ["Paolo Maldini|y1968|maldini","Alessandro Del Piero|y1974|del piero","Francesco Totti|y1976|totti","Gianluigi Buffon|y1978|buffon","Andrea Pirlo|y1979|pirlo","Zlatan Ibrahimovic|y1981|ibrahimovic|zlatan","Kakà|y1982|kaka","Cristiano Ronaldo|y1985|ronaldo|cr7","Luka Modric|y1985|modric","Lionel Messi|y1987|messi","Neymar|y1992","Paulo Dybala|y1993|dybala","Nicolò Barella|y1997|barella","Kylian Mbappe|y1998|mbappe","Gianluigi Donnarumma|y1999|donnarumma","Erling Haaland|y2000|haaland","Pedri|y2002","Jude Bellingham|y2003|bellingham","Lamine Yamal|y2007|yamal"] },
+        { n: "Politici e leader", e: "🏛️", i: ["Romano Prodi|y1939|prodi","Sergio Mattarella|y1941|mattarella","Joe Biden|y1942|biden","Donald Trump|y1946|trump","Mario Draghi|y1947|draghi","Re Carlo III|y1948|carlo iii|re carlo","Vladimir Putin|y1952|putin","Xi Jinping|y1953|xi","Angela Merkel|y1954|merkel","Papa Leone XIV|y1955|leone xiv","Barack Obama|y1961|obama","Giuseppe Conte|y1964|conte","Kamala Harris|y1964|harris","Matteo Salvini|y1973|salvini","Giorgia Meloni|y1977|meloni","Emmanuel Macron|y1977|macron","Volodymyr Zelensky|y1978|zelensky","Elly Schlein|y1985|schlein"] },
+        { n: "Volti della TV italiana", e: "📺", i: ["Bruno Vespa|y1944|vespa","Mara Venier|y1950|venier","Milly Carlucci|y1954|carlucci","Gerry Scotti|y1956|scotti","Barbara D'Urso|y1957|d urso|durso","Fiorello|y1960","Maria De Filippi|y1961|de filippi","Carlo Conti|y1961|conti","Paolo Bonolis|y1961|bonolis","Amadeus|y1962","Alberto Angela|y1962|angela","Antonella Clerici|y1963|clerici","Fabio Fazio|y1964|fazio","Michelle Hunziker|y1977|hunziker","Alessandro Cattelan|y1980|cattelan","Belen Rodriguez|y1984|belen","Stefano De Martino|y1989|de martino"] }
+      ]
+    },
+    {
+      id: "isole", icon: "🏝️", name: "Superficie di Isole e Laghi", unit: "km²", fmt: "big",
+      rule: "Scrivete un'isola o un lago della categoria: vince chi somma più chilometri quadrati.",
+      elements: [
+        { n: "Isole italiane", e: "🇮🇹", i: ["Sicilia|25711","Sardegna|24090","Sant'Antioco|109|sant antioco","Pantelleria|83","Asinara|52","Ischia|46","Lipari|38","San Pietro|51","Elba|224|isola d elba","Giglio|21|isola del giglio","Lampedusa|20","La Maddalena|20|maddalena","Salina|27","Vulcano|21","Stromboli|12","Capri|10","Favignana|20","Procida|4","Ponza|7","Murano|1.2"] },
+        { n: "Isole del mondo", e: "🌍", i: ["Groenlandia|2130800","Nuova Guinea|785753","Borneo|743330","Madagascar|587041","Isola di Baffin|507451|baffin","Sumatra|473481","Honshu|227960","Gran Bretagna|209331|inghilterra","Cuba|105006","Islanda|101826","Irlanda|84421","Hokkaido|77981","Tasmania|68401","Sri Lanka|65610","Hawaii|10432|big island","Cipro|9251","Corsica|8680","Creta|8336","Bali|5780","Maiorca|3640|mallorca","Tenerife|2034","Malta|246","Santorini|76"] },
+        { n: "Isole del Mediterraneo", e: "⛵", i: ["Sicilia|25711","Sardegna|24090","Cipro|9251","Corsica|8680","Creta|8336","Eubea|3684","Maiorca|3640|mallorca","Lesbo|1633|lesbos","Rodi|1401","Chio|842","Cefalonia|773","Minorca|695|menorca","Corfù|593|corfu","Ibiza|572","Djerba|514","Zante|406|zacinto","Malta|246","Elba|224","Mykonos|86|mikonos","Formentera|83","Santorini|76","Gozo|67"] },
+        { n: "Laghi italiani", e: "🏞️", i: ["Lago di Garda|370|garda|benaco","Lago Maggiore|212|maggiore|verbano","Lago di Como|146|como|lario","Trasimeno|128","Lago di Bolsena|114|bolsena","Lago d'Iseo|65|iseo","Lago di Varano|60|varano","Lago di Bracciano|57|bracciano","Lago di Lesina|51|lesina","Lago di Lugano|49|ceresio|lugano","Lago d'Orta|18|orta","Lago di Varese|15|varese","Lago di Vico|12|vico","Lago di Molveno|3.3|molveno","Lago di Braies|0.31|braies"] },
+        { n: "Laghi del mondo", e: "🌊", i: ["Mar Caspio|371000|caspio","Lago Superiore|82100|superiore","Lago Vittoria|68870|vittoria","Lago Huron|59600|huron","Lago Michigan|58000|michigan","Lago Tanganica|32900|tanganica","Lago Bajkal|31500|bajkal|baikal","Lago Ladoga|17700|ladoga","Lago Titicaca|8372|titicaca","Lago Balaton|592|balaton","Lago di Ginevra|580|lemano|lago lemano|ginevra","Lago di Costanza|536|costanza|bodensee","Loch Ness|56"] }
+      ]
+    }
+  ];
+
+
+  /* =========================================================
+     Squadre globali (nomi/colori/punteggio impostati in
+     index.html) — stesso sistema condiviso degli altri giochi.
+     scoreBaseline tiene il punteggio già accumulato prima di
+     questa partita, così il totale di serata non si perde.
+     ========================================================= */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  const EXTRA_KEY = "laSteccaExtra";   // risposte aggiunte dal Master, ricordate su questo dispositivo
+  const TEAM_COLORS = ["#ff2e88", "#4dd9ff", "#00e676", "#ffd600", "#a05bff", "#fb5607"];
+  const ELEMENTS_PER_MANCHE = 5;
+  const DIACRITICS_RE = new RegExp("[" + String.fromCharCode(0x0300) + "-" + String.fromCharCode(0x036f) + "]", "g");
+  let scoreBaseline = [];
+
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalScore(index, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+  }
+  const $ = id => document.getElementById(id);
+  /* Le bandiere emoji su Windows diventano due lettere ("ES"): le mostriamo come immagini */
+  function emojiHTML(e){
+    const cps = [...(e || "")].map(c => c.codePointAt(0));
+    if (cps.length === 2 && cps.every(c => c >= 0x1F1E6 && c <= 0x1F1FF)){
+      const code = cps.map(c => String.fromCharCode(c - 0x1F1E6 + 97)).join("");
+      return `<img class="flag" src="https://flagcdn.com/w160/${code}.png" alt="${e}" onerror="this.replaceWith(document.createTextNode('${e}'))">`;
+    }
+    return escapeHtml(e || "");
+  }
+  let toastT;
+  function toast(msg){
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2400);
+  }
+
+  /* ---- Beep via Web Audio API: nessun file audio esterno ---- */
+  function beep(freq, duration, type){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+
+  /* =========================================================
+     DATABASE: da "Nome|valore|alias" a oggetti, più le risposte
+     aggiunte dal Master nelle partite precedenti
+     ========================================================= */
+  function loadExtra(){ try{ return JSON.parse(localStorage.getItem(EXTRA_KEY) || "{}"); }catch(e){ return {}; } }
+  function saveExtra(x){ try{ localStorage.setItem(EXTRA_KEY, JSON.stringify(x)); }catch(e){} }
+  const extra = loadExtra();
+  CATEGORIES.forEach(cat => cat.elements.forEach(el => {
+    el.items = el.i.map(s => {
+      const [name, value, ...alias] = s.split("|");
+      const v = value.startsWith("y") ? new Date().getFullYear() - parseInt(value.slice(1), 10) : parseFloat(value);
+      return { name, value: v, alias };
+    });
+    (extra[cat.id + "::" + el.n] || []).forEach(x => {
+      const found = el.items.find(it => norm(it.name) === norm(x.name));
+      if (found){ found.value = x.value; found.custom = true; }
+      else el.items.push({ name: x.name, value: x.value, alias: [], custom: true });
+    });
+  }));
+
+  /* =========================================================
+     FORMATTAZIONE NUMERI
+     ========================================================= */
+  const nf = (v, min, max) => new Intl.NumberFormat("it-IT", { minimumFractionDigits: min, maximumFractionDigits: max }).format(v);
+  function fmtValue(v, cat){
+    if (v == null || isNaN(v)) return "—";
+    if (cat.fmt === "dec1") return nf(v, 1, 1);
+    if (cat.fmt === "big"){
+      const a = Math.abs(v);
+      if (a >= 1e9) return nf(v / 1e9, 0, 2) + " mld";
+      if (a >= 1e6) return nf(v / 1e6, 0, 2) + " mln";
+      if (a >= 1e4) return nf(Math.round(v), 0, 0);
+      return nf(v, 0, 3);
+    }
+    return nf(v, 0, 1);
+  }
+  const fmtWithUnit = (v, cat) => `${fmtValue(v, cat)} ${cat.unit}`;
+
+  /* =========================================================
+     RICONOSCIMENTO RISPOSTE — niente maiuscole/accenti,
+     tolleranza a errori di battitura e parole troncate
+     ========================================================= */
+  function norm(s){
+    return (s || "").toString().toLowerCase().normalize("NFD").replace(DIACRITICS_RE, "")
+      .replace(/&/g, " e ").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function lev(a, b){
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++){
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++){
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  /* "The Dark Knight" = "Dark Knight", "Il Padrino" = "Padrino": gli articoli iniziali non contano */
+  const stripArticle = s => s.replace(/^(the|il|lo|la|i|gli|le|l|un|uno|una) (?=\S)/, "");
+  function matchAnswer(text, el){
+    const q = stripArticle(norm(text));
+    if (!q) return null;
+    const qc = q.replace(/ /g, "");
+    const tol = qc.length < 4 ? 0 : qc.length <= 6 ? 1 : qc.length <= 10 ? 2 : 3;
+    let best = null, bestScore = 0;
+    el.items.forEach(item => {
+      [item.name, ...item.alias].forEach(variant => {
+        const v = stripArticle(norm(variant)), vc = v.replace(/ /g, "");
+        if (!vc) return;
+        let s = 0;
+        if (vc === qc) s = 100;
+        else if (qc.length >= 4 && vc.startsWith(qc)) s = 90 - Math.min(10, vc.length - qc.length);
+        else if (qc.length >= 4 && v.split(" ").includes(q)) s = 85;
+        else {
+          const d = lev(qc, vc);
+          if (tol && d <= tol) s = 80 - d * 5;
+          if (q.length >= 5){
+            v.split(" ").forEach(w => { if (w.length >= 5 && lev(q, w) <= 1) s = Math.max(s, 72); });
+          }
+        }
+        if (s > bestScore){ bestScore = s; best = item; }
+      });
+    });
+    return best ? { item: best, score: bestScore } : null;
+  }
+
+  /* ---- Numeri scritti dal Master: "185.000", "1,6 mln", "185k", "2 mld" ---- */
+  function parseNum(str){
+    let s = (str || "").toString().trim().toLowerCase().replace(/\s+/g, "");
+    if (!s) return NaN;
+    let mult = 1;
+    if (/(mld|miliardi|miliardo|bn|b)$/.test(s)) mult = 1e9;
+    else if (/(mln|milioni|milione|mio|m)$/.test(s)) mult = 1e6;
+    else if (/(k|mila)$/.test(s)) mult = 1e3;
+    s = s.replace(/[^0-9.,-]/g, "");
+    if (s.includes(".") && s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+    else if (s.includes(",")) s = s.replace(",", ".");
+    else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    const n = parseFloat(s);
+    return isNaN(n) ? NaN : n * mult;
+  }
+
+  /* =========================================================
+     NUMERI ANIMATI (count-up)
+     ========================================================= */
+  function countUp(el, to, cat, suffix){
+    const from = el._v || 0;
+    el._v = to;
+    const start = performance.now(), dur = 900;
+    cancelAnimationFrame(el._raf);
+    const step = now => {
+      const t = Math.min(1, (now - start) / dur);
+      const e = 1 - Math.pow(1 - t, 3);
+      el.textContent = fmtValue(from + (to - from) * e, cat) + (suffix || "");
+      if (t < 1) el._raf = requestAnimationFrame(step);
+      else el.textContent = fmtValue(to, cat) + (suffix || "");
+    };
+    el._raf = requestAnimationFrame(step);
+  }
+
+  /* =========================================================
+     CORIANDOLI
+     ========================================================= */
+  function confetti(colors){
+    const box = document.createElement("div");
+    box.className = "confetti";
+    const palette = colors && colors.length ? colors : ["#00f5a0", "#00b8ff", "#ffd600", "#ff2e88"];
+    box.innerHTML = Array.from({ length: 140 }, () => {
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      return `<i style="left:${Math.random() * 100}%;background:${c};animation-duration:${2.2 + Math.random() * 2}s;animation-delay:${Math.random() * 0.6}s;--dx:${(Math.random() - 0.5) * 300}px;--rot:${Math.random() * 1080 - 540}deg;width:${6 + Math.random() * 8}px"></i>`;
+    }).join("");
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 5000);
+  }
+
+  /* =========================================================
+     STATO
+     phase: "setup" → "play" (5 elementi) → "summary" → "setup"…
+     answers[e][t] = { text, name, value, found, manual }
+     ========================================================= */
+  let state = null;
+
+  function buildTeams(ia, ib){
+    const global = loadGlobalTeams();
+    if (global){
+      const n = Math.min(global.count || global.teams.length, 6);
+      const list = global.teams.slice(0, n);
+      return [ia, ib].map(gi => ({ gi, name: list[gi].name, color: list[gi].color || TEAM_COLORS[gi % TEAM_COLORS.length], local: 0, wins: 0 }));
+    }
+    return [
+      { gi: -1, name: "Squadra A", color: TEAM_COLORS[0], local: 0, wins: 0 },
+      { gi: -1, name: "Squadra B", color: TEAM_COLORS[1], local: 0, wins: 0 }
+    ];
+  }
+  function refreshBaseline(){
+    const global = loadGlobalTeams();
+    scoreBaseline = state.teams.map(t => {
+      if (!global || t.gi < 0 || !global.teams[t.gi]) return 0;
+      return (global.teams[t.gi].score || 0) - t.local;
+    });
+  }
+
+  function startGame(){
+    const global = loadGlobalTeams();
+    const n = global ? Math.min(global.count || global.teams.length, 6) : 0;
+    let ia = 0, ib = 1;
+    if (n > 2){
+      $("teamPickRow").hidden = false;
+      const opts = global.teams.slice(0, n).map((t, i) => `<option value="${i}">${escapeHtml(t.name)}</option>`).join("");
+      $("pickA").innerHTML = opts; $("pickB").innerHTML = opts;
+      $("pickA").value = "0"; $("pickB").value = "1";
+    }
+    state = {
+      teams: buildTeams(ia, ib), target: 3, phase: "setup", manche: 1,
+      cat: null, elements: [], idx: 0, answers: [], revealed: false, secret: true,
+      usedCats: new Map(), usedEls: {}, lastCat: null, confirmed: false
+    };
+    refreshBaseline();
+    renderScoreboard();
+    renderCategories();
+  }
+
+  function onTeamPick(){
+    let a = Number($("pickA").value), b = Number($("pickB").value);
+    if (a === b){ b = (a + 1) % $("pickB").options.length; $("pickB").value = String(b); }
+    state.teams = buildTeams(a, b);
+    refreshBaseline();
+    renderScoreboard();
+  }
+  $("pickA").addEventListener("change", onTeamPick);
+  $("pickB").addEventListener("change", onTeamPick);
+
+  /* =========================================================
+     TABELLONE
+     ========================================================= */
+  function renderScoreboard(justScored){
+    $("scoreGrid").innerHTML = state.teams.map((team, i) => {
+      const pips = state.target ? Array.from({ length: state.target }, (_, k) => `<i class="${k < team.wins ? "on" : ""}"></i>`).join("") : "";
+      return `<div class="score-card${justScored === i ? " just-scored" : ""}">
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+        </div>
+        <div class="score-value">${(scoreBaseline[i] || 0) + team.local}</div>
+        <div class="score-sub">Manche vinte: ${team.wins}${state.target ? " / " + state.target : ""}</div>
+        ${pips ? `<div class="pips">${pips}</div>` : ""}
+      </div>`;
+    }).join("");
+    $("counter").textContent = `Manche ${state.manche}`;
+  }
+
+  /* =========================================================
+     1. SCELTA CATEGORIA
+     ========================================================= */
+  function renderCategories(){
+    $("catGrid").innerHTML = CATEGORIES.map((c, i) => `
+      <button type="button" class="cat-card" data-cat="${i}">
+        <span class="cat-icon">${c.icon}</span>
+        <span class="cat-name">${escapeHtml(c.name)}</span>
+        <span class="cat-desc">${escapeHtml(c.elements.map(e => e.n).slice(0, 5).join(" · "))}${c.elements.length > 5 ? "…" : ""}</span>
+        <span class="cat-meta"><span class="cat-unit">${escapeHtml(c.unit)}</span>${state.usedCats.get(c.id) ? `<span class="cat-played">giocata ${state.usedCats.get(c.id)}×</span>` : ""}</span>
+      </button>`).join("");
+  }
+  $("catGrid").addEventListener("click", e => {
+    const b = e.target.closest("[data-cat]");
+    if (b) startManche(CATEGORIES[Number(b.dataset.cat)]);
+  });
+  $("randomCatBtn").addEventListener("click", () => {
+    /* Ogni categoria può riuscire più volte: si evita solo di ripetere quella appena giocata,
+       e si preferiscono le categorie giocate meno volte */
+    const min = Math.min(...CATEGORIES.map(c => state.usedCats.get(c.id) || 0));
+    let pool = CATEGORIES.filter(c => c.id !== state.lastCat && (state.usedCats.get(c.id) || 0) <= min + 1);
+    if (!pool.length) pool = CATEGORIES.filter(c => c.id !== state.lastCat);
+    const cat = pool[Math.floor(Math.random() * pool.length)];
+    toast(`🎲 È uscita: ${cat.icon} ${cat.name}`);
+    startManche(cat);
+  });
+  $("targetSwitch").addEventListener("click", e => {
+    const b = e.target.closest("[data-target]");
+    if (!b) return;
+    state.target = Number(b.dataset.target);
+    document.querySelectorAll("#targetSwitch .switch-btn").forEach(x => x.classList.toggle("active", x === b));
+    renderScoreboard();
+  });
+
+  function showView(id){
+    ["setupView", "playView", "summaryView"].forEach(v => $(v).classList.toggle("active", v === id));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* =========================================================
+     2. MANCHE
+     ========================================================= */
+  function startManche(cat){
+    state.cat = cat;
+    state.usedCats.set(cat.id, (state.usedCats.get(cat.id) || 0) + 1);
+    state.lastCat = cat.id;
+    /* elementi non ancora usati in questa partita per primi: se la categoria riesce, cambiano Paesi/temi */
+    const used = state.usedEls[cat.id] || (state.usedEls[cat.id] = new Set());
+    if (cat.elements.every(el => used.has(el.n))) used.clear();
+    const fresh = shuffle(cat.elements.filter(el => !used.has(el.n)));
+    const old = shuffle(cat.elements.filter(el => used.has(el.n)));
+    state.elements = [...fresh, ...old].slice(0, ELEMENTS_PER_MANCHE);
+    state.elements.forEach(el => used.add(el.n));
+    state.idx = 0;
+    state.answers = state.elements.map(() => [null, null]);
+    state.phase = "play";
+    state.confirmed = false;
+    $("teamPickRow").hidden = true;
+    $("catTitle").textContent = `${cat.icon} ${cat.name}`;
+    $("catRule").textContent = cat.rule;
+    renderDuel();
+    showElement();
+    showView("playView");
+  }
+
+  function mancheTotal(t){
+    return state.answers.reduce((s, row) => s + (row[t] && !isNaN(row[t].value) ? row[t].value : 0), 0);
+  }
+
+  function renderDuel(){
+    $("duel").innerHTML = state.teams.map((team, t) => `
+      ${t === 1 ? '<div class="vs">VS</div>' : ""}
+      <div class="team-panel" id="panel-${t}">
+        <span class="lead-badge">⬆ IN VANTAGGIO</span>
+        <div class="panel-head"><span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span><span style="color:${escapeHtml(team.color)}">${escapeHtml(team.name)}</span></div>
+        <div class="panel-total"><span id="total-${t}">0</span><small>totale manche · ${escapeHtml(state.cat.unit)}</small></div>
+        <input class="answer-input${state.secret ? " secret" : ""}" id="input-${t}" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Risposta di ${escapeHtml(team.name)}...">
+        <div class="result-box" id="result-${t}"><span class="result-note">La risposta comparirà qui</span></div>
+      </div>`).join("");
+    state.teams.forEach((_, t) => { const el = $("total-" + t); el._v = 0; el.textContent = fmtValue(0, state.cat); });
+  }
+
+  function renderDots(){
+    $("progressDots").innerHTML = state.elements.map((_, i) =>
+      `<span class="${i < state.idx || (i === state.idx && state.revealed) ? "done" : ""}${i === state.idx ? " current" : ""}">${i + 1}</span>`).join("");
+  }
+
+  function showElement(){
+    const el = state.elements[state.idx];
+    state.revealed = false;
+    $("elementEyebrow").textContent = `Elemento ${state.idx + 1} di ${state.elements.length}`;
+    $("elementEmoji").innerHTML = emojiHTML(el.e);
+    $("elementName").textContent = el.n;
+    const card = $("elementCard");
+    card.classList.remove("pop"); void card.offsetWidth; card.classList.add("pop");
+    state.teams.forEach((_, t) => {
+      const inp = $("input-" + t);
+      inp.value = ""; inp.disabled = false;
+      inp.classList.toggle("secret", state.secret);
+      const box = $("result-" + t);
+      box.className = "result-box";
+      box.innerHTML = '<span class="result-note">La risposta comparirà qui</span>';
+    });
+    $("bestBox").hidden = true;
+    $("revealBtn").hidden = false;
+    $("nextBtn").hidden = true;
+    renderDots();
+    updateLeader();
+    setTimeout(() => $("input-0").focus(), 60);
+  }
+
+  /* Invio: dal primo campo al secondo, dal secondo rivela */
+  $("duel").addEventListener("keydown", e => {
+    if (e.key !== "Enter" || !e.target.classList.contains("answer-input")) return;
+    e.preventDefault();
+    if (e.target.id === "input-0") $("input-1").focus();
+    else if (!state.revealed) reveal();
+  });
+
+  function reveal(){
+    if (state.phase !== "play" || state.revealed) return;
+    const el = state.elements[state.idx];
+    state.revealed = true;
+    state.teams.forEach((_, t) => {
+      const inp = $("input-" + t);
+      const text = inp.value.trim();
+      inp.disabled = true;
+      inp.classList.remove("secret");
+      const m = matchAnswer(text, el);
+      state.answers[state.idx][t] = m
+        ? { text, name: m.item.name, value: m.item.value, found: true, manual: false }
+        : { text, name: text, value: 0, found: false, manual: false };
+    });
+    beep(660, 0.12); setTimeout(() => beep(990, 0.18), 120);
+    renderResults(true);
+    const best = [...el.items].sort((a, b) => b.value - a.value).slice(0, 3);
+    $("bestBox").innerHTML = `💡 Le risposte migliori erano: ${best.map(b => `<b>${escapeHtml(b.name)}</b> (${fmtWithUnit(b.value, state.cat)})`).join(" · ")}`;
+    $("bestBox").hidden = false;
+    $("revealBtn").hidden = true;
+    $("nextBtn").hidden = false;
+    $("nextBtn").textContent = state.idx < state.elements.length - 1 ? "Prossimo elemento ➜" : "📊 Risultato della manche";
+    renderDots();
+    $("nextBtn").focus();
+  }
+
+  function renderResults(animate){
+    state.teams.forEach((_, t) => {
+      const a = state.answers[state.idx][t];
+      const box = $("result-" + t);
+      if (!a) return;
+      if (!a.text && !a.manual){
+        box.className = "result-box";
+        box.innerHTML = `<span class="result-name">— nessuna risposta —</span><span class="result-value">0</span>
+          <button type="button" class="edit-btn" data-edit="${state.idx}:${t}">✏️ Modifica / Aggiungi valore</button>`;
+      } else if (a.found || a.manual){
+        box.className = "result-box found";
+        const note = a.manual ? "valore inserito dal Master" : (norm(a.text) !== norm(a.name) ? `hai scritto "${escapeHtml(a.text)}"` : "");
+        box.innerHTML = `<span class="result-name">✅ ${escapeHtml(a.name)}</span><span class="result-value" id="val-${t}">0</span>
+          ${note ? `<span class="result-note">${note}</span>` : ""}
+          <button type="button" class="edit-btn" data-edit="${state.idx}:${t}">✏️ Modifica valore</button>`;
+        const v = $("val-" + t);
+        if (animate){ v._v = 0; countUp(v, a.value, state.cat, " " + state.cat.unit); }
+        else v.textContent = fmtWithUnit(a.value, state.cat);
+      } else {
+        box.className = "result-box missing";
+        box.innerHTML = `<span class="result-name">❓ ${escapeHtml(a.text)}</span><span class="result-value">0</span>
+          <span class="result-note">Non trovata nel database</span>
+          <button type="button" class="edit-btn" data-edit="${state.idx}:${t}">✏️ Modifica / Aggiungi valore</button>`;
+      }
+    });
+    updateTotals();
+  }
+
+  function updateTotals(){
+    state.teams.forEach((_, t) => {
+      const el = $("total-" + t);
+      if (!el) return;
+      const v = mancheTotal(t);
+      if (v !== el._v){
+        countUp(el, v, state.cat);
+        const box = el.parentElement;
+        box.classList.remove("bump"); void box.offsetWidth; box.classList.add("bump");
+      }
+    });
+    updateLeader();
+  }
+  function updateLeader(){
+    const a = mancheTotal(0), b = mancheTotal(1);
+    $("panel-0") && $("panel-0").classList.toggle("leading", a > b);
+    $("panel-1") && $("panel-1").classList.toggle("leading", b > a);
+  }
+
+  $("revealBtn").addEventListener("click", reveal);
+  $("nextBtn").addEventListener("click", () => {
+    if (state.idx < state.elements.length - 1){ state.idx++; showElement(); }
+    else showSummary();
+  });
+  $("secretBtn").addEventListener("click", () => {
+    state.secret = !state.secret;
+    $("secretBtn").textContent = state.secret ? "🙈 Risposte nascoste" : "👁 Risposte visibili";
+    state.teams.forEach((_, t) => { const i = $("input-" + t); if (i && !i.disabled) i.classList.toggle("secret", state.secret); });
+  });
+  $("abortBtn").addEventListener("click", () => {
+    if (!confirm("Abbandonare questa manche e scegliere un'altra categoria? Nessun punto verrà assegnato.")) return;
+    state.phase = "setup";
+    renderCategories();
+    showView("setupView");
+  });
+
+  /* =========================================================
+     3. RIEPILOGO E PUNTO DELLA MANCHE
+     ========================================================= */
+  function cellHTML(a, e, t){
+    if (!a) return `<td class="ans">—</td><td class="val">0</td>`;
+    const miss = !a.found && !a.manual && a.text;
+    return `<td class="ans${miss ? " miss" : ""}">${a.text || a.manual ? escapeHtml(a.name || "—") : "—"}${miss ? " ❓" : ""}
+        ${state.confirmed ? "" : `<button type="button" class="mini-edit" data-edit="${e}:${t}" title="Modifica">✏️</button>`}</td>
+      <td class="val">${fmtValue(a.value, state.cat)}</td>`;
+  }
+  function renderSummary(){
+    const [A, B] = state.teams;
+    const ta = mancheTotal(0), tb = mancheTotal(1);
+    $("summaryCat").textContent = `${state.cat.icon} ${state.cat.name} · valori in ${state.cat.unit}`;
+    $("summaryTable").innerHTML = `
+      <thead><tr><th style="text-align:left">Elemento</th>
+        <th style="color:${escapeHtml(A.color)}">${escapeHtml(A.name)}</th><th></th>
+        <th style="color:${escapeHtml(B.color)}">${escapeHtml(B.name)}</th><th></th></tr></thead>
+      <tbody>${state.elements.map((el, e) => `<tr><td>${emojiHTML(el.e)} ${escapeHtml(el.n)}</td>${cellHTML(state.answers[e][0], e, 0)}${cellHTML(state.answers[e][1], e, 1)}</tr>`).join("")}</tbody>
+      <tfoot><tr><td style="text-align:left">Totale</td>
+        <td></td><td class="val ${ta > tb ? "win" : ""}">${fmtValue(ta, state.cat)}</td>
+        <td></td><td class="val ${tb > ta ? "win" : ""}">${fmtValue(tb, state.cat)}</td></tr></tfoot>`;
+    const banner = $("winnerBanner");
+    if (ta === tb){ banner.className = "winner-banner tie"; banner.textContent = "🤝 Pareggio perfetto: nessun punto"; }
+    else {
+      const w = ta > tb ? A : B;
+      banner.className = "winner-banner";
+      banner.textContent = `🏆 Vince ${w.name} con ${fmtWithUnit(Math.max(ta, tb), state.cat)}`;
+    }
+    $("confirmBtn").hidden = state.confirmed;
+    $("confirmBtn").textContent = ta === tb ? "🤝 Conferma il pareggio" : "🏆 Conferma e assegna il punto";
+    $("newMancheBtn").hidden = !state.confirmed;
+    $("summaryHint").hidden = state.confirmed;
+  }
+  function showSummary(){
+    state.phase = "summary";
+    renderSummary();
+    showView("summaryView");
+  }
+
+  $("confirmBtn").addEventListener("click", () => {
+    if (state.confirmed) return;
+    state.confirmed = true;
+    const ta = mancheTotal(0), tb = mancheTotal(1);
+    if (ta === tb){
+      renderSummary();
+      openWin("🤝", "Pareggio!", "", "Totali identici: nessun punto in questa manche.", [["▶ Nuova manche", nextManche, true]]);
+      return;
+    }
+    const w = ta > tb ? 0 : 1, team = state.teams[w];
+    team.wins++;
+    team.local++;
+    if (team.gi >= 0) saveGlobalScore(team.gi, (scoreBaseline[w] || 0) + team.local);
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+    renderScoreboard(w);
+    renderSummary();
+    beep(880, 0.2); setTimeout(() => beep(1175, 0.3), 160); setTimeout(() => beep(1568, 0.4), 340);
+    confetti([team.color, "#ffd600", "#ffffff"]);
+    if (state.target && team.wins >= state.target){
+      setTimeout(() => {
+        confetti([team.color, "#ffd600", "#00f5a0", "#ff2e88"]);
+        openWin("👑", "Vince La Stecca!", team.name,
+          `${team.wins} manche vinte su ${state.teams[0].wins + state.teams[1].wins}. Il punto di questa manche è già nel tabellone della serata.`,
+          [["🔁 Nuova partita", newMatch, true], ["Chiudi", closeWin, false]]);
+      }, 700);
+    } else {
+      openWin("🏆", "+1 punto!", team.name,
+        `vince la manche di ${state.cat.icon} ${state.cat.name} con ${fmtWithUnit(Math.max(ta, tb), state.cat)}.`,
+        [["▶ Nuova manche", nextManche, true], ["Rivedi il riepilogo", closeWin, false]]);
+    }
+  });
+  $("newMancheBtn").addEventListener("click", nextManche);
+
+  function nextManche(){
+    closeWin();
+    state.manche++;
+    state.phase = "setup";
+    renderScoreboard();
+    renderCategories();
+    showView("setupView");
+  }
+  function newMatch(){
+    state.teams.forEach(t => t.wins = 0);
+    state.manche = 0;
+    nextManche();
+    const global = loadGlobalTeams();
+    $("teamPickRow").hidden = !(global && Math.min(global.count || global.teams.length, 6) > 2);
+  }
+
+  /* ---- Modale vittoria ---- */
+  function openWin(trophy, title, name, sub, buttons){
+    $("wTrophy").textContent = trophy;
+    $("wTitle").textContent = title;
+    $("wName").textContent = name;
+    $("wName").style.color = name ? (state.teams.find(t => t.name === name) || {}).color || "" : "";
+    $("wSub").textContent = sub;
+    $("wButtons").innerHTML = "";
+    buttons.forEach(([label, fn, primary]) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "btn " + (primary ? "btn-primary" : "btn-ghost"); b.textContent = label;
+      b.addEventListener("click", fn);
+      $("wButtons").appendChild(b);
+    });
+    $("winModal").classList.add("active");
+  }
+  function closeWin(){ $("winModal").classList.remove("active"); }
+
+  /* =========================================================
+     PANNELLO MASTER — correzione manuale di una risposta
+     ========================================================= */
+  let editing = null; // { e, t }
+  function openMaster(e, t){
+    const el = state.elements[e];
+    const a = state.answers[e][t] || { text: "", name: "", value: 0, found: false, manual: false };
+    editing = { e, t };
+    $("mTeam").textContent = state.teams[t].name;
+    $("mTeam").style.color = state.teams[t].color;
+    $("mElement").innerHTML = `${emojiHTML(el.e)} ${escapeHtml(el.n)}`;
+    $("mTyped").textContent = a.text ? `"${a.text}"` : "— (nessuna risposta)";
+    $("mCurrent").textContent = (a.found || a.manual) ? `${a.name} · ${fmtWithUnit(a.value, state.cat)}` : "0 (non trovata)";
+    const items = [...el.items].sort((x, y) => x.name.localeCompare(y.name, "it"));
+    $("mSelect").innerHTML = `<option value="">— Scegli dall'elenco (${items.length}) —</option>` +
+      items.map(it => `<option value="${escapeHtml(it.name)}"${a.found && it.name === a.name ? " selected" : ""}>${escapeHtml(it.name)} · ${fmtWithUnit(it.value, state.cat)}${it.custom ? " ★" : ""}</option>`).join("");
+    $("mValue").value = "";
+    $("mHint").textContent = `Inserisci il valore in ${state.cat.unit}. Accetta 185000, 185.000, 1,6 mln, 185k.`;
+    $("mPreview").textContent = "";
+    $("mRemember").checked = true;
+    $("mRemember").parentElement.hidden = !a.text;
+    $("masterListModal").classList.remove("active");
+    $("masterModal").classList.add("active");
+    setTimeout(() => $("mValue").focus(), 80);
+  }
+  $("mValue").addEventListener("input", () => {
+    const v = parseNum($("mValue").value);
+    $("mPreview").textContent = $("mValue").value.trim() ? (isNaN(v) ? "⚠️ Numero non valido" : "= " + fmtWithUnit(v, state.cat)) : "";
+  });
+  $("mValue").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); applyMaster(); } });
+  function closeMaster(){ $("masterModal").classList.remove("active"); $("masterListModal").dataset.reopen = ""; editing = null; }
+  function afterEdit(){
+    if (state.phase === "play" && editing.e === state.idx) renderResults(false);
+    else updateTotals();
+    if (state.phase === "summary") renderSummary();
+    if ($("masterListModal").dataset.reopen === "1"){ $("masterListModal").dataset.reopen = ""; openMasterList(); }
+  }
+  function applyMaster(){
+    if (!editing) return;
+    const { e, t } = editing;
+    const el = state.elements[e];
+    const prev = state.answers[e][t] || { text: "" };
+    const raw = $("mValue").value.trim();
+    const sel = $("mSelect").value;
+    if (raw){
+      const v = parseNum(raw);
+      if (isNaN(v)){ toast("⚠️ Valore non valido"); return; }
+      const name = prev.text || (sel || "Valore manuale");
+      state.answers[e][t] = { text: prev.text, name, value: v, found: false, manual: true };
+      if (prev.text && $("mRemember").checked){
+        const key = state.cat.id + "::" + el.n;
+        extra[key] = (extra[key] || []).filter(x => norm(x.name) !== norm(prev.text));
+        extra[key].push({ name: prev.text, value: v });
+        saveExtra(extra);
+        const existing = el.items.find(it => norm(it.name) === norm(prev.text));
+        if (existing) existing.value = v; else el.items.push({ name: prev.text, value: v, alias: [], custom: true });
+      }
+      toast(`✅ ${state.teams[t].name}: ${fmtWithUnit(v, state.cat)}`);
+    } else if (sel){
+      const it = el.items.find(x => x.name === sel);
+      state.answers[e][t] = { text: prev.text, name: it.name, value: it.value, found: true, manual: false };
+      toast(`✅ Abbinata a ${it.name}`);
+    } else { toast("Scegli una risposta o scrivi un valore"); return; }
+    closeMasterKeep();
+  }
+  function closeMasterKeep(){
+    const ed = editing;
+    $("masterModal").classList.remove("active");
+    editing = ed; afterEdit(); editing = null;
+  }
+  $("mApply").addEventListener("click", applyMaster);
+  $("mZero").addEventListener("click", () => {
+    if (!editing) return;
+    const { e, t } = editing;
+    const prev = state.answers[e][t] || { text: "" };
+    state.answers[e][t] = { text: prev.text, name: prev.text || "—", value: 0, found: false, manual: true };
+    closeMasterKeep();
+  });
+  $("mCancel").addEventListener("click", closeMaster);
+  $("masterModal").addEventListener("click", e => { if (e.target === $("masterModal")) closeMaster(); });
+
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-edit]");
+    if (!b) return;
+    const [ei, ti] = b.dataset.edit.split(":").map(Number);
+    if (b.closest("#masterListModal")) $("masterListModal").dataset.reopen = "1";
+    openMaster(ei, ti);
+  });
+
+  /* ---- Elenco completo delle risposte (pulsante 🛠️ nella navbar) ---- */
+  function openMasterList(){
+    if (!state || state.phase === "setup" || !state.cat){
+      toast("🛠️ Il pannello Master si usa durante una manche");
+      return;
+    }
+    const last = state.phase === "summary" ? state.elements.length - 1 : (state.revealed ? state.idx : state.idx - 1);
+    const rows = [];
+    for (let e = 0; e <= last; e++){
+      const el = state.elements[e];
+      rows.push(`<div class="master-row"><b>${emojiHTML(el.e)} ${escapeHtml(el.n)}</b>${[0, 1].map(t => {
+        const a = state.answers[e][t];
+        const label = a ? `${escapeHtml(a.name || "—")} · ${fmtValue(a.value, state.cat)}` : "—";
+        return `<div class="master-cell"><span style="color:${escapeHtml(state.teams[t].color)}">${label}</span><button type="button" class="mini-edit" data-edit="${e}:${t}" title="Modifica">✏️</button></div>`;
+      }).join("")}</div>`);
+    }
+    $("mlList").innerHTML = rows.length ? rows.join("") : '<p class="modal-note">Nessuna risposta ancora rivelata in questa manche.</p>';
+    $("masterListModal").classList.add("active");
+  }
+  $("masterNavBtn").addEventListener("click", openMasterList);
+  $("mlClose").addEventListener("click", () => $("masterListModal").classList.remove("active"));
+  $("masterListModal").addEventListener("click", e => { if (e.target === $("masterListModal")) $("masterListModal").classList.remove("active"); });
+
+  /* ---- Modal Regole ---- */
+  document.querySelectorAll(".openInfoBtn").forEach(btn => btn.addEventListener("click", () => $("infoModal").classList.add("active")));
+  $("closeInfoBtn").addEventListener("click", () => $("infoModal").classList.remove("active"));
+  $("infoModal").addEventListener("click", e => { if (e.target === $("infoModal")) $("infoModal").classList.remove("active"); });
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    if (!state) return;
+    refreshBaseline();
+    renderScoreboard();
+  });
+
+  startGame();
+</script>
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5); font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+  }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55); background: rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  @media (max-width: 560px){ .global-score-widget{ bottom: 8px; right: 8px; } .gsw-name{ max-width: 72px; } }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){ try{ var raw=localStorage.getItem(KEY); if(raw){var d=JSON.parse(raw); if(d&&Array.isArray(d.teams)&&d.teams.length>=2) return d;} }catch(e){} return null; }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){ var div=document.createElement("div"); div.textContent = s==null?"":s; return div.innerHTML; }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML=""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0,n).map(function(t,i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:'+esc(t.color||"#4dd9ff")+'"></span>' +
+        '<span class="gsw-name">'+esc(t.name)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">'+(t.score||0)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load(); if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score||0)+d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load(); if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
+</script>
+</body>
+</html>
