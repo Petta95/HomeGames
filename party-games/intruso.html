@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L'Intruso — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     L'INTRUSO — "One Last Standing". File singolo e
+     autocontenuto con lo stesso sistema grafico e la stessa
+     gestione squadre/punteggi globali degli altri giochi.
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+    --glass-bg: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --accent: #ff7a45;
+    --accent2: #ff3d81;
+    --accent-soft: rgba(255, 122, 69, 0.16);
+    --accent-glow: rgba(255, 122, 69, 0.5);
+    --ok: #00e676;
+    --ok-soft: rgba(0, 230, 118, 0.16);
+    --ko: #ff3b5c;
+    --ko-soft: rgba(255, 59, 92, 0.18);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden]{ display: none !important; }
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-blobs{
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.26;
+    animation: float 22s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+  .bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+  @keyframes float{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-25px) scale(1.08); }
+  }
+
+  /* ---- Navbar ---- */
+  .navbar{
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+  }
+  .nav-back{
+    text-decoration: none; color: var(--text-main);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+  .nav-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  }
+  .nav-title .dot{ width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .nav-right{ display: flex; align-items: center; gap: 10px; }
+  .nav-counter{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
+    background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 999px;
+  }
+  .nav-info-btn{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+
+  /* ---- Stage ---- */
+  .stage{
+    max-width: 1180px; margin: 0 auto; padding: 28px 24px 100px;
+    min-height: calc(100vh - 68px);
+    display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;
+  }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Pulsanti e switch ---- */
+  .btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem;
+    padding: 16px 30px; border-radius: 16px; border: none; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; box-shadow: 0 0 25px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+  .btn-outline{ background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+  .btn-outline:hover{ background: var(--accent-soft); }
+  .btn-ghost{ background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
+  .btn-ghost:hover{ border-color: var(--accent); color: var(--accent); }
+  .btn-small{ padding: 9px 16px; font-size: 0.85rem; border-radius: 11px; }
+  .btn:active{ transform: scale(0.97); }
+  .btn-row{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  .switch{
+    display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 5px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 999px;
+  }
+  .switch-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem;
+    color: var(--text-muted); background: transparent; border: none;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .switch-btn:hover{ color: var(--text-main); }
+  .switch-btn.active{ background: var(--accent); color: #06090f; box-shadow: 0 0 18px -4px var(--accent-glow); }
+
+  /* ---- Tabellone punteggi ---- */
+  .score-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; width: 100%; max-width: 900px; }
+  .score-card{
+    position: relative; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 18px;
+    padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.3s ease;
+  }
+  .score-card.turn{ border-color: var(--team); box-shadow: 0 0 28px -6px var(--team); transform: translateY(-3px); }
+  .score-card.turn::after{
+    content: "TOCCA A TE"; position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    background: var(--team); color: #06090f; font-size: 0.66rem; font-weight: 900; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .score-card.scored{ border-color: var(--ok); background: var(--ok-soft); }
+  .score-card.lost{ border-color: var(--ko); background: var(--ko-soft); }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
+  .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); line-height: 1.1; }
+
+  /* ---- Domanda ---- */
+  .question-card{
+    width: 100%; max-width: 900px; border-radius: 26px; padding: 22px 26px;
+    background: linear-gradient(160deg, rgba(255,122,69,0.14), rgba(255,61,129,0.06));
+    border: 2px solid var(--accent); box-shadow: 0 0 50px -16px var(--accent-glow);
+    animation: fadeIn 0.4s ease;
+  }
+  .q-eyebrow{ display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .q-tag{
+    font-size: 0.74rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent);
+  }
+  .q-text{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.35rem, 3.6vw, 2.1rem); line-height: 1.25; }
+  .q-hint{ margin-top: 8px; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; }
+  .q-hint b{ color: var(--ko); }
+
+  .turn-banner{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+    padding: 10px 22px; border-radius: 999px; background: var(--glass-bg); border: 2px solid var(--team, var(--accent));
+    box-shadow: 0 0 24px -8px var(--team, var(--accent)); transition: all 0.3s ease; animation: fadeIn 0.3s ease;
+  }
+  .turn-banner b{ color: var(--team, var(--accent)); }
+  .turn-banner.ok{ border-color: var(--ok); }
+  .turn-banner.ko{ border-color: var(--ko); background: var(--ko-soft); }
+
+  /* ---- Griglia delle 10 card (flip 3D) ---- */
+  .cards{ display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; width: 100%; }
+  .flip{ display: block; width: 100%; perspective: 1000px; min-height: 196px; cursor: pointer; border: none; background: none; padding: 0; color: inherit; font: inherit; text-align: center; }
+  .flip:disabled{ cursor: default; }
+  .flip-inner{
+    display: block; position: relative; width: 100%; height: 100%; min-height: 196px;
+    transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(.3,.8,.3,1.1);
+  }
+  .flip.revealed .flip-inner{ transform: rotateY(180deg); }
+  .face{
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 18px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    border: 2px solid var(--glass-border); background: var(--glass-bg);
+  }
+  .face.front{ transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+  .flip:not(:disabled):hover .face.front{ border-color: var(--accent); box-shadow: 0 0 26px -8px var(--accent-glow); transform: translateY(-3px); }
+  .face.back{ transform: rotateY(180deg); }
+  .flip.safe .face.back{ border-color: var(--ok); background: linear-gradient(160deg, rgba(0,230,118,0.18), rgba(0,230,118,0.04)); box-shadow: 0 0 26px -10px rgba(0,230,118,0.6); }
+  .flip.intruder .face.back{ border-color: var(--ko); background: linear-gradient(160deg, rgba(255,59,92,0.28), rgba(255,59,92,0.06)); box-shadow: 0 0 34px -6px rgba(255,59,92,0.75); }
+  .flip.intruder.boom{ animation: shake 0.55s ease; }
+  .flip.late .face.back{ opacity: 0.8; }
+  @keyframes shake{
+    10%, 90%{ transform: translateX(-2px); } 20%, 80%{ transform: translateX(4px); }
+    30%, 50%, 70%{ transform: translateX(-8px) rotate(-1deg); } 40%, 60%{ transform: translateX(8px) rotate(1deg); }
+  }
+  .avatar{
+    width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+    font-size: 1.9rem; font-family: 'Poppins', sans-serif; font-weight: 800; color: #fff;
+    background: var(--av, rgba(255,255,255,0.08)); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.12);
+  }
+  .avatar.initials{ font-size: 1.25rem; letter-spacing: 0.5px; }
+  .avatar .flag{ width: 44px; height: auto; border-radius: 5px; box-shadow: 0 3px 10px rgba(0,0,0,0.35); }
+  .avatar.photo{ position: relative; width: 96px; height: 96px; border-radius: 18px; overflow: hidden; font-size: 1.4rem; }
+  .avatar.photo img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #fff; }
+  .back .avatar.photo{ width: 58px; height: 58px; border-radius: 14px; font-size: 0.9rem; }
+  .back .avatar{ width: 40px; height: 40px; font-size: 1.3rem; }
+  .back .avatar.initials{ font-size: 0.9rem; }
+  .back .avatar .flag{ width: 32px; }
+  .face > span{ display: block; }
+  .face > .avatar{ display: grid; }
+  .card-name{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.98rem; line-height: 1.2; }
+  .card-q{ font-size: 0.75rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; }
+  .card-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.05rem; line-height: 1.2; }
+  .flip.safe .card-value{ color: var(--ok); }
+  .flip.intruder .card-value{ color: var(--ko); }
+  .card-badge{ font-size: 0.7rem; font-weight: 900; letter-spacing: 0.5px; padding: 2px 9px; border-radius: 999px; }
+  .flip.safe .card-badge{ background: var(--ok); color: #04210f; }
+  .flip.intruder .card-badge{ background: var(--ko); color: #fff; }
+  .card-by{ font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+
+  .controls{ display: flex; flex-direction: column; align-items: center; gap: 14px; }
+
+  /* ---- Modale regole ---- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)); background-color: #0f1426;
+    border: 1px solid var(--glass-border); border-radius: 26px; padding: 30px;
+    max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97); transition: transform 0.25s ease; text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.5rem; color: var(--accent); margin-bottom: 14px; }
+  .modal-card ol{ padding-left: 22px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; line-height: 1.5; font-size: 0.98rem; }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 18px; line-height: 1.45; }
+
+  /* ---- Coriandoli ---- */
+  .confetti{ position: fixed; inset: 0; pointer-events: none; z-index: 2000; overflow: hidden; }
+  .confetti i{ position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: fall linear forwards; }
+  @keyframes fall{ to{ transform: translate(var(--dx), 110vh) rotate(var(--rot)); } }
+  .flash{ position: fixed; inset: 0; pointer-events: none; z-index: 1500; background: radial-gradient(circle, rgba(255,59,92,0.0), rgba(255,59,92,0.35)); animation: flash 0.7s ease forwards; }
+  @keyframes flash{ from{ opacity: 1; } to{ opacity: 0; } }
+
+  @media (max-width: 980px){
+    .cards{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (max-width: 760px){
+    .cards{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .flip, .flip-inner{ min-height: 172px; }
+    .avatar{ width: 48px; height: 48px; font-size: 1.55rem; }
+    .avatar.photo{ width: 76px; height: 76px; }
+    .back .avatar.photo{ width: 48px; height: 48px; }
+  }
+  @media (max-width: 600px){
+    .navbar{ padding: 10px 14px; gap: 8px; }
+    .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+    .nav-title{ font-size: 1.05rem; gap: 7px; }
+    .nav-counter{ display: none; }
+    .stage{ padding: 18px 12px 70px; gap: 14px; }
+    .btn{ padding: 14px 22px; font-size: 0.95rem; border-radius: 13px; }
+    .score-grid{ gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .score-value{ font-size: 1.6rem; }
+    .question-card{ padding: 16px; border-radius: 20px; }
+    .card-name{ font-size: 0.9rem; }
+    .modal-card{ padding: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🕵️ L'Intruso</span>
+  <div class="nav-right">
+    <span class="nav-counter" id="counter">Domanda 1</span>
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">One Last Standing: 10 card, un solo intruso. Chi lo scopre… perde il round!</p>
+    <ol>
+      <li>Compare una <strong>domanda</strong> (es. "Chi è l'attore più giovane?") con <strong>10 card</strong> coperte. La card che risponde alla domanda è <strong>l'intruso</strong>: è la bomba da evitare.</li>
+      <li>Le squadre giocano <strong>a turno</strong>: chi è di turno tocca una card. Se <strong>NON è l'intruso</strong> la card si gira, mostra il dato (es. "42 anni") e diventa <strong>verde</strong>: il turno passa alla squadra successiva.</li>
+      <li>Se invece è <strong>l'intruso</strong>, la card diventa <strong>rossa</strong>: quella squadra perde il round e <strong>tutte le altre squadre guadagnano +1 punto</strong>.</li>
+      <li>Se vengono girate tutte le 9 card buone, resta solo l'intruso: la squadra di turno è costretta a prenderlo e perde il round.</li>
+      <li>A fine round premi <strong>👁 Mostra tutti i risultati</strong> per svelare le card rimaste e <strong>➡ Prossima domanda</strong> per continuare. Con il filtro in alto scegli domande <strong>📊 Record</strong> (il valore più alto o più basso), <strong>🧩 Logica</strong> (l'eccezione) o entrambe.</li>
+    </ol>
+    <p class="modal-note">I valori sono reali o stime aggiornate circa al 2025. Immagini da Wikipedia / Wikimedia Commons (licenze libere), caricate direttamente dai loro server.</p>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage">
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <div class="switch" id="modeSwitch" role="group" aria-label="Tipo di domande">
+    <button type="button" class="switch-btn active" data-mode="all">🎲 Tutte</button>
+    <button type="button" class="switch-btn" data-mode="record">📊 Record</button>
+    <button type="button" class="switch-btn" data-mode="logic">🧩 Logica</button>
+  </div>
+
+  <section class="question-card" id="questionCard">
+    <div class="q-eyebrow" id="qTags"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-hint">💣 La card che risponde alla domanda è <b>l'intruso</b>: evitatela!</div>
+  </section>
+
+  <div class="turn-banner" id="turnBanner"></div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="controls">
+    <div class="btn-row">
+      <button class="btn btn-outline" id="showAllBtn" type="button" hidden>👁 Mostra tutti i risultati</button>
+      <button class="btn btn-primary" id="nextBtn" type="button" hidden>➡ Prossima domanda</button>
+    </div>
+    <button class="btn btn-ghost btn-small" id="skipBtn" type="button">⏭ Salta domanda (nessun punto)</button>
+  </div>
+</main>
+
+<script>
+  /* =========================================================
+     DATABASE DOMANDE — 10 elementi per domanda, uno è l'intruso.
+     t: "max" / "min"  → l'intruso è il record (valore più alto /
+                         più basso). Elementi "Nome|valore|etichetta|emoji"
+                         (valore "y1996" = età calcolata dall'anno di nascita).
+     t: "odd"          → domanda logica. Elementi "Nome|dato|!|emoji",
+                         dove "!" segna l'intruso.
+     I valori sono reali o stime aggiornate circa al 2025.
+     ========================================================= */
+  const QUESTIONS = [
+    /* ---------------- RECORD: l'intruso è il valore estremo ---------------- */
+    { q: "Chi è l'attore o l'attrice più giovane?", t: "min", icon: "🎬", unit: "anni", w: "attore", items: [
+      "Leonardo DiCaprio|y1974", "Brad Pitt|y1963", "Tom Hanks|y1956", "Margot Robbie|y1990", "Timothée Chalamet|y1995",
+      "Zendaya|y1996", "Ryan Gosling|y1980", "Scarlett Johansson|y1984", "Jennifer Lawrence|y1990", "Jenna Ortega|y2002"] },
+    { q: "Qual è il film più lungo?", t: "max", icon: "🎞️", unit: "min", w: "film", items: [
+      "Via col vento|238", "Titanic|194", "Il Padrino|175", "Avatar|162", "Oppenheimer|180",
+      "Il ritorno del re|201", "Avengers: Endgame|181", "Schindler's List|195", "Ben-Hur|212", "The Irishman|209"] },
+    { q: "Quale serie TV ha più episodi?", t: "max", icon: "📺", unit: "episodi", w: "serie televisiva", items: [
+      "I Simpson|790|oltre 790 episodi", "Grey's Anatomy|440|oltre 440 episodi", "I Griffin|430|oltre 430 episodi", "Supernatural|327",
+      "The Big Bang Theory|279", "Friends|236", "How I Met Your Mother|208", "The Office|201", "Il Trono di Spade|73", "Breaking Bad|62"] },
+    { q: "Quale classico Disney ha incassato di più al cinema?", t: "max", icon: "🏰", unit: "mln $", w: "film d'animazione", items: [
+      "Frozen II|1453", "Frozen|1284", "Oceania 2|1059", "Zootropolis|1024", "Il Re Leone (1994)|968",
+      "Oceania|687", "Big Hero 6|657", "Rapunzel|592", "Aladdin (1992)|504", "Encanto|256"] },
+    { q: "Qual è il videogioco più venduto della storia?", t: "max", icon: "🎮", unit: "mln copie", w: "videogioco", items: [
+      "Minecraft|300|oltre 300 mln", "GTA V|215|oltre 215 mln", "Mario Kart 8 Deluxe|70|oltre 70 mln", "Red Dead Redemption 2|70|circa 70 mln",
+      "Wii Sports|83|circa 83 mln", "PUBG|75|oltre 75 mln", "Terraria|60|oltre 60 mln", "The Witcher 3|50|oltre 50 mln",
+      "Super Mario Bros.|58|circa 58 mln", "Pokémon Rosso e Blu|31|circa 31 mln"] },
+    { q: "Quale film ha vinto più Premi Oscar?", t: "max", icon: "🏆", unit: "Oscar", w: "film", items: [
+      "Titanic|11", "West Side Story (1961)|10", "Schindler's List|7", "Oppenheimer|7", "Everything Everywhere All at Once|7",
+      "Forrest Gump|6", "La La Land|6", "Il Gladiatore|5", "Il silenzio degli innocenti|5", "Il Padrino|3"] },
+    { q: "Qual è il personaggio di finzione più ricco secondo Forbes?", t: "max", icon: "💰", unit: "mld $", w: "personaggio", items: [
+      "Zio Paperone|65.4", "Smaug|54.1", "Carlisle Cullen|46", "Tony Stark|12.4", "Charles Foster Kane|11.2",
+      "Richie Rich|10.3", "Bruce Wayne|9.2", "Christian Grey|2.5", "Mr. Burns|1.5", "Lara Croft|1.3"] },
+    { q: "Quale Stato ha meno abitanti?", t: "min", icon: "👥", unit: "abitanti", w: "", items: [
+      "Vaticano|800||🇻🇦", "Tuvalu|11000||🇹🇻", "Nauru|12000||🇳🇷", "Palau|18000||🇵🇼", "San Marino|34000||🇸🇲",
+      "Monaco|39000||🇲🇨", "Liechtenstein|40000||🇱🇮", "Andorra|80000||🇦🇩", "Islanda|390000||🇮🇸", "Malta|560000||🇲🇹"] },
+    { q: "Qual è la capitale più a nord del mondo?", t: "max", icon: "🧭", unit: "° Nord", w: "", items: [
+      "Reykjavík|64.1||🇮🇸", "Helsinki|60.2||🇫🇮", "Oslo|59.9||🇳🇴", "Tallinn|59.4||🇪🇪", "Stoccolma|59.3||🇸🇪",
+      "Riga|57.0||🇱🇻", "Mosca|55.8||🇷🇺", "Copenaghen|55.7||🇩🇰", "Dublino|53.3||🇮🇪", "Ottawa|45.4||🇨🇦"] },
+    { q: "Quale nazione ha la superficie più estesa?", t: "max", icon: "🗺️", unit: "km²", w: "", items: [
+      "Russia|17098246||🇷🇺", "Canada|9984670||🇨🇦", "Cina|9596961||🇨🇳", "Stati Uniti|9833520||🇺🇸", "Brasile|8515767||🇧🇷",
+      "Australia|7692024||🇦🇺", "India|3287263||🇮🇳", "Argentina|2780400||🇦🇷", "Kazakistan|2724900||🇰🇿", "Algeria|2381741||🇩🇿"] },
+    { q: "Qual è la città europea più piovosa?", t: "max", icon: "🌧️", unit: "mm/anno", w: "città", items: [
+      "Bergen|2250||🇳🇴", "Genova|1300||🇮🇹", "Glasgow|1250||🇬🇧", "Milano|1000||🇮🇹", "Manchester|870||🇬🇧",
+      "Bruxelles|850||🇧🇪", "Amsterdam|840||🇳🇱", "Roma|800||🇮🇹", "Dublino|760||🇮🇪", "Londra|600||🇬🇧"] },
+    { q: "Quale Stato ha la densità di popolazione più alta?", t: "max", icon: "🏙️", unit: "ab./km²", w: "", items: [
+      "Monaco|19000||🇲🇨", "Singapore|8000||🇸🇬", "Bahrein|2000||🇧🇭", "Vaticano|1800||🇻🇦", "Malta|1700||🇲🇹",
+      "Maldive|1700||🇲🇻", "Bangladesh|1300||🇧🇩", "Paesi Bassi|520||🇳🇱", "India|430||🇮🇳", "Italia|196||🇮🇹"] },
+    { q: "Qual è l'isola più estesa del Mediterraneo?", t: "max", icon: "🏝️", unit: "km²", w: "isola", items: [
+      "Sicilia|25711", "Sardegna|24090", "Cipro|9251", "Corsica|8680", "Creta|8336",
+      "Eubea|3684", "Maiorca|3640", "Lesbo|1633", "Rodi|1401", "Malta|246"] },
+    { q: "Quale nazione confina con più Stati?", t: "max", icon: "🚧", unit: "Stati confinanti", w: "", items: [
+      "Cina|14||🇨🇳", "Brasile|10||🇧🇷", "Germania|9||🇩🇪", "RD Congo|9||🇨🇩", "Austria|8||🇦🇹",
+      "Turchia|8||🇹🇷", "Serbia|8||🇷🇸", "Tanzania|8||🇹🇿", "Italia|6||🇮🇹", "Argentina|5||🇦🇷"] },
+    { q: "Quale animale ha il morso più potente?", t: "max", icon: "🦷", unit: "PSI", w: "animale", items: [
+      "Coccodrillo marino|3700||🐊", "Ippopotamo|1800||🦛", "Giaguaro|1500||🐆", "Gorilla|1300||🦍", "Orso grizzly|1200||🐻",
+      "Iena|1100||🐺", "Tigre|1050||🐅", "Leone|650||🦁", "Lupo|400||🐺", "Essere umano|162||🧍"] },
+    { q: "Quale animale ha il veleno più letale?", t: "min", icon: "☠️", unit: "mg/kg (LD50)", w: "animale", items: [
+      "Rana dorata|0.002|LD50 ≈ 0,002 mg/kg|🐸", "Taipan dell'entroterra|0.025|LD50 ≈ 0,025 mg/kg|🐍", "Scorpione giallo|0.25|LD50 ≈ 0,25 mg/kg|🦂",
+      "Mamba nero|0.32|LD50 ≈ 0,32 mg/kg|🐍", "Vedova nera|0.9|LD50 ≈ 0,9 mg/kg|🕷️", "Cobra reale|1.8|LD50 ≈ 1,8 mg/kg|🐍",
+      "Ape|2.8|LD50 ≈ 2,8 mg/kg|🐝", "Vipera comune|6.5|LD50 ≈ 6,5 mg/kg|🐍", "Crotalo diamantino|10|LD50 ≈ 10 mg/kg|🐍", "Calabrone|15|LD50 ≈ 15 mg/kg|🐝"] },
+    { q: "Quale evento storico è il più antico?", t: "min", icon: "📜", unit: "", w: "storia", items: [
+      "Costruzione della piramide di Cheope|-2560|circa 2560 a.C.", "Codice di Hammurabi|-1754|circa 1754 a.C.", "Prime Olimpiadi|-776|776 a.C.",
+      "Fondazione di Roma|-753|753 a.C.", "Battaglia di Maratona|-490|490 a.C.", "Morte di Giulio Cesare|-44|44 a.C.",
+      "Caduta dell'Impero romano d'Occidente|476|476 d.C.", "Scoperta dell'America|1492|1492", "Rivoluzione francese|1789|1789", "Unità d'Italia|1861|1861"] },
+    { q: "Quale invenzione è la più antica?", t: "min", icon: "💡", unit: "", w: "invenzione", items: [
+      "Ceramica|-18000|circa 18.000 a.C.", "Ruota|-3500|circa 3500 a.C.", "Scrittura|-3200|circa 3200 a.C.", "Vetro|-2500|circa 2500 a.C.",
+      "Carta|105|105 d.C.", "Polvere da sparo|850|circa 850 d.C.", "Occhiali|1286|circa 1286", "Stampa a caratteri mobili|1440|circa 1440",
+      "Telescopio|1608|1608", "Lampadina|1879|1879"] },
+    { q: "Quale città è stata fondata per prima?", t: "min", icon: "🏛️", unit: "", w: "città", items: [
+      "Gerico|-9000|circa 9000 a.C.", "Cartagine|-814|814 a.C.", "Roma|-753|753 a.C.", "Bisanzio (Istanbul)|-667|667 a.C.",
+      "Alessandria d'Egitto|-331|331 a.C.", "Firenze|-59|59 a.C.", "Londra|47|47 d.C.", "Venezia|421|421 d.C. (tradizione)",
+      "New York|1624|1624 (Nuova Amsterdam)", "San Pietroburgo|1703|1703"] },
+    { q: "Quale pandemia ha fatto più vittime?", t: "max", icon: "🦠", unit: "mln di morti", w: "pandemia", items: [
+      "Peste nera|100|75-200 mln (stima)", "Influenza spagnola|50|17-100 mln (stima)", "HIV/AIDS|42|oltre 40 mln", "Peste di Giustiniano|30|25-50 mln (stima)",
+      "COVID-19|7|oltre 7 mln confermati", "Peste antonina|7|5-10 mln (stima)", "Influenza asiatica 1957|2|1-4 mln", "Influenza di Hong Kong 1968|1|circa 1-4 mln",
+      "Influenza russa 1889|1|circa 1 mln", "Influenza suina 2009|0.3|circa 0,3 mln"] },
+    { q: "Quale atleta ha vinto più ori olimpici?", t: "max", icon: "🥇", unit: "ori", w: "atleta", items: [
+      "Michael Phelps|23", "Larisa Latynina|9", "Paavo Nurmi|9", "Carl Lewis|9", "Mark Spitz|9",
+      "Katie Ledecky|9", "Usain Bolt|8", "Birgit Fischer|8", "Simone Biles|7", "Valentina Vezzali|6"] },
+    { q: "Quale frutto è il più calorico (per 100 g)?", t: "max", icon: "🍎", unit: "kcal", w: "frutto", items: [
+      "Cocco|354||🥥", "Avocado|160||🥑", "Banana|89||🍌", "Fico|74||🍈", "Uva|69||🍇",
+      "Ciliegie|63||🍒", "Kiwi|61||🥝", "Mango|60||🥭", "Mela|52||🍎", "Fragola|32||🍓"] },
+    { q: "Quale social network ha più utenti attivi?", t: "max", icon: "📱", unit: "mld utenti", w: "social network", items: [
+      "Facebook|3.0", "YouTube|2.5", "Instagram|2.0", "TikTok|1.6", "Telegram|1.0",
+      "Snapchat|0.9", "X (Twitter)|0.6", "Pinterest|0.55", "Reddit|0.4", "LinkedIn|0.3"] },
+    { q: "Quale lingua ha più madrelingua?", t: "max", icon: "🗣️", unit: "mln", w: "lingua", items: [
+      "Cinese mandarino|940", "Spagnolo|485", "Inglese|380", "Hindi|345", "Portoghese|236",
+      "Bengalese|235", "Russo|148", "Giapponese|123", "Tedesco|76", "Italiano|64"] },
+    { q: "Qual è la montagna più alta?", t: "max", icon: "🏔️", unit: "m", w: "montagna", items: [
+      "Everest|8849", "K2|8611", "Kangchenjunga|8586", "Aconcagua|6961", "Denali|6190",
+      "Kilimangiaro|5895", "Elbrus|5642", "Monte Bianco|4806", "Cervino|4478", "Monte Fuji|3776"] },
+    { q: "Qual è l'animale più veloce?", t: "max", icon: "⚡", unit: "km/h", w: "animale", items: [
+      "Falco pellegrino|390||🦅", "Aquila reale|320||🦅", "Ghepardo|110||🐆", "Pesce vela|110||🐟", "Cavallo|88||🐎",
+      "Leone|80||🦁", "Struzzo|70||🦤", "Levriero|72||🐕", "Lepre|72||🐇", "Squalo mako|74||🦈"] },
+    { q: "Qual è il corpo celeste più grande?", t: "max", icon: "🪐", unit: "km di diametro", w: "astronomia", items: [
+      "Giove|139820||🪐", "Saturno|116460||🪐", "Urano|50724||🔵", "Nettuno|49244||🔵", "Terra|12742||🌍",
+      "Venere|12104||🟠", "Marte|6779||🔴", "Ganimede|5268||🌑", "Mercurio|4879||⚫", "Plutone|2377||⚪"] },
+    { q: "Qual è l'edificio più alto?", t: "max", icon: "🏢", unit: "m", w: "grattacielo", items: [
+      "Burj Khalifa|828", "Merdeka 118|679", "Shanghai Tower|632", "Abraj Al-Bait|601", "One World Trade Center|541",
+      "Taipei 101|508", "Petronas Towers|452", "Empire State Building|443", "Torre Eiffel|330", "Torre Unicredit|231"] },
+    { q: "Qual è il fiume più lungo d'Europa?", t: "max", icon: "🌊", unit: "km", w: "fiume", items: [
+      "Volga|3530", "Danubio|2850", "Ural|2428", "Dnepr|2201", "Reno|1233",
+      "Elba|1094", "Loira|1006", "Rodano|812", "Senna|777", "Po|652"] },
+    { q: "Quale squadra ha vinto più Champions League?", t: "max", icon: "🏆", unit: "trofei", w: "società calcistica", items: [
+      "Real Madrid|15", "Milan|7", "Bayern Monaco|6", "Liverpool|6", "Barcellona|5",
+      "Ajax|4", "Inter|3", "Manchester United|3", "Juventus|2", "Chelsea|2"] },
+    { q: "Quale calciatore ha vinto più Palloni d'Oro?", t: "max", icon: "⚽", unit: "Palloni d'Oro", w: "calciatore", items: [
+      "Lionel Messi|8", "Cristiano Ronaldo|5", "Michel Platini|3", "Johan Cruijff|3", "Marco van Basten|3",
+      "Ronaldo (il Fenomeno)|2", "Franz Beckenbauer|2", "Zinedine Zidane|1", "Roberto Baggio|1", "Kakà|1"] },
+    { q: "Quale artista ha vinto più Grammy?", t: "max", icon: "🎤", unit: "Grammy", w: "musicista", items: [
+      "Beyoncé|35", "Georg Solti|31", "Quincy Jones|28", "Alison Krauss|27", "Jay-Z|25",
+      "Stevie Wonder|25", "Kanye West|24", "U2|22", "Adele|16", "Taylor Swift|14"] },
+    { q: "Quale animale vive più a lungo?", t: "max", icon: "⏳", unit: "anni", w: "animale", items: [
+      "Squalo della Groenlandia|400|fino a circa 400 anni|🦈", "Balena della Groenlandia|211|fino a oltre 200 anni|🐋", "Tartaruga gigante|190|record: 190 anni (Jonathan)|🐢",
+      "Storione|152|fino a circa 150 anni|🐟", "Essere umano|122|record: 122 anni|🧓", "Elefante|86|record: circa 86 anni|🐘",
+      "Pappagallo ara|80|fino a circa 80 anni|🦜", "Cavallo|62|record: 62 anni|🐎", "Gatto|38|record: 38 anni|🐈", "Cane|30|record: circa 30 anni|🐕"] },
+    { q: "Qual è il lago più profondo?", t: "max", icon: "🏞️", unit: "m", w: "lago", items: [
+      "Lago Bajkal|1642", "Lago Tanganica|1470", "Mar Caspio|1025", "Lago Malawi|706", "Issyk-Kul|668",
+      "Crater Lake|594", "Lago di Como|410", "Lago Maggiore|372", "Lago di Garda|346", "Loch Ness|230"] },
+
+    /* ---------------- LOGICA: l'intruso è l'eccezione ---------------- */
+    { q: "Quale di questi attori NON ha mai vinto un Oscar?", t: "odd", icon: "🎭", w: "attore", items: [
+      "Leonardo DiCaprio|1 Oscar · The Revenant (2016)", "Tom Hanks|2 Oscar", "Meryl Streep|3 Oscar", "Anthony Hopkins|2 Oscar",
+      "Denzel Washington|2 Oscar", "Cate Blanchett|2 Oscar", "Emma Stone|2 Oscar", "Jack Nicholson|3 Oscar", "Natalie Portman|1 Oscar · Il cigno nero",
+      "Johnny Depp|0 Oscar (3 candidature)|!"] },
+    { q: "Quale di questi Paesi NON fa parte dell'Unione Europea?", t: "odd", icon: "🇪🇺", w: "", items: [
+      "Italia|Membro dal 1957 (fondatore)||🇮🇹", "Francia|Membro dal 1957 (fondatore)||🇫🇷", "Germania|Membro dal 1957 (fondatore)||🇩🇪",
+      "Grecia|Membro dal 1981||🇬🇷", "Spagna|Membro dal 1986||🇪🇸", "Portogallo|Membro dal 1986||🇵🇹", "Austria|Membro dal 1995||🇦🇹",
+      "Svezia|Membro dal 1995||🇸🇪", "Croazia|Membro dal 2013||🇭🇷", "Norvegia|Non membro (solo SEE)|!|🇳🇴"] },
+    { q: "Quale di questi animali NON è un mammifero?", t: "odd", icon: "🐾", w: "animale", items: [
+      "Delfino|Mammifero (cetaceo)||🐬", "Balena|Mammifero (cetaceo)||🐋", "Orca|Mammifero (cetaceo)||🐋", "Pipistrello|Mammifero (chirottero)||🦇",
+      "Lamantino|Mammifero (sirenide)||🦭", "Foca|Mammifero (pinnipede)||🦭", "Tricheco|Mammifero (pinnipede)||🦭", "Ornitorinco|Mammifero (monotremo, depone uova)||🦫",
+      "Narvalo|Mammifero (cetaceo)||🐋", "Squalo|Pesce cartilagineo|!|🦈"] },
+    { q: "Quale di questi elementi NON è un gas a temperatura ambiente?", t: "odd", icon: "⚗️", w: "elemento chimico", items: [
+      "Elio|Gas nobile", "Neon|Gas nobile", "Argon|Gas nobile", "Kripton|Gas nobile", "Xeno|Gas nobile",
+      "Radon|Gas nobile", "Idrogeno|Gas", "Ossigeno|Gas", "Azoto|Gas", "Bromo|Liquido a 20 °C|!"] },
+    { q: "Quale di questi marchi NON è nato negli Stati Uniti?", t: "odd", icon: "🏷️", w: "azienda", items: [
+      "Apple|USA · Cupertino, 1976", "Nike|USA · Oregon, 1964", "Coca-Cola|USA · Atlanta, 1886", "McDonald's|USA · California, 1940",
+      "Google|USA · California, 1998", "Amazon|USA · Seattle, 1994", "Microsoft|USA · Albuquerque, 1975", "Starbucks|USA · Seattle, 1971",
+      "Levi's|USA · San Francisco, 1853", "Adidas|Germania · Herzogenaurach, 1949|!"] },
+    { q: "Quale supereroe NON ha mai fatto parte della Justice League classica?", t: "odd", icon: "🦸", w: "personaggio DC Comics", items: [
+      "Superman|Membro fondatore (DC)", "Batman|Membro fondatore (DC)", "Wonder Woman|Membro fondatore (DC)", "Flash|Membro fondatore (DC)",
+      "Lanterna Verde|Membro fondatore (DC)", "Aquaman|Membro fondatore (DC)", "Martian Manhunter|Membro fondatore (DC)", "Freccia Verde|Membro dal 1961 (DC)",
+      "Atom|Membro dal 1962 (DC)", "Spider-Man|Marvel: mai nella Justice League|!"] },
+    { q: "Quale di queste canzoni NON supera 1 miliardo di stream su Spotify?", t: "odd", icon: "🎧", w: "singolo", items: [
+      "Blinding Lights|oltre 4 miliardi", "Shape of You|oltre 4 miliardi", "Dance Monkey|oltre 3 miliardi", "bad guy|oltre 2,5 miliardi",
+      "Bohemian Rhapsody|oltre 2,5 miliardi", "Uptown Funk|oltre 2 miliardi", "Billie Jean|oltre 2 miliardi", "Smells Like Teen Spirit|oltre 2 miliardi",
+      "Despacito|oltre 1 miliardo", "Nel blu dipinto di blu (Volare)|molto sotto 1 miliardo|!"] },
+    { q: "Quale di questi corpi celesti NON è una luna?", t: "odd", icon: "🌙", w: "astronomia", items: [
+      "Luna|Satellite della Terra", "Titano|Luna di Saturno", "Europa|Luna di Giove", "Io|Luna di Giove", "Ganimede|Luna di Giove",
+      "Callisto|Luna di Giove", "Phobos|Luna di Marte", "Deimos|Luna di Marte", "Tritone|Luna di Nettuno", "Cerere|Pianeta nano (fascia degli asteroidi)|!"] },
+    { q: "Quale personaggio NON è mai apparso in un film Marvel (MCU)?", t: "odd", icon: "🦹", w: "personaggio Marvel", items: [
+      "Iron Man|Debutto: Iron Man (2008)", "Hulk|Debutto: L'incredibile Hulk (2008)", "Vedova Nera|Debutto: Iron Man 2 (2010)", "Thor|Debutto: Thor (2011)",
+      "Star-Lord|Debutto: Guardiani della Galassia (2014)", "Scarlet Witch|Debutto: Captain America: The Winter Soldier (2014)", "Black Panther|Debutto: Captain America: Civil War (2016)",
+      "Spider-Man|Debutto MCU: Captain America: Civil War (2016)", "Doctor Strange|Debutto: Doctor Strange (2016)", "Hellboy|Dark Horse Comics: mai nell'MCU|!"] },
+    { q: "Quale di questi elementi NON è solido a temperatura ambiente?", t: "odd", icon: "🧪", w: "elemento chimico", items: [
+      "Ferro|Solido", "Oro|Solido", "Argento|Solido", "Rame|Solido", "Carbonio|Solido",
+      "Sodio|Solido", "Zinco|Solido", "Piombo|Solido", "Alluminio|Solido", "Mercurio|Liquido a 20 °C|!"] },
+    { q: "Quale di queste città NON è una capitale?", t: "odd", icon: "🏛️", w: "", items: [
+      "Parigi|Capitale della Francia||🇫🇷", "Madrid|Capitale della Spagna||🇪🇸", "Lisbona|Capitale del Portogallo||🇵🇹", "Vienna|Capitale dell'Austria||🇦🇹",
+      "Praga|Capitale della Repubblica Ceca||🇨🇿", "Varsavia|Capitale della Polonia||🇵🇱", "Atene|Capitale della Grecia||🇬🇷", "Dublino|Capitale dell'Irlanda||🇮🇪",
+      "Budapest|Capitale dell'Ungheria||🇭🇺", "Istanbul|Non è la capitale: la capitale turca è Ankara|!|🇹🇷"] },
+    { q: "Quale di queste opere NON è di Leonardo da Vinci?", t: "odd", icon: "🎨", w: "dipinto", items: [
+      "La Gioconda|Leonardo da Vinci", "L'Ultima Cena|Leonardo da Vinci", "Dama con l'ermellino|Leonardo da Vinci", "Annunciazione|Leonardo da Vinci",
+      "Vergine delle rocce|Leonardo da Vinci", "Uomo vitruviano|Leonardo da Vinci", "San Girolamo|Leonardo da Vinci", "Ritratto di Ginevra de' Benci|Leonardo da Vinci",
+      "Battesimo di Cristo|Verrocchio e Leonardo", "La nascita di Venere|Sandro Botticelli|!"] },
+    { q: "Quale di questi film NON è di Christopher Nolan?", t: "odd", icon: "🌀", w: "film", items: [
+      "Inception|Christopher Nolan (2010)", "Interstellar|Christopher Nolan (2014)", "Memento|Christopher Nolan (2000)", "Tenet|Christopher Nolan (2020)",
+      "Dunkirk|Christopher Nolan (2017)", "Oppenheimer|Christopher Nolan (2023)", "The Prestige|Christopher Nolan (2006)", "Insomnia|Christopher Nolan (2002)",
+      "Batman Begins|Christopher Nolan (2005)", "Arrival|Denis Villeneuve (2016)|!"] },
+    { q: "Quale di queste canzoni NON è dei Queen?", t: "odd", icon: "👑", w: "singolo", items: [
+      "Bohemian Rhapsody|Queen (1975)", "We Will Rock You|Queen (1977)", "We Are the Champions|Queen (1977)", "Don't Stop Me Now|Queen (1978)",
+      "Another One Bites the Dust|Queen (1980)", "Somebody to Love|Queen (1976)", "Radio Ga Ga|Queen (1984)", "I Want to Break Free|Queen (1984)",
+      "Under Pressure|Queen e David Bowie (1981)", "Stairway to Heaven|Led Zeppelin (1971)|!"] },
+    { q: "Quale personaggio NON appare in Harry Potter?", t: "odd", icon: "⚡", w: "personaggio", items: [
+      "Hermione Granger|Harry Potter", "Ron Weasley|Harry Potter", "Albus Silente|Harry Potter", "Severus Piton|Harry Potter", "Rubeus Hagrid|Harry Potter",
+      "Lord Voldemort|Harry Potter", "Draco Malfoy|Harry Potter", "Luna Lovegood|Harry Potter", "Sirius Black|Harry Potter", "Gandalf|Il Signore degli Anelli|!"] },
+    { q: "Quale di queste NON è una regione italiana?", t: "odd", icon: "🇮🇹", w: "regione italiana", items: [
+      "Molise|Regione · capoluogo Campobasso", "Basilicata|Regione · capoluogo Potenza", "Umbria|Regione · capoluogo Perugia", "Marche|Regione · capoluogo Ancona",
+      "Liguria|Regione · capoluogo Genova", "Abruzzo|Regione · capoluogo L'Aquila", "Valle d'Aosta|Regione · capoluogo Aosta", "Friuli-Venezia Giulia|Regione · capoluogo Trieste",
+      "Calabria|Regione · capoluogo Catanzaro", "Romagna|Parte dell'Emilia-Romagna, non è una regione|!"] },
+    { q: "Quale squadra NON ha mai vinto la Champions League?", t: "odd", icon: "🌟", w: "società calcistica", items: [
+      "Real Madrid|15 vittorie", "Milan|7 vittorie", "Bayern Monaco|6 vittorie", "Liverpool|6 vittorie", "Barcellona|5 vittorie",
+      "Ajax|4 vittorie", "Inter|3 vittorie", "Manchester United|3 vittorie", "Juventus|2 vittorie", "Arsenal|Mai vinta (finale persa nel 2006)|!"] },
+    { q: "Chi di questi italiani NON ha mai vinto il Premio Nobel?", t: "odd", icon: "🏅", w: "", items: [
+      "Guglielmo Marconi|Nobel per la Fisica 1909", "Enrico Fermi|Nobel per la Fisica 1938", "Rita Levi-Montalcini|Nobel per la Medicina 1986", "Dario Fo|Nobel per la Letteratura 1997",
+      "Luigi Pirandello|Nobel per la Letteratura 1934", "Grazia Deledda|Nobel per la Letteratura 1926", "Giosuè Carducci|Nobel per la Letteratura 1906", "Eugenio Montale|Nobel per la Letteratura 1975",
+      "Giorgio Parisi|Nobel per la Fisica 2021", "Maria Montessori|Candidata più volte, mai vinto|!"] },
+    /* ---------------- NUOVE DOMANDE ---------------- */
+    { q: "Quale di questi NON è un classico d'animazione Disney?", t: "odd", icon: "🏰", w: "film d'animazione", items: [
+      "Il Re Leone|Disney (1994)", "La Sirenetta|Disney (1989)", "Aladdin|Disney (1992)", "La bella e la bestia|Disney (1991)", "Frozen|Disney (2013)",
+      "Mulan|Disney (1998)", "Pocahontas|Disney (1995)", "Hercules|Disney (1997)", "Rapunzel|Disney (2010)", "Shrek|DreamWorks (2001)|!"] },
+    { q: "Quale di questi calciatori NON ha mai vinto un Mondiale?", t: "odd", icon: "🏆", w: "calciatore", items: [
+      "Lionel Messi|Campione del mondo 2022", "Pelé|Campione del mondo 1958, 1962, 1970", "Diego Armando Maradona|Campione del mondo 1986", "Zinédine Zidane|Campione del mondo 1998",
+      "Gianluigi Buffon|Campione del mondo 2006", "Fabio Cannavaro|Campione del mondo 2006", "Ronaldo|Campione del mondo 1994, 2002", "Kylian Mbappé|Campione del mondo 2018",
+      "Andrés Iniesta|Campione del mondo 2010", "Cristiano Ronaldo|Mai vinto un Mondiale|!"] },
+    { q: "Quale di questi NON è un film Pixar?", t: "odd", icon: "💡", w: "film Pixar", items: [
+      "Toy Story|Pixar (1995)", "Up|Pixar (2009)", "Coco|Pixar (2017)", "Inside Out|Pixar (2015)", "Ratatouille|Pixar (2007)",
+      "WALL•E|Pixar (2008)", "Alla ricerca di Nemo|Pixar (2003)", "Monsters & Co.|Pixar (2001)", "Gli Incredibili|Pixar (2004)", "Cattivissimo me|Illumination (2010)|!"] },
+    { q: "Quale di questi pittori NON è italiano?", t: "odd", icon: "🎨", w: "pittore", items: [
+      "Caravaggio|Italiano · Barocco", "Raffaello Sanzio|Italiano · Rinascimento", "Michelangelo Buonarroti|Italiano · Rinascimento", "Sandro Botticelli|Italiano · Rinascimento",
+      "Tiziano Vecellio|Italiano · Rinascimento", "Giotto|Italiano · Trecento", "Amedeo Modigliani|Italiano · Novecento", "Canaletto|Italiano · Vedutismo",
+      "Giorgio de Chirico|Italiano · Metafisica", "Rembrandt|Olandese · Secolo d'oro|!"] },
+    { q: "Quale di queste canzoni NON è dei Beatles?", t: "odd", icon: "🎸", w: "canzone Beatles", items: [
+      "Hey Jude|The Beatles (1968)", "Yesterday|The Beatles (1965)", "Let It Be|The Beatles (1970)", "Help!|The Beatles (1965)", "Yellow Submarine|The Beatles (1966)",
+      "Come Together|The Beatles (1969)", "Something|The Beatles (1969)", "Penny Lane|The Beatles (1967)", "Here Comes the Sun|The Beatles (1969)", "Imagine|John Lennon da solista (1971)|!"] },
+    { q: "Quale di queste opere NON è di Giuseppe Verdi?", t: "odd", icon: "🎼", w: "opera lirica", items: [
+      "Aida|Giuseppe Verdi (1871)", "La traviata|Giuseppe Verdi (1853)", "Rigoletto|Giuseppe Verdi (1851)", "Nabucco|Giuseppe Verdi (1842)", "Otello|Giuseppe Verdi (1887)",
+      "Falstaff|Giuseppe Verdi (1893)", "Il trovatore|Giuseppe Verdi (1853)", "Don Carlos|Giuseppe Verdi (1867)", "Macbeth|Giuseppe Verdi (1847)", "Tosca|Giacomo Puccini (1900)|!"] },
+    { q: "Quale di questi personaggi NON è dei Simpson?", t: "odd", icon: "🍩", w: "personaggio dei Simpson", items: [
+      "Homer Simpson|I Simpson", "Marge Simpson|I Simpson", "Bart Simpson|I Simpson", "Lisa Simpson|I Simpson", "Maggie Simpson|I Simpson",
+      "Montgomery Burns|I Simpson", "Ned Flanders|I Simpson", "Boe Szyslak|I Simpson", "Krusty il Clown|I Simpson", "Stewie Griffin|I Griffin|!"] },
+    { q: "Quale di questi Pokémon NON è della prima generazione?", t: "odd", icon: "⚡", w: "Pokémon", items: [
+      "Pikachu|1ª generazione (#025)", "Charmander|1ª generazione (#004)", "Bulbasaur|1ª generazione (#001)", "Squirtle|1ª generazione (#007)", "Mewtwo|1ª generazione (#150)",
+      "Snorlax|1ª generazione (#143)", "Jigglypuff|1ª generazione (#039)", "Gengar|1ª generazione (#094)", "Eevee|1ª generazione (#133)", "Lucario|4ª generazione (#448)|!"] },
+    { q: "Quale di queste lingue NON è neolatina?", t: "odd", icon: "🗣️", w: "lingua", items: [
+      "Italiano|Neolatina", "Francese|Neolatina", "Spagnolo|Neolatina", "Portoghese|Neolatina", "Rumeno|Neolatina",
+      "Catalano|Neolatina", "Sardo|Neolatina", "Ladino|Neolatina", "Galiziano|Neolatina", "Albanese|Indoeuropea, ramo a sé (non neolatina)|!"] },
+    { q: "Quale di questi Paesi NON usa l'euro?", t: "odd", icon: "💶", w: "", items: [
+      "Italia|Euro dal 2002||🇮🇹", "Francia|Euro dal 2002||🇫🇷", "Germania|Euro dal 2002||🇩🇪", "Spagna|Euro dal 2002||🇪🇸", "Grecia|Euro dal 2002||🇬🇷",
+      "Austria|Euro dal 2002||🇦🇹", "Finlandia|Euro dal 2002||🇫🇮", "Portogallo|Euro dal 2002||🇵🇹", "Croazia|Euro dal 2023||🇭🇷", "Svezia|Corona svedese|!|🇸🇪"] },
+    { q: "Quale di questi supereroi NON è della Marvel?", t: "odd", icon: "🦸", w: "personaggio Marvel Comics", items: [
+      "Iron Man|Marvel", "Spider-Man|Marvel", "Thor|Marvel", "Hulk|Marvel", "Capitan America|Marvel",
+      "Wolverine|Marvel", "Pantera Nera|Marvel", "Doctor Strange|Marvel", "Deadpool|Marvel", "Flash|DC Comics|!"] },
+    { q: "Quale di questi libri NON è di Stephen King?", t: "odd", icon: "📚", w: "romanzo", items: [
+      "It|Stephen King (1986)", "Shining|Stephen King (1977)", "Misery|Stephen King (1987)", "Carrie|Stephen King (1974)", "Pet Sematary|Stephen King (1983)",
+      "Il miglio verde|Stephen King (1996)", "Cujo|Stephen King (1981)", "22/11/'63|Stephen King (2011)", "L'ombra dello scorpione|Stephen King (1978)", "Dracula|Bram Stoker (1897)|!"] },
+    { q: "Quale di questi animali NON è un felino?", t: "odd", icon: "🐾", w: "animale", items: [
+      "Leone|Felide", "Tigre|Felide", "Ghepardo|Felide", "Leopardo|Felide", "Giaguaro|Felide",
+      "Lince|Felide", "Puma|Felide", "Gatto domestico|Felide", "Ocelot|Felide", "Iena|Ienide (più vicina alle manguste che ai gatti)|!"] },
+    { q: "Quale di queste città NON è un capoluogo di regione?", t: "odd", icon: "🏙️", w: "città", items: [
+      "Milano|Capoluogo della Lombardia", "Torino|Capoluogo del Piemonte", "Venezia|Capoluogo del Veneto", "Bologna|Capoluogo dell'Emilia-Romagna", "Firenze|Capoluogo della Toscana",
+      "Napoli|Capoluogo della Campania", "Bari|Capoluogo della Puglia", "Palermo|Capoluogo della Sicilia", "Cagliari|Capoluogo della Sardegna", "Verona|Capoluogo di provincia, non di regione|!"] },
+    { q: "Quale di queste squadre NON ha mai vinto lo scudetto?", t: "odd", icon: "🇮🇹", w: "società calcistica", items: [
+      "Juventus|36 scudetti", "Inter|20 scudetti", "Milan|19 scudetti", "Napoli|4 scudetti", "Roma|3 scudetti",
+      "Lazio|2 scudetti", "Fiorentina|2 scudetti", "Bologna|7 scudetti", "Cagliari|1 scudetto (1970)", "Atalanta|Mai vinto lo scudetto (ha vinto l'Europa League 2024)|!"] },
+    { q: "Quale di questi film NON ha vinto l'Oscar al miglior film?", t: "odd", icon: "🎬", w: "film", items: [
+      "Il Padrino|Miglior film 1973", "Titanic|Miglior film 1998", "Forrest Gump|Miglior film 1995", "Il gladiatore|Miglior film 2001", "Oppenheimer|Miglior film 2024",
+      "Schindler's List|Miglior film 1994", "Parasite|Miglior film 2020", "Il silenzio degli innocenti|Miglior film 1992", "La forma dell'acqua|Miglior film 2018", "Pulp Fiction|Solo candidato (vinse Forrest Gump)|!"] },
+    { q: "Quale di queste band NON è britannica?", t: "odd", icon: "🎤", w: "gruppo musicale", items: [
+      "The Beatles|Liverpool, Inghilterra", "The Rolling Stones|Londra, Inghilterra", "Queen|Londra, Inghilterra", "Coldplay|Londra, Inghilterra", "Oasis|Manchester, Inghilterra",
+      "Pink Floyd|Londra, Inghilterra", "Radiohead|Abingdon, Inghilterra", "Arctic Monkeys|Sheffield, Inghilterra", "Led Zeppelin|Londra, Inghilterra", "U2|Dublino, Irlanda|!"] },
+    { q: "Quale Paese ha più abitanti?", t: "max", icon: "👥", unit: "mln", w: "", items: [
+      "India|1440|circa 1,44 mld|🇮🇳", "Cina|1410|circa 1,41 mld|🇨🇳", "Stati Uniti|335|circa 335 mln|🇺🇸", "Indonesia|280|circa 280 mln|🇮🇩", "Pakistan|245|circa 245 mln|🇵🇰",
+      "Nigeria|225|circa 225 mln|🇳🇬", "Brasile|216|circa 216 mln|🇧🇷", "Bangladesh|173|circa 173 mln|🇧🇩", "Russia|144|circa 144 mln|🇷🇺", "Messico|129|circa 129 mln|🇲🇽"] }
+  ];
+
+  /* Miniature da Wikipedia in italiano, collegate (non scaricate): chiave "Nome@@contesto" */
+  const IMAGES = {
+"Leonardo DiCaprio@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/LeoPTABFI191125-28_%28cropped%29.jpg/330px-LeoPTABFI191125-28_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Brad Pitt@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Brad_Pitt-69858.jpg/330px-Brad_Pitt-69858.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tom Hanks@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/TomHanksPrincEdw031223_%2811_of_41%29_%28cropped%29.jpg/330px-TomHanksPrincEdw031223_%2811_of_41%29_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Margot Robbie@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Margot_Robbie_at_the_Paris_premiere_of_%22Wuthering_Heights%22.jpg/330px-Margot_Robbie_at_the_Paris_premiere_of_%22Wuthering_Heights%22.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Timothée Chalamet@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/Timoth%C3%A9e_Chalamet_2025_2_%28cropped%29.jpg/330px-Timoth%C3%A9e_Chalamet_2025_2_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Zendaya@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5a/Zendaya-byPhilipRomano.jpg/330px-Zendaya-byPhilipRomano.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ryan Gosling@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/GoslingBFI081223_%2822_of_30%29_%2853388157347%29_%28cropped%29.jpg/330px-GoslingBFI081223_%2822_of_30%29_%2853388157347%29_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Scarlett Johansson@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Scarlett_Johansson-8588.jpg/330px-Scarlett_Johansson-8588.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Jennifer Lawrence@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Jennifer_Lawrence_in_2016.jpg/330px-Jennifer_Lawrence_in_2016.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Jenna Ortega@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Jenna_Ortega-63799_%28cropped%29.jpg/330px-Jenna_Ortega-63799_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Via col vento@@film": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Poster_-_Gone_With_the_Wind_01.jpg/330px-Poster_-_Gone_With_the_Wind_01.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Titanic@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/53/TitanicFilm.jpg/330px-TitanicFilm.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Il Padrino@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/40/Don_Vito_Corleone.jpg/330px-Don_Vito_Corleone.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Avatar@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/f/f7/Avatar_film_2009.JPG/330px-Avatar_film_2009.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Oppenheimer@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/ab/Oppenheimer_%28film%29.png/330px-Oppenheimer_%28film%29.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Il ritorno del re@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/22/ISDA_Ultima_Battaglia.PNG/330px-ISDA_Ultima_Battaglia.PNG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Avengers: Endgame@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/66/AvengersEndgameMovie.png/330px-AvengersEndgameMovie.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Schindler's List@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/46/Schindler%27s_List_01.JPG/330px-Schindler%27s_List_01.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ben-Hur@@film": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/Ben_hur_1959_poster.jpg/330px-Ben_hur_1959_poster.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"The Irishman@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/22/Martin_Scorsese_-_The_Irishman.png/330px-Martin_Scorsese_-_The_Irishman.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"The Big Bang Theory@@serie televisiva": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/TBBT_logo.svg/330px-TBBT_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"How I Met Your Mother@@serie televisiva": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/d2/How_I_Met_Your_Mother_-_Titoli_di_testa.png/330px-How_I_Met_Your_Mother_-_Titoli_di_testa.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"The Office@@serie televisiva": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/4b/The_Office_US_sigla.png/330px-The_Office_US_sigla.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Il Trono di Spade@@serie televisiva": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/27/Il_Trono_di_Spade.png/330px-Il_Trono_di_Spade.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Breaking Bad@@serie televisiva": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Breaking_Bad_logo.svg/330px-Breaking_Bad_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Frozen II@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/b3/Frozen2.png/330px-Frozen2.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Frozen@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/71/Elsa%26Anna.png/330px-Elsa%26Anna.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Oceania 2@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/c/ce/Oceania2Movie.png/330px-Oceania2Movie.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Zootropolis@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/87/Zootropolis.png/330px-Zootropolis.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Il Re Leone (1994)@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e2/Il_Re_Leone.png/330px-Il_Re_Leone.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Oceania@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/2d/Moana.Vaiana.jpg/330px-Moana.Vaiana.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Big Hero 6@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/Big_Hero_6_logo.svg/330px-Big_Hero_6_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rapunzel@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/0f/RapunzelDisneyMovie.png/330px-RapunzelDisneyMovie.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Aladdin (1992)@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e1/Aladdinpesonaggio.JPG/330px-Aladdinpesonaggio.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Encanto@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/61/EncantoDisney.png/330px-EncantoDisney.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Minecraft@@videogioco": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/90/Minecraft_-_survival.png/330px-Minecraft_-_survival.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"GTA V@@videogioco": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/76/Grand_Theft_Auto_V_logo.svg/330px-Grand_Theft_Auto_V_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mario Kart 8 Deluxe@@videogioco": "https://thumb.wikimedia.org/wikipedia/it/thumb/3/30/Mario_Kart_8.png/330px-Mario_Kart_8.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Red Dead Redemption 2@@videogioco": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Red_Dead_Redemption_2_Logo.png/330px-Red_Dead_Redemption_2_Logo.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Wii Sports@@videogioco": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/d0/Wii_Sports.jpg/330px-Wii_Sports.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Terraria@@videogioco": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/90/Terraria_%28videogioco%29.jpg/330px-Terraria_%28videogioco%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"The Witcher 3@@videogioco": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/The_Witcher_3_-_Standard_Edition_Unboxing_%28Official_Trailer%29_cover.jpg/330px-The_Witcher_3_-_Standard_Edition_Unboxing_%28Official_Trailer%29_cover.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Super Mario Bros.@@videogioco": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/78/Super_Mario_Bros_cover.jpg/330px-Super_Mario_Bros_cover.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pokémon Rosso e Blu@@videogioco": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/0c/Pok%C3%A9mon_Rosso_e_Blu_copertina.png/330px-Pok%C3%A9mon_Rosso_e_Blu_copertina.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"West Side Story (1961)@@film": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/West_Side_Story_1961_film_poster.jpg/330px-West_Side_Story_1961_film_poster.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Everything Everywhere All at Once@@film": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Everything_everywhere_all_at_once_logo.jpg/330px-Everything_everywhere_all_at_once_logo.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Forrest Gump@@film": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0e/Forrest_Gump.svg/330px-Forrest_Gump.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"La La Land@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/20/La_La_Land_%28film%29.jpg/330px-La_La_Land_%28film%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Il silenzio degli innocenti@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/65/Il_silenzio_degli_innocenti.jpg/330px-Il_silenzio_degli_innocenti.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Zio Paperone@@personaggio": "https://upload.wikimedia.org/wikipedia/it/e/e0/Cover_Uack%21_1.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Smaug@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/a6/Smaug.png/330px-Smaug.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Carlisle Cullen@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e9/Carlisle_Cullen.jpg/330px-Carlisle_Cullen.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tony Stark@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/7c/Iron_Man_Extremis.jpg/330px-Iron_Man_Extremis.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Charles Foster Kane@@personaggio": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg/330px-Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Richie Rich@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/3/33/Richie_Rich_-_Il_pi%C3%B9_ricco_del_mondo.png/330px-Richie_Rich_-_Il_pi%C3%B9_ricco_del_mondo.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bruce Wayne@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/1/19/Batman_3_variant.jpg/330px-Batman_3_variant.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mr. Burns@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/a7/Montgomery_Burns.png/330px-Montgomery_Burns.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lara Croft@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/45/LaraCroft.JPG/330px-LaraCroft.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Sicilia@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Cloudless_Sicily.jpg/330px-Cloudless_Sicily.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Sardegna@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Sardinia_satellite.jpg/330px-Sardinia_satellite.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cipro@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Flag_of_Cyprus.svg/330px-Flag_of_Cyprus.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Corsica@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/Flag_of_Corsica.svg/330px-Flag_of_Corsica.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Creta@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/Island_of_Crete%2C_Greece.JPG/330px-Island_of_Crete%2C_Greece.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Eubea@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Euboea.JPG/330px-Euboea.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Maiorca@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Mallorca.jpg/330px-Mallorca.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lesbo@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Lesvos.jpg/330px-Lesvos.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rodi@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Rhodes_NLT_Landsat7.png/330px-Rhodes_NLT_Landsat7.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Malta@@isola": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Flag_of_Malta.svg/330px-Flag_of_Malta.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Coccodrillo marino@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Saltwater_Crocodiles_of_Sundarbans_03.jpg/330px-Saltwater_Crocodiles_of_Sundarbans_03.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ippopotamo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/Portrait_Hippopotamus_in_the_water.jpg/330px-Portrait_Hippopotamus_in_the_water.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Giaguaro@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/Standing_jaguar.jpg/330px-Standing_jaguar.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gorilla@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Male_silverback_Gorilla.JPG/330px-Male_silverback_Gorilla.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Orso grizzly@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/GrizzlyBearJeanBeaufort.jpg/330px-GrizzlyBearJeanBeaufort.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Iena@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/Spotted_hyena_%28Crocuta_crocuta%29.jpg/330px-Spotted_hyena_%28Crocuta_crocuta%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tigre@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Walking_tiger_female.jpg/330px-Walking_tiger_female.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Leone@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/002_The_lion_king_Snyggve_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg/330px-002_The_lion_king_Snyggve_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lupo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/European_grey_wolf_in_Prague_zoo_2.jpg/330px-European_grey_wolf_in_Prague_zoo_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rana dorata@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Goldenergiftfrosch1cele4.jpg/330px-Goldenergiftfrosch1cele4.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Scorpione giallo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Deathstalker_ST_07.JPG/330px-Deathstalker_ST_07.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mamba nero@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Dendroaspis_polylepis00.jpg/330px-Dendroaspis_polylepis00.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Vedova nera@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/Latrodectus_mactans_male.jpeg/330px-Latrodectus_mactans_male.jpeg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cobra reale@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/King_cobra_1.jpg/330px-King_cobra_1.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ape@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Bee_Collecting_Pollen_2004-08-14.jpg/330px-Bee_Collecting_Pollen_2004-08-14.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Vipera comune@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Asp_Viper_%28Vipera_aspis%29_male_%28found_by_Jean_NICOLAS%29_%2834941989463%29.jpg/330px-Asp_Viper_%28Vipera_aspis%29_male_%28found_by_Jean_NICOLAS%29_%2834941989463%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Calabrone@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/Vespa_crabro_Ifroz.jpg/330px-Vespa_crabro_Ifroz.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Costruzione della piramide di Cheope@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Kheops-Pyramid.jpg/330px-Kheops-Pyramid.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Codice di Hammurabi@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/P1050763_Louvre_code_Hammurabi_face_rwk.JPG/330px-P1050763_Louvre_code_Hammurabi_face_rwk.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Prime Olimpiadi@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/GR-olympia-palaestra.jpg/330px-GR-olympia-palaestra.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Fondazione di Roma@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Roman_SPQR_banner.svg/330px-Roman_SPQR_banner.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Battaglia di Maratona@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Plain_of_Marathon_1.jpg/330px-Plain_of_Marathon_1.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Morte di Giulio Cesare@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/eb/Vincenzo_Camuccini_-_La_morte_di_Cesare.jpg/330px-Vincenzo_Camuccini_-_La_morte_di_Cesare.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Caduta dell'Impero romano d'Occidente@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Cole_Thomas_The_Course_of_Empire_Destruction_1836.jpg/330px-Cole_Thomas_The_Course_of_Empire_Destruction_1836.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Scoperta dell'America@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Columbus_Taking_Possession.jpg/330px-Columbus_Taking_Possession.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rivoluzione francese@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Anonymous_-_Prise_de_la_Bastille.jpg/330px-Anonymous_-_Prise_de_la_Bastille.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Unità d'Italia@@storia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a7/Proclamazione_del_Regno_d%27Italia.png/330px-Proclamazione_del_Regno_d%27Italia.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ceramica@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Chinese_-_Storage_Jar_-_Walters_492392.jpg/330px-Chinese_-_Storage_Jar_-_Walters_492392.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ruota@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Bulletin_-_United_States_National_Museum_%281956%29_%2814804543383%29.jpg/330px-Bulletin_-_United_States_National_Museum_%281956%29_%2814804543383%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Scrittura@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Herkulaneischer_Meister_002b.jpg/330px-Herkulaneischer_Meister_002b.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Vetro@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Uniformity.jpg/330px-Uniformity.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Carta@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Papier_-_various_papers_in_day.jpg/330px-Papier_-_various_papers_in_day.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Polvere da sparo@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/2023_Czarny_proch_Vesuvit_LC_%283%29.jpg/330px-2023_Czarny_proch_Vesuvit_LC_%283%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Occhiali@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Reading_glasses.jpg/330px-Reading_glasses.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Stampa a caratteri mobili@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f8/Printer_in_1568-ce.png/330px-Printer_in_1568-ce.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Telescopio@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Astro_y_Geo_IMG_1958.jpg/330px-Astro_y_Geo_IMG_1958.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lampadina@@invenzione": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/A_variety_of_lightbulbs.jpg/330px-A_variety_of_lightbulbs.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gerico@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/West_Bank_and_Gaza_Strip_location_map.svg/330px-West_Bank_and_Gaza_Strip_location_map.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cartagine@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Carthage_National_Museum_048.jpg/330px-Carthage_National_Museum_048.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Roma@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Roma-Gonfalone.svg/330px-Roma-Gonfalone.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bisanzio (Istanbul)@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/1784_Bocage_Map_of_The_Bosphorus_and_the_City_of_Byzantium_-_Istanbul_-_Constantinople_-_Geographicus_-_Bosphorus-white-1793.jpg/330px-1784_Bocage_Map_of_The_Bosphorus_and_the_City_of_Byzantium_-_Istanbul_-_Constantinople_-_Geographicus_-_Bosphorus-white-1793.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Alessandria d'Egitto@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Flag_of_Alexandria.svg/330px-Flag_of_Alexandria.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Firenze@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/Florence_Collage.png/330px-Florence_Collage.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Londra@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/London_Montage_2016.png/330px-London_Montage_2016.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Venezia@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Venezia_aerial_view.jpg/330px-Venezia_aerial_view.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"New York@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Flag_of_New_York_City.svg/330px-Flag_of_New_York_City.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"San Pietroburgo@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Flag_of_Saint_Petersburg_%28large%29.svg/330px-Flag_of_Saint_Petersburg_%28large%29.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Peste nera@@pandemia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Trionfo_della_morte%2C_gi%C3%A0_a_palazzo_sclafani%2C_galleria_regionale_di_Palazzo_Abbatellis%2C_palermo_%281446%29_%2C_affresco_staccato.jpg/330px-Trionfo_della_morte%2C_gi%C3%A0_a_palazzo_sclafani%2C_galleria_regionale_di_Palazzo_Abbatellis%2C_palermo_%281446%29_%2C_affresco_staccato.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Influenza spagnola@@pandemia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Reconstructed_Spanish_Flu_Virus.jpg/330px-Reconstructed_Spanish_Flu_Virus.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"HIV/AIDS@@pandemia": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Red_ribbon.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Peste di Giustiniano@@pandemia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/Plaguet03.jpg/330px-Plaguet03.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"COVID-19@@pandemia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/COVID-19_Outbreak_World_Map.svg/330px-COVID-19_Outbreak_World_Map.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Influenza asiatica 1957@@pandemia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/Asian_flu_in_Sweden_1957_%282%29.jpg/330px-Asian_flu_in_Sweden_1957_%282%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Influenza suina 2009@@pandemia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/H1N1_influenza_virus.jpg/330px-H1N1_influenza_virus.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Michael Phelps@@atleta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Michael_Phelps_by_Gage_Skidmore.jpg/330px-Michael_Phelps_by_Gage_Skidmore.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Larisa Latynina@@atleta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Larisa_Latynina%2C_2010.jpg/330px-Larisa_Latynina%2C_2010.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Paavo Nurmi@@atleta": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Paavo_Nurmi_%28Antwerp_1920%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Carl Lewis@@atleta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Carl_Lewis_Doha_%28cropped%29.jpg/330px-Carl_Lewis_Doha_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mark Spitz@@atleta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Mark_Spitz_1972.jpg/330px-Mark_Spitz_1972.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Katie Ledecky@@atleta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Katie_Ledecky_at_the_2023_Golden_Goggle_Awards_%28cropped%29.jpg/330px-Katie_Ledecky_at_the_2023_Golden_Goggle_Awards_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Usain Bolt@@atleta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Usain_Bolt_after_4_%C3%97_100_m_Rio_2016.jpg/330px-Usain_Bolt_after_4_%C3%97_100_m_Rio_2016.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Birgit Fischer@@atleta": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Birgit_Fischer_%282010%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Simone Biles@@atleta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/Simone_Biles_National_Team_2024.jpg/330px-Simone_Biles_National_Team_2024.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Valentina Vezzali@@atleta": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Valentina_Vezzali_daticamera.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Cocco@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Starr_031209-0059_Cocos_nucifera.jpg/330px-Starr_031209-0059_Cocos_nucifera.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Avocado@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/Persea_americana_fruit_2.JPG/330px-Persea_americana_fruit_2.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Banana@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Musa_paradisiaca_Blanco1.88.png/330px-Musa_paradisiaca_Blanco1.88.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Uva@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Grapes%2C_Rostov-on-Don%2C_Russia.jpg/330px-Grapes%2C_Rostov-on-Don%2C_Russia.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ciliegie@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Ciliege_emiliane.png/330px-Ciliege_emiliane.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Kiwi@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Kiwi_%28Actinidia_chinensis%29_1_Luc_Viatour.jpg/330px-Kiwi_%28Actinidia_chinensis%29_1_Luc_Viatour.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mango@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Mango_-_single.jpg/330px-Mango_-_single.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mela@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/330px-Red_Apple.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Fragola@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Half_a_strawberry.jpg/330px-Half_a_strawberry.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Facebook@@social network": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Screen_of_Facebook_%282%29.PNG/330px-Screen_of_Facebook_%282%29.PNG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Instagram@@social network": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Instagram_screenshot.png/330px-Instagram_screenshot.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"TikTok@@social network": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/TikTok_app.jpg/330px-TikTok_app.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Telegram@@social network": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Telegram_Android_screenshot_%28v_3.3%2C_English%29.png/330px-Telegram_Android_screenshot_%28v_3.3%2C_English%29.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Snapchat@@social network": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/Snap_on_smartphone.jpg/330px-Snap_on_smartphone.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"LinkedIn@@social network": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/LinkedIn_Headquarters_Sunnyvale.jpg/330px-LinkedIn_Headquarters_Sunnyvale.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cinese mandarino@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Idioma_mandar%C3%ADn.png/330px-Idioma_mandar%C3%ADn.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Inglese@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Anglospeak_%28subnational_version%29.svg/330px-Anglospeak_%28subnational_version%29.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Hindi@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Hindi_languages_2011_Indian_Census_by_district.svg/330px-Hindi_languages_2011_Indian_Census_by_district.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Portoghese@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Detailed_SVG_map_of_the_Lusophone_world.svg/330px-Detailed_SVG_map_of_the_Lusophone_world.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Russo@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/The_trends_of_the_Russian_language_in_the_XX_century_and_the_first_quarter_of_the_XXI_century_%28estimates_and_projections%29.GIF/330px-The_trends_of_the_Russian_language_in_the_XX_century_and_the_first_quarter_of_the_XXI_century_%28estimates_and_projections%29.GIF?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Giapponese@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Japanese_language_extension.PNG/330px-Japanese_language_extension.PNG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Italiano@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Idioma_italiano.png/330px-Idioma_italiano.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Everest@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Mt._Everest_from_Gokyo_Ri_November_5%2C_2012_Cropped.jpg/330px-Mt._Everest_from_Gokyo_Ri_November_5%2C_2012_Cropped.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"K2@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Chogori.jpg/330px-Chogori.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Kangchenjunga@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Kangchenjunga-from-Gangtok.jpg/330px-Kangchenjunga-from-Gangtok.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Aconcagua@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/Aconcagua_%28aerial%29.jpg/330px-Aconcagua_%28aerial%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Denali@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Denali_Mt_McKinley.jpg/330px-Denali_Mt_McKinley.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Kilimangiaro@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Mt._Kilimanjaro_12.2006.jpg/330px-Mt._Kilimanjaro_12.2006.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Elbrus@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Mount_Elbrus_May_2008.jpg/330px-Mount_Elbrus_May_2008.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Monte Bianco@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/MonteBiancoAug052024_03.jpg/330px-MonteBiancoAug052024_03.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cervino@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Matterhorn%2C_March_2019_%2801%29.jpg/330px-Matterhorn%2C_March_2019_%2801%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Monte Fuji@@montagna": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Fuji_Kawaguchi_357.JPG/330px-Fuji_Kawaguchi_357.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Falco pellegrino@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Falco_peregrinus_-_01.jpg/330px-Falco_peregrinus_-_01.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Aquila reale@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Maakotka_%28Aquila_chrysaetos%29_by_Jarkko_J%C3%A4rvinen.jpg/330px-Maakotka_%28Aquila_chrysaetos%29_by_Jarkko_J%C3%A4rvinen.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ghepardo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Cheetah%2C_Masai_Mara_%2852448477516%29.jpg/330px-Cheetah%2C_Masai_Mara_%2852448477516%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pesce vela@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Istiophorus_platypterus.jpg/330px-Istiophorus_platypterus.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cavallo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/de/Nokota_Horses_cropped.jpg/330px-Nokota_Horses_cropped.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Struzzo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Struthio_camelus_-_Etosha_2014_%283%29.jpg/330px-Struthio_camelus_-_Etosha_2014_%283%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Levriero@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/GraceTheGreyhound.jpg/330px-GraceTheGreyhound.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lepre@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Feldhase_Schiermonnikoog.JPG/330px-Feldhase_Schiermonnikoog.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Squalo mako@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/de/Kurzflossen-Mako.jpg/330px-Kurzflossen-Mako.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Giove@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Jupiter_OPAL_2024.png/330px-Jupiter_OPAL_2024.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Saturno@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/330px-Saturn_during_Equinox.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Urano@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Uranus_Voyager2_color_calibrated.png/330px-Uranus_Voyager2_color_calibrated.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Nettuno@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Neptune_Voyager2_color_calibrated.png/330px-Neptune_Voyager2_color_calibrated.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Terra@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Meteosat-12-fci-march-equinox-2025-noon.jpg/330px-Meteosat-12-fci-march-equinox-2025-noon.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Venere@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Venus_2_Approach_Image.jpg/330px-Venus_2_Approach_Image.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Marte@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/OSIRIS_Mars_true_color.jpg/330px-OSIRIS_Mars_true_color.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ganimede@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Ganymede_-_Perijove_34_Composite.jpg/330px-Ganymede_-_Perijove_34_Composite.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mercurio@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Mercury_in_color_-_Prockter07_centered.jpg/330px-Mercury_in_color_-_Prockter07_centered.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Plutone@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Pluto_in_True_Color_-_High-Res.jpg/330px-Pluto_in_True_Color_-_High-Res.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Burj Khalifa@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/Dubai_skyline_2015_%28crop%29.jpg/330px-Dubai_skyline_2015_%28crop%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Merdeka 118@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Merdeka_118_20230317.jpg/330px-Merdeka_118_20230317.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Shanghai Tower@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Shanghai_Tower_e_Park_Hyatt.jpg/330px-Shanghai_Tower_e_Park_Hyatt.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Abraj Al-Bait@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Final_circulation_of_the_Kaaba_%28completed%29.jpg/330px-Final_circulation_of_the_Kaaba_%28completed%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"One World Trade Center@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1d/One_World_Trade_Center_Building.jpg/330px-One_World_Trade_Center_Building.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Taipei 101@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/Taipei_101_from_Xiangshan_20240729.jpg/330px-Taipei_101_from_Xiangshan_20240729.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Petronas Towers@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/The_Twins_SE_Asia_2019_%2849171985716%29_%28cropped%29_2.jpg/330px-The_Twins_SE_Asia_2019_%2849171985716%29_%28cropped%29_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Empire State Building@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Empire_State_Building_from_the_Top_of_the_Rock.jpg/330px-Empire_State_Building_from_the_Top_of_the_Rock.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Torre Eiffel@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/330px-Tour_Eiffel_Wikimedia_Commons.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Torre Unicredit@@grattacielo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Milan_skyline_with_Unicredit_Tower_and_Bosco_Verticale.jpg/330px-Milan_skyline_with_Unicredit_Tower_and_Bosco_Verticale.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Volga@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Uglich_View_of_the_Kremlin_IMG_1314_1725.jpg/330px-Uglich_View_of_the_Kremlin_IMG_1314_1725.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Danubio@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/View_from_Gell%C3%A9rt_Hill_to_the_Danube%2C_Hungary_-_Budapest_%2828493220635%29.jpg/330px-View_from_Gell%C3%A9rt_Hill_to_the_Danube%2C_Hungary_-_Budapest_%2828493220635%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ural@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Ural_River_Atyrau.JPG/330px-Ural_River_Atyrau.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Dnepr@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Dnieper_is_one_of_the_major_rivers_of_Europe.jpg/330px-Dnieper_is_one_of_the_major_rivers_of_Europe.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Reno@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Middle_Bridge%2C_Basel%2C_Switzerland.JPG/330px-Middle_Bridge%2C_Basel%2C_Switzerland.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Elba@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Koenigstein_Saxony_pic01_2007_04_22.jpg/330px-Koenigstein_Saxony_pic01_2007_04_22.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Loira@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Most_beautiful_villages_of_the_world_montsoreau_2.jpg/330px-Most_beautiful_villages_of_the_world_montsoreau_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rodano@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/RhoneLyon.jpg/330px-RhoneLyon.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Senna@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Bercy%2C_Paris_01.jpg/330px-Bercy%2C_Paris_01.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Po@@fiume": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Torino_-_vista_ponte_Isabella_-_Castello_del_Valentino_e_Mole_Antonelliana.jpg/330px-Torino_-_vista_ponte_Isabella_-_Castello_del_Valentino_e_Mole_Antonelliana.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Real Madrid@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/0c/Real_Madrid_CF_logo.svg/330px-Real_Madrid_CF_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Milan@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Logo_of_AC_Milan.svg/330px-Logo_of_AC_Milan.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bayern Monaco@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg/330px-FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Liverpool@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/3/37/Liverpool_FC_logo_2012.svg/330px-Liverpool_FC_logo_2012.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Barcellona@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/c/cf/FC_Barcelona_stemma.svg/330px-FC_Barcelona_stemma.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ajax@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Logo_AFC_Ajax_%281928-1991%2C_2025-%29.svg/330px-Logo_AFC_Ajax_%281928-1991%2C_2025-%29.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Inter@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/FC_Internazionale_Milano_2021.svg/330px-FC_Internazionale_Milano_2021.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Manchester United@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/99/Manchester_United_FC_Logo.svg/330px-Manchester_United_FC_Logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Juventus@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Juventus_FC_-_logo_black_%28Italy%2C_2020%29.svg/330px-Juventus_FC_-_logo_black_%28Italy%2C_2020%29.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Chelsea@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e2/Chelsea_FC_logo.svg/330px-Chelsea_FC_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lionel Messi@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Leo_Messi_Argentina_v_Egypt_7_July_2026-1.jpg/330px-Leo_Messi_Argentina_v_Egypt_7_July_2026-1.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cristiano Ronaldo@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Cristiano_Ronaldo_Croatia_v_Portugal_2_July_2026-075_%28cropped%29.jpg/330px-Cristiano_Ronaldo_Croatia_v_Portugal_2_July_2026-075_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Michel Platini@@calciatore": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/a5/Michel_Platini%2C_Juventus_1984-85.jpg/330px-Michel_Platini%2C_Juventus_1984-85.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Johan Cruijff@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Johan_Cruyff_1974c.jpg/330px-Johan_Cruyff_1974c.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Marco van Basten@@calciatore": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e5/Marco_van_Basten_-_Milan_AC_1990-91.jpg/330px-Marco_van_Basten_-_Milan_AC_1990-91.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ronaldo (il Fenomeno)@@calciatore": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/bf/FC_Inter_-_1997_-_Ronaldo.jpeg/330px-FC_Inter_-_1997_-_Ronaldo.jpeg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Franz Beckenbauer@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Franz_Beckenbauer_%281975%29.jpg/330px-Franz_Beckenbauer_%281975%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Zinedine Zidane@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Zinedine_Zidane_by_Tasnim_03.jpg/330px-Zinedine_Zidane_by_Tasnim_03.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Roberto Baggio@@calciatore": "https://thumb.wikimedia.org/wikipedia/it/thumb/1/1b/Roberto_Baggio_-_Italia_%2790.jpg/330px-Roberto_Baggio_-_Italia_%2790.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Kakà@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Kak%C3%A1_visited_Stadium_St._Petersburg.jpg/330px-Kak%C3%A1_visited_Stadium_St._Petersburg.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Beyoncé@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_%2810_of_118%29_%2852946364598%29_%28best_crop%29.jpg/330px-Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_%2810_of_118%29_%2852946364598%29_%28best_crop%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Georg Solti@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/Sir_George_Solti_6_Allan_Allan_Warren.jpg/330px-Sir_George_Solti_6_Allan_Allan_Warren.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Quincy Jones@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Quincy_jones_1980_%28cropped%29.jpg/330px-Quincy_jones_1980_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Alison Krauss@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Alison_Krauss_at_the_Glastonbury2022_%28cropped_2%29.jpg/330px-Alison_Krauss_at_the_Glastonbury2022_%28cropped_2%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Jay-Z@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Jay-Z_meets_with_New_York_Senate_Majority_Leader_in_Albany_%28cropped%29.webp/330px-Jay-Z_meets_with_New_York_Senate_Majority_Leader_in_Albany_%28cropped%29.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Stevie Wonder@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Stevie_Wonder_1973.JPG/330px-Stevie_Wonder_1973.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Kanye West@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Kanye_West_at_the_2009_Tribeca_Film_Festival_%28cropped%29.jpg/330px-Kanye_West_at_the_2009_Tribeca_Film_Festival_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"U2@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/U2_Mount_Temple.jpg/330px-U2_Mount_Temple.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Adele@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/Adele_2016.jpg/330px-Adele_2016.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Taylor Swift@@musicista": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/Taylor_Swift_at_the_Golden_Globes_2024_%28Enhanced%2C_cropped%29_2.jpg/330px-Taylor_Swift_at_the_Golden_Globes_2024_%28Enhanced%2C_cropped%29_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Squalo della Groenlandia@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Somniosus_microcephalus_okeanos.jpg/330px-Somniosus_microcephalus_okeanos.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Balena della Groenlandia@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Bowheads42.jpg/330px-Bowheads42.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tartaruga gigante@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Zoo_Beauval_12_06_2010_09_Dipsochelys_elephantina.jpg/330px-Zoo_Beauval_12_06_2010_09_Dipsochelys_elephantina.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Elefante@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/Elephant_Diversity.jpg/330px-Elephant_Diversity.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pappagallo ara@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Macaws_at_Jurong_Bird_Park_-Singapore-8.jpg/330px-Macaws_at_Jurong_Bird_Park_-Singapore-8.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gatto@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Mimmo_Il_guardiano.jpg/330px-Mimmo_Il_guardiano.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cane@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Collage_of_Nine_Dogs.jpg/330px-Collage_of_Nine_Dogs.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lago Bajkal@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Ogoy_island_in_winter.jpg/330px-Ogoy_island_in_winter.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lago Tanganica@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Envisat_sees_Lake_Tanganyika_ESA219901.jpg/330px-Envisat_sees_Lake_Tanganyika_ESA219901.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mar Caspio@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Caspian_Sea_from_orbit.jpg/330px-Caspian_Sea_from_orbit.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lago Malawi@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Lake_Malawi_seen_from_orbit.jpg/330px-Lake_Malawi_seen_from_orbit.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Issyk-Kul@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Issyk_Kul.jpg/330px-Issyk_Kul.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Crater Lake@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/31/Crater_Lake_National_Park_Oregon.jpg/330px-Crater_Lake_National_Park_Oregon.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lago di Como@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/LagoDiComo.jpg/330px-LagoDiComo.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lago Maggiore@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/LagoMaggiore.jpg/330px-LagoMaggiore.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lago di Garda@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Lake_Garda_ESA344667.jpg/330px-Lake_Garda_ESA344667.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Loch Ness@@lago": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/LochNessUrquhart.jpg/330px-LochNessUrquhart.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Meryl Streep@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg/330px-Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Anthony Hopkins@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/AnthonyHopkins10TIFF.jpg/330px-AnthonyHopkins10TIFF.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Denzel Washington@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/Denzel_Washington_at_the_2025_Cannes_Film_Festival.jpg/330px-Denzel_Washington_at_the_2025_Cannes_Film_Festival.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cate Blanchett@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/Cate_Blanchett_at_81st_Venice_International_Film_Festival_2.jpg/330px-Cate_Blanchett_at_81st_Venice_International_Film_Festival_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Emma Stone@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Emma_Stone_at_the_2025_Cannes_Film_Festival_03.jpg/330px-Emma_Stone_at_the_2025_Cannes_Film_Festival_03.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Jack Nicholson@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Jack_Nicholson_2001.jpg/330px-Jack_Nicholson_2001.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Natalie Portman@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/NataliePortman.jpg/330px-NataliePortman.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Johnny Depp@@attore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Johnny_Depp_2020.jpg/330px-Johnny_Depp_2020.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Delfino@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Tursiops_truncatus_01.jpg/330px-Tursiops_truncatus_01.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Balena@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Humpback_Whale_underwater_shot.jpg/330px-Humpback_Whale_underwater_shot.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Orca@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/330px-Killerwhales_jumping.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pipistrello@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Wikipedia-Bats-001-v01.jpg/330px-Wikipedia-Bats-001-v01.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lamantino@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Manatee_photo.jpg/330px-Manatee_photo.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Foca@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Common_Seal_Phoca_vitulina.jpg/330px-Common_Seal_Phoca_vitulina.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tricheco@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Walrus_2_%286383855895%29.jpg/330px-Walrus_2_%286383855895%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ornitorinco@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Wild_Platypus_4.jpg/330px-Wild_Platypus_4.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Narvalo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/%D0%9D%D0%B0%D1%80%D0%B2%D0%B0%D0%BB_%D0%B2_%D1%80%D0%BE%D1%81%D1%81%D0%B8%D0%B9%D1%81%D0%BA%D0%BE%D0%B9_%D0%90%D1%80%D0%BA%D1%82%D0%B8%D0%BA%D0%B5.jpg/330px-%D0%9D%D0%B0%D1%80%D0%B2%D0%B0%D0%BB_%D0%B2_%D1%80%D0%BE%D1%81%D1%81%D0%B8%D0%B9%D1%81%D0%BA%D0%BE%D0%B9_%D0%90%D1%80%D0%BA%D1%82%D0%B8%D0%BA%D0%B5.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Squalo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Sharks-coll-001.jpg/330px-Sharks-coll-001.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Elio@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Helium-glow.jpg/330px-Helium-glow.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Neon@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f8/Neon-glow.jpg/330px-Neon-glow.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Argon@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Argon-glow.jpg/330px-Argon-glow.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Kripton@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Krypton-glow.jpg/330px-Krypton-glow.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Xeno@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Xenon-glow.jpg/330px-Xenon-glow.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Radon@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Elektronskal_86.svg/330px-Elektronskal_86.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Idrogeno@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Hydrogenglow.jpg/330px-Hydrogenglow.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ossigeno@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Hydrogenglow.jpg/330px-Hydrogenglow.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Azoto@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Fluessiger_Stickstoff.jpg/330px-Fluessiger_Stickstoff.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bromo@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/Bromine.jpg/330px-Bromine.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Apple@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/330px-Apple_logo_black.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Nike@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Nike_Headquarters_Oregon.jpg/330px-Nike_Headquarters_Oregon.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Coca-Cola@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/15-09-26-RalfR-WLC-0098_-_Coca-Cola_glass_bottle_%28Germany%29.jpg/330px-15-09-26-RalfR-WLC-0098_-_Coca-Cola_glass_bottle_%28Germany%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"McDonald's@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/330px-McDonald%27s_Golden_Arches.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Google@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/Googleplex_HQ_%28cropped%29.jpg/330px-Googleplex_HQ_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Amazon@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Amazon_Spheres_05.jpg/330px-Amazon_Spheres_05.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Microsoft@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Building92microsoft.jpg/330px-Building92microsoft.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Starbucks@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Starbuckscenter.jpg/330px-Starbuckscenter.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Levi's@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b3/Levi%27s_Times_Square_NYC_-_May_2026.jpg/330px-Levi%27s_Times_Square_NYC_-_May_2026.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Adidas@@azienda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Adidas_2022_logo.svg/330px-Adidas_2022_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Superman@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/1/13/DC_Absolute_Superman_per_il_Domani.jpg/330px-DC_Absolute_Superman_per_il_Domani.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Batman@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/1/19/Batman_3_variant.jpg/330px-Batman_3_variant.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Wonder Woman@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/61/Wonder_Woman_%28Adam_Hughes%29.jpg/330px-Wonder_Woman_%28Adam_Hughes%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Flash@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/27/Flash_45.webp/330px-Flash_45.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lanterna Verde@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/4c/Lanterna_Verde_5.webp/330px-Lanterna_Verde_5.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Aquaman@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/f/f5/M1ANTO013ISBN_0.webp/330px-M1ANTO013ISBN_0.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Martian Manhunter@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/00/Martian_Manhunter_-_Segreti_Americani.webp/330px-Martian_Manhunter_-_Segreti_Americani.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Freccia Verde@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/9a/Freccia_verde_1.jpg/330px-Freccia_verde_1.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Spider-Man@@personaggio DC Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/82/Copertina_Uomo_Ragno_MI_430.png/330px-Copertina_Uomo_Ragno_MI_430.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Blinding Lights@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/75/Blinding_lights.jpeg/330px-Blinding_lights.jpeg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Shape of You@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e1/Shape_of_You_Ed_Sheeran.png/330px-Shape_of_You_Ed_Sheeran.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Dance Monkey@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/20/Dance_monkey.jpeg/330px-Dance_monkey.jpeg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"bad guy@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/44/Bad_guy.jpeg/330px-Bad_guy.jpeg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bohemian Rhapsody@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/8b/BohemianRhapsody.jpg/330px-BohemianRhapsody.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Uptown Funk@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/f/fa/Mark_Ronson_-_Uptown_Funk.png/330px-Mark_Ronson_-_Uptown_Funk.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Billie Jean@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/03/Michael_Jackson_Billie_Jean.jpg/330px-Michael_Jackson_Billie_Jean.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Smells Like Teen Spirit@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/4b/Nirvana%2C_Smells_Like_Teen_Spirit_%28Samuel_Bayer%29.png/330px-Nirvana%2C_Smells_Like_Teen_Spirit_%28Samuel_Bayer%29.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Despacito@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/ba/Despacito.PNG/330px-Despacito.PNG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Nel blu dipinto di blu (Volare)@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/62/Modugno_durante_l%27esibizione_al_Festival_di_sanremo_del_1958.jpg/330px-Modugno_durante_l%27esibizione_al_Festival_di_sanremo_del_1958.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Luna@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/330px-FullMoon2010.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Titano@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Titan_in_true_color.jpg/330px-Titan_in_true_color.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Europa@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Europa_in_natural_color.png/330px-Europa_in_natural_color.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Io@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Io_highest_resolution_true_color.jpg/330px-Io_highest_resolution_true_color.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Callisto@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Callisto.jpg/330px-Callisto.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Deimos@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/Deimos-viking1.jpg/330px-Deimos-viking1.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tritone@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Triton_%28moon%29.jpg/330px-Triton_%28moon%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cerere@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/PIA19562-Ceres-DwarfPlanet-Dawn-RC3-image19-20150506.jpg/330px-PIA19562-Ceres-DwarfPlanet-Dawn-RC3-image19-20150506.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Iron Man@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/7c/Iron_Man_Extremis.jpg/330px-Iron_Man_Extremis.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Hulk@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/90/Hulk_%28Dale_Keown%29.jpg/330px-Hulk_%28Dale_Keown%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Thor@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e0/Thor_%28Alan_Davis%29.jpg/330px-Thor_%28Alan_Davis%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Star-Lord@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/40/Star-Lord_%28Steve_McNiven%29.jpg/330px-Star-Lord_%28Steve_McNiven%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Scarlet Witch@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/72/Scarlet_%28Alex_Ross%29.jpg/330px-Scarlet_%28Alex_Ross%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Spider-Man@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/82/Copertina_Uomo_Ragno_MI_430.png/330px-Copertina_Uomo_Ragno_MI_430.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Doctor Strange@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/53/Dottor_Strange.webp/330px-Dottor_Strange.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Hellboy@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/2c/Hellboy_038.jpg/330px-Hellboy_038.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ferro@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Iron_electrolytic_and_1cm3_cube.jpg/330px-Iron_electrolytic_and_1cm3_cube.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Oro@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Gold-crystals.jpg/330px-Gold-crystals.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Argento@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Silver_crystal.jpg/330px-Silver_crystal.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rame@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/NatCopper.jpg/330px-NatCopper.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Carbonio@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Diamond_and_graphite_without_structures.jpg/330px-Diamond_and_graphite_without_structures.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Sodio@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Na_%28Sodium%29.jpg/330px-Na_%28Sodium%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Zinco@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Zinc_fragment_sublimed_and_1cm3_cube.jpg/330px-Zinc_fragment_sublimed_and_1cm3_cube.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Piombo@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Lead_electrolytic_and_1cm3_cube.jpg/330px-Lead_electrolytic_and_1cm3_cube.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Alluminio@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Aluminium-4.jpg/330px-Aluminium-4.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mercurio@@elemento chimico": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Pouring_liquid_mercury_bionerd.jpg/330px-Pouring_liquid_mercury_bionerd.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"La Gioconda@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/330px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"L'Ultima Cena@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Leonardo_da_Vinci_-_The_Last_Supper_high_res.jpg/330px-Leonardo_da_Vinci_-_The_Last_Supper_high_res.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Dama con l'ermellino@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Dama_z_gronostajem.jpg/330px-Dama_z_gronostajem.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Annunciazione@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Annunciation_%28Leonardo_c._1472%E2%80%931476%29.jpg/330px-Annunciation_%28Leonardo_c._1472%E2%80%931476%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Vergine delle rocce@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Leonardo_Da_Vinci_-_Vergine_delle_Rocce_%28Louvre%29.jpg/330px-Leonardo_Da_Vinci_-_Vergine_delle_Rocce_%28Louvre%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Uomo vitruviano@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Da_Vinci_Vitruve_Luc_Viatour.jpg/330px-Da_Vinci_Vitruve_Luc_Viatour.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"San Girolamo@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/28/Francisco_de_Zurbar%C3%A1n_041.jpg/330px-Francisco_de_Zurbar%C3%A1n_041.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ritratto di Ginevra de' Benci@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Leonardo_da_Vinci_-_Ginevra_de%27_Benci_-_Google_Art_Project.jpg/330px-Leonardo_da_Vinci_-_Ginevra_de%27_Benci_-_Google_Art_Project.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Battesimo di Cristo@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/The_Baptism_of_Christ_%28Verrocchio_%26_Leonardo%29.jpg/330px-The_Baptism_of_Christ_%28Verrocchio_%26_Leonardo%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"La nascita di Venere@@dipinto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/El_nacimiento_de_Venus%2C_por_Sandro_Botticelli.jpg/330px-El_nacimiento_de_Venus%2C_por_Sandro_Botticelli.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Inception@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/ba/Inception_Paris_scene.jpg/330px-Inception_Paris_scene.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Interstellar@@film": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Interstellar-logo.jpg/330px-Interstellar-logo.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Memento@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/9f/Memento_%28film%29.png/330px-Memento_%28film%29.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tenet@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/d3/Tenet_film.png/330px-Tenet_film.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Dunkirk@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/ac/Dunkirk2017.png/330px-Dunkirk2017.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"The Prestige@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/d5/Prestige-2006-Jackman.png/330px-Prestige-2006-Jackman.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Insomnia@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/a0/Insomniascena.png/330px-Insomniascena.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Batman Begins@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/ab/Batman_Begins_2.jpg/330px-Batman_Begins_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Arrival@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/3/33/Arrival_film.jpg/330px-Arrival_film.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Don't Stop Me Now@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/20/Don%27t_Stop_Me_Now.png/330px-Don%27t_Stop_Me_Now.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Another One Bites the Dust@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/2e/Another_One_Bites_the_Dust.png/330px-Another_One_Bites_the_Dust.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Somebody to Love@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/d4/Somebody_to_Love.png/330px-Somebody_to_Love.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Radio Ga Ga@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/c/cd/Radio_gaga_screenshot.png/330px-Radio_gaga_screenshot.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"I Want to Break Free@@singolo": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/2f/I_want_to_break_free_screenshot.png/330px-I_want_to_break_free_screenshot.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Stairway to Heaven@@singolo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Stairway_to_Heaven_by_Led_Zeppelin_US_promotional_single.png/330px-Stairway_to_Heaven_by_Led_Zeppelin_US_promotional_single.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Hermione Granger@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/3/34/Hermione_Granger.jpg/330px-Hermione_Granger.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ron Weasley@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/85/Ron_Weasley.jpg/330px-Ron_Weasley.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Albus Silente@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/26/Albus_Silente_HP6.jpg/330px-Albus_Silente_HP6.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Severus Piton@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/1/13/Severus_Piton.jpg/330px-Severus_Piton.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rubeus Hagrid@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/c/cd/Rubeus_Hagrid.jpg/330px-Rubeus_Hagrid.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lord Voldemort@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/c/c9/Lord_Voldemort_film.jpg/330px-Lord_Voldemort_film.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Draco Malfoy@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/82/Draco_Malfoy.jpg/330px-Draco_Malfoy.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gandalf@@personaggio": "https://thumb.wikimedia.org/wikipedia/it/thumb/f/fb/Gandalf_film.png/330px-Gandalf_film.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Molise@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Flag_of_Molise.svg/330px-Flag_of_Molise.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Basilicata@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Flag_of_Basilicata.svg/330px-Flag_of_Basilicata.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Umbria@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/Flag_of_Umbria.svg/330px-Flag_of_Umbria.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Marche@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Flag_of_Marche.svg/330px-Flag_of_Marche.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Liguria@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Flag_of_Liguria.svg/330px-Flag_of_Liguria.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Abruzzo@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Flag_of_Abruzzo.svg/330px-Flag_of_Abruzzo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Valle d'Aosta@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Flag_of_Valle_d%27Aosta.svg/330px-Flag_of_Valle_d%27Aosta.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Friuli-Venezia Giulia@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Flag_of_Friuli-Venezia_Giulia.svg/330px-Flag_of_Friuli-Venezia_Giulia.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Calabria@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Flag_of_Calabria.svg/330px-Flag_of_Calabria.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Romagna@@regione italiana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Romagna_geopolitica.png/330px-Romagna_geopolitica.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Arsenal@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/dc/Stemma_Arsenal_FC.svg/330px-Stemma_Arsenal_FC.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Guglielmo Marconi@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Guglielmo_Marconi.jpg/330px-Guglielmo_Marconi.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Enrico Fermi@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Enrico_Fermi_1943-49.jpg/330px-Enrico_Fermi_1943-49.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rita Levi-Montalcini@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Rita_Levi-Montalcini_%281986%29.png/330px-Rita_Levi-Montalcini_%281986%29.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Dario Fo@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Dario_Fo%2C_Italian_playwright.jpg/330px-Dario_Fo%2C_Italian_playwright.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Luigi Pirandello@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Luigi_Pirandello_1934b.jpg/330px-Luigi_Pirandello_1934b.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Grazia Deledda@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Grazia_Deledda_1926.jpg/330px-Grazia_Deledda_1926.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Giosuè Carducci@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Giosu%C3%A8_Carducci2.jpg/330px-Giosu%C3%A8_Carducci2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Eugenio Montale@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Senatore_Eugenio_Montale.png/330px-Senatore_Eugenio_Montale.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Giorgio Parisi@@": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Parisi_giorgio.jpg/330px-Parisi_giorgio.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Maria Montessori@@": "https://upload.wikimedia.org/wikipedia/it/0/0f/Mont3.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Il Re Leone@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e2/Il_Re_Leone.png/330px-Il_Re_Leone.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"La Sirenetta@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/b5/Ariel_sirenetta.png/330px-Ariel_sirenetta.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Aladdin@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e1/Aladdinpesonaggio.JPG/330px-Aladdinpesonaggio.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"La bella e la bestia@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/6f/La_bella_e_la_bestia_1991.png/330px-La_bella_e_la_bestia_1991.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mulan@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/55/Mulan.png/330px-Mulan.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pocahontas@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/ae/Pocahontas_e_John_Smith.png/330px-Pocahontas_e_John_Smith.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Hercules@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/bb/Hercules_%28film_1997%29.png/330px-Hercules_%28film_1997%29.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Shrek@@film d'animazione": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/77/Shrek_%28film%29.png/330px-Shrek_%28film%29.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pelé@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Pele_con_brasil_%28cropped%29.jpg/330px-Pele_con_brasil_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Diego Armando Maradona@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Argentina_celebrando_copa_%28cropped%29.jpg/330px-Argentina_celebrando_copa_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Zinédine Zidane@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Zinedine_Zidane_by_Tasnim_03.jpg/330px-Zinedine_Zidane_by_Tasnim_03.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gianluigi Buffon@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Gianluigi_Buffon_%2831784615942%29_%28cropped%29.jpg/330px-Gianluigi_Buffon_%2831784615942%29_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Fabio Cannavaro@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Fabio_Cannavaro_-_2024_%28cropped%29.jpg/330px-Fabio_Cannavaro_-_2024_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ronaldo@@calciatore": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/bf/FC_Inter_-_1997_-_Ronaldo.jpeg/330px-FC_Inter_-_1997_-_Ronaldo.jpeg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Kylian Mbappé@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Kylian_Mbappe_France_v_Senegal_16_June_2026-391_%28cropped%29.jpg/330px-Kylian_Mbappe_France_v_Senegal_16_June_2026-391_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Andrés Iniesta@@calciatore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/Andr%C3%A9s_Iniesta_Argentina_v_Spain_19_July_2026-034_%28cropped%29.jpg/330px-Andr%C3%A9s_Iniesta_Argentina_v_Spain_19_July_2026-034_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Toy Story@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e6/Toy_Story_Woody_e_Buzz.png/330px-Toy_Story_Woody_e_Buzz.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Up@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/0e/Up_gip.jpg/330px-Up_gip.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Coco@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/97/CocoMovie.png/330px-CocoMovie.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Inside Out@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/8f/Inside_Out_film_2015.jpg/330px-Inside_Out_film_2015.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ratatouille@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/3/3c/Ratatouille_gip.jpg/330px-Ratatouille_gip.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"WALL•E@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/1/1a/WALL%E2%80%A2E.png/330px-WALL%E2%80%A2E.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Alla ricerca di Nemo@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/65/Alla_ricerca_di_Nemo.jpg/330px-Alla_ricerca_di_Nemo.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Monsters & Co.@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/0c/Monsters_Co.jpg/330px-Monsters_Co.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gli Incredibili@@film Pixar": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/The_Incredibles_logo.svg/330px-The_Incredibles_logo.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cattivissimo me@@film Pixar": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/4b/Cattivissimo_me.jpg/330px-Cattivissimo_me.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Caravaggio@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Bild-Ottavio_Leoni%2C_Caravaggio.jpg/330px-Bild-Ottavio_Leoni%2C_Caravaggio.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Raffaello Sanzio@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/Raffaello_Sanzio.jpg/330px-Raffaello_Sanzio.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Michelangelo Buonarroti@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Michelangelo_Daniele_da_Volterra_%28dettaglio%29.jpg/330px-Michelangelo_Daniele_da_Volterra_%28dettaglio%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Sandro Botticelli@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Sandro_Botticelli_083.jpg/330px-Sandro_Botticelli_083.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tiziano Vecellio@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Self-portrait_of_Titian.jpg/330px-Self-portrait_of_Titian.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Giotto@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Cinque_maestri_del_rinascimento_fiorentino%2C_XVI_sec%2C_giotto.JPG/330px-Cinque_maestri_del_rinascimento_fiorentino%2C_XVI_sec%2C_giotto.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Amedeo Modigliani@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Amedeo_Modigliani_1918_restored.jpg/330px-Amedeo_Modigliani_1918_restored.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Canaletto@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Giovanni_Antonio_Canaletto.png/330px-Giovanni_Antonio_Canaletto.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Giorgio de Chirico@@pittore": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Giorgio_de_Chirico_%28portrait%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Rembrandt@@pittore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Self-portrait_at_34_by_Rembrandt.jpg/330px-Self-portrait_at_34_by_Rembrandt.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Hey Jude@@canzone Beatles": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/45/Hey_Jude.JPG/330px-Hey_Jude.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Yellow Submarine@@canzone Beatles": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/5b/Yellow_Submarine.png/330px-Yellow_Submarine.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Something@@canzone Beatles": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/b6/Something_-_videoclip.JPG/330px-Something_-_videoclip.JPG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Imagine@@canzone Beatles": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/58/ImagineVideo.jpg/330px-ImagineVideo.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Aida@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Aida_%28libretto%2C_1890%29.jpg/330px-Aida_%28libretto%2C_1890%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"La traviata@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Traviata.jpg/330px-Traviata.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rigoletto@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Titta_Ruffo_as_Rigoletto.jpg/330px-Titta_Ruffo_as_Rigoletto.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Nabucco@@opera lirica": "https://upload.wikimedia.org/wikipedia/commons/5/52/Verdi-Nabucco-1842-original_costume_sketch.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Otello@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Francesco_Tamagno_as_Otello_1887_-_Sadie_1992_4p639.jpg/330px-Francesco_Tamagno_as_Otello_1887_-_Sadie_1992_4p639.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Falstaff@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Lucien_Fug%C3%A8re_in_Verdi%27s_Falstaff.jpg/330px-Lucien_Fug%C3%A8re_in_Verdi%27s_Falstaff.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Il trovatore@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Il_Trovatore.jpg/330px-Il_Trovatore.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Don Carlos@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Don_Carlo_poster.jpg/330px-Don_Carlo_poster.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Macbeth@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Locandina_macbeth_a_firenze%2C_1847.jpg/330px-Locandina_macbeth_a_firenze%2C_1847.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Tosca@@opera lirica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/Tosca_%281899%29.jpg/330px-Tosca_%281899%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Homer Simpson@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/bd/Homer_Simpson.png/330px-Homer_Simpson.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Marge Simpson@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/3/37/Marge_Simpson_in_A_proposito_di_Margie.png/330px-Marge_Simpson_in_A_proposito_di_Margie.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bart Simpson@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/65/Bart_Simpson.png/330px-Bart_Simpson.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lisa Simpson@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/73/Lisa_Simpson_hd.png/330px-Lisa_Simpson_hd.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Maggie Simpson@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/9d/Maggie_Simpson.png/330px-Maggie_Simpson.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Montgomery Burns@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/a7/Montgomery_Burns.png/330px-Montgomery_Burns.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ned Flanders@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/2f/Simpson%2C_Ned_Flanders.png/330px-Simpson%2C_Ned_Flanders.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Boe Szyslak@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/f/f5/Simpson%2C_Boe_Szyslak.png/330px-Simpson%2C_Boe_Szyslak.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Krusty il Clown@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/1/18/Simpson%2C_Krusty_il_Clown.png/330px-Simpson%2C_Krusty_il_Clown.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Stewie Griffin@@personaggio dei Simpson": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/02/Stewie_Griffin.png/330px-Stewie_Griffin.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pikachu@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/77/Pikachu.png/330px-Pikachu.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Charmander@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/56/Charmander.png/330px-Charmander.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bulbasaur@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/43/Bulbasaur.png/330px-Bulbasaur.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Squirtle@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e3/Squirtle.png/330px-Squirtle.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Mewtwo@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/d1/MewtwoSSBU.png/330px-MewtwoSSBU.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Snorlax@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/b5/143_Snorlax.png/330px-143_Snorlax.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Jigglypuff@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/a/af/Jigglypuff.png/330px-Jigglypuff.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gengar@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/f/f8/Gengar.png/330px-Gengar.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Eevee@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/70/133_Eevee.png/330px-133_Eevee.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lucario@@Pokémon": "https://thumb.wikimedia.org/wikipedia/it/thumb/4/43/LucarioSSBU.png/330px-LucarioSSBU.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Francese@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/LaFrancophonie2021.png/330px-LaFrancophonie2021.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ladino@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Idioma_ladino.PNG/330px-Idioma_ladino.PNG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Galiziano@@lingua": "https://upload.wikimedia.org/wikipedia/commons/5/55/Grupo_galaico-potugu%C3%A9s.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Iron Man@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/7/7c/Iron_Man_Extremis.jpg/330px-Iron_Man_Extremis.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Spider-Man@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/82/Copertina_Uomo_Ragno_MI_430.png/330px-Copertina_Uomo_Ragno_MI_430.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Thor@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/e/e0/Thor_%28Alan_Davis%29.jpg/330px-Thor_%28Alan_Davis%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Hulk@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/9/90/Hulk_%28Dale_Keown%29.jpg/330px-Hulk_%28Dale_Keown%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Capitan America@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/f/f3/Capitan_America_%28Maguire%29.jpg/330px-Capitan_America_%28Maguire%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Wolverine@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/d/da/Wolverine_%28Jim_Lee%29.jpg/330px-Wolverine_%28Jim_Lee%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pantera Nera@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/6b/Pantera_nera.jpg/330px-Pantera_nera.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Doctor Strange@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/53/Dottor_Strange.webp/330px-Dottor_Strange.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Deadpool@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/b/b1/Marvel-Verse_Deadpool.webp/330px-Marvel-Verse_Deadpool.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Flash@@personaggio Marvel Comics": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/27/Flash_45.webp/330px-Flash_45.webp?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"It@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/It_%281986%29_front_cover%2C_first_edition.jpg/330px-It_%281986%29_front_cover%2C_first_edition.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Shining@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/The_Shining_%281977%29_front_cover%2C_first_edition.jpg/330px-The_Shining_%281977%29_front_cover%2C_first_edition.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Misery@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Misery_%281987%29_front_cover%2C_first_edition.jpg/330px-Misery_%281987%29_front_cover%2C_first_edition.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Carrie@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Carrie_%281974%29_front_cover%2C_first_edition.jpg/330px-Carrie_%281974%29_front_cover%2C_first_edition.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pet Sematary@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Pet_Sematary_%281983%29_front_cover%2C_first_edition.jpg/330px-Pet_Sematary_%281983%29_front_cover%2C_first_edition.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Il miglio verde@@romanzo": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/0a/Miglioverde.png/330px-Miglioverde.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cujo@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Cujo_%281981%29_front_cover%2C_first_edition.jpg/330px-Cujo_%281981%29_front_cover%2C_first_edition.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"22/11/'63@@romanzo": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/27/Logo_11.22.63.jpg/330px-Logo_11.22.63.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"L'ombra dello scorpione@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/The_Stand_%281978%29_front_cover%2C_first_edition.png/330px-The_Stand_%281978%29_front_cover%2C_first_edition.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Dracula@@romanzo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Dracula-First-Edition-1897.jpg/330px-Dracula-First-Edition-1897.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Leopardo@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/Leopard_africa.jpg/330px-Leopard_africa.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lince@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Lynx_Nationalpark_Bayerischer_Wald_01.jpg/330px-Lynx_Nationalpark_Bayerischer_Wald_01.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Puma@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/18/Florida_panther_%285164633394%29.jpg/330px-Florida_panther_%285164633394%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Gatto domestico@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Mimmo_Il_guardiano.jpg/330px-Mimmo_Il_guardiano.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Ocelot@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/016_Ocelot_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg/330px-016_Ocelot_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Milano@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/58/Milan.Proper.Wikipedia.Image.png/330px-Milan.Proper.Wikipedia.Image.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Torino@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Turin_monte_cappuccini.jpg/330px-Turin_monte_cappuccini.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bologna@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Bologna_Panorama.jpg/330px-Bologna_Panorama.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Napoli@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Napoli_-_Maschio_Angioino_-_202209302342_3.jpg/330px-Napoli_-_Maschio_Angioino_-_202209302342_3.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bari@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Flag_of_Bari.svg/330px-Flag_of_Bari.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Palermo@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Palermo02_flickr.jpg/330px-Palermo02_flickr.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cagliari@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Italy_provincial_location_map_2016.svg/330px-Italy_provincial_location_map_2016.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Verona@@città": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/20110720_Verona_3078.jpg/330px-20110720_Verona_3078.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Napoli@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/SSC_Napoli_2025_%28white_and_azure%29.svg/330px-SSC_Napoli_2025_%28white_and_azure%29.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Roma@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/0e/AS_Roma_Logo_2017.svg/330px-AS_Roma_Logo_2017.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Lazio@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/62/Stemma_della_Societ%C3%A0_Sportiva_Lazio.svg/330px-Stemma_della_Societ%C3%A0_Sportiva_Lazio.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Fiorentina@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/ACF_Fiorentina_-_logo_%28Italy%2C_2022%29.svg/330px-ACF_Fiorentina_-_logo_%28Italy%2C_2022%29.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bologna@@società calcistica": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Logo_Bologna_no_sfondo.png/330px-Logo_Bologna_no_sfondo.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Cagliari@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/8/88/Cagliari_calcio.svg/330px-Cagliari_calcio.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Atalanta@@società calcistica": "https://thumb.wikimedia.org/wikipedia/it/thumb/2/24/Atalanta_BC_2026.svg/330px-Atalanta_BC_2026.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Parasite@@film": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Parasite_Logo.jpg/330px-Parasite_Logo.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"La forma dell'acqua@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/5/53/The_Shape_of_Water.jpg/330px-The_Shape_of_Water.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pulp Fiction@@film": "https://thumb.wikimedia.org/wikipedia/it/thumb/0/06/Pulp_Fiction.png/330px-Pulp_Fiction.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"The Beatles@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/The_Beatles_Ed_Sullivan_1964.jpg/330px-The_Beatles_Ed_Sullivan_1964.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"The Rolling Stones@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Rolling_Stones_post-show_bow_London_2018_%2841437870405%29.jpg/330px-Rolling_Stones_post-show_bow_London_2018_%2841437870405%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Queen@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Queen_A_Night_At_The_Opera_%281975_Elektra_publicity_photo_02%29.jpg/330px-Queen_A_Night_At_The_Opera_%281975_Elektra_publicity_photo_02%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Coldplay@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Coldplay_-_Global-Citizen-Festival_Hamburg_14.jpg/330px-Coldplay_-_Global-Citizen-Festival_Hamburg_14.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Oasis@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Oasis_-_Principality_Stadium%2C_Cardiff_-_Friday_4th_July_2025_member_collage.jpg/330px-Oasis_-_Principality_Stadium%2C_Cardiff_-_Friday_4th_July_2025_member_collage.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Pink Floyd@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Pink_Floyd_logo.png/330px-Pink_Floyd_logo.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Arctic Monkeys@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/Arctic_Monkeys_-_Orange_Stage_-_Roskilde_Festival_2014.jpg/330px-Arctic_Monkeys_-_Orange_Stage_-_Roskilde_Festival_2014.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Led Zeppelin@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/LedZeppelinChicago75_2.jpg/330px-LedZeppelinChicago75_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"U2@@gruppo musicale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/U2_Mount_Temple.jpg/330px-U2_Mount_Temple.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Taipan dell'entroterra@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Fierce_Snake-Oxyuranus_microlepidotus.jpg/330px-Fierce_Snake-Oxyuranus_microlepidotus.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Crotalo diamantino@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Adult_Crotalus_adamanteus.jpg/330px-Adult_Crotalus_adamanteus.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Fico@@frutto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Ficus_carica_Panasc%C3%A8.jpg/330px-Ficus_carica_Panasc%C3%A8.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"X (Twitter)@@social network": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/X_logo_2023.svg/330px-X_logo_2023.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Spagnolo@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Map-Hispanophone_World.svg/330px-Map-Hispanophone_World.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Bengalese@@lingua": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Idioma_bengal%C3%AD.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+"Tedesco@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Legal_status_of_German_in_Europe.svg/330px-Legal_status_of_German_in_Europe.svg.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Storione@@animale": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Shipzaur.jpg/330px-Shipzaur.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Phobos@@astronomia": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/221831main_PIA10368.png/330px-221831main_PIA10368.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Black Panther@@personaggio Marvel": "https://thumb.wikimedia.org/wikipedia/it/thumb/6/6b/Pantera_nera.jpg/330px-Pantera_nera.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Rumeno@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Idioma_rumano.PNG/330px-Idioma_rumano.PNG?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Catalano@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Catalan_language_in_Europe.png/330px-Catalan_language_in_Europe.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+"Sardo@@lingua": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Languages_Of_Sardinia.png/330px-Languages_Of_Sardinia.png?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+};
+
+  /* =========================================================
+     Squadre globali (nomi/colori/punteggio impostati in
+     index.html) — stesso sistema condiviso degli altri giochi.
+     scoreBaseline tiene il punteggio già accumulato prima di
+     questa partita, così il totale di serata non si perde.
+     ========================================================= */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  const TEAM_COLORS = ["#ff2e88", "#4dd9ff", "#00e676", "#ffd600", "#a05bff", "#fb5607"];
+  let scoreBaseline = [];
+
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalScore(index, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+  }
+  const $ = id => document.getElementById(id);
+
+  /* ---- Beep via Web Audio API: nessun file audio esterno ---- */
+  function beep(freq, duration, type){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+
+  function confetti(colors){
+    const box = document.createElement("div");
+    box.className = "confetti";
+    const palette = colors && colors.length ? colors : ["#ff7a45", "#ff3d81", "#ffd600"];
+    box.innerHTML = Array.from({ length: 110 }, () => {
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      return `<i style="left:${Math.random() * 100}%;background:${c};animation-duration:${2 + Math.random() * 2}s;animation-delay:${Math.random() * 0.5}s;--dx:${(Math.random() - 0.5) * 300}px;--rot:${Math.random() * 1080 - 540}deg;width:${6 + Math.random() * 8}px"></i>`;
+    }).join("");
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 4800);
+  }
+
+  /* =========================================================
+     AVATAR — bandiere come immagini (su Windows le emoji delle
+     bandiere diventano lettere), emoji, oppure iniziali colorate
+     ========================================================= */
+  function initialsOf(name){
+    const words = name.replace(/[()]/g, "").split(/\s+/).filter(w => /^[\p{L}\d]/u.test(w));
+    return (words.length > 1 ? words[0][0] + words[words.length - 1][0] : name.slice(0, 2)).toUpperCase();
+  }
+  function hueOf(name){ let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; }
+  function avatarHTML(card){
+    const e = card.emoji;
+    const img = card.img;
+    if (img){
+      const h = hueOf(card.name);
+      return `<span class="avatar photo initials" style="--av:linear-gradient(140deg, hsl(${h} 70% 52%), hsl(${(h + 40) % 360} 70% 38%))">${escapeHtml(initialsOf(card.name))}<img src="${escapeHtml(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></span>`;
+    }
+    if (e){
+      const cps = [...e].map(c => c.codePointAt(0));
+      if (cps.length === 2 && cps.every(c => c >= 0x1F1E6 && c <= 0x1F1FF)){
+        const code = cps.map(c => String.fromCharCode(c - 0x1F1E6 + 97)).join("");
+        return `<span class="avatar"><img class="flag" src="https://flagcdn.com/w160/${code}.png" alt="${e}" onerror="this.replaceWith(document.createTextNode('${e}'))"></span>`;
+      }
+      return `<span class="avatar">${escapeHtml(e)}</span>`;
+    }
+    const words = card.name.replace(/[()]/g, "").split(/\s+/).filter(w => /^[\p{L}\d]/u.test(w));
+    const initials = (words.length > 1 ? words[0][0] + words[words.length - 1][0] : card.name.slice(0, 2)).toUpperCase();
+    let h = 0;
+    for (const ch of card.name) h = (h * 31 + ch.charCodeAt(0)) % 360;
+    return `<span class="avatar initials" style="--av:linear-gradient(140deg, hsl(${h} 70% 52%), hsl(${(h + 40) % 360} 70% 38%))">${escapeHtml(initials)}</span>`;
+  }
+
+  /* =========================================================
+     DOMANDE: dalle stringhe compatte alle card, con l'intruso
+     calcolato (record più alto/più basso) o marcato con "!"
+     ========================================================= */
+  const nf = (v, max) => new Intl.NumberFormat("it-IT", { maximumFractionDigits: max }).format(v);
+  function buildQuestion(src){
+    const year = new Date().getFullYear();
+    const cards = src.items.map(s => {
+      const [name, a, b, emoji] = s.split("|");
+      const img = IMAGES[name + "@@" + (src.w || "")] || "";
+      if (src.t === "odd") return { name, label: a, intruder: b === "!", emoji: emoji || "", img };
+      const isAge = a.startsWith("y");
+      const value = isAge ? year - parseInt(a.slice(1), 10) : parseFloat(a);
+      const label = b || (isAge ? `${value} anni` : `${nf(value, 2)} ${src.unit}`.trim());
+      return { name, value, label, emoji: emoji || "", img };
+    });
+    if (src.t !== "odd"){
+      const best = cards.reduce((x, y) => (src.t === "max" ? y.value > x.value : y.value < x.value) ? y : x);
+      cards.forEach(c => c.intruder = c === best);
+    }
+    return { ...src, cards: shuffle(cards) };
+  }
+
+  /* =========================================================
+     STATO
+     phase: "play" (si scelgono le card) → "over" (round finito)
+     ========================================================= */
+  let state = null;
+  let mode = "all";
+
+  function buildTeams(){
+    const global = loadGlobalTeams();
+    if (global){
+      const n = Math.min(global.count || global.teams.length, 6);
+      scoreBaseline = global.teams.slice(0, n).map(t => t.score || 0);
+      return global.teams.slice(0, n).map((t, i) => ({ gi: i, name: t.name, color: t.color || TEAM_COLORS[i % TEAM_COLORS.length], local: 0 }));
+    }
+    scoreBaseline = [0, 0];
+    return [
+      { gi: -1, name: "Squadra 1", color: TEAM_COLORS[0], local: 0 },
+      { gi: -1, name: "Squadra 2", color: TEAM_COLORS[1], local: 0 }
+    ];
+  }
+  function pool(){
+    return QUESTIONS.map((_, i) => i).filter(i =>
+      mode === "all" || (mode === "logic") === (QUESTIONS[i].t === "odd"));
+  }
+
+  function startGame(){
+    state = { teams: buildTeams(), queue: shuffle(pool()), queuePos: 0, count: 0, startTeam: -1, turn: 0, question: null, phase: "play", loser: -1 };
+    nextQuestion();
+  }
+
+  function nextQuestion(){
+    if (state.queuePos >= state.queue.length){ state.queue = shuffle(pool()); state.queuePos = 0; }
+    state.question = buildQuestion(QUESTIONS[state.queue[state.queuePos++]]);
+    state.count++;
+    state.startTeam = (state.startTeam + 1) % state.teams.length;   // a ogni domanda inizia una squadra diversa
+    state.turn = state.startTeam;
+    state.phase = "play";
+    state.loser = -1;
+    state.safeFound = 0;
+    renderQuestion();
+    renderCards();
+    renderScoreboard();
+    renderTurn();
+    $("showAllBtn").hidden = true;
+    $("nextBtn").hidden = true;
+    $("skipBtn").hidden = false;
+    $("counter").textContent = `Domanda ${state.count}`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+  function renderScoreboard(){
+    $("scoreGrid").innerHTML = state.teams.map((team, i) => {
+      const cls = state.phase === "play" && i === state.turn ? " turn"
+        : state.phase === "over" ? (i === state.loser ? " lost" : " scored") : "";
+      return `<div class="score-card${cls}" style="--team:${escapeHtml(team.color)}">
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+        </div>
+        <div class="score-value">${(scoreBaseline[i] || 0) + team.local}</div>
+      </div>`;
+    }).join("");
+  }
+  function renderQuestion(){
+    const q = state.question;
+    const type = q.t === "odd" ? "🧩 Logica" : (q.t === "max" ? "📊 Record · il più alto" : "📊 Record · il più basso");
+    $("qTags").innerHTML = `<span class="q-tag">${escapeHtml(q.icon)} ${type}</span>`;
+    $("qText").textContent = q.q;
+    const card = $("questionCard");
+    card.style.animation = "none"; void card.offsetWidth; card.style.animation = "";
+  }
+  function renderTurn(message, kind){
+    const b = $("turnBanner");
+    const team = state.teams[state.turn];
+    b.className = "turn-banner" + (kind ? " " + kind : "");
+    b.style.setProperty("--team", team.color);
+    b.innerHTML = message || `🎯 Tocca a <b>${escapeHtml(team.name)}</b>: scegliete una card`;
+    b.style.animation = "none"; void b.offsetWidth; b.style.animation = "";
+  }
+  function renderCards(){
+    $("cards").innerHTML = state.question.cards.map((c, i) => `
+      <button type="button" class="flip" data-i="${i}" aria-label="${escapeHtml(c.name)}">
+        <span class="flip-inner">
+          <span class="face front">${avatarHTML(c)}<span class="card-name">${escapeHtml(c.name)}</span><span class="card-q">❔ tocca per scoprire</span></span>
+          <span class="face back">${avatarHTML(c)}<span class="card-name">${escapeHtml(c.name)}</span>
+            <span class="card-value">${escapeHtml(c.label)}</span><span class="card-badge"></span><span class="card-by"></span></span>
+        </span>
+      </button>`).join("");
+  }
+
+  function revealCard(i, by){
+    const c = state.question.cards[i];
+    const el = $("cards").querySelector(`.flip[data-i="${i}"]`);
+    if (!el || el.classList.contains("revealed")) return;
+    el.classList.add("revealed", c.intruder ? "intruder" : "safe");
+    el.disabled = true;
+    el.querySelector(".card-badge").textContent = c.intruder ? "💣 INTRUSO" : "✓ SALVA";
+    if (by != null) el.querySelector(".card-by").textContent = `scelta da ${state.teams[by].name}`;
+    else el.classList.add("late");
+    c.revealed = true;
+  }
+
+  /* =========================================================
+     TURNO: card buona → verde e passa la mano; intruso → rosso,
+     round perso e +1 a tutte le altre squadre
+     ========================================================= */
+  $("cards").addEventListener("click", e => {
+    const el = e.target.closest(".flip");
+    if (!el || el.disabled || state.phase !== "play") return;
+    const i = Number(el.dataset.i);
+    const c = state.question.cards[i];
+    const who = state.turn;
+    revealCard(i, who);
+    if (c.intruder){
+      el.classList.add("boom");
+      loseRound(who, false);
+      return;
+    }
+    beep(660, 0.12); setTimeout(() => beep(880, 0.16), 110);
+    state.safeFound++;
+    state.turn = (state.turn + 1) % state.teams.length;
+    if (state.safeFound === state.question.cards.length - 1){
+      /* Resta solo l'intruso: la squadra di turno è costretta a prenderlo */
+      const last = state.question.cards.findIndex(x => !x.revealed);
+      setTimeout(() => {
+        revealCard(last, state.turn);
+        $("cards").querySelector(`.flip[data-i="${last}"]`).classList.add("boom");
+        loseRound(state.turn, true);
+      }, 700);
+      renderScoreboard();
+      renderTurn(`😬 Resta solo l'intruso… tocca a <b>${escapeHtml(state.teams[state.turn].name)}</b>!`);
+      state.phase = "forced";
+      return;
+    }
+    renderScoreboard();
+    renderTurn(`✅ Salva! Ora tocca a <b>${escapeHtml(state.teams[state.turn].name)}</b>`, "ok");
+  });
+
+  function loseRound(loser, forced){
+    state.phase = "over";
+    state.loser = loser;
+    beep(220, 0.25, "sawtooth"); setTimeout(() => beep(140, 0.45, "sawtooth"), 180);
+    const flash = document.createElement("div"); flash.className = "flash"; document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 800);
+    const winners = state.teams.filter((_, i) => i !== loser);
+    state.teams.forEach((team, i) => {
+      if (i === loser) return;
+      team.local += 1;
+      if (team.gi >= 0) saveGlobalScore(team.gi, (scoreBaseline[i] || 0) + team.local);
+    });
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+    renderScoreboard();
+    const names = winners.map(t => `<b style="color:${escapeHtml(t.color)}">${escapeHtml(t.name)}</b>`).join(", ");
+    renderTurn(`💥 ${escapeHtml(state.teams[loser].name)} ${forced ? "è costretta a prendere" : "ha trovato"} l'intruso! +1 a ${names}`, "ko");
+    $("turnBanner").style.setProperty("--team", state.teams[loser].color);
+    setTimeout(() => confetti(winners.map(t => t.color)), 350);
+    $("showAllBtn").hidden = !state.question.cards.some(c => !c.revealed);
+    $("nextBtn").hidden = false;
+    $("skipBtn").hidden = true;
+  }
+
+  $("showAllBtn").addEventListener("click", () => {
+    state.question.cards.forEach((c, i) => { if (!c.revealed) setTimeout(() => revealCard(i, null), i * 90); });
+    $("showAllBtn").hidden = true;
+  });
+  $("nextBtn").addEventListener("click", nextQuestion);
+  $("skipBtn").addEventListener("click", () => {
+    if (state.phase !== "play") return;
+    state.question.cards.forEach((c, i) => { if (!c.revealed) setTimeout(() => revealCard(i, null), i * 70); });
+    state.phase = "over";
+    renderScoreboard();
+    renderTurn("⏭ Domanda saltata: nessun punto assegnato");
+    $("nextBtn").hidden = false;
+    $("skipBtn").hidden = true;
+  });
+
+  $("modeSwitch").addEventListener("click", e => {
+    const b = e.target.closest("[data-mode]");
+    if (!b || b.dataset.mode === mode) return;
+    mode = b.dataset.mode;
+    document.querySelectorAll("#modeSwitch .switch-btn").forEach(x => x.classList.toggle("active", x === b));
+    state.queue = shuffle(pool());
+    state.queuePos = 0;
+    nextQuestion();
+  });
+
+  /* ---- Modal Regole ---- */
+  document.querySelectorAll(".openInfoBtn").forEach(btn => btn.addEventListener("click", () => $("infoModal").classList.add("active")));
+  $("closeInfoBtn").addEventListener("click", () => $("infoModal").classList.remove("active"));
+  $("infoModal").addEventListener("click", e => { if (e.target === $("infoModal")) $("infoModal").classList.remove("active"); });
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    const global = loadGlobalTeams();
+    if (!global || !state) return;
+    scoreBaseline = state.teams.map((t, i) => (t.gi >= 0 && global.teams[t.gi] ? (global.teams[t.gi].score || 0) - t.local : 0));
+    renderScoreboard();
+  });
+
+  startGame();
+</script>
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5); font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+  }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55); background: rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  @media (max-width: 560px){ .global-score-widget{ bottom: 8px; right: 8px; } .gsw-name{ max-width: 72px; } }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){ try{ var raw=localStorage.getItem(KEY); if(raw){var d=JSON.parse(raw); if(d&&Array.isArray(d.teams)&&d.teams.length>=2) return d;} }catch(e){} return null; }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){ var div=document.createElement("div"); div.textContent = s==null?"":s; return div.innerHTML; }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML=""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0,n).map(function(t,i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:'+esc(t.color||"#4dd9ff")+'"></span>' +
+        '<span class="gsw-name">'+esc(t.name)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">'+(t.score||0)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load(); if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score||0)+d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load(); if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
+</script>
+</body>
+</html>
