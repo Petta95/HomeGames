@@ -303,11 +303,11 @@
     <div class="modal-title">📖 Come si Gioca</div>
     <p class="modal-note">One Last Standing: 10 card, un solo intruso. Chi lo scopre… perde il round!</p>
     <ol>
-      <li>Compare una <strong>domanda</strong> (es. "Chi è l'attore più giovane?") con <strong>10 card</strong> coperte. La card che risponde alla domanda è <strong>l'intruso</strong>: è la bomba da evitare.</li>
+      <li>Compare una <strong>domanda</strong> (es. "Quale frutto ha più di 45 kcal per 100 g?") con <strong>10 card</strong> coperte. <strong>9 card su 10</strong> rispondono alla domanda: l'unica che <strong>NON</strong> ci rientra è <strong>l'intruso</strong>, la bomba da evitare.</li>
       <li>Le squadre giocano <strong>a turno</strong>: chi è di turno tocca una card. Se <strong>NON è l'intruso</strong> la card si gira, mostra il dato (es. "42 anni") e diventa <strong>verde</strong>: il turno passa alla squadra successiva.</li>
       <li>Se invece è <strong>l'intruso</strong>, la card diventa <strong>rossa</strong>: quella squadra perde il round e <strong>tutte le altre squadre guadagnano +1 punto</strong>.</li>
       <li>Se vengono girate tutte le 9 card buone, resta solo l'intruso: la squadra di turno è costretta a prenderlo e perde il round.</li>
-      <li>A fine round premi <strong>👁 Mostra tutti i risultati</strong> per svelare le card rimaste e <strong>➡ Prossima domanda</strong> per continuare. Con il filtro in alto scegli domande <strong>📊 Record</strong> (il valore più alto o più basso), <strong>🧩 Logica</strong> (l'eccezione) o entrambe.</li>
+      <li>A fine round premi <strong>👁 Mostra tutti i risultati</strong> per svelare le card rimaste e <strong>➡ Prossima domanda</strong> per continuare. Con il filtro in alto scegli domande <strong>📊 Numeri</strong> (l'intruso ha un valore fuori scala), <strong>🧩 Logica</strong> (l'intruso non ha il tratto comune) o entrambe.</li>
     </ol>
     <p class="modal-note">I valori sono reali o stime aggiornate circa al 2025. Immagini da Wikipedia / Wikimedia Commons (licenze libere), caricate direttamente dai loro server.</p>
     <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
@@ -320,14 +320,14 @@
 
   <div class="switch" id="modeSwitch" role="group" aria-label="Tipo di domande">
     <button type="button" class="switch-btn active" data-mode="all">🎲 Tutte</button>
-    <button type="button" class="switch-btn" data-mode="record">📊 Record</button>
+    <button type="button" class="switch-btn" data-mode="record">📊 Numeri</button>
     <button type="button" class="switch-btn" data-mode="logic">🧩 Logica</button>
   </div>
 
   <section class="question-card" id="questionCard">
     <div class="q-eyebrow" id="qTags"></div>
     <div class="q-text" id="qText"></div>
-    <div class="q-hint">💣 La card che risponde alla domanda è <b>l'intruso</b>: evitatela!</div>
+    <div class="q-hint">✅ 9 card su 10 rispondono alla domanda · 💣 l'unica che <b>NON</b> ci rientra è <b>l'intruso</b>: evitatela!</div>
   </section>
 
   <div class="turn-banner" id="turnBanner"></div>
@@ -345,323 +345,420 @@
 
 <script>
   /* =========================================================
-     DATABASE DOMANDE — 10 elementi per domanda, uno è l'intruso.
-     t: "max" / "min"  → l'intruso è il record (valore più alto /
-                         più basso). Elementi "Nome|valore|etichetta|emoji"
-                         (valore "y1996" = età calcolata dall'anno di nascita).
-     t: "odd"          → domanda logica. Elementi "Nome|dato|!|emoji",
-                         dove "!" segna l'intruso.
+     DATABASE DOMANDE — logica AFFERMATIVA: la domanda descrive il
+     tratto comune a 9 card su 10; l'intruso è l'unica che NON lo
+     rispetta. Elementi "Nome|valore|info|emoji".
+     t: "min" → l'intruso ha il valore più basso (fuori scala in basso)
+     t: "max" → l'intruso ha il valore più alto (fuori scala in alto)
+     Valore "y1996" = età calcolata dall'anno di nascita.
+     Domande di logica: valore 1 = rispetta il tratto, 0 = intruso
+     (t: "min"); l'info spiega il perché.
      I valori sono reali o stime aggiornate circa al 2025.
      ========================================================= */
   const QUESTIONS = [
-    /* ---------------- RECORD: l'intruso è il valore estremo ---------------- */
-    { q: "Chi è l'attore o l'attrice più giovane?", t: "min", icon: "🎬", unit: "anni", w: "attore", items: [
-      "Leonardo DiCaprio|y1974", "Brad Pitt|y1963", "Tom Hanks|y1956", "Margot Robbie|y1990", "Timothée Chalamet|y1995",
-      "Zendaya|y1996", "Ryan Gosling|y1980", "Scarlett Johansson|y1984", "Jennifer Lawrence|y1990", "Jenna Ortega|y2002"] },
-    { q: "Qual è il film più lungo?", t: "max", icon: "🎞️", unit: "min", w: "film", items: [
-      "Via col vento|238", "Titanic|194", "Il Padrino|175", "Avatar|162", "Oppenheimer|180",
-      "Il ritorno del re|201", "Avengers: Endgame|181", "Schindler's List|195", "Ben-Hur|212", "The Irishman|209"] },
-    { q: "Quale serie TV ha più episodi?", t: "max", icon: "📺", unit: "episodi", w: "serie televisiva", items: [
-      "I Simpson|790|oltre 790 episodi", "Grey's Anatomy|440|oltre 440 episodi", "I Griffin|430|oltre 430 episodi", "Supernatural|327",
-      "The Big Bang Theory|279", "Friends|236", "How I Met Your Mother|208", "The Office|201", "Il Trono di Spade|73", "Breaking Bad|62"] },
-    { q: "Quale classico Disney ha incassato di più al cinema?", t: "max", icon: "🏰", unit: "mln $", w: "film d'animazione", items: [
-      "Frozen II|1453", "Frozen|1284", "Oceania 2|1059", "Zootropolis|1024", "Il Re Leone (1994)|968",
-      "Oceania|687", "Big Hero 6|657", "Rapunzel|592", "Aladdin (1992)|504", "Encanto|256"] },
-    { q: "Qual è il videogioco più venduto della storia?", t: "max", icon: "🎮", unit: "mln copie", w: "videogioco", items: [
-      "Minecraft|300|oltre 300 mln", "GTA V|215|oltre 215 mln", "Mario Kart 8 Deluxe|70|oltre 70 mln", "Red Dead Redemption 2|70|circa 70 mln",
-      "Wii Sports|83|circa 83 mln", "PUBG|75|oltre 75 mln", "Terraria|60|oltre 60 mln", "The Witcher 3|50|oltre 50 mln",
-      "Super Mario Bros.|58|circa 58 mln", "Pokémon Rosso e Blu|31|circa 31 mln"] },
-    { q: "Quale film ha vinto più Premi Oscar?", t: "max", icon: "🏆", unit: "Oscar", w: "film", items: [
+    /* ---------------- NUMERI: 9 valori vicini sopra/sotto la soglia, l'intruso è fuori scala ---------------- */
+    { q: "Quale frutto ha PIÙ di 45 kcal per 100 g?", t: "min", icon: "🍌", unit: "kcal/100 g", w: "frutto", items: [
+      "Avocado|160||🥑", "Banana|89||🍌", "Melograno|83||🔴", "Fico|74||🟣", "Cachi|70||🟠",
+      "Uva|69||🍇", "Ciliegie|63||🍒", "Mango|60||🥭", "Ananas|50||🍍", "Anguria|30||🍉"] },
+    { q: "Quale di questi Stati ha MENO di 50 milioni di abitanti?", t: "max", icon: "👥", unit: "mln di abitanti", w: "", items: [
+      "Iraq|46|circa 46 mln|🇮🇶", "Canada|41.5|circa 41,5 mln|🇨🇦", "Angola|37.9|circa 38 mln|🇦🇴", "Marocco|37.1|circa 37 mln|🇲🇦", "Uzbekistan|37|circa 37 mln|🇺🇿",
+      "Polonia|36.6|circa 36,6 mln|🇵🇱", "Malesia|35.6|circa 35,6 mln|🇲🇾", "Arabia Saudita|35.3|circa 35 mln|🇸🇦", "Perù|34.4|circa 34 mln|🇵🇪", "Giappone|123.4|circa 123 mln|🇯🇵"] },
+    { q: "Quale di questi film dura PIÙ di 2 ore e 50 minuti?", t: "min", icon: "🎬", unit: "min", w: "film", items: [
+      "Killers of the Flower Moon|206||🤠", "Il Padrino - Parte II|202||🎩", "Il ritorno del re|201||💍", "Titanic|194||🚢", "Avatar: La via dell'acqua|192||🌊",
+      "Avengers: Endgame|181||🦸", "Oppenheimer|180||💣", "The Wolf of Wall Street|180||📈", "The Batman|176||🦇", "Jurassic Park|127||🦖"] },
+    { q: "Quale canzone ha superato i 2,5 miliardi di stream su Spotify?", t: "min", icon: "🎧", unit: "mld di stream", w: "singolo", items: [
+      "Blinding Lights|5|oltre 5 mld|🕶️", "Shape of You|4.3|oltre 4 mld|🎸", "Someone You Loved|3.9|quasi 4 mld|🎹", "Sunflower|3.8|oltre 3,5 mld|🌻", "Starboy|3.5|oltre 3,5 mld|⭐",
+      "As It Was|3.2|oltre 3 mld|🕺", "One Dance|3.4|oltre 3 mld|💃", "Stay (The Kid Laroi & Justin Bieber)|3.5|oltre 3 mld|🎙️", "Dance Monkey|3.3|oltre 3 mld|🐒", "Song 2|0.9|circa 1 mld|🎸"] },
+    { q: "Quale di questi celebri italiani ha vinto il Premio Nobel?", t: "min", icon: "🏅", unit: "", w: "", items: [
+      "Giosuè Carducci|1|Nobel per la Letteratura 1906|📜", "Camillo Golgi|1|Nobel per la Medicina 1906|🔬", "Guglielmo Marconi|1|Nobel per la Fisica 1909|📻",
+      "Enrico Fermi|1|Nobel per la Fisica 1938|⚛️", "Salvatore Quasimodo|1|Nobel per la Letteratura 1959|✍️", "Emilio Segrè|1|Nobel per la Fisica 1959|🔬",
+      "Giulio Natta|1|Nobel per la Chimica 1963|🧪", "Eugenio Montale|1|Nobel per la Letteratura 1975|📖", "Rita Levi-Montalcini|1|Nobel per la Medicina 1986|🧠",
+      "Alessandro Manzoni|0|Mai vinto: morì nel 1873, il Nobel nasce nel 1901|📚"] },
+    { q: "Quale di queste star è nata PRIMA del 2000?", t: "min", icon: "🎂", unit: "anni", w: "attore", items: [
+      "Margot Robbie|y1990|nata nel 1990", "Jennifer Lawrence|y1990|nata nel 1990", "Austin Butler|y1991|nato nel 1991", "Timothée Chalamet|y1995|nato nel 1995", "Zendaya|y1996|nata nel 1996",
+      "Tom Holland|y1996|nato nel 1996", "Florence Pugh|y1996|nata nel 1996", "Anya Taylor-Joy|y1996|nata nel 1996", "Sydney Sweeney|y1997|nata nel 1997", "Jenna Ortega|y2002|nata nel 2002"] },
+    { q: "Quale serie TV ha ALMENO 200 episodi?", t: "min", icon: "📺", unit: "episodi", w: "serie televisiva", items: [
+      "Supernatural|327", "Criminal Minds|324|oltre 320 episodi", "The Big Bang Theory|279", "Modern Family|250", "Bones|246",
+      "Friends|236", "Smallville|217", "How I Met Your Mother|208", "The Office|201|201 episodi (versione USA)", "Breaking Bad|62"] },
+    { q: "Quale film d'animazione Disney o Pixar ha incassato PIÙ di 1 miliardo $?", t: "min", icon: "🏰", unit: "mln $", w: "film d'animazione", items: [
+      "Inside Out 2|1699|circa 1,7 mld $", "Frozen II|1453|circa 1,45 mld $", "Frozen|1290|circa 1,29 mld $", "Gli Incredibili 2|1243|circa 1,24 mld $", "Toy Story 4|1073|circa 1,07 mld $",
+      "Toy Story 3|1067|circa 1,07 mld $", "Oceania 2|1059|circa 1,06 mld $", "Alla ricerca di Dory|1029|circa 1,03 mld $", "Zootropolis|1024|circa 1,02 mld $", "Encanto|256|circa 256 mln $"] },
+    { q: "Quale videogioco ha venduto PIÙ di 50 milioni di copie?", t: "min", icon: "🎮", unit: "mln copie", w: "videogioco", items: [
+      "Minecraft|300|oltre 300 mln", "GTA V|215|oltre 215 mln", "Wii Sports|83|circa 83 mln", "Red Dead Redemption 2|75|oltre 70 mln", "PUBG|75|oltre 75 mln",
+      "Mario Kart 8 Deluxe|70|oltre 70 mln", "Terraria|60|oltre 60 mln", "The Witcher 3|60|circa 60 mln", "Super Mario Bros.|58|circa 58 mln", "The Legend of Zelda: Ocarina of Time|7.6|circa 7,6 mln"] },
+    { q: "Quale film ha vinto ALMENO 5 Premi Oscar?", t: "min", icon: "🏆", unit: "Oscar", w: "film", items: [
       "Titanic|11", "West Side Story (1961)|10", "Schindler's List|7", "Oppenheimer|7", "Everything Everywhere All at Once|7",
       "Forrest Gump|6", "La La Land|6", "Il Gladiatore|5", "Il silenzio degli innocenti|5", "Il Padrino|3"] },
-    { q: "Qual è il personaggio di finzione più ricco secondo Forbes?", t: "max", icon: "💰", unit: "mld $", w: "personaggio", items: [
+    { q: "Quale personaggio di finzione è miliardario secondo Forbes?", t: "min", icon: "💰", unit: "mld $", w: "personaggio", items: [
       "Zio Paperone|65.4", "Smaug|54.1", "Carlisle Cullen|46", "Tony Stark|12.4", "Charles Foster Kane|11.2",
-      "Richie Rich|10.3", "Bruce Wayne|9.2", "Christian Grey|2.5", "Mr. Burns|1.5", "Lara Croft|1.3"] },
-    { q: "Quale Stato ha meno abitanti?", t: "min", icon: "👥", unit: "abitanti", w: "", items: [
-      "Vaticano|800||🇻🇦", "Tuvalu|11000||🇹🇻", "Nauru|12000||🇳🇷", "Palau|18000||🇵🇼", "San Marino|34000||🇸🇲",
-      "Monaco|39000||🇲🇨", "Liechtenstein|40000||🇱🇮", "Andorra|80000||🇦🇩", "Islanda|390000||🇮🇸", "Malta|560000||🇲🇹"] },
-    { q: "Qual è la capitale più a nord del mondo?", t: "max", icon: "🧭", unit: "° Nord", w: "", items: [
-      "Reykjavík|64.1||🇮🇸", "Helsinki|60.2||🇫🇮", "Oslo|59.9||🇳🇴", "Tallinn|59.4||🇪🇪", "Stoccolma|59.3||🇸🇪",
-      "Riga|57.0||🇱🇻", "Mosca|55.8||🇷🇺", "Copenaghen|55.7||🇩🇰", "Dublino|53.3||🇮🇪", "Ottawa|45.4||🇨🇦"] },
-    { q: "Quale nazione ha la superficie più estesa?", t: "max", icon: "🗺️", unit: "km²", w: "", items: [
-      "Russia|17098246||🇷🇺", "Canada|9984670||🇨🇦", "Cina|9596961||🇨🇳", "Stati Uniti|9833520||🇺🇸", "Brasile|8515767||🇧🇷",
-      "Australia|7692024||🇦🇺", "India|3287263||🇮🇳", "Argentina|2780400||🇦🇷", "Kazakistan|2724900||🇰🇿", "Algeria|2381741||🇩🇿"] },
-    { q: "Qual è la città europea più piovosa?", t: "max", icon: "🌧️", unit: "mm/anno", w: "città", items: [
+      "Richie Rich|10.3", "Bruce Wayne|9.2", "Christian Grey|2.5", "Mr. Burns|1.5", "Paperino|0|Squattrinato (e pieno di debiti con lo zio)|🦆"] },
+    { q: "Quale capitale si trova a NORD del 55° parallelo?", t: "min", icon: "🧭", unit: "° Nord", w: "", items: [
+      "Nuuk|64.2|64,2° N (Groenlandia)|🇬🇱", "Reykjavík|64.1||🇮🇸", "Helsinki|60.2||🇫🇮", "Oslo|59.9||🇳🇴", "Tallinn|59.4||🇪🇪",
+      "Stoccolma|59.3||🇸🇪", "Riga|57||🇱🇻", "Mosca|55.8||🇷🇺", "Copenaghen|55.7||🇩🇰", "Ottawa|45.4|45,4° N: più a sud di Venezia!|🇨🇦"] },
+    { q: "Quale nazione supera 1,5 milioni di km² di superficie?", t: "min", icon: "🗺️", unit: "km²", w: "", items: [
+      "Kazakistan|2724900||🇰🇿", "Algeria|2381741||🇩🇿", "RD Congo|2344858||🇨🇩", "Arabia Saudita|2149690||🇸🇦", "Messico|1964375||🇲🇽",
+      "Indonesia|1904569||🇮🇩", "Sudan|1886068||🇸🇩", "Libia|1759540||🇱🇾", "Iran|1648195||🇮🇷", "Turchia|783562||🇹🇷"] },
+    { q: "Quale città riceve PIÙ di 700 mm di pioggia all'anno?", t: "min", icon: "🌧️", unit: "mm/anno", w: "città", items: [
       "Bergen|2250||🇳🇴", "Genova|1300||🇮🇹", "Glasgow|1250||🇬🇧", "Milano|1000||🇮🇹", "Manchester|870||🇬🇧",
-      "Bruxelles|850||🇧🇪", "Amsterdam|840||🇳🇱", "Roma|800||🇮🇹", "Dublino|760||🇮🇪", "Londra|600||🇬🇧"] },
-    { q: "Quale Stato ha la densità di popolazione più alta?", t: "max", icon: "🏙️", unit: "ab./km²", w: "", items: [
-      "Monaco|19000||🇲🇨", "Singapore|8000||🇸🇬", "Bahrein|2000||🇧🇭", "Vaticano|1800||🇻🇦", "Malta|1700||🇲🇹",
-      "Maldive|1700||🇲🇻", "Bangladesh|1300||🇧🇩", "Paesi Bassi|520||🇳🇱", "India|430||🇮🇳", "Italia|196||🇮🇹"] },
-    { q: "Qual è l'isola più estesa del Mediterraneo?", t: "max", icon: "🏝️", unit: "km²", w: "isola", items: [
+      "Bruxelles|850||🇧🇪", "Amsterdam|840||🇳🇱", "Roma|800||🇮🇹", "Dublino|760||🇮🇪", "Londra|600|circa 600 mm: meno di Roma!|🇬🇧"] },
+    { q: "Quale Stato ha PIÙ di 500 abitanti per km²?", t: "min", icon: "🏙️", unit: "ab./km²", w: "", items: [
+      "Bahrein|2000||🇧🇭", "Malta|1650||🇲🇹", "Bangladesh|1300||🇧🇩", "Barbados|660||🇧🇧", "Taiwan|650||🇹🇼",
+      "Mauritius|630||🇲🇺", "Libano|560||🇱🇧", "Ruanda|520||🇷🇼", "Corea del Sud|515||🇰🇷", "Giappone|330||🇯🇵"] },
+    { q: "Quale isola del Mediterraneo supera i 1.000 km²?", t: "min", icon: "🏝️", unit: "km²", w: "isola", items: [
       "Sicilia|25711", "Sardegna|24090", "Cipro|9251", "Corsica|8680", "Creta|8336",
       "Eubea|3684", "Maiorca|3640", "Lesbo|1633", "Rodi|1401", "Malta|246"] },
-    { q: "Quale nazione confina con più Stati?", t: "max", icon: "🚧", unit: "Stati confinanti", w: "", items: [
-      "Cina|14||🇨🇳", "Brasile|10||🇧🇷", "Germania|9||🇩🇪", "RD Congo|9||🇨🇩", "Austria|8||🇦🇹",
-      "Turchia|8||🇹🇷", "Serbia|8||🇷🇸", "Tanzania|8||🇹🇿", "Italia|6||🇮🇹", "Argentina|5||🇦🇷"] },
-    { q: "Quale animale ha il morso più potente?", t: "max", icon: "🦷", unit: "PSI", w: "animale", items: [
-      "Coccodrillo marino|3700||🐊", "Ippopotamo|1800||🦛", "Giaguaro|1500||🐆", "Gorilla|1300||🦍", "Orso grizzly|1200||🐻",
-      "Iena|1100||🐺", "Tigre|1050||🐅", "Leone|650||🦁", "Lupo|400||🐺", "Essere umano|162||🧍"] },
-    { q: "Quale animale ha il veleno più letale?", t: "min", icon: "☠️", unit: "mg/kg (LD50)", w: "animale", items: [
-      "Rana dorata|0.002|LD50 ≈ 0,002 mg/kg|🐸", "Taipan dell'entroterra|0.025|LD50 ≈ 0,025 mg/kg|🐍", "Scorpione giallo|0.25|LD50 ≈ 0,25 mg/kg|🦂",
-      "Mamba nero|0.32|LD50 ≈ 0,32 mg/kg|🐍", "Vedova nera|0.9|LD50 ≈ 0,9 mg/kg|🕷️", "Cobra reale|1.8|LD50 ≈ 1,8 mg/kg|🐍",
-      "Ape|2.8|LD50 ≈ 2,8 mg/kg|🐝", "Vipera comune|6.5|LD50 ≈ 6,5 mg/kg|🐍", "Crotalo diamantino|10|LD50 ≈ 10 mg/kg|🐍", "Calabrone|15|LD50 ≈ 15 mg/kg|🐝"] },
-    { q: "Quale evento storico è il più antico?", t: "min", icon: "📜", unit: "", w: "storia", items: [
+    { q: "Quale nazione confina con ALMENO 8 Stati?", t: "min", icon: "🚧", unit: "Stati confinanti", w: "", items: [
+      "Cina|14||🇨🇳", "Russia|14||🇷🇺", "Brasile|10||🇧🇷", "Germania|9||🇩🇪", "RD Congo|9||🇨🇩",
+      "Austria|8||🇦🇹", "Turchia|8||🇹🇷", "Tanzania|8||🇹🇿", "Zambia|8||🇿🇲", "Italia|6|6 (compresi San Marino e Vaticano)|🇮🇹"] },
+    { q: "Quale animale ha un morso PIÙ potente di 1.000 PSI?", t: "min", icon: "🦷", unit: "PSI", w: "animale", items: [
+      "Coccodrillo marino|3700||🐊", "Alligatore americano|2125||🐊", "Ippopotamo|1800||🦛", "Giaguaro|1500||🐆", "Gorilla|1300||🦍",
+      "Orso grizzly|1200||🐻", "Orso polare|1200||🐻‍❄️", "Iena|1100||🐺", "Tigre|1050||🐅", "Leone|650|circa 650 PSI: meno di una tigre!|🦁"] },
+    { q: "Quale evento è avvenuto PRIMA di Cristo?", t: "max", icon: "📜", unit: "", w: "storia", items: [
       "Costruzione della piramide di Cheope|-2560|circa 2560 a.C.", "Codice di Hammurabi|-1754|circa 1754 a.C.", "Prime Olimpiadi|-776|776 a.C.",
-      "Fondazione di Roma|-753|753 a.C.", "Battaglia di Maratona|-490|490 a.C.", "Morte di Giulio Cesare|-44|44 a.C.",
-      "Caduta dell'Impero romano d'Occidente|476|476 d.C.", "Scoperta dell'America|1492|1492", "Rivoluzione francese|1789|1789", "Unità d'Italia|1861|1861"] },
-    { q: "Quale invenzione è la più antica?", t: "min", icon: "💡", unit: "", w: "invenzione", items: [
-      "Ceramica|-18000|circa 18.000 a.C.", "Ruota|-3500|circa 3500 a.C.", "Scrittura|-3200|circa 3200 a.C.", "Vetro|-2500|circa 2500 a.C.",
-      "Carta|105|105 d.C.", "Polvere da sparo|850|circa 850 d.C.", "Occhiali|1286|circa 1286", "Stampa a caratteri mobili|1440|circa 1440",
-      "Telescopio|1608|1608", "Lampadina|1879|1879"] },
-    { q: "Quale città è stata fondata per prima?", t: "min", icon: "🏛️", unit: "", w: "città", items: [
-      "Gerico|-9000|circa 9000 a.C.", "Cartagine|-814|814 a.C.", "Roma|-753|753 a.C.", "Bisanzio (Istanbul)|-667|667 a.C.",
-      "Alessandria d'Egitto|-331|331 a.C.", "Firenze|-59|59 a.C.", "Londra|47|47 d.C.", "Venezia|421|421 d.C. (tradizione)",
-      "New York|1624|1624 (Nuova Amsterdam)", "San Pietroburgo|1703|1703"] },
-    { q: "Quale pandemia ha fatto più vittime?", t: "max", icon: "🦠", unit: "mln di morti", w: "pandemia", items: [
-      "Peste nera|100|75-200 mln (stima)", "Influenza spagnola|50|17-100 mln (stima)", "HIV/AIDS|42|oltre 40 mln", "Peste di Giustiniano|30|25-50 mln (stima)",
-      "COVID-19|7|oltre 7 mln confermati", "Peste antonina|7|5-10 mln (stima)", "Influenza asiatica 1957|2|1-4 mln", "Influenza di Hong Kong 1968|1|circa 1-4 mln",
-      "Influenza russa 1889|1|circa 1 mln", "Influenza suina 2009|0.3|circa 0,3 mln"] },
-    { q: "Quale atleta ha vinto più ori olimpici?", t: "max", icon: "🥇", unit: "ori", w: "atleta", items: [
+      "Fondazione di Roma|-753|753 a.C.", "Battaglia di Maratona|-490|490 a.C.", "Morte di Alessandro Magno|-323|323 a.C.",
+      "Battaglia di Canne|-216|216 a.C.", "Rivolta di Spartaco|-73|73 a.C.", "Morte di Giulio Cesare|-44|44 a.C.", "Eruzione del Vesuvio a Pompei|79|79 d.C."] },
+    { q: "Quale invenzione esisteva già PRIMA dell'anno 1000?", t: "max", icon: "💡", unit: "", w: "invenzione", items: [
+      "Ceramica|-18000|circa 18.000 a.C.", "Ruota|-3500|circa 3500 a.C.", "Scrittura|-3200|circa 3200 a.C.", "Sapone|-2800|circa 2800 a.C.", "Abaco|-2700|circa 2700 a.C.",
+      "Vetro|-2500|circa 2500 a.C.", "Moneta|-600|circa 600 a.C.", "Carta|105|105 d.C.", "Polvere da sparo|850|circa 850 d.C.", "Occhiali|1286|circa 1286"] },
+    { q: "Quale città è stata fondata PRIMA di Cristo?", t: "max", icon: "🏛️", unit: "", w: "città", items: [
+      "Gerico|-9000|circa 9000 a.C.", "Cartagine|-814|814 a.C.", "Roma|-753|753 a.C.", "Bisanzio (Istanbul)|-667|667 a.C.", "Marsiglia|-600|circa 600 a.C.",
+      "Napoli|-470|circa 470 a.C. (Neapolis)", "Alessandria d'Egitto|-331|331 a.C.", "Firenze|-59|59 a.C.", "Lione|-43|43 a.C.", "Venezia|421|421 d.C. (tradizione)"] },
+    { q: "Quale pandemia ha causato ALMENO 1 milione di morti?", t: "min", icon: "🦠", unit: "mln di morti", w: "pandemia", items: [
+      "Peste nera|100|75-200 mln (stima)", "Influenza spagnola|50|17-100 mln (stima)", "HIV/AIDS|42|oltre 40 mln", "Peste di Giustiniano|30|25-50 mln (stima)", "COVID-19|7|oltre 7 mln confermati",
+      "Peste antonina|7|5-10 mln (stima)", "Influenza asiatica 1957|2|1-4 mln", "Influenza di Hong Kong 1968|1|circa 1-4 mln", "Influenza russa 1889|1|circa 1 mln", "Influenza suina 2009|0.3|circa 0,3 mln"] },
+    { q: "Quale atleta ha vinto ALMENO 7 ori olimpici?", t: "min", icon: "🥇", unit: "ori", w: "atleta", items: [
       "Michael Phelps|23", "Larisa Latynina|9", "Paavo Nurmi|9", "Carl Lewis|9", "Mark Spitz|9",
-      "Katie Ledecky|9", "Usain Bolt|8", "Birgit Fischer|8", "Simone Biles|7", "Valentina Vezzali|6"] },
-    { q: "Quale frutto è il più calorico (per 100 g)?", t: "max", icon: "🍎", unit: "kcal", w: "frutto", items: [
-      "Cocco|354||🥥", "Avocado|160||🥑", "Banana|89||🍌", "Fico|74||🍈", "Uva|69||🍇",
-      "Ciliegie|63||🍒", "Kiwi|61||🥝", "Mango|60||🥭", "Mela|52||🍎", "Fragola|32||🍓"] },
-    { q: "Quale social network ha più utenti attivi?", t: "max", icon: "📱", unit: "mld utenti", w: "social network", items: [
-      "Facebook|3.0", "YouTube|2.5", "Instagram|2.0", "TikTok|1.6", "Telegram|1.0",
-      "Snapchat|0.9", "X (Twitter)|0.6", "Pinterest|0.55", "Reddit|0.4", "LinkedIn|0.3"] },
-    { q: "Quale lingua ha più madrelingua?", t: "max", icon: "🗣️", unit: "mln", w: "lingua", items: [
-      "Cinese mandarino|940", "Spagnolo|485", "Inglese|380", "Hindi|345", "Portoghese|236",
-      "Bengalese|235", "Russo|148", "Giapponese|123", "Tedesco|76", "Italiano|64"] },
-    { q: "Qual è la montagna più alta?", t: "max", icon: "🏔️", unit: "m", w: "montagna", items: [
-      "Everest|8849", "K2|8611", "Kangchenjunga|8586", "Aconcagua|6961", "Denali|6190",
-      "Kilimangiaro|5895", "Elbrus|5642", "Monte Bianco|4806", "Cervino|4478", "Monte Fuji|3776"] },
-    { q: "Qual è l'animale più veloce?", t: "max", icon: "⚡", unit: "km/h", w: "animale", items: [
-      "Falco pellegrino|390||🦅", "Aquila reale|320||🦅", "Ghepardo|110||🐆", "Pesce vela|110||🐟", "Cavallo|88||🐎",
-      "Leone|80||🦁", "Struzzo|70||🦤", "Levriero|72||🐕", "Lepre|72||🐇", "Squalo mako|74||🦈"] },
-    { q: "Qual è il corpo celeste più grande?", t: "max", icon: "🪐", unit: "km di diametro", w: "astronomia", items: [
-      "Giove|139820||🪐", "Saturno|116460||🪐", "Urano|50724||🔵", "Nettuno|49244||🔵", "Terra|12742||🌍",
-      "Venere|12104||🟠", "Marte|6779||🔴", "Ganimede|5268||🌑", "Mercurio|4879||⚫", "Plutone|2377||⚪"] },
-    { q: "Qual è l'edificio più alto?", t: "max", icon: "🏢", unit: "m", w: "grattacielo", items: [
-      "Burj Khalifa|828", "Merdeka 118|679", "Shanghai Tower|632", "Abraj Al-Bait|601", "One World Trade Center|541",
-      "Taipei 101|508", "Petronas Towers|452", "Empire State Building|443", "Torre Eiffel|330", "Torre Unicredit|231"] },
-    { q: "Qual è il fiume più lungo d'Europa?", t: "max", icon: "🌊", unit: "km", w: "fiume", items: [
-      "Volga|3530", "Danubio|2850", "Ural|2428", "Dnepr|2201", "Reno|1233",
-      "Elba|1094", "Loira|1006", "Rodano|812", "Senna|777", "Po|652"] },
-    { q: "Quale squadra ha vinto più Champions League?", t: "max", icon: "🏆", unit: "trofei", w: "società calcistica", items: [
-      "Real Madrid|15", "Milan|7", "Bayern Monaco|6", "Liverpool|6", "Barcellona|5",
-      "Ajax|4", "Inter|3", "Manchester United|3", "Juventus|2", "Chelsea|2"] },
-    { q: "Quale calciatore ha vinto più Palloni d'Oro?", t: "max", icon: "⚽", unit: "Palloni d'Oro", w: "calciatore", items: [
+      "Katie Ledecky|9", "Usain Bolt|8", "Birgit Fischer|8", "Simone Biles|7", "Federica Pellegrini|1|1 oro (Pechino 2008)|🏊‍♀️"] },
+    { q: "Quale piattaforma social ha PIÙ di 500 milioni di utenti attivi al mese?", t: "min", icon: "📱", unit: "mld utenti", w: "social network", items: [
+      "Facebook|3|circa 3 mld", "WhatsApp|3|circa 3 mld|💬", "YouTube|2.5|circa 2,5 mld", "Instagram|2|circa 2 mld", "TikTok|1.6|circa 1,6 mld",
+      "WeChat|1.4|circa 1,4 mld|💬", "Telegram|1|circa 1 mld", "Snapchat|0.9|oltre 900 mln", "Pinterest|0.57|circa 570 mln", "Twitch|0.24|circa 240 mln|🟣"] },
+    { q: "Quale lingua ha PIÙ di 70 milioni di madrelingua?", t: "min", icon: "🗣️", unit: "mln", w: "lingua", items: [
+      "Russo|148", "Giapponese|123", "Vietnamita|86", "Turco|84", "Telugu|83",
+      "Marathi|83", "Coreano|81", "Tamil|79", "Tedesco|76", "Italiano|64|circa 64 mln"] },
+    { q: "Quale montagna supera i 4.000 metri?", t: "min", icon: "🏔️", unit: "m", w: "montagna", items: [
+      "Kilimangiaro|5895", "Elbrus|5642", "Ararat|5137", "Monte Bianco|4806", "Monte Rosa|4634",
+      "Cervino|4478", "Mount Rainier|4392", "Jungfrau|4158", "Gran Paradiso|4061", "Monte Fuji|3776"] },
+    { q: "Quale animale supera i 65 km/h di velocità massima?", t: "min", icon: "⚡", unit: "km/h", w: "animale", items: [
+      "Ghepardo|110||🐆", "Pesce vela|110||🐟", "Cavallo|88||🐎", "Antilocapra|88||🦌", "Gnu|80||🐃",
+      "Leone|80||🦁", "Squalo mako|74||🦈", "Levriero|72||🐕", "Lepre|72||🐇", "Essere umano (Usain Bolt)|44.7|44,7 km/h di picco|🏃"] },
+    { q: "Quale corpo celeste ha un diametro superiore a 3.000 km?", t: "min", icon: "🪐", unit: "km di diametro", w: "astronomia", items: [
+      "Venere|12104||🟠", "Marte|6779||🔴", "Ganimede|5268||🌑", "Titano|5150||🟤", "Mercurio|4879||⚫",
+      "Callisto|4821||🌑", "Io|3643||🟡", "Luna|3474||🌕", "Europa|3122||⚪", "Plutone|2377||⚪"] },
+    { q: "Quale edificio supera i 400 metri di altezza?", t: "min", icon: "🏢", unit: "m", w: "grattacielo", items: [
+      "Lotte World Tower|555", "One World Trade Center|541", "Taipei 101|508", "Shanghai World Financial Center|492", "International Commerce Centre|484",
+      "Petronas Towers|452", "Empire State Building|443", "Willis Tower|442", "Jin Mao Tower|421", "Torre Eiffel|330"] },
+    { q: "Quale fiume europeo è lungo ALMENO 1.000 km?", t: "min", icon: "🌊", unit: "km", w: "fiume", items: [
+      "Volga|3530", "Danubio|2850", "Dnepr|2201", "Dnestr|1352", "Reno|1233",
+      "Elba|1094", "Vistola|1047", "Tago|1007", "Loira|1006", "Po|652"] },
+    { q: "Quale squadra ha vinto ALMENO 2 Champions League / Coppe dei Campioni?", t: "min", icon: "🏆", unit: "trofei", w: "società calcistica", items: [
+      "Milan|7", "Bayern Monaco|6", "Liverpool|6", "Barcellona|5", "Ajax|4",
+      "Inter|3", "Manchester United|3", "Juventus|2", "Chelsea|2", "Borussia Dortmund|1|1 sola (1997)|🟡"] },
+    { q: "Quale calciatore ha vinto ALMENO 2 Palloni d'Oro?", t: "min", icon: "⚽", unit: "Palloni d'Oro", w: "calciatore", items: [
       "Lionel Messi|8", "Cristiano Ronaldo|5", "Michel Platini|3", "Johan Cruijff|3", "Marco van Basten|3",
-      "Ronaldo (il Fenomeno)|2", "Franz Beckenbauer|2", "Zinedine Zidane|1", "Roberto Baggio|1", "Kakà|1"] },
-    { q: "Quale artista ha vinto più Grammy?", t: "max", icon: "🎤", unit: "Grammy", w: "musicista", items: [
+      "Ronaldo (il Fenomeno)|2", "Franz Beckenbauer|2", "Alfredo Di Stéfano|2", "Kevin Keegan|2", "Diego Armando Maradona|0|Mai: fino al 1994 era riservato agli europei"] },
+    { q: "Quale artista ha vinto ALMENO 20 Grammy?", t: "min", icon: "🎤", unit: "Grammy", w: "musicista", items: [
       "Beyoncé|35", "Georg Solti|31", "Quincy Jones|28", "Alison Krauss|27", "Jay-Z|25",
-      "Stevie Wonder|25", "Kanye West|24", "U2|22", "Adele|16", "Taylor Swift|14"] },
-    { q: "Quale animale vive più a lungo?", t: "max", icon: "⏳", unit: "anni", w: "animale", items: [
+      "Stevie Wonder|25", "Kanye West|24", "U2|22", "Bruce Springsteen|20", "Madonna|7"] },
+    { q: "Quale animale può vivere PIÙ di 70 anni?", t: "min", icon: "⏳", unit: "anni", w: "animale", items: [
       "Squalo della Groenlandia|400|fino a circa 400 anni|🦈", "Balena della Groenlandia|211|fino a oltre 200 anni|🐋", "Tartaruga gigante|190|record: 190 anni (Jonathan)|🐢",
-      "Storione|152|fino a circa 150 anni|🐟", "Essere umano|122|record: 122 anni|🧓", "Elefante|86|record: circa 86 anni|🐘",
-      "Pappagallo ara|80|fino a circa 80 anni|🦜", "Cavallo|62|record: 62 anni|🐎", "Gatto|38|record: 38 anni|🐈", "Cane|30|record: circa 30 anni|🐕"] },
-    { q: "Qual è il lago più profondo?", t: "max", icon: "🏞️", unit: "m", w: "lago", items: [
+      "Storione|152|fino a circa 150 anni|🐟", "Essere umano|122|record: 122 anni|🧓", "Orca|100|femmine fino a circa 100 anni|🐋", "Elefante|86|record: circa 86 anni|🐘",
+      "Cacatua|83|record: 83 anni (Cookie)|🦜", "Pappagallo ara|80|fino a circa 80 anni|🦜", "Gatto|38|record: 38 anni|🐈"] },
+    { q: "Quale lago è profondo PIÙ di 300 metri?", t: "min", icon: "🏞️", unit: "m", w: "lago", items: [
       "Lago Bajkal|1642", "Lago Tanganica|1470", "Mar Caspio|1025", "Lago Malawi|706", "Issyk-Kul|668",
       "Crater Lake|594", "Lago di Como|410", "Lago Maggiore|372", "Lago di Garda|346", "Loch Ness|230"] },
+    { q: "Quale Paese ha PIÙ di 140 milioni di abitanti?", t: "min", icon: "👥", unit: "mln", w: "", items: [
+      "India|1440|circa 1,44 mld|🇮🇳", "Cina|1410|circa 1,41 mld|🇨🇳", "Stati Uniti|340|circa 340 mln|🇺🇸", "Indonesia|280|circa 280 mln|🇮🇩", "Pakistan|245|circa 245 mln|🇵🇰",
+      "Nigeria|225|circa 225 mln|🇳🇬", "Brasile|216|circa 216 mln|🇧🇷", "Bangladesh|173|circa 173 mln|🇧🇩", "Russia|144|circa 144 mln|🇷🇺", "Germania|84|circa 84 mln|🇩🇪"] },
 
-    /* ---------------- LOGICA: l'intruso è l'eccezione ---------------- */
-    { q: "Quale di questi attori NON ha mai vinto un Oscar?", t: "odd", icon: "🎭", w: "attore", items: [
-      "Leonardo DiCaprio|1 Oscar · The Revenant (2016)", "Tom Hanks|2 Oscar", "Meryl Streep|3 Oscar", "Anthony Hopkins|2 Oscar",
-      "Denzel Washington|2 Oscar", "Cate Blanchett|2 Oscar", "Emma Stone|2 Oscar", "Jack Nicholson|3 Oscar", "Natalie Portman|1 Oscar · Il cigno nero",
-      "Johnny Depp|0 Oscar (3 candidature)|!"] },
-    { q: "Quale di questi Paesi NON fa parte dell'Unione Europea?", t: "odd", icon: "🇪🇺", w: "", items: [
-      "Italia|Membro dal 1957 (fondatore)||🇮🇹", "Francia|Membro dal 1957 (fondatore)||🇫🇷", "Germania|Membro dal 1957 (fondatore)||🇩🇪",
-      "Grecia|Membro dal 1981||🇬🇷", "Spagna|Membro dal 1986||🇪🇸", "Portogallo|Membro dal 1986||🇵🇹", "Austria|Membro dal 1995||🇦🇹",
-      "Svezia|Membro dal 1995||🇸🇪", "Croazia|Membro dal 2013||🇭🇷", "Norvegia|Non membro (solo SEE)|!|🇳🇴"] },
-    { q: "Quale di questi animali NON è un mammifero?", t: "odd", icon: "🐾", w: "animale", items: [
-      "Delfino|Mammifero (cetaceo)||🐬", "Balena|Mammifero (cetaceo)||🐋", "Orca|Mammifero (cetaceo)||🐋", "Pipistrello|Mammifero (chirottero)||🦇",
-      "Lamantino|Mammifero (sirenide)||🦭", "Foca|Mammifero (pinnipede)||🦭", "Tricheco|Mammifero (pinnipede)||🦭", "Ornitorinco|Mammifero (monotremo, depone uova)||🦫",
-      "Narvalo|Mammifero (cetaceo)||🐋", "Squalo|Pesce cartilagineo|!|🦈"] },
-    { q: "Quale di questi elementi NON è un gas a temperatura ambiente?", t: "odd", icon: "⚗️", w: "elemento chimico", items: [
-      "Elio|Gas nobile", "Neon|Gas nobile", "Argon|Gas nobile", "Kripton|Gas nobile", "Xeno|Gas nobile",
-      "Radon|Gas nobile", "Idrogeno|Gas", "Ossigeno|Gas", "Azoto|Gas", "Bromo|Liquido a 20 °C|!"] },
-    { q: "Quale di questi marchi NON è nato negli Stati Uniti?", t: "odd", icon: "🏷️", w: "azienda", items: [
-      "Apple|USA · Cupertino, 1976", "Nike|USA · Oregon, 1964", "Coca-Cola|USA · Atlanta, 1886", "McDonald's|USA · California, 1940",
-      "Google|USA · California, 1998", "Amazon|USA · Seattle, 1994", "Microsoft|USA · Albuquerque, 1975", "Starbucks|USA · Seattle, 1971",
-      "Levi's|USA · San Francisco, 1853", "Adidas|Germania · Herzogenaurach, 1949|!"] },
-    { q: "Quale supereroe NON ha mai fatto parte della Justice League classica?", t: "odd", icon: "🦸", w: "personaggio DC Comics", items: [
-      "Superman|Membro fondatore (DC)", "Batman|Membro fondatore (DC)", "Wonder Woman|Membro fondatore (DC)", "Flash|Membro fondatore (DC)",
-      "Lanterna Verde|Membro fondatore (DC)", "Aquaman|Membro fondatore (DC)", "Martian Manhunter|Membro fondatore (DC)", "Freccia Verde|Membro dal 1961 (DC)",
-      "Atom|Membro dal 1962 (DC)", "Spider-Man|Marvel: mai nella Justice League|!"] },
-    { q: "Quale di queste canzoni NON supera 1 miliardo di stream su Spotify?", t: "odd", icon: "🎧", w: "singolo", items: [
-      "Blinding Lights|oltre 4 miliardi", "Shape of You|oltre 4 miliardi", "Dance Monkey|oltre 3 miliardi", "bad guy|oltre 2,5 miliardi",
-      "Bohemian Rhapsody|oltre 2,5 miliardi", "Uptown Funk|oltre 2 miliardi", "Billie Jean|oltre 2 miliardi", "Smells Like Teen Spirit|oltre 2 miliardi",
-      "Despacito|oltre 1 miliardo", "Nel blu dipinto di blu (Volare)|molto sotto 1 miliardo|!"] },
-    { q: "Quale di questi corpi celesti NON è una luna?", t: "odd", icon: "🌙", w: "astronomia", items: [
-      "Luna|Satellite della Terra", "Titano|Luna di Saturno", "Europa|Luna di Giove", "Io|Luna di Giove", "Ganimede|Luna di Giove",
-      "Callisto|Luna di Giove", "Phobos|Luna di Marte", "Deimos|Luna di Marte", "Tritone|Luna di Nettuno", "Cerere|Pianeta nano (fascia degli asteroidi)|!"] },
-    { q: "Quale personaggio NON è mai apparso in un film Marvel (MCU)?", t: "odd", icon: "🦹", w: "personaggio Marvel", items: [
-      "Iron Man|Debutto: Iron Man (2008)", "Hulk|Debutto: L'incredibile Hulk (2008)", "Vedova Nera|Debutto: Iron Man 2 (2010)", "Thor|Debutto: Thor (2011)",
-      "Star-Lord|Debutto: Guardiani della Galassia (2014)", "Scarlet Witch|Debutto: Captain America: The Winter Soldier (2014)", "Black Panther|Debutto: Captain America: Civil War (2016)",
-      "Spider-Man|Debutto MCU: Captain America: Civil War (2016)", "Doctor Strange|Debutto: Doctor Strange (2016)", "Hellboy|Dark Horse Comics: mai nell'MCU|!"] },
-    { q: "Quale di questi elementi NON è solido a temperatura ambiente?", t: "odd", icon: "🧪", w: "elemento chimico", items: [
-      "Ferro|Solido", "Oro|Solido", "Argento|Solido", "Rame|Solido", "Carbonio|Solido",
-      "Sodio|Solido", "Zinco|Solido", "Piombo|Solido", "Alluminio|Solido", "Mercurio|Liquido a 20 °C|!"] },
-    { q: "Quale di queste città NON è una capitale?", t: "odd", icon: "🏛️", w: "", items: [
-      "Parigi|Capitale della Francia||🇫🇷", "Madrid|Capitale della Spagna||🇪🇸", "Lisbona|Capitale del Portogallo||🇵🇹", "Vienna|Capitale dell'Austria||🇦🇹",
-      "Praga|Capitale della Repubblica Ceca||🇨🇿", "Varsavia|Capitale della Polonia||🇵🇱", "Atene|Capitale della Grecia||🇬🇷", "Dublino|Capitale dell'Irlanda||🇮🇪",
-      "Budapest|Capitale dell'Ungheria||🇭🇺", "Istanbul|Non è la capitale: la capitale turca è Ankara|!|🇹🇷"] },
-    { q: "Quale di queste opere NON è di Leonardo da Vinci?", t: "odd", icon: "🎨", w: "dipinto", items: [
-      "La Gioconda|Leonardo da Vinci", "L'Ultima Cena|Leonardo da Vinci", "Dama con l'ermellino|Leonardo da Vinci", "Annunciazione|Leonardo da Vinci",
-      "Vergine delle rocce|Leonardo da Vinci", "Uomo vitruviano|Leonardo da Vinci", "San Girolamo|Leonardo da Vinci", "Ritratto di Ginevra de' Benci|Leonardo da Vinci",
-      "Battesimo di Cristo|Verrocchio e Leonardo", "La nascita di Venere|Sandro Botticelli|!"] },
-    { q: "Quale di questi film NON è di Christopher Nolan?", t: "odd", icon: "🌀", w: "film", items: [
-      "Inception|Christopher Nolan (2010)", "Interstellar|Christopher Nolan (2014)", "Memento|Christopher Nolan (2000)", "Tenet|Christopher Nolan (2020)",
-      "Dunkirk|Christopher Nolan (2017)", "Oppenheimer|Christopher Nolan (2023)", "The Prestige|Christopher Nolan (2006)", "Insomnia|Christopher Nolan (2002)",
-      "Batman Begins|Christopher Nolan (2005)", "Arrival|Denis Villeneuve (2016)|!"] },
-    { q: "Quale di queste canzoni NON è dei Queen?", t: "odd", icon: "👑", w: "singolo", items: [
-      "Bohemian Rhapsody|Queen (1975)", "We Will Rock You|Queen (1977)", "We Are the Champions|Queen (1977)", "Don't Stop Me Now|Queen (1978)",
-      "Another One Bites the Dust|Queen (1980)", "Somebody to Love|Queen (1976)", "Radio Ga Ga|Queen (1984)", "I Want to Break Free|Queen (1984)",
-      "Under Pressure|Queen e David Bowie (1981)", "Stairway to Heaven|Led Zeppelin (1971)|!"] },
-    { q: "Quale personaggio NON appare in Harry Potter?", t: "odd", icon: "⚡", w: "personaggio", items: [
-      "Hermione Granger|Harry Potter", "Ron Weasley|Harry Potter", "Albus Silente|Harry Potter", "Severus Piton|Harry Potter", "Rubeus Hagrid|Harry Potter",
-      "Lord Voldemort|Harry Potter", "Draco Malfoy|Harry Potter", "Luna Lovegood|Harry Potter", "Sirius Black|Harry Potter", "Gandalf|Il Signore degli Anelli|!"] },
-    { q: "Quale di queste NON è una regione italiana?", t: "odd", icon: "🇮🇹", w: "regione italiana", items: [
-      "Molise|Regione · capoluogo Campobasso", "Basilicata|Regione · capoluogo Potenza", "Umbria|Regione · capoluogo Perugia", "Marche|Regione · capoluogo Ancona",
-      "Liguria|Regione · capoluogo Genova", "Abruzzo|Regione · capoluogo L'Aquila", "Valle d'Aosta|Regione · capoluogo Aosta", "Friuli-Venezia Giulia|Regione · capoluogo Trieste",
-      "Calabria|Regione · capoluogo Catanzaro", "Romagna|Parte dell'Emilia-Romagna, non è una regione|!"] },
-    { q: "Quale squadra NON ha mai vinto la Champions League?", t: "odd", icon: "🌟", w: "società calcistica", items: [
-      "Real Madrid|15 vittorie", "Milan|7 vittorie", "Bayern Monaco|6 vittorie", "Liverpool|6 vittorie", "Barcellona|5 vittorie",
-      "Ajax|4 vittorie", "Inter|3 vittorie", "Manchester United|3 vittorie", "Juventus|2 vittorie", "Arsenal|Mai vinta (finale persa nel 2006)|!"] },
-    { q: "Chi di questi italiani NON ha mai vinto il Premio Nobel?", t: "odd", icon: "🏅", w: "", items: [
-      "Guglielmo Marconi|Nobel per la Fisica 1909", "Enrico Fermi|Nobel per la Fisica 1938", "Rita Levi-Montalcini|Nobel per la Medicina 1986", "Dario Fo|Nobel per la Letteratura 1997",
-      "Luigi Pirandello|Nobel per la Letteratura 1934", "Grazia Deledda|Nobel per la Letteratura 1926", "Giosuè Carducci|Nobel per la Letteratura 1906", "Eugenio Montale|Nobel per la Letteratura 1975",
-      "Giorgio Parisi|Nobel per la Fisica 2021", "Maria Montessori|Candidata più volte, mai vinto|!"] },
-    /* ---------------- NUOVE DOMANDE ---------------- */
-    { q: "Quale di questi NON è un classico d'animazione Disney?", t: "odd", icon: "🏰", w: "film d'animazione", items: [
-      "Il Re Leone|Disney (1994)", "La Sirenetta|Disney (1989)", "Aladdin|Disney (1992)", "La bella e la bestia|Disney (1991)", "Frozen|Disney (2013)",
-      "Mulan|Disney (1998)", "Pocahontas|Disney (1995)", "Hercules|Disney (1997)", "Rapunzel|Disney (2010)", "Shrek|DreamWorks (2001)|!"] },
-    { q: "Quale di questi calciatori NON ha mai vinto un Mondiale?", t: "odd", icon: "🏆", w: "calciatore", items: [
-      "Lionel Messi|Campione del mondo 2022", "Pelé|Campione del mondo 1958, 1962, 1970", "Diego Armando Maradona|Campione del mondo 1986", "Zinédine Zidane|Campione del mondo 1998",
-      "Gianluigi Buffon|Campione del mondo 2006", "Fabio Cannavaro|Campione del mondo 2006", "Ronaldo|Campione del mondo 1994, 2002", "Kylian Mbappé|Campione del mondo 2018",
-      "Andrés Iniesta|Campione del mondo 2010", "Cristiano Ronaldo|Mai vinto un Mondiale|!"] },
-    { q: "Quale di questi NON è un film Pixar?", t: "odd", icon: "💡", w: "film Pixar", items: [
-      "Toy Story|Pixar (1995)", "Up|Pixar (2009)", "Coco|Pixar (2017)", "Inside Out|Pixar (2015)", "Ratatouille|Pixar (2007)",
-      "WALL•E|Pixar (2008)", "Alla ricerca di Nemo|Pixar (2003)", "Monsters & Co.|Pixar (2001)", "Gli Incredibili|Pixar (2004)", "Cattivissimo me|Illumination (2010)|!"] },
-    { q: "Quale di questi pittori NON è italiano?", t: "odd", icon: "🎨", w: "pittore", items: [
-      "Caravaggio|Italiano · Barocco", "Raffaello Sanzio|Italiano · Rinascimento", "Michelangelo Buonarroti|Italiano · Rinascimento", "Sandro Botticelli|Italiano · Rinascimento",
-      "Tiziano Vecellio|Italiano · Rinascimento", "Giotto|Italiano · Trecento", "Amedeo Modigliani|Italiano · Novecento", "Canaletto|Italiano · Vedutismo",
-      "Giorgio de Chirico|Italiano · Metafisica", "Rembrandt|Olandese · Secolo d'oro|!"] },
-    { q: "Quale di queste canzoni NON è dei Beatles?", t: "odd", icon: "🎸", w: "canzone Beatles", items: [
-      "Hey Jude|The Beatles (1968)", "Yesterday|The Beatles (1965)", "Let It Be|The Beatles (1970)", "Help!|The Beatles (1965)", "Yellow Submarine|The Beatles (1966)",
-      "Come Together|The Beatles (1969)", "Something|The Beatles (1969)", "Penny Lane|The Beatles (1967)", "Here Comes the Sun|The Beatles (1969)", "Imagine|John Lennon da solista (1971)|!"] },
-    { q: "Quale di queste opere NON è di Giuseppe Verdi?", t: "odd", icon: "🎼", w: "opera lirica", items: [
-      "Aida|Giuseppe Verdi (1871)", "La traviata|Giuseppe Verdi (1853)", "Rigoletto|Giuseppe Verdi (1851)", "Nabucco|Giuseppe Verdi (1842)", "Otello|Giuseppe Verdi (1887)",
-      "Falstaff|Giuseppe Verdi (1893)", "Il trovatore|Giuseppe Verdi (1853)", "Don Carlos|Giuseppe Verdi (1867)", "Macbeth|Giuseppe Verdi (1847)", "Tosca|Giacomo Puccini (1900)|!"] },
-    { q: "Quale di questi personaggi NON è dei Simpson?", t: "odd", icon: "🍩", w: "personaggio dei Simpson", items: [
-      "Homer Simpson|I Simpson", "Marge Simpson|I Simpson", "Bart Simpson|I Simpson", "Lisa Simpson|I Simpson", "Maggie Simpson|I Simpson",
-      "Montgomery Burns|I Simpson", "Ned Flanders|I Simpson", "Boe Szyslak|I Simpson", "Krusty il Clown|I Simpson", "Stewie Griffin|I Griffin|!"] },
-    { q: "Quale di questi Pokémon NON è della prima generazione?", t: "odd", icon: "⚡", w: "Pokémon", items: [
-      "Pikachu|1ª generazione (#025)", "Charmander|1ª generazione (#004)", "Bulbasaur|1ª generazione (#001)", "Squirtle|1ª generazione (#007)", "Mewtwo|1ª generazione (#150)",
-      "Snorlax|1ª generazione (#143)", "Jigglypuff|1ª generazione (#039)", "Gengar|1ª generazione (#094)", "Eevee|1ª generazione (#133)", "Lucario|4ª generazione (#448)|!"] },
-    { q: "Quale di queste lingue NON è neolatina?", t: "odd", icon: "🗣️", w: "lingua", items: [
-      "Italiano|Neolatina", "Francese|Neolatina", "Spagnolo|Neolatina", "Portoghese|Neolatina", "Rumeno|Neolatina",
-      "Catalano|Neolatina", "Sardo|Neolatina", "Ladino|Neolatina", "Galiziano|Neolatina", "Albanese|Indoeuropea, ramo a sé (non neolatina)|!"] },
-    { q: "Quale di questi Paesi NON usa l'euro?", t: "odd", icon: "💶", w: "", items: [
-      "Italia|Euro dal 2002||🇮🇹", "Francia|Euro dal 2002||🇫🇷", "Germania|Euro dal 2002||🇩🇪", "Spagna|Euro dal 2002||🇪🇸", "Grecia|Euro dal 2002||🇬🇷",
-      "Austria|Euro dal 2002||🇦🇹", "Finlandia|Euro dal 2002||🇫🇮", "Portogallo|Euro dal 2002||🇵🇹", "Croazia|Euro dal 2023||🇭🇷", "Svezia|Corona svedese|!|🇸🇪"] },
-    { q: "Quale di questi supereroi NON è della Marvel?", t: "odd", icon: "🦸", w: "personaggio Marvel Comics", items: [
-      "Iron Man|Marvel", "Spider-Man|Marvel", "Thor|Marvel", "Hulk|Marvel", "Capitan America|Marvel",
-      "Wolverine|Marvel", "Pantera Nera|Marvel", "Doctor Strange|Marvel", "Deadpool|Marvel", "Flash|DC Comics|!"] },
-    { q: "Quale di questi libri NON è di Stephen King?", t: "odd", icon: "📚", w: "romanzo", items: [
-      "It|Stephen King (1986)", "Shining|Stephen King (1977)", "Misery|Stephen King (1987)", "Carrie|Stephen King (1974)", "Pet Sematary|Stephen King (1983)",
-      "Il miglio verde|Stephen King (1996)", "Cujo|Stephen King (1981)", "22/11/'63|Stephen King (2011)", "L'ombra dello scorpione|Stephen King (1978)", "Dracula|Bram Stoker (1897)|!"] },
-    { q: "Quale di questi animali NON è un felino?", t: "odd", icon: "🐾", w: "animale", items: [
-      "Leone|Felide", "Tigre|Felide", "Ghepardo|Felide", "Leopardo|Felide", "Giaguaro|Felide",
-      "Lince|Felide", "Puma|Felide", "Gatto domestico|Felide", "Ocelot|Felide", "Iena|Ienide (più vicina alle manguste che ai gatti)|!"] },
-    { q: "Quale di queste città NON è un capoluogo di regione?", t: "odd", icon: "🏙️", w: "città", items: [
-      "Milano|Capoluogo della Lombardia", "Torino|Capoluogo del Piemonte", "Venezia|Capoluogo del Veneto", "Bologna|Capoluogo dell'Emilia-Romagna", "Firenze|Capoluogo della Toscana",
-      "Napoli|Capoluogo della Campania", "Bari|Capoluogo della Puglia", "Palermo|Capoluogo della Sicilia", "Cagliari|Capoluogo della Sardegna", "Verona|Capoluogo di provincia, non di regione|!"] },
-    { q: "Quale di queste squadre NON ha mai vinto lo scudetto?", t: "odd", icon: "🇮🇹", w: "società calcistica", items: [
-      "Juventus|36 scudetti", "Inter|20 scudetti", "Milan|19 scudetti", "Napoli|4 scudetti", "Roma|3 scudetti",
-      "Lazio|2 scudetti", "Fiorentina|2 scudetti", "Bologna|7 scudetti", "Cagliari|1 scudetto (1970)", "Atalanta|Mai vinto lo scudetto (ha vinto l'Europa League 2024)|!"] },
-    { q: "Quale di questi film NON ha vinto l'Oscar al miglior film?", t: "odd", icon: "🎬", w: "film", items: [
-      "Il Padrino|Miglior film 1973", "Titanic|Miglior film 1998", "Forrest Gump|Miglior film 1995", "Il gladiatore|Miglior film 2001", "Oppenheimer|Miglior film 2024",
-      "Schindler's List|Miglior film 1994", "Parasite|Miglior film 2020", "Il silenzio degli innocenti|Miglior film 1992", "La forma dell'acqua|Miglior film 2018", "Pulp Fiction|Solo candidato (vinse Forrest Gump)|!"] },
-    { q: "Quale di queste band NON è britannica?", t: "odd", icon: "🎤", w: "gruppo musicale", items: [
-      "The Beatles|Liverpool, Inghilterra", "The Rolling Stones|Londra, Inghilterra", "Queen|Londra, Inghilterra", "Coldplay|Londra, Inghilterra", "Oasis|Manchester, Inghilterra",
-      "Pink Floyd|Londra, Inghilterra", "Radiohead|Abingdon, Inghilterra", "Arctic Monkeys|Sheffield, Inghilterra", "Led Zeppelin|Londra, Inghilterra", "U2|Dublino, Irlanda|!"] },
-    { q: "Quale Paese ha più abitanti?", t: "max", icon: "👥", unit: "mln", w: "", items: [
-      "India|1440|circa 1,44 mld|🇮🇳", "Cina|1410|circa 1,41 mld|🇨🇳", "Stati Uniti|335|circa 335 mln|🇺🇸", "Indonesia|280|circa 280 mln|🇮🇩", "Pakistan|245|circa 245 mln|🇵🇰",
-      "Nigeria|225|circa 225 mln|🇳🇬", "Brasile|216|circa 216 mln|🇧🇷", "Bangladesh|173|circa 173 mln|🇧🇩", "Russia|144|circa 144 mln|🇷🇺", "Messico|129|circa 129 mln|🇲🇽"] },
-    /* ---------------- NUOVE DOMANDE (2) ---------------- */
-    { q: "Quale di questi attori NON ha mai recitato in Harry Potter?", t: "odd", icon: "⚡", w: "attore", items: [
-      "Daniel Radcliffe|Harry Potter", "Emma Watson|Hermione Granger", "Rupert Grint|Ron Weasley", "Alan Rickman|Severus Piton", "Maggie Smith|Minerva McGranitt",
-      "Ralph Fiennes|Lord Voldemort", "Gary Oldman|Sirius Black", "Helena Bonham Carter|Bellatrix Lestrange", "Robert Pattinson|Cedric Diggory", "Ian McKellen|Nessuna partecipazione (è Gandalf nel Signore degli Anelli)|!"] },
-    { q: "Quale di queste serie TV NON è tratta da un libro o da un fumetto?", t: "odd", icon: "📖", w: "serie televisiva", items: [
-      "Il Trono di Spade|Romanzi di George R. R. Martin", "The Walking Dead|Fumetto di Robert Kirkman", "The Witcher|Romanzi di Andrzej Sapkowski", "Outlander|Romanzi di Diana Gabaldon",
-      "Bridgerton|Romanzi di Julia Quinn", "The Boys|Fumetto di Garth Ennis", "Gomorra|Libro di Roberto Saviano", "L'amica geniale|Romanzi di Elena Ferrante",
-      "Big Little Lies|Romanzo di Liane Moriarty", "Breaking Bad|Soggetto originale di Vince Gilligan|!"] },
-    { q: "Quale di questi attori NON ha mai interpretato Batman o Joker al cinema?", t: "odd", icon: "🦇", w: "attore", items: [
-      "Michael Keaton|Batman (1989)", "Christian Bale|Batman Begins (2005)", "Ben Affleck|Batman v Superman (2016)", "Robert Pattinson|The Batman (2022)",
-      "George Clooney|Batman & Robin (1997)", "Val Kilmer|Batman Forever (1995)", "Jack Nicholson|Joker in Batman (1989)", "Heath Ledger|Joker nel Cavaliere oscuro (2008)",
-      "Joaquin Phoenix|Joker (2019)", "Christopher Reeve|Nessuna: è stato Superman|!"] },
-    { q: "Quale di queste coppie di personaggi NON ha una storia d'amore nella serie?", t: "odd", icon: "💞", w: "", items: [
-      "Ross e Rachel|Coppia · Friends||💞", "Monica e Chandler|Coppia sposata · Friends||💞", "Jim e Pam|Coppia sposata · The Office||💞",
-      "Ted e Robin|Coppia · How I Met Your Mother||💞", "Carrie e Mr. Big|Coppia · Sex and the City||💞", "Meredith e Derek|Coppia sposata · Grey's Anatomy||💞",
-      "Leonard e Penny|Coppia sposata · The Big Bang Theory||💞", "Jon Snow e Ygritte|Coppia · Il Trono di Spade||💞", "Lorelai e Luke|Coppia · Una mamma per amica||💞",
-      "Sherlock e Watson|Amici e colleghi · Sherlock|!|💞"] },
-    { q: "Quale di questi film NON è un remake o un reboot?", t: "odd", icon: "🎥", w: "film", items: [
-      "Il re leone (2019)|Remake del film del 1994", "Scarface|Remake del film del 1932", "The Departed|Remake di Infernal Affairs (2002)", "Ocean's Eleven|Remake del film del 1960",
-      "King Kong (2005)|Remake del film del 1933", "A Star Is Born|Remake del film del 1937", "West Side Story (2021)|Remake del film del 1961", "Dune (2021)|Nuovo adattamento dopo il film del 1984",
-      "La mosca|Remake del film del 1958", "Inception|Sceneggiatura originale di Christopher Nolan|!"] },
-    { q: "Quale di queste hit NON è arrivata al n. 1 della Billboard Hot 100?", t: "odd", icon: "📈", w: "singolo", items: [
-      "Blinding Lights|Posizione massima: n. 1", "Shape of You|Posizione massima: n. 1", "Despacito|Posizione massima: n. 1", "Uptown Funk|Posizione massima: n. 1",
-      "Old Town Road|Posizione massima: n. 1", "Hey Jude|Posizione massima: n. 1", "Billie Jean|Posizione massima: n. 1", "Rolling in the Deep|Posizione massima: n. 1",
-      "Bad Guy|Posizione massima: n. 1", "Bohemian Rhapsody|Posizione massima: n. 2 (1992)|!"] },
-    { q: "Quale di questi artisti NON usa un nome d'arte?", t: "odd", icon: "🎤", w: "cantante", items: [
-      "Lady Gaga|Vero nome: Stefani Germanotta", "Bruno Mars|Vero nome: Peter Gene Hernandez", "Elton John|Vero nome: Reginald Dwight", "Freddie Mercury|Vero nome: Farrokh Bulsara",
-      "Eminem|Vero nome: Marshall Mathers", "Sting|Vero nome: Gordon Sumner", "Bono|Vero nome: Paul Hewson", "Zucchero|Vero nome: Adelmo Fornaciari",
-      "Jovanotti|Vero nome: Lorenzo Cherubini", "Ed Sheeran|Nome vero: Edward Christopher Sheeran|!"] },
-    { q: "Quale di questi Paesi europei NON ha adottato l'euro?", t: "odd", icon: "💶", w: "", items: [
-      "Belgio|Euro||🇧🇪", "Paesi Bassi|Euro||🇳🇱", "Irlanda|Euro||🇮🇪", "Lussemburgo|Euro||🇱🇺", "Slovenia|Euro (dal 2007)||🇸🇮",
-      "Slovacchia|Euro (dal 2009)||🇸🇰", "Estonia|Euro (dal 2011)||🇪🇪", "Lettonia|Euro (dal 2014)||🇱🇻", "Lituania|Euro (dal 2015)||🇱🇹", "Danimarca|Corona danese|!|🇩🇰"] },
-    { q: "Quale di queste capitali NON si affaccia sul mare?", t: "odd", icon: "🌊", w: "città", items: [
-      "Copenaghen|Sul mare (stretto dell'Øresund)", "Helsinki|Sul Mar Baltico", "Oslo|In fondo all'Oslofjord", "Stoccolma|Sul Mar Baltico", "Tallinn|Sul Golfo di Finlandia",
-      "Dublino|Sul Mare d'Irlanda", "La Valletta|Sul Mediterraneo", "Reykjavík|Sull'Atlantico", "Tokyo|Sulla baia di Tokyo", "Madrid|Nell'entroterra, a oltre 300 km dal mare|!"] },
-    { q: "Quale di queste bandiere NON contiene il colore rosso?", t: "odd", icon: "🚩", w: "", items: [
-      "Italia|Verde, bianco, rosso||🇮🇹", "Giappone|Bianco e rosso||🇯🇵", "Canada|Rosso e bianco||🇨🇦", "Stati Uniti|Rosso, bianco, blu||🇺🇸", "Cina|Rosso e giallo||🇨🇳",
-      "Spagna|Rosso e giallo||🇪🇸", "Germania|Nero, rosso, oro||🇩🇪", "Turchia|Rosso e bianco||🇹🇷", "Svizzera|Rosso e bianco||🇨🇭", "Brasile|Verde, giallo, blu, bianco|!|🇧🇷"] },
-    { q: "Quale di queste città NON è capoluogo di regione? (versione difficile)", t: "odd", icon: "🏛️", w: "città", items: [
-      "Trento|Capoluogo del Trentino-Alto Adige", "Potenza|Capoluogo della Basilicata", "Campobasso|Capoluogo del Molise", "Aosta|Capoluogo della Valle d'Aosta",
-      "Ancona|Capoluogo delle Marche", "Perugia|Capoluogo dell'Umbria", "Catanzaro|Capoluogo della Calabria", "L'Aquila|Capoluogo dell'Abruzzo", "Trieste|Capoluogo del Friuli-Venezia Giulia",
-      "Pescara|Capoluogo di provincia (Abruzzo): il capoluogo di regione è L'Aquila|!"] },
-    { q: "Quale di questi animali NON depone uova?", t: "odd", icon: "🥚", w: "animale", items: [
-      "Ornitorinco|Depone uova (mammifero monotremo)", "Echidna|Depone uova (mammifero monotremo)", "Tartaruga|Depone uova", "Coccodrillo|Depone uova",
-      "Gallina|Depone uova", "Pinguino|Depone uova", "Rana|Depone uova", "Polpo|Depone uova", "Farfalla|Depone uova", "Delfino|Vivipero: partorisce i piccoli|!"] },
-    { q: "Quale di questi animali NON sa nuotare?", t: "odd", icon: "🏊", w: "animale", items: [
-      "Tigre|Ottima nuotatrice", "Giaguaro|Ottimo nuotatore", "Orso polare|Nuota per decine di km", "Elefante|Nuota usando la proboscide come boccaglio",
-      "Lontra|Nuotatrice nata", "Coccodrillo|Nuota con la coda", "Anaconda|Vive in gran parte in acqua", "Alce|Ottimo nuotatore", "Cane|Nuota istintivamente",
-      "Ippopotamo|Non nuota: cammina e salta sul fondale|!"] },
-    { q: "Quale di questi organi NON è presente in coppia nel corpo umano?", t: "odd", icon: "🫀", w: "anatomia", items: [
-      "Reni|2", "Polmoni|2", "Occhi|2", "Orecchie|2", "Ghiandole surrenali|2",
-      "Tonsille palatine|2", "Ovaie|2", "Ghiandole parotidi|2", "Bronchi principali|2", "Fegato|1 solo|!"] },
-    { q: "Quale di questi NON è frutta a guscio ma un legume?", t: "odd", icon: "🥜", w: "frutta secca", items: [
-      "Noci|Juglandaceae", "Nocciole|Betulaceae", "Mandorle|Rosaceae", "Pistacchi|Anacardiaceae", "Anacardi|Anacardiaceae",
-      "Pinoli|Pinaceae (semi di pino)", "Castagne|Fagaceae", "Noci pecan|Juglandaceae", "Noci di macadamia|Proteaceae", "Arachidi|Fabaceae: è un legume, come fagioli e piselli|!"] },
-    { q: "Quale di questi piatti NON ha il pomodoro nella ricetta tradizionale?", t: "odd", icon: "🍅", w: "cucina italiana", items: [
-      "Pizza margherita|Pomodoro, mozzarella, basilico", "Bucatini all'amatriciana|Guanciale, pomodoro, pecorino", "Pasta alla Norma|Pomodoro, melanzane, ricotta salata",
-      "Penne all'arrabbiata|Pomodoro, aglio, peperoncino", "Parmigiana di melanzane|Melanzane, pomodoro, formaggio", "Insalata caprese|Pomodoro, mozzarella, basilico",
-      "Pappa al pomodoro|Pane, pomodoro, basilico", "Ragù alla bolognese|Carne, soffritto, pomodoro", "Spaghetti alla puttanesca|Pomodoro, olive, capperi, acciughe",
-      "Spaghetti alla carbonara|Guanciale, uova, pecorino, pepe: niente pomodoro|!"] },
-    { q: "Quale di queste catene NON è nata negli Stati Uniti?", t: "odd", icon: "🍔", w: "azienda", items: [
-      "McDonald's|USA, 1940", "Burger King|USA, 1954", "KFC|USA, 1952", "Subway|USA, 1965", "Starbucks|USA, 1971",
-      "Domino's Pizza|USA, 1960", "Taco Bell|USA, 1962", "Wendy's|USA, 1969", "Pizza Hut|USA, 1958", "Old Wild West|Italia, 2002 (stile americano, ma italiana)|!"] },
-    { q: "Quale di questi Pokémon NON è di Kanto (prima generazione)?", t: "odd", icon: "🔴", w: "Pokémon", items: [
-      "Psyduck|1ª generazione (#054)", "Magikarp|1ª generazione (#129)", "Gyarados|1ª generazione (#130)", "Machamp|1ª generazione (#068)", "Onix|1ª generazione (#095)",
-      "Meowth|1ª generazione (#052)", "Vulpix|1ª generazione (#037)", "Dragonite|1ª generazione (#149)", "Lapras|1ª generazione (#131)", "Togepi|2ª generazione (#175)|!"] },
-    { q: "Quale di questi marchi NON ha un animale nel logo?", t: "odd", icon: "🐾", w: "marchio", items: [
-      "Puma|Un puma", "Lacoste|Un coccodrillo", "Ferrari|Il cavallino rampante", "Lamborghini|Un toro", "Ralph Lauren|Un giocatore di polo a cavallo",
-      "Jaguar|Un giaguaro", "Peugeot|Un leone", "Abarth|Uno scorpione", "Alfa Romeo|Il biscione visconteo", "Chanel|Due C intrecciate|!"] },
-    { q: "Quale di questi Paesi NON guida a sinistra?", t: "odd", icon: "🚗", w: "", items: [
-      "Regno Unito|Guida a sinistra||🇬🇧", "Giappone|Guida a sinistra||🇯🇵", "Australia|Guida a sinistra||🇦🇺", "India|Guida a sinistra||🇮🇳", "Giamaica|Guida a sinistra||🇯🇲",
-      "Irlanda|Guida a sinistra||🇮🇪", "Nuova Zelanda|Guida a sinistra||🇳🇿", "Malta|Guida a sinistra||🇲🇹", "Thailandia|Guida a sinistra||🇹🇭", "Svezia|Guida a destra dal 1967 (prima a sinistra!)|!|🇸🇪"] }
+    /* ---------------- NUMERI: nuove categorie ---------------- */
+    { q: "Quale regione italiana ha PIÙ di 1 milione di abitanti?", t: "min", icon: "🇮🇹", unit: "mln di abitanti", w: "regione italiana", items: [
+      "Puglia|3.89|circa 3,9 mln", "Toscana|3.66|circa 3,7 mln", "Calabria|1.84|circa 1,84 mln", "Sardegna|1.57|circa 1,57 mln", "Liguria|1.51|circa 1,51 mln",
+      "Marche|1.48|circa 1,48 mln", "Abruzzo|1.27|circa 1,27 mln", "Friuli-Venezia Giulia|1.19|circa 1,19 mln", "Trentino-Alto Adige|1.08|circa 1,08 mln", "Umbria|0.85|circa 850.000"] },
+    { q: "Quale comune italiano supera i 300.000 abitanti?", t: "min", icon: "🏙️", unit: "abitanti", w: "città", items: [
+      "Roma|2750000|circa 2,75 mln", "Milano|1370000|circa 1,37 mln", "Napoli|910000|circa 910.000", "Torino|850000|circa 850.000", "Palermo|630000|circa 630.000",
+      "Genova|560000|circa 560.000", "Bologna|390000|circa 390.000", "Firenze|360000|circa 360.000", "Bari|316000|circa 316.000", "Venezia|250000|circa 250.000 (comune intero)"] },
+    { q: "Quale canzone dura PIÙ di 6 minuti (versione in studio)?", t: "min", icon: "⏱️", unit: "s", w: "singolo", items: [
+      "Free Bird|548|9:08|🦅", "November Rain|537|8:57|🌧️", "Stairway to Heaven|482|8:02|🪜", "Hey Jude|431|7:11|🎸", "Light My Fire|426|7:06|🔥",
+      "Hotel California|390|6:30|🏨", "Paranoid Android|387|6:27|🤖", "Comfortably Numb|382|6:22|🧱", "Like a Rolling Stone|373|6:13|🪨", "Bohemian Rhapsody|355|5:55: per 5 secondi!|👑"] },
+    { q: "Quale di questi artisti è morto PRIMA dei 40 anni?", t: "max", icon: "🕯️", unit: "anni", w: "", items: [
+      "Kurt Cobain|27||🎸", "Jimi Hendrix|27||🎸", "Amy Winehouse|27||🎤", "Wolfgang Amadeus Mozart|35||🎼", "Amedeo Modigliani|35||🎨",
+      "Raffaello Sanzio|37||🎨", "Vincent van Gogh|37||🌻", "Caravaggio|38||🎨", "Fryderyk Chopin|39||🎹", "Freddie Mercury|45||👑"] },
+    { q: "Quale animale pesa PIÙ di 500 kg da adulto?", t: "min", icon: "⚖️", unit: "kg", w: "animale", items: [
+      "Elefante africano|6000|fino a 6 tonnellate|🐘", "Rinoceronte bianco|2300||🦏", "Ippopotamo|1500||🦛", "Giraffa|1200||🦒", "Tricheco|1200||🦭",
+      "Squalo bianco|1100||🦈", "Gaur|1000||🐂", "Coccodrillo marino|1000|maschi fino a oltre 1.000 kg|🐊", "Bisonte americano|900||🦬", "Gorilla|180|maschi fino a circa 180-200 kg|🦍"] },
+    { q: "Quale monumento è stato completato PRIMA del 1700?", t: "max", icon: "🏰", unit: "", w: "monumento", items: [
+      "Colosseo|80|80 d.C.", "Pantheon|125|circa 125 d.C.", "Notre-Dame de Paris|1345|1345", "Torre di Pisa|1372|1372", "Alhambra|1390|palazzi nasridi, XIV secolo",
+      "Cupola del Brunelleschi|1436|1436", "Machu Picchu|1450|circa 1450", "Basilica di San Pietro|1626|1626", "Taj Mahal|1653|1653", "Fontana di Trevi|1762|1762"] },
+    { q: "Quale capitale si trova a PIÙ di 2.000 metri di altitudine?", t: "min", icon: "⛰️", unit: "m s.l.m.", w: "", items: [
+      "La Paz|3640|sede del governo|🇧🇴", "Quito|2850||🇪🇨", "Sucre|2810|capitale costituzionale|🇧🇴", "Bogotá|2640||🇨🇴", "Addis Abeba|2355||🇪🇹",
+      "Thimphu|2330||🇧🇹", "Asmara|2325||🇪🇷", "Sana'a|2250||🇾🇪", "Città del Messico|2240||🇲🇽", "Kathmandu|1400|circa 1.400 m: nonostante l'Himalaya!|🇳🇵"] },
+    { q: "Quale vetta italiana supera i 3.000 metri?", t: "min", icon: "🏔️", unit: "m", w: "montagna", items: [
+      "Monte Rosa|4634", "Cervino|4478", "Gran Paradiso|4061", "Pizzo Bernina|4049", "Ortles|3905",
+      "Monviso|3841", "Adamello|3539", "Etna|3357|circa 3.350 m (varia con le eruzioni)", "Marmolada|3343", "Gran Sasso|2912|Corno Grande: 2.912 m"] },
+    { q: "Quale Paese europeo ha PIÙ di 10 milioni di abitanti?", t: "min", icon: "🇪🇺", unit: "mln di abitanti", w: "", items: [
+      "Polonia|36.6||🇵🇱", "Romania|19||🇷🇴", "Paesi Bassi|18||🇳🇱", "Belgio|11.8||🇧🇪", "Repubblica Ceca|10.9||🇨🇿",
+      "Svezia|10.6||🇸🇪", "Portogallo|10.6||🇵🇹", "Grecia|10.4||🇬🇷", "Azerbaigian|10.2||🇦🇿", "Danimarca|6||🇩🇰"] },
+    { q: "Quale personaggio dei cartoni ha debuttato PRIMA del 1970?", t: "max", icon: "📺", unit: "", w: "personaggio", items: [
+      "Topolino|1928|1928", "Braccio di Ferro|1929|1929", "Betty Boop|1930|1930", "Paperino|1934|1934", "Bugs Bunny|1940|1940",
+      "Tom (Tom & Jerry)|1940|1940", "Snoopy|1950|1950", "Fred Flintstone|1960|1960", "Pantera Rosa|1963|1963", "Garfield|1978|1978"] },
+    { q: "Quale materiale galleggia sull'acqua (densità minore di 1 g/cm³)?", t: "max", icon: "🛟", unit: "g/cm³", w: "", items: [
+      "Polistirolo|0.05||📦", "Legno di balsa|0.16||🪵", "Sughero|0.24||🍾", "Legno di pino|0.5||🌲", "Mela|0.8||🍎",
+      "Olio d'oliva|0.91||🫒", "Burro|0.91||🧈", "Ghiaccio|0.92||🧊", "Cera d'api|0.96||🕯️", "Legno di ebano|1.2|1,2 g/cm³: affonda!|🪵"] },
+    { q: "Quale film ha incassato PIÙ di 1,5 miliardi $ nel mondo?", t: "min", icon: "🎟️", unit: "mld $", w: "film", items: [
+      "Avatar|2.92|circa 2,92 mld $", "Avengers: Endgame|2.8|circa 2,8 mld $", "Avatar: La via dell'acqua|2.32|circa 2,32 mld $", "Titanic|2.26|circa 2,26 mld $", "Star Wars: Il risveglio della Forza|2.07|circa 2,07 mld $",
+      "Avengers: Infinity War|2.05|circa 2,05 mld $", "Jurassic World|1.67|circa 1,67 mld $", "Il re leone (2019)|1.66|circa 1,66 mld $", "The Avengers|1.52|circa 1,52 mld $", "Il cavaliere oscuro|1.0|circa 1 mld $"] },
+    { q: "Quale tennista ha vinto ALMENO 10 tornei del Grande Slam in singolare?", t: "min", icon: "🎾", unit: "Slam", w: "tennista", items: [
+      "Novak Đoković|24", "Serena Williams|23", "Rafael Nadal|22", "Steffi Graf|22", "Roger Federer|20",
+      "Martina Navrátilová|18", "Chris Evert|18", "Pete Sampras|14", "Björn Borg|11", "Andre Agassi|8"] },
+    { q: "Quale pilota ha vinto ALMENO 3 Mondiali di Formula 1?", t: "min", icon: "🏎️", unit: "titoli", w: "pilota", items: [
+      "Lewis Hamilton|7", "Michael Schumacher|7", "Juan Manuel Fangio|5", "Alain Prost|4", "Sebastian Vettel|4",
+      "Max Verstappen|4", "Ayrton Senna|3", "Niki Lauda|3", "Jackie Stewart|3", "Fernando Alonso|2"] },
+    { q: "Quale console ha venduto PIÙ di 80 milioni di unità?", t: "min", icon: "🕹️", unit: "mln di unità", w: "console", items: [
+      "PlayStation 2|160|oltre 160 mln", "Nintendo DS|154|circa 154 mln", "Nintendo Switch|150|oltre 150 mln", "Game Boy|119|circa 119 mln", "PlayStation 4|117|oltre 117 mln",
+      "PlayStation|102|circa 102 mln", "Wii|101|circa 101 mln", "Xbox 360|84|circa 84 mln", "Game Boy Advance|81.5|circa 81,5 mln", "Nintendo 64|33|circa 33 mln"] },
+    { q: "Quale alimento contiene PIÙ di 20 g di proteine per 100 g?", t: "min", icon: "💪", unit: "g/100 g", w: "", items: [
+      "Soia secca|36||🫘", "Parmigiano Reggiano|33||🧀", "Bresaola|32||🥩", "Semi di zucca|30||🎃", "Prosciutto crudo|26||🥓",
+      "Arachidi|26||🥜", "Tonno in scatola|25||🐟", "Lenticchie secche|23||🫘", "Petto di pollo (crudo)|23||🍗", "Uovo|12.5|circa 12,5 g: meno di quanto si pensi!|🥚"] },
+
+    /* ---------------- LOGICA: 9 rispettano il tratto (1), l'intruso no (0) ---------------- */
+    { q: "Quale di questi attori ha vinto un Oscar?", t: "min", icon: "🎭", unit: "", w: "attore", items: [
+      "Leonardo DiCaprio|1|1 Oscar · The Revenant (2016)", "Tom Hanks|1|2 Oscar", "Meryl Streep|1|3 Oscar", "Anthony Hopkins|1|2 Oscar", "Denzel Washington|1|2 Oscar",
+      "Cate Blanchett|1|2 Oscar", "Emma Stone|1|2 Oscar", "Jack Nicholson|1|3 Oscar", "Natalie Portman|1|1 Oscar · Il cigno nero", "Johnny Depp|0|0 Oscar (3 candidature)"] },
+    { q: "Quale di questi Paesi fa parte dell'Unione Europea?", t: "min", icon: "🇪🇺", unit: "", w: "", items: [
+      "Italia|1|Membro dal 1957 (fondatore)|🇮🇹", "Francia|1|Membro dal 1957 (fondatore)|🇫🇷", "Germania|1|Membro dal 1957 (fondatore)|🇩🇪", "Grecia|1|Membro dal 1981|🇬🇷", "Spagna|1|Membro dal 1986|🇪🇸",
+      "Portogallo|1|Membro dal 1986|🇵🇹", "Austria|1|Membro dal 1995|🇦🇹", "Svezia|1|Membro dal 1995|🇸🇪", "Croazia|1|Membro dal 2013|🇭🇷", "Norvegia|0|Non membro (solo SEE)|🇳🇴"] },
+    { q: "Quale di questi animali acquatici è un mammifero?", t: "min", icon: "🐾", unit: "", w: "animale", items: [
+      "Delfino|1|Mammifero (cetaceo)|🐬", "Balena|1|Mammifero (cetaceo)|🐋", "Orca|1|Mammifero (cetaceo)|🐋", "Pipistrello|1|Mammifero (chirottero)|🦇", "Lamantino|1|Mammifero (sirenide)|🦭",
+      "Foca|1|Mammifero (pinnipede)|🦭", "Tricheco|1|Mammifero (pinnipede)|🦭", "Ornitorinco|1|Mammifero (monotremo, depone uova)|🦫", "Narvalo|1|Mammifero (cetaceo)|🐋", "Squalo|0|Pesce cartilagineo|🦈"] },
+    { q: "Quale di questi elementi è un gas a temperatura ambiente?", t: "min", icon: "⚗️", unit: "", w: "elemento chimico", items: [
+      "Elio|1|Gas nobile", "Neon|1|Gas nobile", "Argon|1|Gas nobile", "Kripton|1|Gas nobile", "Xeno|1|Gas nobile",
+      "Radon|1|Gas nobile", "Idrogeno|1|Gas", "Ossigeno|1|Gas", "Azoto|1|Gas", "Bromo|0|Liquido a 20 °C"] },
+    { q: "Quale di questi marchi è nato negli Stati Uniti?", t: "min", icon: "🏷️", unit: "", w: "azienda", items: [
+      "Apple|1|USA · Cupertino, 1976", "Nike|1|USA · Oregon, 1964", "Coca-Cola|1|USA · Atlanta, 1886", "McDonald's|1|USA · California, 1940", "Google|1|USA · California, 1998",
+      "Amazon|1|USA · Seattle, 1994", "Microsoft|1|USA · Albuquerque, 1975", "Starbucks|1|USA · Seattle, 1971", "Levi's|1|USA · San Francisco, 1853", "Adidas|0|Germania · Herzogenaurach, 1949"] },
+    { q: "Quale supereroe ha fatto parte della Justice League classica?", t: "min", icon: "🦸", unit: "", w: "personaggio DC Comics", items: [
+      "Superman|1|Membro fondatore (DC)", "Batman|1|Membro fondatore (DC)", "Wonder Woman|1|Membro fondatore (DC)", "Flash|1|Membro fondatore (DC)", "Lanterna Verde|1|Membro fondatore (DC)",
+      "Aquaman|1|Membro fondatore (DC)", "Martian Manhunter|1|Membro fondatore (DC)", "Freccia Verde|1|Membro dal 1961 (DC)", "Atom|1|Membro dal 1962 (DC)", "Spider-Man|0|Marvel: mai nella Justice League"] },
+    { q: "Quale di queste canzoni supera 1 miliardo di stream su Spotify?", t: "min", icon: "🎧", unit: "", w: "singolo", items: [
+      "Blinding Lights|1|oltre 4 miliardi", "Shape of You|1|oltre 4 miliardi", "Dance Monkey|1|oltre 3 miliardi", "bad guy|1|oltre 2,5 miliardi", "Bohemian Rhapsody|1|oltre 2,5 miliardi",
+      "Uptown Funk|1|oltre 2 miliardi", "Billie Jean|1|oltre 2 miliardi", "Smells Like Teen Spirit|1|oltre 2 miliardi", "Despacito|1|oltre 1 miliardo", "Nel blu dipinto di blu (Volare)|0|molto sotto 1 miliardo"] },
+    { q: "Quale di questi corpi celesti è una luna?", t: "min", icon: "🌙", unit: "", w: "astronomia", items: [
+      "Luna|1|Satellite della Terra", "Titano|1|Luna di Saturno", "Europa|1|Luna di Giove", "Io|1|Luna di Giove", "Ganimede|1|Luna di Giove",
+      "Callisto|1|Luna di Giove", "Phobos|1|Luna di Marte", "Deimos|1|Luna di Marte", "Tritone|1|Luna di Nettuno", "Cerere|0|Pianeta nano (fascia degli asteroidi)"] },
+    { q: "Quale personaggio è apparso in un film Marvel (MCU)?", t: "min", icon: "🦹", unit: "", w: "personaggio Marvel", items: [
+      "Iron Man|1|Debutto: Iron Man (2008)", "Hulk|1|Debutto: L'incredibile Hulk (2008)", "Vedova Nera|1|Debutto: Iron Man 2 (2010)", "Thor|1|Debutto: Thor (2011)", "Star-Lord|1|Debutto: Guardiani della Galassia (2014)",
+      "Scarlet Witch|1|Debutto: Captain America: The Winter Soldier (2014)", "Black Panther|1|Debutto: Captain America: Civil War (2016)", "Spider-Man|1|Debutto MCU: Captain America: Civil War (2016)", "Doctor Strange|1|Debutto: Doctor Strange (2016)", "Hellboy|0|Dark Horse Comics: mai nell'MCU"] },
+    { q: "Quale di questi elementi è solido a temperatura ambiente?", t: "min", icon: "🧪", unit: "", w: "elemento chimico", items: [
+      "Ferro|1|Solido", "Oro|1|Solido", "Argento|1|Solido", "Rame|1|Solido", "Carbonio|1|Solido",
+      "Sodio|1|Solido", "Zinco|1|Solido", "Piombo|1|Solido", "Alluminio|1|Solido", "Mercurio|0|Liquido a 20 °C"] },
+    { q: "Quale di queste città è una capitale?", t: "min", icon: "🏛️", unit: "", w: "", items: [
+      "Parigi|1|Capitale della Francia|🇫🇷", "Madrid|1|Capitale della Spagna|🇪🇸", "Lisbona|1|Capitale del Portogallo|🇵🇹", "Vienna|1|Capitale dell'Austria|🇦🇹", "Praga|1|Capitale della Repubblica Ceca|🇨🇿",
+      "Varsavia|1|Capitale della Polonia|🇵🇱", "Atene|1|Capitale della Grecia|🇬🇷", "Dublino|1|Capitale dell'Irlanda|🇮🇪", "Budapest|1|Capitale dell'Ungheria|🇭🇺", "Istanbul|0|Non è la capitale: la capitale turca è Ankara|🇹🇷"] },
+    { q: "Quale di queste opere è di Leonardo da Vinci?", t: "min", icon: "🎨", unit: "", w: "dipinto", items: [
+      "La Gioconda|1|Leonardo da Vinci", "L'Ultima Cena|1|Leonardo da Vinci", "Dama con l'ermellino|1|Leonardo da Vinci", "Annunciazione|1|Leonardo da Vinci", "Vergine delle rocce|1|Leonardo da Vinci",
+      "Uomo vitruviano|1|Leonardo da Vinci", "San Girolamo|1|Leonardo da Vinci", "Ritratto di Ginevra de' Benci|1|Leonardo da Vinci", "Battesimo di Cristo|1|Verrocchio e Leonardo", "La nascita di Venere|0|Sandro Botticelli"] },
+    { q: "Quale di questi film è di Christopher Nolan?", t: "min", icon: "🌀", unit: "", w: "film", items: [
+      "Inception|1|Christopher Nolan (2010)", "Interstellar|1|Christopher Nolan (2014)", "Memento|1|Christopher Nolan (2000)", "Tenet|1|Christopher Nolan (2020)", "Dunkirk|1|Christopher Nolan (2017)",
+      "Oppenheimer|1|Christopher Nolan (2023)", "The Prestige|1|Christopher Nolan (2006)", "Insomnia|1|Christopher Nolan (2002)", "Batman Begins|1|Christopher Nolan (2005)", "Arrival|0|Denis Villeneuve (2016)"] },
+    { q: "Quale di queste canzoni è dei Queen?", t: "min", icon: "👑", unit: "", w: "singolo", items: [
+      "Bohemian Rhapsody|1|Queen (1975)", "We Will Rock You|1|Queen (1977)", "We Are the Champions|1|Queen (1977)", "Don't Stop Me Now|1|Queen (1978)", "Another One Bites the Dust|1|Queen (1980)",
+      "Somebody to Love|1|Queen (1976)", "Radio Ga Ga|1|Queen (1984)", "I Want to Break Free|1|Queen (1984)", "Under Pressure|1|Queen e David Bowie (1981)", "Stairway to Heaven|0|Led Zeppelin (1971)"] },
+    { q: "Quale personaggio appare in Harry Potter?", t: "min", icon: "⚡", unit: "", w: "personaggio", items: [
+      "Hermione Granger|1|Harry Potter", "Ron Weasley|1|Harry Potter", "Albus Silente|1|Harry Potter", "Severus Piton|1|Harry Potter", "Rubeus Hagrid|1|Harry Potter",
+      "Lord Voldemort|1|Harry Potter", "Draco Malfoy|1|Harry Potter", "Luna Lovegood|1|Harry Potter", "Sirius Black|1|Harry Potter", "Gandalf|0|Il Signore degli Anelli"] },
+    { q: "Quale di queste è una regione italiana?", t: "min", icon: "🇮🇹", unit: "", w: "regione italiana", items: [
+      "Molise|1|Regione · capoluogo Campobasso", "Basilicata|1|Regione · capoluogo Potenza", "Umbria|1|Regione · capoluogo Perugia", "Marche|1|Regione · capoluogo Ancona", "Liguria|1|Regione · capoluogo Genova",
+      "Abruzzo|1|Regione · capoluogo L'Aquila", "Valle d'Aosta|1|Regione · capoluogo Aosta", "Friuli-Venezia Giulia|1|Regione · capoluogo Trieste", "Calabria|1|Regione · capoluogo Catanzaro", "Romagna|0|Parte dell'Emilia-Romagna, non è una regione"] },
+    { q: "Quale squadra ha vinto la Champions League?", t: "min", icon: "🌟", unit: "", w: "società calcistica", items: [
+      "Real Madrid|1|15 vittorie", "Milan|1|7 vittorie", "Bayern Monaco|1|6 vittorie", "Liverpool|1|6 vittorie", "Barcellona|1|5 vittorie",
+      "Ajax|1|4 vittorie", "Inter|1|3 vittorie", "Manchester United|1|3 vittorie", "Juventus|1|2 vittorie", "Arsenal|0|Mai vinta (finale persa nel 2006)"] },
+    { q: "Quale di questi è un classico d'animazione Disney?", t: "min", icon: "🏰", unit: "", w: "film d'animazione", items: [
+      "Il Re Leone|1|Disney (1994)", "La Sirenetta|1|Disney (1989)", "Aladdin|1|Disney (1992)", "La bella e la bestia|1|Disney (1991)", "Frozen|1|Disney (2013)",
+      "Mulan|1|Disney (1998)", "Pocahontas|1|Disney (1995)", "Hercules|1|Disney (1997)", "Rapunzel|1|Disney (2010)", "Shrek|0|DreamWorks (2001)"] },
+    { q: "Quale di questi calciatori ha vinto un Mondiale?", t: "min", icon: "🏆", unit: "", w: "calciatore", items: [
+      "Lionel Messi|1|Campione del mondo 2022", "Pelé|1|Campione del mondo 1958, 1962, 1970", "Diego Armando Maradona|1|Campione del mondo 1986", "Zinédine Zidane|1|Campione del mondo 1998", "Gianluigi Buffon|1|Campione del mondo 2006",
+      "Fabio Cannavaro|1|Campione del mondo 2006", "Ronaldo|1|Campione del mondo 1994, 2002", "Kylian Mbappé|1|Campione del mondo 2018", "Andrés Iniesta|1|Campione del mondo 2010", "Cristiano Ronaldo|0|Mai vinto un Mondiale"] },
+    { q: "Quale di questi è un film Pixar?", t: "min", icon: "💡", unit: "", w: "film Pixar", items: [
+      "Toy Story|1|Pixar (1995)", "Up|1|Pixar (2009)", "Coco|1|Pixar (2017)", "Inside Out|1|Pixar (2015)", "Ratatouille|1|Pixar (2007)",
+      "WALL•E|1|Pixar (2008)", "Alla ricerca di Nemo|1|Pixar (2003)", "Monsters & Co.|1|Pixar (2001)", "Gli Incredibili|1|Pixar (2004)", "Cattivissimo me|0|Illumination (2010)"] },
+    { q: "Quale di questi pittori è italiano?", t: "min", icon: "🎨", unit: "", w: "pittore", items: [
+      "Caravaggio|1|Italiano · Barocco", "Raffaello Sanzio|1|Italiano · Rinascimento", "Michelangelo Buonarroti|1|Italiano · Rinascimento", "Sandro Botticelli|1|Italiano · Rinascimento", "Tiziano Vecellio|1|Italiano · Rinascimento",
+      "Giotto|1|Italiano · Trecento", "Amedeo Modigliani|1|Italiano · Novecento", "Canaletto|1|Italiano · Vedutismo", "Giorgio de Chirico|1|Italiano · Metafisica", "Rembrandt|0|Olandese · Secolo d'oro"] },
+    { q: "Quale di queste canzoni è dei Beatles?", t: "min", icon: "🎸", unit: "", w: "canzone Beatles", items: [
+      "Hey Jude|1|The Beatles (1968)", "Yesterday|1|The Beatles (1965)", "Let It Be|1|The Beatles (1970)", "Help!|1|The Beatles (1965)", "Yellow Submarine|1|The Beatles (1966)",
+      "Come Together|1|The Beatles (1969)", "Something|1|The Beatles (1969)", "Penny Lane|1|The Beatles (1967)", "Here Comes the Sun|1|The Beatles (1969)", "Imagine|0|John Lennon da solista (1971)"] },
+    { q: "Quale di queste opere è di Giuseppe Verdi?", t: "min", icon: "🎼", unit: "", w: "opera lirica", items: [
+      "Aida|1|Giuseppe Verdi (1871)", "La traviata|1|Giuseppe Verdi (1853)", "Rigoletto|1|Giuseppe Verdi (1851)", "Nabucco|1|Giuseppe Verdi (1842)", "Otello|1|Giuseppe Verdi (1887)",
+      "Falstaff|1|Giuseppe Verdi (1893)", "Il trovatore|1|Giuseppe Verdi (1853)", "Don Carlos|1|Giuseppe Verdi (1867)", "Macbeth|1|Giuseppe Verdi (1847)", "Tosca|0|Giacomo Puccini (1900)"] },
+    { q: "Quale di questi personaggi è dei Simpson?", t: "min", icon: "🍩", unit: "", w: "personaggio dei Simpson", items: [
+      "Homer Simpson|1|I Simpson", "Marge Simpson|1|I Simpson", "Bart Simpson|1|I Simpson", "Lisa Simpson|1|I Simpson", "Maggie Simpson|1|I Simpson",
+      "Montgomery Burns|1|I Simpson", "Ned Flanders|1|I Simpson", "Boe Szyslak|1|I Simpson", "Krusty il Clown|1|I Simpson", "Stewie Griffin|0|I Griffin"] },
+    { q: "Quale di questi Pokémon è della prima generazione?", t: "min", icon: "⚡", unit: "", w: "Pokémon", items: [
+      "Pikachu|1|1ª generazione (#025)", "Charmander|1|1ª generazione (#004)", "Bulbasaur|1|1ª generazione (#001)", "Squirtle|1|1ª generazione (#007)", "Mewtwo|1|1ª generazione (#150)",
+      "Snorlax|1|1ª generazione (#143)", "Jigglypuff|1|1ª generazione (#039)", "Gengar|1|1ª generazione (#094)", "Eevee|1|1ª generazione (#133)", "Lucario|0|4ª generazione (#448)"] },
+    { q: "Quale di queste lingue è neolatina?", t: "min", icon: "🗣️", unit: "", w: "lingua", items: [
+      "Italiano|1|Neolatina", "Francese|1|Neolatina", "Spagnolo|1|Neolatina", "Portoghese|1|Neolatina", "Rumeno|1|Neolatina",
+      "Catalano|1|Neolatina", "Sardo|1|Neolatina", "Ladino|1|Neolatina", "Galiziano|1|Neolatina", "Albanese|0|Indoeuropea, ramo a sé (non neolatina)"] },
+    { q: "Quale di questi Paesi usa l'euro?", t: "min", icon: "💶", unit: "", w: "", items: [
+      "Italia|1|Euro dal 2002|🇮🇹", "Francia|1|Euro dal 2002|🇫🇷", "Germania|1|Euro dal 2002|🇩🇪", "Spagna|1|Euro dal 2002|🇪🇸", "Grecia|1|Euro dal 2002|🇬🇷",
+      "Austria|1|Euro dal 2002|🇦🇹", "Finlandia|1|Euro dal 2002|🇫🇮", "Portogallo|1|Euro dal 2002|🇵🇹", "Croazia|1|Euro dal 2023|🇭🇷", "Svezia|0|Corona svedese|🇸🇪"] },
+    { q: "Quale di questi supereroi è della Marvel?", t: "min", icon: "🦸", unit: "", w: "personaggio Marvel Comics", items: [
+      "Iron Man|1|Marvel", "Spider-Man|1|Marvel", "Thor|1|Marvel", "Hulk|1|Marvel", "Capitan America|1|Marvel",
+      "Wolverine|1|Marvel", "Pantera Nera|1|Marvel", "Doctor Strange|1|Marvel", "Deadpool|1|Marvel", "Flash|0|DC Comics"] },
+    { q: "Quale di questi libri è di Stephen King?", t: "min", icon: "📚", unit: "", w: "romanzo", items: [
+      "It|1|Stephen King (1986)", "Shining|1|Stephen King (1977)", "Misery|1|Stephen King (1987)", "Carrie|1|Stephen King (1974)", "Pet Sematary|1|Stephen King (1983)",
+      "Il miglio verde|1|Stephen King (1996)", "Cujo|1|Stephen King (1981)", "22/11/'63|1|Stephen King (2011)", "L'ombra dello scorpione|1|Stephen King (1978)", "Dracula|0|Bram Stoker (1897)"] },
+    { q: "Quale di questi animali è un felino?", t: "min", icon: "🐾", unit: "", w: "animale", items: [
+      "Leone|1|Felide", "Tigre|1|Felide", "Ghepardo|1|Felide", "Leopardo|1|Felide", "Giaguaro|1|Felide",
+      "Lince|1|Felide", "Puma|1|Felide", "Gatto domestico|1|Felide", "Ocelot|1|Felide", "Iena|0|Ienide (più vicina alle manguste che ai gatti)"] },
+    { q: "Quale di queste città è un capoluogo di regione?", t: "min", icon: "🏙️", unit: "", w: "città", items: [
+      "Milano|1|Capoluogo della Lombardia", "Torino|1|Capoluogo del Piemonte", "Venezia|1|Capoluogo del Veneto", "Bologna|1|Capoluogo dell'Emilia-Romagna", "Firenze|1|Capoluogo della Toscana",
+      "Napoli|1|Capoluogo della Campania", "Bari|1|Capoluogo della Puglia", "Palermo|1|Capoluogo della Sicilia", "Cagliari|1|Capoluogo della Sardegna", "Verona|0|Capoluogo di provincia, non di regione"] },
+    { q: "Quale di queste squadre ha vinto lo scudetto?", t: "min", icon: "🇮🇹", unit: "", w: "società calcistica", items: [
+      "Juventus|1|36 scudetti", "Inter|1|20 scudetti", "Milan|1|19 scudetti", "Napoli|1|4 scudetti", "Roma|1|3 scudetti",
+      "Lazio|1|2 scudetti", "Fiorentina|1|2 scudetti", "Bologna|1|7 scudetti", "Cagliari|1|1 scudetto (1970)", "Atalanta|0|Mai vinto lo scudetto (ha vinto l'Europa League 2024)"] },
+    { q: "Quale di questi film ha vinto l'Oscar al miglior film?", t: "min", icon: "🎬", unit: "", w: "film", items: [
+      "Il Padrino|1|Miglior film 1973", "Titanic|1|Miglior film 1998", "Forrest Gump|1|Miglior film 1995", "Il gladiatore|1|Miglior film 2001", "Oppenheimer|1|Miglior film 2024",
+      "Schindler's List|1|Miglior film 1994", "Parasite|1|Miglior film 2020", "Il silenzio degli innocenti|1|Miglior film 1992", "La forma dell'acqua|1|Miglior film 2018", "Pulp Fiction|0|Solo candidato (vinse Forrest Gump)"] },
+    { q: "Quale di queste band è britannica?", t: "min", icon: "🎤", unit: "", w: "gruppo musicale", items: [
+      "The Beatles|1|Liverpool, Inghilterra", "The Rolling Stones|1|Londra, Inghilterra", "Queen|1|Londra, Inghilterra", "Coldplay|1|Londra, Inghilterra", "Oasis|1|Manchester, Inghilterra",
+      "Pink Floyd|1|Londra, Inghilterra", "Radiohead|1|Abingdon, Inghilterra", "Arctic Monkeys|1|Sheffield, Inghilterra", "Led Zeppelin|1|Londra, Inghilterra", "U2|0|Dublino, Irlanda"] },
+    { q: "Quale di questi attori ha recitato in Harry Potter?", t: "min", icon: "⚡", unit: "", w: "attore", items: [
+      "Daniel Radcliffe|1|Harry Potter", "Emma Watson|1|Hermione Granger", "Rupert Grint|1|Ron Weasley", "Alan Rickman|1|Severus Piton", "Maggie Smith|1|Minerva McGranitt",
+      "Ralph Fiennes|1|Lord Voldemort", "Gary Oldman|1|Sirius Black", "Helena Bonham Carter|1|Bellatrix Lestrange", "Robert Pattinson|1|Cedric Diggory", "Ian McKellen|0|Nessuna partecipazione (è Gandalf nel Signore degli Anelli)"] },
+    { q: "Quale di queste serie TV è tratta da un libro o da un fumetto?", t: "min", icon: "📖", unit: "", w: "serie televisiva", items: [
+      "Il Trono di Spade|1|Romanzi di George R. R. Martin", "The Walking Dead|1|Fumetto di Robert Kirkman", "The Witcher|1|Romanzi di Andrzej Sapkowski", "Outlander|1|Romanzi di Diana Gabaldon", "Bridgerton|1|Romanzi di Julia Quinn",
+      "The Boys|1|Fumetto di Garth Ennis", "Gomorra|1|Libro di Roberto Saviano", "L'amica geniale|1|Romanzi di Elena Ferrante", "Big Little Lies|1|Romanzo di Liane Moriarty", "Breaking Bad|0|Soggetto originale di Vince Gilligan"] },
+    { q: "Quale di questi attori ha interpretato Batman o Joker al cinema?", t: "min", icon: "🦇", unit: "", w: "attore", items: [
+      "Michael Keaton|1|Batman (1989)", "Christian Bale|1|Batman Begins (2005)", "Ben Affleck|1|Batman v Superman (2016)", "Robert Pattinson|1|The Batman (2022)", "George Clooney|1|Batman & Robin (1997)",
+      "Val Kilmer|1|Batman Forever (1995)", "Jack Nicholson|1|Joker in Batman (1989)", "Heath Ledger|1|Joker nel Cavaliere oscuro (2008)", "Joaquin Phoenix|1|Joker (2019)", "Christopher Reeve|0|Nessuna: è stato Superman"] },
+    { q: "Quale di queste coppie di personaggi ha una storia d'amore nella serie?", t: "min", icon: "💞", unit: "", w: "", items: [
+      "Ross e Rachel|1|Coppia · Friends|💞", "Monica e Chandler|1|Coppia sposata · Friends|💞", "Jim e Pam|1|Coppia sposata · The Office|💞", "Ted e Robin|1|Coppia · How I Met Your Mother|💞", "Carrie e Mr. Big|1|Coppia · Sex and the City|💞",
+      "Meredith e Derek|1|Coppia sposata · Grey's Anatomy|💞", "Leonard e Penny|1|Coppia sposata · The Big Bang Theory|💞", "Jon Snow e Ygritte|1|Coppia · Il Trono di Spade|💞", "Lorelai e Luke|1|Coppia · Una mamma per amica|💞", "Sherlock e Watson|0|Amici e colleghi · Sherlock|💞"] },
+    { q: "Quale di questi film è un remake o un nuovo adattamento?", t: "min", icon: "🎥", unit: "", w: "film", items: [
+      "Il re leone (2019)|1|Remake del film del 1994", "Scarface|1|Remake del film del 1932", "The Departed|1|Remake di Infernal Affairs (2002)", "Ocean's Eleven|1|Remake del film del 1960", "King Kong (2005)|1|Remake del film del 1933",
+      "A Star Is Born|1|Remake del film del 1937", "West Side Story (2021)|1|Remake del film del 1961", "Dune (2021)|1|Nuovo adattamento dopo il film del 1984", "La mosca|1|Remake del film del 1958", "Inception|0|Sceneggiatura originale di Christopher Nolan"] },
+    { q: "Quale di queste hit è arrivata al n. 1 della Billboard Hot 100?", t: "min", icon: "📈", unit: "", w: "singolo", items: [
+      "Blinding Lights|1|Posizione massima: n. 1", "Shape of You|1|Posizione massima: n. 1", "Despacito|1|Posizione massima: n. 1", "Uptown Funk|1|Posizione massima: n. 1", "Old Town Road|1|Posizione massima: n. 1",
+      "Hey Jude|1|Posizione massima: n. 1", "Billie Jean|1|Posizione massima: n. 1", "Rolling in the Deep|1|Posizione massima: n. 1", "Bad Guy|1|Posizione massima: n. 1", "Bohemian Rhapsody|0|Posizione massima: n. 2 (1992)"] },
+    { q: "Quale di questi artisti usa un nome d'arte?", t: "min", icon: "🎤", unit: "", w: "cantante", items: [
+      "Lady Gaga|1|Vero nome: Stefani Germanotta", "Bruno Mars|1|Vero nome: Peter Gene Hernandez", "Elton John|1|Vero nome: Reginald Dwight", "Freddie Mercury|1|Vero nome: Farrokh Bulsara", "Eminem|1|Vero nome: Marshall Mathers",
+      "Sting|1|Vero nome: Gordon Sumner", "Bono|1|Vero nome: Paul Hewson", "Zucchero|1|Vero nome: Adelmo Fornaciari", "Jovanotti|1|Vero nome: Lorenzo Cherubini", "Ed Sheeran|0|Nome vero: Edward Christopher Sheeran"] },
+    { q: "Quale di questi Paesi europei ha adottato l'euro?", t: "min", icon: "💶", unit: "", w: "", items: [
+      "Belgio|1|Euro|🇧🇪", "Paesi Bassi|1|Euro|🇳🇱", "Irlanda|1|Euro|🇮🇪", "Lussemburgo|1|Euro|🇱🇺", "Slovenia|1|Euro (dal 2007)|🇸🇮",
+      "Slovacchia|1|Euro (dal 2009)|🇸🇰", "Estonia|1|Euro (dal 2011)|🇪🇪", "Lettonia|1|Euro (dal 2014)|🇱🇻", "Lituania|1|Euro (dal 2015)|🇱🇹", "Danimarca|0|Corona danese|🇩🇰"] },
+    { q: "Quale di queste capitali si affaccia sul mare?", t: "min", icon: "🌊", unit: "", w: "città", items: [
+      "Copenaghen|1|Sul mare (stretto dell'Øresund)", "Helsinki|1|Sul Mar Baltico", "Oslo|1|In fondo all'Oslofjord", "Stoccolma|1|Sul Mar Baltico", "Tallinn|1|Sul Golfo di Finlandia",
+      "Dublino|1|Sul Mare d'Irlanda", "La Valletta|1|Sul Mediterraneo", "Reykjavík|1|Sull'Atlantico", "Tokyo|1|Sulla baia di Tokyo", "Madrid|0|Nell'entroterra, a oltre 300 km dal mare"] },
+    { q: "Quale di queste bandiere contiene il colore rosso?", t: "min", icon: "🚩", unit: "", w: "", items: [
+      "Italia|1|Verde, bianco, rosso|🇮🇹", "Giappone|1|Bianco e rosso|🇯🇵", "Canada|1|Rosso e bianco|🇨🇦", "Stati Uniti|1|Rosso, bianco, blu|🇺🇸", "Cina|1|Rosso e giallo|🇨🇳",
+      "Spagna|1|Rosso e giallo|🇪🇸", "Germania|1|Nero, rosso, oro|🇩🇪", "Turchia|1|Rosso e bianco|🇹🇷", "Svizzera|1|Rosso e bianco|🇨🇭", "Brasile|0|Verde, giallo, blu, bianco|🇧🇷"] },
+    { q: "Quale di queste città è capoluogo di regione? (versione difficile)", t: "min", icon: "🏛️", unit: "", w: "città", items: [
+      "Trento|1|Capoluogo del Trentino-Alto Adige", "Potenza|1|Capoluogo della Basilicata", "Campobasso|1|Capoluogo del Molise", "Aosta|1|Capoluogo della Valle d'Aosta", "Ancona|1|Capoluogo delle Marche",
+      "Perugia|1|Capoluogo dell'Umbria", "Catanzaro|1|Capoluogo della Calabria", "L'Aquila|1|Capoluogo dell'Abruzzo", "Trieste|1|Capoluogo del Friuli-Venezia Giulia", "Pescara|0|Capoluogo di provincia (Abruzzo): il capoluogo di regione è L'Aquila"] },
+    { q: "Quale di questi animali depone uova?", t: "min", icon: "🥚", unit: "", w: "animale", items: [
+      "Ornitorinco|1|Depone uova (mammifero monotremo)", "Echidna|1|Depone uova (mammifero monotremo)", "Tartaruga|1|Depone uova", "Coccodrillo|1|Depone uova", "Gallina|1|Depone uova",
+      "Pinguino|1|Depone uova", "Rana|1|Depone uova", "Polpo|1|Depone uova", "Farfalla|1|Depone uova", "Delfino|0|Vivipero: partorisce i piccoli"] },
+    { q: "Quale di questi animali sa nuotare?", t: "min", icon: "🏊", unit: "", w: "animale", items: [
+      "Tigre|1|Ottima nuotatrice", "Giaguaro|1|Ottimo nuotatore", "Orso polare|1|Nuota per decine di km", "Elefante|1|Nuota usando la proboscide come boccaglio", "Lontra|1|Nuotatrice nata",
+      "Coccodrillo|1|Nuota con la coda", "Anaconda|1|Vive in gran parte in acqua", "Alce|1|Ottimo nuotatore", "Cane|1|Nuota istintivamente", "Ippopotamo|0|Non nuota: cammina e salta sul fondale"] },
+    { q: "Quale di questi organi è presente in coppia nel corpo umano?", t: "min", icon: "🫀", unit: "", w: "anatomia", items: [
+      "Reni|1|2", "Polmoni|1|2", "Occhi|1|2", "Orecchie|1|2", "Ghiandole surrenali|1|2",
+      "Tonsille palatine|1|2", "Ovaie|1|2", "Ghiandole parotidi|1|2", "Bronchi principali|1|2", "Fegato|0|1 solo"] },
+    { q: "Quale di questi è vera frutta a guscio (e non un legume)?", t: "min", icon: "🥜", unit: "", w: "frutta secca", items: [
+      "Noci|1|Juglandaceae", "Nocciole|1|Betulaceae", "Mandorle|1|Rosaceae", "Pistacchi|1|Anacardiaceae", "Anacardi|1|Anacardiaceae",
+      "Pinoli|1|Pinaceae (semi di pino)", "Castagne|1|Fagaceae", "Noci pecan|1|Juglandaceae", "Noci di macadamia|1|Proteaceae", "Arachidi|0|Fabaceae: è un legume, come fagioli e piselli"] },
+    { q: "Quale di questi piatti ha il pomodoro nella ricetta tradizionale?", t: "min", icon: "🍅", unit: "", w: "cucina italiana", items: [
+      "Pizza margherita|1|Pomodoro, mozzarella, basilico", "Bucatini all'amatriciana|1|Guanciale, pomodoro, pecorino", "Pasta alla Norma|1|Pomodoro, melanzane, ricotta salata", "Penne all'arrabbiata|1|Pomodoro, aglio, peperoncino", "Parmigiana di melanzane|1|Melanzane, pomodoro, formaggio",
+      "Insalata caprese|1|Pomodoro, mozzarella, basilico", "Pappa al pomodoro|1|Pane, pomodoro, basilico", "Ragù alla bolognese|1|Carne, soffritto, pomodoro", "Spaghetti alla puttanesca|1|Pomodoro, olive, capperi, acciughe", "Spaghetti alla carbonara|0|Guanciale, uova, pecorino, pepe: niente pomodoro"] },
+    { q: "Quale di queste catene è nata negli Stati Uniti?", t: "min", icon: "🍔", unit: "", w: "azienda", items: [
+      "McDonald's|1|USA, 1940", "Burger King|1|USA, 1954", "KFC|1|USA, 1952", "Subway|1|USA, 1965", "Starbucks|1|USA, 1971",
+      "Domino's Pizza|1|USA, 1960", "Taco Bell|1|USA, 1962", "Wendy's|1|USA, 1969", "Pizza Hut|1|USA, 1958", "Old Wild West|0|Italia, 2002 (stile americano, ma italiana)"] },
+    { q: "Quale di questi Pokémon è di Kanto (prima generazione)?", t: "min", icon: "🔴", unit: "", w: "Pokémon", items: [
+      "Psyduck|1|1ª generazione (#054)", "Magikarp|1|1ª generazione (#129)", "Gyarados|1|1ª generazione (#130)", "Machamp|1|1ª generazione (#068)", "Onix|1|1ª generazione (#095)",
+      "Meowth|1|1ª generazione (#052)", "Vulpix|1|1ª generazione (#037)", "Dragonite|1|1ª generazione (#149)", "Lapras|1|1ª generazione (#131)", "Togepi|0|2ª generazione (#175)"] },
+    { q: "Quale di questi marchi ha un animale nel logo?", t: "min", icon: "🐾", unit: "", w: "marchio", items: [
+      "Puma|1|Un puma", "Lacoste|1|Un coccodrillo", "Ferrari|1|Il cavallino rampante", "Lamborghini|1|Un toro", "Ralph Lauren|1|Un giocatore di polo a cavallo",
+      "Jaguar|1|Un giaguaro", "Peugeot|1|Un leone", "Abarth|1|Uno scorpione", "Alfa Romeo|1|Il biscione visconteo", "Chanel|0|Due C intrecciate"] },
+    { q: "Quale di questi Paesi guida a sinistra?", t: "min", icon: "🚗", unit: "", w: "", items: [
+      "Regno Unito|1|Guida a sinistra|🇬🇧", "Giappone|1|Guida a sinistra|🇯🇵", "Australia|1|Guida a sinistra|🇦🇺", "India|1|Guida a sinistra|🇮🇳", "Giamaica|1|Guida a sinistra|🇯🇲",
+      "Irlanda|1|Guida a sinistra|🇮🇪", "Nuova Zelanda|1|Guida a sinistra|🇳🇿", "Malta|1|Guida a sinistra|🇲🇹", "Thailandia|1|Guida a sinistra|🇹🇭", "Svezia|0|Guida a destra dal 1967 (prima a sinistra!)|🇸🇪"] },
+
+    /* ---------------- LOGICA: nuove categorie ---------------- */
+    { q: "Quale di questi Paesi ha uno sbocco sul mare?", t: "min", icon: "⚓", unit: "", w: "", items: [
+      "Slovenia|1|Circa 47 km di costa sull'Adriatico|🇸🇮", "Bosnia ed Erzegovina|1|Circa 20 km di costa a Neum|🇧🇦", "Belgio|1|Sul Mare del Nord|🇧🇪", "Montenegro|1|Sull'Adriatico|🇲🇪",
+      "Romania|1|Sul Mar Nero|🇷🇴", "Georgia|1|Sul Mar Nero|🇬🇪", "Giordania|1|Sul Golfo di Aqaba (Mar Rosso)|🇯🇴", "Iraq|1|Breve costa sul Golfo Persico|🇮🇶",
+      "RD Congo|1|Circa 40 km di costa sull'Atlantico|🇨🇩", "Kazakistan|0|Nessuno sbocco: il Caspio è un lago|🇰🇿"] },
+    { q: "Quale di questi è un frutto (in senso botanico)?", t: "min", icon: "🍅", unit: "", w: "", items: [
+      "Pomodoro|1|Bacca: è un frutto|🍅", "Zucchina|1|Frutto (peponide)|🥒", "Melanzana|1|Bacca: è un frutto|🍆", "Peperone|1|Bacca: è un frutto|🫑",
+      "Cetriolo|1|Frutto (peponide)|🥒", "Avocado|1|Bacca con un grande seme|🥑", "Oliva|1|Drupa: è un frutto|🫒", "Zucca|1|Frutto (peponide)|🎃",
+      "Fagiolino|1|Baccello: è un frutto|🫛", "Asparago|0|È un germoglio (turione), non un frutto|🌱"] },
+    { q: "Quale di queste città si trova nell'emisfero SUD?", t: "min", icon: "🌏", unit: "", w: "città", items: [
+      "Sydney|1|33,9° S|🇦🇺", "Buenos Aires|1|34,6° S|🇦🇷", "Città del Capo|1|33,9° S|🇿🇦", "Rio de Janeiro|1|22,9° S|🇧🇷", "Lima|1|12° S|🇵🇪",
+      "Santiago del Cile|1|33,4° S|🇨🇱", "Giacarta|1|6,2° S|🇮🇩", "Nairobi|1|1,3° S|🇰🇪", "Luanda|1|8,8° S|🇦🇴", "Singapore|0|1,3° N: di poco nell'emisfero nord|🇸🇬"] },
+    { q: "Quale di queste parole italiane viene dall'arabo?", t: "min", icon: "📖", unit: "", w: "", items: [
+      "Zucchero|1|Dall'arabo sukkar|🍬", "Arancia|1|Dall'arabo nāranj (di origine persiana)|🍊", "Algebra|1|Dall'arabo al-jabr|➗", "Magazzino|1|Dall'arabo makhāzin|📦",
+      "Albicocca|1|Dall'arabo al-barqūq|🍑", "Zero|1|Dall'arabo ṣifr|0️⃣", "Cifra|1|Dall'arabo ṣifr|🔢", "Tariffa|1|Dall'arabo ta'rīf|🏷️",
+      "Dogana|1|Dall'arabo dīwān|🛃", "Ciao|0|Dal veneziano s-ciào (\"schiavo vostro\")|👋"] },
+    { q: "Quale di queste invenzioni si deve a un italiano?", t: "min", icon: "🇮🇹", unit: "", w: "", items: [
+      "Radio|1|Guglielmo Marconi|📻", "Pila elettrica|1|Alessandro Volta (1799)|🔋", "Barometro|1|Evangelista Torricelli (1643)|🌡️", "Pianoforte|1|Bartolomeo Cristofori (circa 1700)|🎹",
+      "Telefono|1|Antonio Meucci (telettrofono)|☎️", "Macchina per l'espresso|1|Angelo Moriondo (1884)|☕", "Termoscopio|1|Galileo Galilei|🌡️", "Vasca idromassaggio|1|Fratelli Jacuzzi, emigrati italiani|🛁",
+      "Nutella|1|Ferrero (1964)|🍫", "Lampadina|0|Thomas Edison e Joseph Swan|💡"] },
+    { q: "Quale di questi animali è un insetto?", t: "min", icon: "🐞", unit: "", w: "animale", items: [
+      "Formica|1|Insetto (6 zampe)|🐜", "Ape|1|Insetto (6 zampe)|🐝", "Farfalla|1|Insetto (6 zampe)|🦋", "Coccinella|1|Insetto (6 zampe)|🐞", "Libellula|1|Insetto (6 zampe)|🪰",
+      "Zanzara|1|Insetto (6 zampe)|🦟", "Cavalletta|1|Insetto (6 zampe)|🦗", "Scarafaggio|1|Insetto (6 zampe)|🪳", "Mantide religiosa|1|Insetto (6 zampe)|🦗", "Ragno|0|Aracnide: 8 zampe|🕷️"] },
+    { q: "Quale di questi Stati è una monarchia?", t: "min", icon: "👑", unit: "", w: "", items: [
+      "Spagna|1|Regno|🇪🇸", "Belgio|1|Regno|🇧🇪", "Paesi Bassi|1|Regno|🇳🇱", "Svezia|1|Regno|🇸🇪", "Norvegia|1|Regno|🇳🇴",
+      "Danimarca|1|Regno|🇩🇰", "Lussemburgo|1|Granducato|🇱🇺", "Liechtenstein|1|Principato|🇱🇮", "Andorra|1|Coprincipato (vescovo di Urgell e presidente francese)|🇦🇩", "San Marino|0|Repubblica (dal 301 d.C., secondo la tradizione)|🇸🇲"] },
+    { q: "Quale di questi supereroi ha dei superpoteri?", t: "min", icon: "🦸", unit: "", w: "", items: [
+      "Superman|1|Forza, volo, vista calorifica|🦸", "Spider-Man|1|Poteri da ragno|🕷️", "Hulk|1|Forza sovrumana|💚", "Thor|1|Dio del tuono|🔨", "Wolverine|1|Fattore rigenerante|🐺",
+      "Flash|1|Supervelocità|⚡", "Wonder Woman|1|Semidea amazzone|🛡️", "Scarlet Witch|1|Magia del caos|🔮", "Aquaman|1|Respira sott'acqua, parla con i pesci|🔱", "Batman|0|Nessun superpotere: solo allenamento e gadget|🦇"] },
+    { q: "Quale di queste canzoni ha vinto il Festival di Sanremo?", t: "min", icon: "🎙️", unit: "", w: "", items: [
+      "Nel blu dipinto di blu|1|Modugno e Dorelli, 1958|🎶", "Non ho l'età|1|Gigliola Cinquetti, 1964|🎶", "Si può dare di più|1|Morandi, Ruggeri, Tozzi, 1987|🎶", "Perdere l'amore|1|Massimo Ranieri, 1988|🎶",
+      "Uomini soli|1|Pooh, 1990|🎶", "Soldi|1|Mahmood, 2019|🎶", "Zitti e buoni|1|Måneskin, 2021|🎶", "Brividi|1|Mahmood e Blanco, 2022|🎶",
+      "La noia|1|Angelina Mango, 2024|🎶", "Vita spericolata|0|Vasco Rossi, 1983: penultimo posto!|🎶"] },
+    { q: "Quale di questi film è diretto da Steven Spielberg?", t: "min", icon: "🎥", unit: "", w: "film", items: [
+      "Lo squalo|1|Spielberg, 1975|🦈", "E.T. l'extra-terrestre|1|Spielberg, 1982|👽", "I predatori dell'arca perduta|1|Spielberg, 1981|🤠", "Jurassic Park|1|Spielberg, 1993|🦖",
+      "Schindler's List|1|Spielberg, 1993|🎞️", "Salvate il soldato Ryan|1|Spielberg, 1998|🪖", "Minority Report|1|Spielberg, 2002|🔮", "Prova a prendermi|1|Spielberg, 2002|✈️",
+      "Lincoln|1|Spielberg, 2012|🎩", "Ritorno al futuro|0|Diretto da Robert Zemeckis (Spielberg era produttore)|⏰"] },
+    { q: "Quale di questi alimenti è naturalmente senza glutine?", t: "min", icon: "🌾", unit: "", w: "", items: [
+      "Riso|1|Senza glutine|🍚", "Mais|1|Senza glutine|🌽", "Patate|1|Senza glutine|🥔", "Quinoa|1|Senza glutine|🌱", "Grano saraceno|1|Senza glutine (non è grano!)|🌾",
+      "Amaranto|1|Senza glutine|🌱", "Miglio|1|Senza glutine|🌾", "Sorgo|1|Senza glutine|🌾", "Teff|1|Senza glutine|🌾", "Farro|0|Contiene glutine (è un frumento)|🌾"] },
+    { q: "Quale di questi Stati USA confina con il Canada?", t: "min", icon: "🍁", unit: "", w: "", items: [
+      "Alaska|1|Confina con il Canada|🐻", "Washington|1|Confina con il Canada|🌲", "Idaho|1|Confina con il Canada|🥔", "Montana|1|Confina con il Canada|🏔️", "Dakota del Nord|1|Confina con il Canada|🌾",
+      "Minnesota|1|Confina con il Canada|🛶", "Michigan|1|Confina con il Canada|🚗", "New York|1|Confina con il Canada|🗽", "Maine|1|Confina con il Canada|🦞", "Wisconsin|0|Nessun confine con il Canada|🧀"] },
+    { q: "Quale di questi animali preistorici è un dinosauro?", t: "min", icon: "🦕", unit: "", w: "animale", items: [
+      "Tyrannosaurus rex|1|Dinosauro (teropode)|🦖", "Triceratopo|1|Dinosauro (ceratopside)|🦕", "Velociraptor|1|Dinosauro (teropode)|🦖", "Stegosauro|1|Dinosauro (tireoforo)|🦕", "Brachiosauro|1|Dinosauro (sauropode)|🦕",
+      "Diplodoco|1|Dinosauro (sauropode)|🦕", "Spinosauro|1|Dinosauro (teropode)|🦖", "Anchilosauro|1|Dinosauro (tireoforo)|🦕", "Iguanodonte|1|Dinosauro (ornitopode)|🦕", "Pterodattilo|0|Pterosauro: rettile volante, non un dinosauro|🪽"] },
+    { q: "Quale di queste città ha ospitato le Olimpiadi ESTIVE?", t: "min", icon: "🏟️", unit: "", w: "città", items: [
+      "Roma|1|1960|🇮🇹", "Atene|1|1896 e 2004|🇬🇷", "Parigi|1|1900, 1924 e 2024|🇫🇷", "Londra|1|1908, 1948 e 2012|🇬🇧", "Los Angeles|1|1932 e 1984|🇺🇸",
+      "Barcellona|1|1992|🇪🇸", "Sydney|1|2000|🇦🇺", "Pechino|1|2008|🇨🇳", "Tokyo|1|1964 e 2021|🇯🇵", "Torino|0|Solo le Olimpiadi invernali (2006)|🇮🇹"] },
+    { q: "Quale di questi alimenti è originario delle Americhe?", t: "min", icon: "🌎", unit: "", w: "", items: [
+      "Pomodoro|1|Dalle Americhe|🍅", "Patata|1|Dalle Ande|🥔", "Mais|1|Dal Messico|🌽", "Cacao|1|Dal Centro-Sud America|🍫", "Peperoncino|1|Dalle Americhe|🌶️",
+      "Tacchino|1|Dal Nord America|🦃", "Arachidi|1|Dal Sud America|🥜", "Vaniglia|1|Dal Messico|🌼", "Zucca|1|Dalle Americhe|🎃", "Melanzana|0|Dall'Asia (India)|🍆"] },
+    { q: "Quale di questi strumenti produce il suono con delle corde?", t: "min", icon: "🎻", unit: "", w: "", items: [
+      "Violino|1|Corde strofinate|🎻", "Violoncello|1|Corde strofinate|🎻", "Contrabbasso|1|Corde strofinate|🎻", "Arpa|1|Corde pizzicate|🪕", "Chitarra|1|Corde pizzicate|🎸",
+      "Mandolino|1|Corde pizzicate|🪕", "Banjo|1|Corde pizzicate|🪕", "Pianoforte|1|Corde percosse da martelletti|🎹", "Clavicembalo|1|Corde pizzicate da plettri|🎹", "Xilofono|0|Barre di legno percosse|🥁"] },
+    { q: "Quale di questi numeri è primo?", t: "min", icon: "🔢", unit: "", w: "", items: [
+      "17|1|Primo|🔢", "29|1|Primo|🔢", "37|1|Primo|🔢", "41|1|Primo|🔢", "53|1|Primo|🔢",
+      "61|1|Primo|🔢", "73|1|Primo|🔢", "83|1|Primo|🔢", "97|1|Primo|🔢", "91|0|Non è primo: 7 × 13|🔢"] },
+    { q: "Quale di questi elementi chimici è un metallo?", t: "min", icon: "⚙️", unit: "", w: "elemento chimico", items: [
+      "Sodio|1|Metallo alcalino|🧂", "Potassio|1|Metallo alcalino|🍌", "Litio|1|Metallo alcalino|🔋", "Calcio|1|Metallo alcalino-terroso|🦴", "Magnesio|1|Metallo alcalino-terroso|✨",
+      "Mercurio|1|Metallo (liquido!)|🌡️", "Gallio|1|Metallo (fonde in mano)|🖐️", "Titanio|1|Metallo di transizione|🛠️", "Tungsteno|1|Metallo di transizione|💡", "Iodio|0|Non metallo (alogeno)|🟣"] },
+    { q: "Quale di questi Paesi è attraversato dall'Equatore?", t: "min", icon: "🌐", unit: "", w: "", items: [
+      "Ecuador|1|Attraversato dall'Equatore|🇪🇨", "Colombia|1|Attraversata dall'Equatore|🇨🇴", "Brasile|1|Attraversato dall'Equatore|🇧🇷", "Gabon|1|Attraversato dall'Equatore|🇬🇦",
+      "RD Congo|1|Attraversata dall'Equatore|🇨🇩", "Uganda|1|Attraversata dall'Equatore|🇺🇬", "Kenya|1|Attraversato dall'Equatore|🇰🇪", "Somalia|1|Attraversata dall'Equatore|🇸🇴",
+      "Indonesia|1|Attraversata dall'Equatore|🇮🇩", "Perù|0|Interamente a sud dell'Equatore (di pochissimo)|🇵🇪"] },
+    { q: "Quale di queste opere è esposta al Louvre?", t: "min", icon: "🖼️", unit: "", w: "", items: [
+      "La Gioconda|1|Louvre, Parigi|🖼️", "Venere di Milo|1|Louvre, Parigi|🗿", "Nike di Samotracia|1|Louvre, Parigi|🗿", "La Libertà che guida il popolo|1|Louvre, Parigi|🖼️",
+      "La zattera della Medusa|1|Louvre, Parigi|🖼️", "Codice di Hammurabi|1|Louvre, Parigi|📜", "La grande odalisca|1|Louvre, Parigi|🖼️", "Le nozze di Cana|1|Louvre, Parigi|🖼️",
+      "Il giuramento degli Orazi|1|Louvre, Parigi|🖼️", "La ragazza con l'orecchino di perla|0|Mauritshuis, L'Aia|🖼️"] },
+    { q: "Quale di questi Paesi ha lo spagnolo come lingua ufficiale?", t: "min", icon: "🗣️", unit: "", w: "", items: [
+      "Messico|1|Spagnolo|🇲🇽", "Colombia|1|Spagnolo|🇨🇴", "Argentina|1|Spagnolo|🇦🇷", "Cile|1|Spagnolo|🇨🇱", "Perù|1|Spagnolo (con quechua e aymara)|🇵🇪",
+      "Cuba|1|Spagnolo|🇨🇺", "Venezuela|1|Spagnolo|🇻🇪", "Uruguay|1|Spagnolo|🇺🇾", "Guinea Equatoriale|1|Spagnolo (con francese e portoghese)|🇬🇶", "Belize|0|Inglese|🇧🇿"] },
+    { q: "Quale di questi formaggi italiani è DOP?", t: "min", icon: "🧀", unit: "", w: "", items: [
+      "Parmigiano Reggiano|1|DOP|🧀", "Grana Padano|1|DOP|🧀", "Gorgonzola|1|DOP|🧀", "Pecorino Romano|1|DOP|🧀", "Mozzarella di Bufala Campana|1|DOP|🧀",
+      "Taleggio|1|DOP|🧀", "Asiago|1|DOP|🧀", "Fontina|1|DOP|🧀", "Provolone Valpadana|1|DOP|🧀", "Mascarpone|0|Nessuna DOP|🧀"] }
   ];
 
   /* Miniature da Wikipedia in italiano, collegate (non scaricate): chiave "Nome@@contesto" */
@@ -1426,7 +1523,7 @@
 
   /* =========================================================
      DOMANDE: dalle stringhe compatte alle card, con l'intruso
-     calcolato (record più alto/più basso) o marcato con "!"
+     calcolato come valore fuori scala (più basso o più alto)
      ========================================================= */
   const nf = (v, max) => new Intl.NumberFormat("it-IT", { maximumFractionDigits: max }).format(v);
   function buildQuestion(src){
@@ -1434,16 +1531,13 @@
     const cards = src.items.map(s => {
       const [name, a, b, emoji] = s.split("|");
       const img = IMAGES[name + "@@" + (src.w || "")] || "";
-      if (src.t === "odd") return { name, label: a, intruder: b === "!", emoji: emoji || "", img };
       const isAge = a.startsWith("y");
       const value = isAge ? year - parseInt(a.slice(1), 10) : parseFloat(a);
       const label = b || (isAge ? `${value} anni` : `${nf(value, 2)} ${src.unit}`.trim());
       return { name, value, label, emoji: emoji || "", img };
     });
-    if (src.t !== "odd"){
-      const best = cards.reduce((x, y) => (src.t === "max" ? y.value > x.value : y.value < x.value) ? y : x);
-      cards.forEach(c => c.intruder = c === best);
-    }
+    const odd = cards.reduce((x, y) => (src.t === "max" ? y.value > x.value : y.value < x.value) ? y : x);
+    cards.forEach(c => c.intruder = c === odd);
     return { ...src, cards: shuffle(cards) };
   }
 
@@ -1467,9 +1561,11 @@
       { gi: -1, name: "Squadra 2", color: TEAM_COLORS[1], local: 0 }
     ];
   }
+  /* Domanda di logica: tutti i valori sono 1 (tratto rispettato) o 0 (intruso) */
+  const isLogic = src => src.items.every(s => /^[01]$/.test(s.split("|")[1]));
   function pool(){
     return QUESTIONS.map((_, i) => i).filter(i =>
-      mode === "all" || (mode === "logic") === (QUESTIONS[i].t === "odd"));
+      mode === "all" || (mode === "logic") === isLogic(QUESTIONS[i]));
   }
 
   function startGame(){
@@ -1515,7 +1611,7 @@
   }
   function renderQuestion(){
     const q = state.question;
-    const type = q.t === "odd" ? "🧩 Logica" : (q.t === "max" ? "📊 Record · il più alto" : "📊 Record · il più basso");
+    const type = isLogic(q) ? "🧩 Logica" : "📊 Numeri";
     $("qTags").innerHTML = `<span class="q-tag">${escapeHtml(q.icon)} ${type}</span>`;
     $("qText").textContent = q.q;
     const card = $("questionCard");
