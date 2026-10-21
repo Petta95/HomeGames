@@ -1,0 +1,2667 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<meta name="theme-color" content="#faf7f2">
+<title>Ricette — Petta & Mari</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.5"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        colors: {
+          cream: '#faf7f2',
+          ink: '#1c1917',
+          accent: { DEFAULT: '#c2410c', soft: '#fff1e8', dark: '#9a3412' },
+          sea: { DEFAULT: '#0e7490', soft: '#e6f6f9' },
+          meat: { DEFAULT: '#b91c1c', soft: '#fdecec' },
+          special: { DEFAULT: '#6d28d9', soft: '#f1ebff' }
+        },
+        boxShadow: { card: '0 1px 2px rgba(28,25,23,.04), 0 8px 24px -12px rgba(28,25,23,.18)' }
+      }
+    }
+  }
+</script>
+<script src="https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"></script>
+<style>
+  [v-cloak]{ display: none; }
+  body{ background: #faf7f2; -webkit-font-smoothing: antialiased; }
+  .img-fallback{ background: linear-gradient(135deg, #fde7d7, #f5d0b9); }
+  .no-scrollbar::-webkit-scrollbar{ display: none; }
+  .no-scrollbar{ scrollbar-width: none; }
+  .fade-enter-active, .fade-leave-active{ transition: opacity .2s ease; }
+  .fade-enter-from, .fade-leave-to{ opacity: 0; }
+  .sheet-enter-active, .sheet-leave-active{ transition: transform .25s ease, opacity .25s ease; }
+  .sheet-enter-from, .sheet-leave-to{ transform: translateY(24px); opacity: 0; }
+  .tricolore{
+    display: inline-block; width: 14px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 2px;
+    background: linear-gradient(90deg, #009246 33.3%, #fff 33.3% 66.6%, #ce2b37 66.6%); box-shadow: 0 0 0 1px rgba(0,0,0,.12);
+  }
+  input[type=checkbox].tick{
+    appearance: none; -webkit-appearance: none; flex: none;
+    width: 1.25rem; height: 1.25rem; border-radius: .4rem; border: 1.5px solid #d6d3d1; background: #fff;
+    display: grid; place-content: center; cursor: pointer; transition: all .15s;
+  }
+  input[type=checkbox].tick::after{
+    content: ""; width: .6rem; height: .35rem; border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translate(1px, -1px) scale(0); transition: transform .15s;
+  }
+  input[type=checkbox].tick:checked{ background: #c2410c; border-color: #c2410c; }
+  input[type=checkbox].tick:checked::after{ transform: rotate(-45deg) translate(1px, -1px) scale(1); }
+</style>
+</head>
+<body class="font-sans text-ink">
+
+<div id="app" v-cloak class="min-h-screen">
+
+  <!-- ============ HEADER + RICERCA ============ -->
+  <header class="sticky top-0 z-30 bg-cream/90 backdrop-blur border-b border-stone-200/70">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-3">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <a href="index.html" class="shrink-0 w-9 h-9 rounded-full grid place-content-center text-stone-500 hover:bg-stone-200/60 transition" title="Torna a Petta & Mari">←</a>
+          <div class="min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-none">Ricette</h1>
+            <p class="text-xs sm:text-sm text-stone-500 mt-1 truncate">Cene a due · pesce, carne, pasta e veg, sempre con il contorno</p>
+          </div>
+        </div>
+        <button @click="surprise" class="shrink-0 inline-flex items-center gap-2 rounded-full bg-ink text-white text-sm font-semibold px-4 py-2 hover:bg-stone-700 transition">
+          <span>🎲</span><span class="hidden sm:inline">Sorprendimi</span>
+        </button>
+      </div>
+
+      <div class="relative mt-4">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
+        <input v-model="query" type="search" placeholder="Cerca: tonno, funghi, miso, zucca…"
+               class="w-full rounded-2xl border border-stone-200 bg-white pl-12 pr-10 py-3.5 text-base shadow-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition">
+        <button v-if="query" @click="query=''" class="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-stone-400 hover:bg-stone-100" aria-label="Cancella">✕</button>
+      </div>
+
+      <div class="flex gap-2 mt-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
+        <button v-for="c in categories" :key="c.key" @click="category=c.key"
+                :class="category===c.key ? 'bg-ink text-white border-ink' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'"
+                class="shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition">
+          {{ c.icon }} {{ c.label }} <span class="opacity-60 ml-0.5">{{ countFor(c.key) }}</span>
+        </button>
+        <span class="shrink-0 w-px bg-stone-200 mx-1"></span>
+        <button @click="quickOnly=!quickOnly"
+                :class="quickOnly ? 'bg-accent text-white border-accent' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'"
+                class="shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition">⏱ Entro 45 min</button>
+        <button v-for="d in ['Facile','Media','Avanzata']" :key="d" @click="difficulty = difficulty===d ? '' : d"
+                :class="difficulty===d ? 'bg-accent text-white border-accent' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'"
+                class="shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition">{{ d }}</button>
+      </div>
+      <div class="flex gap-1 mt-2 p-1 rounded-full bg-stone-200/60 w-full sm:w-auto sm:inline-flex overflow-x-auto no-scrollbar">
+        <button v-for="c in cuisines" :key="c.key" @click="cuisine=c.key"
+                :class="cuisine===c.key ? 'bg-white text-ink shadow-sm' : 'text-stone-500 hover:text-ink'"
+                class="flex-1 sm:flex-none shrink-0 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition"><span v-if="c.key==='Italiana'" class="tricolore"></span>{{ c.icon }} {{ c.label }}</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pb-24">
+
+    <!-- ============ STASERA ============ -->
+    <transition name="fade">
+      <section v-if="tonightRecipe" class="mt-6 rounded-3xl overflow-hidden bg-white shadow-card border border-stone-200/70 flex flex-col sm:flex-row">
+        <div class="sm:w-72 h-44 sm:h-auto img-fallback shrink-0">
+          <img :src="thumb(tonightRecipe.immagine)" :alt="tonightRecipe.titolo" class="w-full h-full object-cover" loading="lazy" @error="imgError">
+        </div>
+        <div class="p-5 sm:p-6 flex flex-col justify-center gap-2 min-w-0">
+          <span class="text-xs font-bold uppercase tracking-wider text-accent">🕯️ Stasera si cena con</span>
+          <h2 class="text-xl sm:text-2xl font-bold leading-snug">{{ tonightRecipe.titolo }}</h2>
+          <p class="text-sm text-stone-500">⏱ {{ tonightRecipe.tempo_totale }} · {{ tonightRecipe.difficolta }} · {{ tonightRecipe.ingredienti_spesa.length + tonightRecipe.spezie_e_extra.length }} cose da comprare</p>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button @click="open(tonightRecipe)" class="rounded-full bg-accent text-white text-sm font-semibold px-4 py-2 hover:bg-accent-dark transition">Apri la ricetta</button>
+            <button @click="copyShopping(tonightRecipe)" class="rounded-full border border-stone-200 text-sm font-semibold px-4 py-2 hover:bg-stone-50 transition">📋 Copia lista spesa</button>
+            <button @click="state.tonight=null" class="rounded-full text-sm font-medium text-stone-500 px-3 py-2 hover:text-ink transition">Cambia idea</button>
+          </div>
+        </div>
+      </section>
+    </transition>
+
+    <!-- ============ BARRA RISULTATI ============ -->
+    <div class="flex items-center justify-between gap-3 mt-6 mb-4 text-sm">
+      <p class="text-stone-500">
+        <template v-if="showHidden"><b class="text-ink">{{ visible.length }}</b> ricette escluse</template>
+        <template v-else><b class="text-ink">{{ visible.length }}</b> {{ visible.length===1 ? 'ricetta' : 'ricette' }}<span v-if="query"> per “{{ query }}”</span></template>
+      </p>
+      <button v-if="state.hidden.length || showHidden" @click="showHidden=!showHidden" class="text-stone-500 hover:text-ink font-medium underline-offset-4 hover:underline">
+        {{ showHidden ? '← Torna alle ricette' : '🙈 Escluse (' + state.hidden.length + ')' }}
+      </button>
+    </div>
+
+    <!-- ============ GRIGLIA ============ -->
+    <div class="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <article v-for="r in visible" :key="r.id"
+               class="group relative bg-white rounded-3xl overflow-hidden shadow-card border border-stone-200/70 flex flex-col cursor-pointer hover:-translate-y-1 hover:shadow-xl transition duration-300"
+               :class="state.tonight===r.id ? 'ring-2 ring-accent' : ''"
+               @click="open(r)">
+        <div class="relative aspect-[4/3] img-fallback overflow-hidden">
+          <img :src="thumb(r.immagine)" :alt="r.titolo" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" @error="imgError">
+          <span class="absolute top-3 left-3 rounded-full text-xs font-semibold px-3 py-1 backdrop-blur bg-white/90" :class="catStyle(r.categoria).text">
+            {{ catStyle(r.categoria).icon }} {{ r.categoria }}<span v-if="r.veg && r.categoria !== 'Vegetariane'" class="text-emerald-700"> · veg</span>
+          </span>
+          <span class="absolute bottom-3 left-3 rounded-full text-xs font-semibold px-3 py-1 backdrop-blur bg-white/90 text-stone-700">
+            <span v-if="r.cucina === 'Italiana'"><span class="tricolore"></span> Classica italiana</span><span v-else>🌏 Dal mondo</span>
+          </span>
+          <button @click.stop="toggleHidden(r)" class="absolute top-3 right-3 rounded-full bg-white/90 backdrop-blur text-xs font-semibold px-3 py-1 text-stone-600 hover:bg-white hover:text-ink transition"
+                  :title="isHidden(r) ? 'Rimetti in elenco' : 'Escludi dalla vista'">
+            {{ isHidden(r) ? '↩ Ripristina' : '✕ Escludi' }}
+          </button>
+        </div>
+        <div class="p-5 flex flex-col gap-3 flex-1">
+          <h3 class="text-lg font-bold leading-snug">{{ r.titolo }}</h3>
+          <div class="flex items-center gap-3 text-sm text-stone-500">
+            <span>⏱ {{ r.tempo_totale }}</span>
+            <span class="w-1 h-1 rounded-full bg-stone-300"></span>
+            <span :class="diffColor(r.difficolta)" class="font-medium">{{ r.difficolta }}</span>
+            <template v-if="r.tempo_marinatura !== '—'"><span class="w-1 h-1 rounded-full bg-stone-300"></span><span>{{ waitLabel(r).toLowerCase() }}</span></template>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <span v-for="n in preview(r)" :key="n" class="rounded-full bg-stone-100 text-stone-600 text-xs px-2.5 py-1">{{ n }}</span>
+          </div>
+          <div class="mt-auto pt-2">
+            <button @click.stop="toggleTonight(r)"
+                    :class="state.tonight===r.id ? 'bg-accent text-white border-accent' : 'bg-accent-soft text-accent border-transparent hover:border-accent/40'"
+                    class="w-full rounded-xl border text-sm font-semibold py-2.5 transition">
+              {{ state.tonight===r.id ? '✓ Scelta per stasera' : '🍽️ Scegli per stasera' }}
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div v-if="!visible.length" class="text-center py-20 text-stone-500">
+      <p class="text-4xl mb-3">🥢</p>
+      <p class="font-medium text-ink">Nessuna ricetta trovata</p>
+      <p class="text-sm mt-1">Prova un altro ingrediente o togli qualche filtro.</p>
+      <button @click="resetFilters" class="mt-4 rounded-full border border-stone-300 px-4 py-2 text-sm font-medium hover:bg-white">Azzera filtri</button>
+    </div>
+  </main>
+
+  <!-- ============ DETTAGLIO RICETTA ============ -->
+  <transition name="fade">
+    <div v-if="current" class="fixed inset-0 z-40 bg-stone-900/50 backdrop-blur-sm" @click="close"></div>
+  </transition>
+  <transition name="sheet">
+    <div v-if="current" class="fixed inset-0 z-50 overflow-y-auto" @click.self="close">
+      <div class="min-h-full flex items-end sm:items-center justify-center sm:p-6" @click.self="close">
+        <article class="relative w-full sm:max-w-3xl bg-white sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl">
+          <div class="relative h-60 sm:h-80 img-fallback">
+            <img :src="current.immagine" :alt="current.titolo" class="w-full h-full object-cover" @error="imgError">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+            <button @click="close" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur text-ink text-lg grid place-content-center hover:bg-white" aria-label="Chiudi">✕</button>
+            <div class="absolute bottom-0 left-0 right-0 p-5 sm:p-7 text-white">
+              <span class="inline-block rounded-full bg-white/20 backdrop-blur text-xs font-semibold px-3 py-1 mb-2">{{ catStyle(current.categoria).icon }} {{ current.categoria }} · <span v-if="current.cucina === 'Italiana'"><span class="tricolore"></span> Italiana</span><span v-else>🌏 Dal mondo</span> · {{ current.difficolta }}</span>
+              <h2 class="text-2xl sm:text-3xl font-extrabold leading-tight drop-shadow">{{ current.titolo }}</h2>
+            </div>
+          </div>
+
+          <div class="p-5 sm:p-8">
+            <!-- Tempi -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <div v-for="t in times(current)" :key="t.label" class="rounded-2xl p-3 text-center" :class="t.main ? 'bg-accent-soft' : 'bg-stone-50'">
+                <p class="text-[11px] uppercase tracking-wider font-semibold" :class="t.main ? 'text-accent' : 'text-stone-500'">{{ t.label }}</p>
+                <p class="text-lg font-bold mt-0.5" :class="t.value==='—' ? 'text-stone-300' : ''">{{ t.value }}</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-5">
+              <button @click="toggleTonight(current)"
+                      :class="state.tonight===current.id ? 'bg-accent text-white' : 'bg-accent-soft text-accent hover:bg-orange-100'"
+                      class="rounded-full text-sm font-semibold px-4 py-2 transition">
+                {{ state.tonight===current.id ? '✓ Scelta per stasera' : '🍽️ Scegli per stasera' }}
+              </button>
+              <button @click="copyShopping(current)" class="rounded-full border border-stone-200 text-sm font-semibold px-4 py-2 hover:bg-stone-50 transition">📋 Copia lista spesa</button>
+              <button @click="toggleHidden(current); close()" class="rounded-full text-sm font-medium text-stone-500 px-3 py-2 hover:text-ink transition">
+                {{ isHidden(current) ? '↩ Ripristina' : '✕ Escludi' }}
+              </button>
+            </div>
+
+            <!-- Cosa comprare -->
+            <section class="mt-8">
+              <div class="flex items-baseline justify-between gap-3">
+                <h3 class="text-xl font-bold">🛒 Cosa comprare</h3>
+                <span class="text-sm text-stone-500">per 2 persone · {{ checkedCount(current,'shop') }}/{{ current.ingredienti_spesa.length + current.spezie_e_extra.length }}</span>
+              </div>
+              <div class="grid sm:grid-cols-2 gap-6 mt-4">
+                <div>
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Ingredienti base</h4>
+                  <ul class="divide-y divide-stone-100">
+                    <li v-for="(it,i) in current.ingredienti_spesa" :key="'b'+i">
+                      <label class="flex items-start gap-3 py-2.5 cursor-pointer">
+                        <input type="checkbox" class="tick mt-0.5" :checked="isChecked(current,'shop','b'+i)" @change="toggleCheck(current,'shop','b'+i)">
+                        <span :class="isChecked(current,'shop','b'+i) ? 'line-through text-stone-400' : ''" class="text-[15px] leading-snug">
+                          <b class="font-semibold">{{ parse(it).q }}</b> {{ parse(it).n }}
+                        </span>
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Spezie & tocchi dello chef <span class="normal-case font-medium tracking-normal">(facoltativi)</span></h4>
+                  <ul class="divide-y divide-stone-100">
+                    <li v-for="(it,i) in current.spezie_e_extra" :key="'s'+i">
+                      <label class="flex items-start gap-3 py-2.5 cursor-pointer">
+                        <input type="checkbox" class="tick mt-0.5" :checked="isChecked(current,'shop','s'+i)" @change="toggleCheck(current,'shop','s'+i)">
+                        <span :class="isChecked(current,'shop','s'+i) ? 'line-through text-stone-400' : ''" class="text-[15px] leading-snug">
+                          <b v-if="parse(it).q" class="font-semibold">{{ parse(it).q }}</b> {{ parse(it).n }}
+                        </span>
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <!-- Passaggi -->
+            <section class="mt-8">
+              <div class="flex items-baseline justify-between gap-3">
+                <h3 class="text-xl font-bold">👩‍🍳 Preparazione</h3>
+                <button v-if="checkedCount(current,'steps')" @click="resetSteps(current)" class="text-sm text-stone-500 hover:text-ink">Ricomincia</button>
+              </div>
+              <div class="h-1.5 rounded-full bg-stone-100 mt-3 overflow-hidden">
+                <div class="h-full bg-accent rounded-full transition-all duration-500" :style="{ width: (checkedCount(current,'steps') / current.passaggi.length * 100) + '%' }"></div>
+              </div>
+              <ol class="mt-4 space-y-2">
+                <li v-for="(p,i) in current.passaggi" :key="i">
+                  <label class="flex gap-4 p-3 -mx-3 rounded-2xl cursor-pointer hover:bg-stone-50 transition" :class="isChecked(current,'steps',i) ? 'opacity-50' : ''">
+                    <span class="shrink-0 w-8 h-8 rounded-full grid place-content-center text-sm font-bold"
+                          :class="isChecked(current,'steps',i) ? 'bg-accent text-white' : 'bg-stone-100 text-stone-600'">{{ i+1 }}</span>
+                    <span class="flex-1 text-[15px] leading-relaxed pt-1" :class="isChecked(current,'steps',i) ? 'line-through' : ''">{{ p }}</span>
+                    <input type="checkbox" class="tick mt-1.5" :checked="isChecked(current,'steps',i)" @change="toggleCheck(current,'steps',i)">
+                  </label>
+                </li>
+              </ol>
+              <p v-if="checkedCount(current,'steps')===current.passaggi.length" class="mt-4 rounded-2xl bg-accent-soft text-accent font-semibold text-center py-3">Tutto pronto: buona cena! 🥂</p>
+            </section>
+
+            <!-- Note -->
+            <section class="mt-8">
+              <h3 class="text-xl font-bold">📝 Le nostre note</h3>
+              <p class="text-sm text-stone-500 mt-1">Modifiche, voti, cosa cambiare la prossima volta. Restano salvate su questo dispositivo.</p>
+              <textarea :value="state.notes[current.id] || ''" @input="setNote(current, $event.target.value)" rows="3"
+                        placeholder="Es. meno peperoncino, raddoppiare il contorno, voto 9/10…"
+                        class="mt-3 w-full rounded-2xl border border-stone-200 bg-stone-50 p-4 text-[15px] outline-none focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 transition"></textarea>
+            </section>
+          </div>
+        </article>
+      </div>
+    </div>
+  </transition>
+
+  <!-- Toast -->
+  <transition name="fade">
+    <div v-if="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] rounded-full bg-ink text-white text-sm font-medium px-5 py-3 shadow-xl">{{ toast }}</div>
+  </transition>
+</div>
+
+<script>
+/* =========================================================
+   DATABASE RICETTE — dosi per 2 persone.
+   Ingredienti e spezie: "quantità | ingrediente".
+   ========================================================= */
+const U = id => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1600&q=80`;
+
+const RICETTE = [
+  /* ------------------------------ PESCE ------------------------------ */
+  {
+    id: "tonno-pistacchio",
+    titolo: "Tonno in crosta di pistacchio con caponatina agrodolce",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1588168333986-5078d3ae3976"),
+    tempo_preparazione: "25 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "50 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "2 tranci (350 g) | tonno fresco, spessi 2–3 cm",
+      "70 g | granella di pistacchi (meglio di Bronte)",
+      "1 | melanzana media",
+      "1 | costa di sedano",
+      "1 | cipolla rossa piccola",
+      "150 g | pomodorini ciliegino",
+      "1 cucchiaio | capperi dissalati",
+      "8 | olive verdi denocciolate",
+      "2 cucchiai | aceto di vino bianco",
+      "1 cucchiaio | zucchero",
+      "1 cucchiaino | miele",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "½ | limone non trattato (scorza)",
+      "qualche foglia | basilico fresco",
+      "1 cucchiaio | pinoli tostati",
+      "q.b. | sale in fiocchi (Maldon)",
+      "q.b. | pepe nero macinato fresco"
+    ],
+    passaggi: [
+      "Taglia la melanzana a cubetti di 1,5 cm, salala e lasciala in un colino per 15 minuti a perdere l'acqua amara.",
+      "Intanto affetta sottile cipolla e sedano e falli appassire in padella con 2 cucchiai d'olio per 5 minuti a fuoco dolce.",
+      "Sciacqua e asciuga bene le melanzane, poi dorale in un'altra padella con 2 cucchiai d'olio per 8–10 minuti, girando spesso.",
+      "Unisci le melanzane al soffritto con i pomodorini tagliati a metà, i capperi e le olive a rondelle; cuoci 5 minuti.",
+      "Aggiungi zucchero e aceto, lascia evaporare 2 minuti, regola di sale, spegni e completa con basilico e pinoli. Lasciala intiepidire: la caponatina è più buona tiepida.",
+      "Asciuga bene i tranci di tonno, spennellali con un velo d'olio e di miele, sala e pepa.",
+      "Passa il tonno nella granella di pistacchio premendo con le mani perché aderisca su tutti i lati.",
+      "Scalda una padella antiaderente con un filo d'olio a fuoco medio-alto e cuoci il tonno 1–1½ minuti per lato (anche sui bordi): fuori croccante, dentro rosato.",
+      "Lascia riposare 1 minuto e taglia i tranci a fette spesse 1 cm con un coltello ben affilato.",
+      "Impiatta la caponatina, adagia sopra le fette di tonno e completa con scorza di limone grattugiata e qualche fiocco di sale."
+    ]
+  },
+  {
+    id: "salmone-miso",
+    titolo: "Salmone glassato al miso con pak choi saltato e riso jasmine",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1519708227418-c8fd9a32b7a2"),
+    tempo_preparazione: "15 min", tempo_cottura: "20 min", tempo_marinatura: "20 min", tempo_totale: "55 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 tranci (320 g) | salmone fresco con pelle",
+      "1½ cucchiai | miso bianco (shiro miso)",
+      "1 cucchiaio | mirin (o 1 cucchiaino di zucchero sciolto in acqua)",
+      "2 cucchiai | salsa di soia",
+      "1 cucchiaino | miele",
+      "140 g | riso jasmine",
+      "2 cespi | pak choi (o 250 g di bietine/spinacini)",
+      "1 spicchio | aglio",
+      "2 cm | zenzero fresco",
+      "1 cucchiaio | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | semi di sesamo bianchi e neri",
+      "1 | cipollotto",
+      "½ | lime",
+      "1 cucchiaino | olio di sesamo tostato",
+      "q.b. | peperoncino fresco a rondelle"
+    ],
+    passaggi: [
+      "Mescola miso, mirin, 1 cucchiaio di soia e miele fino a ottenere una crema liscia.",
+      "Spalma la glassa sulla polpa del salmone e lascia marinare in frigo per 20 minuti (anche fino a 2 ore).",
+      "Sciacqua il riso finché l'acqua è limpida, mettilo in pentola con 210 ml d'acqua e un pizzico di sale, porta a bollore, copri e cuoci a fuoco minimo per 12 minuti. Spegni e lascia riposare coperto 10 minuti.",
+      "Accendi il forno in modalità grill a 220°C. Disponi il salmone su una teglia con carta forno, pelle in giù.",
+      "Cuoci il salmone 8–10 minuti nella parte alta del forno, finché la glassa è caramellata e scura ai bordi (controlla gli ultimi minuti: il miso brucia in fretta).",
+      "Intanto taglia il pak choi in quarti per il lungo, lavalo bene tra le foglie e asciugalo.",
+      "Scalda l'olio di semi in padella o wok con aglio a fettine e zenzero grattugiato per 30 secondi.",
+      "Aggiungi il pak choi, salta a fuoco vivo 3–4 minuti, sfuma con 1 cucchiaio di soia e qualche goccia di olio di sesamo.",
+      "Servi il riso a cupola, il pak choi accanto e il salmone sopra, completando con sesamo, cipollotto a rondelle e uno spicchio di lime."
+    ]
+  },
+  {
+    id: "orata-cartoccio",
+    titolo: "Orata al cartoccio con patate al rosmarino e pomodorini",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1611171711912-e3f6b536f532"),
+    tempo_preparazione: "15 min", tempo_cottura: "40 min", tempo_marinatura: "—", tempo_totale: "55 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 (350 g l'una) | orate eviscerate e squamate",
+      "400 g | patate a pasta gialla",
+      "200 g | pomodorini datterini",
+      "1 | limone",
+      "2 spicchi | aglio",
+      "10 | olive taggiasche",
+      "50 ml | vino bianco secco",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "2 rametti | rosmarino",
+      "qualche rametto | timo",
+      "1 ciuffo | prezzemolo",
+      "1 cucchiaino | pepe rosa in grani",
+      "q.b. | finocchietto selvatico"
+    ],
+    passaggi: [
+      "Accendi il forno statico a 200°C.",
+      "Sbuccia le patate e tagliale a fette di 3 mm. Condiscile in una teglia con 2 cucchiai d'olio, sale, aghi di rosmarino e inforna per 20 minuti.",
+      "Sciacqua le orate dentro e fuori e asciugale. Sala e pepa la cavità e riempila con fette di limone, aglio schiacciato, prezzemolo e timo.",
+      "Prepara due grandi fogli di carta forno. Al centro di ognuno adagia un'orata con metà dei pomodorini tagliati a metà e metà delle olive.",
+      "Condisci ogni pesce con 1 cucchiaio d'olio e 25 ml di vino, poi chiudi i cartocci arrotolando bene i bordi, come una caramella.",
+      "Metti i cartocci sopra le patate (o su una seconda teglia) e cuoci tutto insieme per 20–22 minuti.",
+      "Apri i cartocci a tavola: sfiletta l'orata eliminando la lisca centrale e servila con il suo sughetto, i pomodorini e le patate croccanti, con un pizzico di pepe rosa."
+    ]
+  },
+  {
+    id: "gamberoni-aglio",
+    titolo: "Gamberoni all'aglio e prezzemolo con crema di cannellini al rosmarino",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1625943553852-781c6dd46faa"),
+    tempo_preparazione: "20 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "500 g (10–12 pezzi) | gamberoni freschi o surgelati",
+      "1 lattina (240 g sgocciolati) | fagioli cannellini",
+      "3 spicchi | aglio",
+      "1 mazzetto | prezzemolo",
+      "½ | limone",
+      "50 ml | vino bianco",
+      "15 g | burro",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 pizzico | peperoncino in fiocchi",
+      "½ cucchiaino | paprika affumicata",
+      "1 rametto | rosmarino",
+      "2 fette | pane casereccio tostato"
+    ],
+    passaggi: [
+      "Sguscia i gamberoni lasciando la coda, incidili sul dorso ed elimina il filetto nero. Asciugali con carta da cucina.",
+      "In un pentolino scalda 2 cucchiai d'olio con 1 spicchio d'aglio in camicia e il rosmarino per 2 minuti.",
+      "Aggiungi i cannellini sciacquati e 60 ml d'acqua, cuoci 5 minuti, togli aglio e rosmarino e frulla con il frullatore a immersione fino a una crema liscia. Regola di sale e tieni in caldo.",
+      "Trita finemente 2 spicchi d'aglio e il prezzemolo.",
+      "In una padella larga scalda 2 cucchiai d'olio a fuoco vivo, aggiungi i gamberoni in un solo strato e cuocili 1½ minuti per lato.",
+      "Unisci aglio, peperoncino e paprika, mescola 30 secondi senza far bruciare l'aglio, sfuma con il vino.",
+      "Fuori dal fuoco aggiungi burro, prezzemolo e il succo di mezzo limone: agita la padella per creare una salsina lucida.",
+      "Stendi la crema di cannellini nel piatto, adagia sopra i gamberoni con il loro fondo e servi con il pane tostato per la scarpetta."
+    ]
+  },
+  {
+    id: "polpo-patate",
+    titolo: "Polpo arrosto su crema di patate alla paprika affumicata",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1606850780554-b55ea4dd0b70"),
+    tempo_preparazione: "15 min", tempo_cottura: "1 h", tempo_marinatura: "—", tempo_totale: "1 h 15 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 (circa 1 kg) | polpo fresco o decongelato (oppure 500 g di tentacoli già cotti)",
+      "400 g | patate farinose",
+      "80 ml | latte",
+      "1 | limone",
+      "1 spicchio | aglio",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | paprika affumicata (pimentón de la Vera)",
+      "2 foglie | alloro",
+      "1 ciuffo | prezzemolo",
+      "q.b. | sale grosso e pepe nero",
+      "q.b. | rucola per guarnire"
+    ],
+    passaggi: [
+      "Porta a bollore una pentola capiente d'acqua (senza sale) con alloro e mezzo limone.",
+      "Tenendo il polpo per la testa, immergi e solleva i tentacoli 3 volte per farli arricciare, poi immergilo completamente.",
+      "Cuoci a fuoco basso per 40–45 minuti: è pronto quando una forchetta entra senza resistenza. Spegni e lascialo intiepidire nella sua acqua (resta più morbido).",
+      "Nel frattempo lessa le patate sbucciate a tocchi in acqua salata per 20–25 minuti.",
+      "Scola le patate e schiacciale con latte caldo, 2 cucchiai d'olio, sale e metà della paprika fino a ottenere una crema morbida.",
+      "Taglia i tentacoli e asciugali bene. Scalda una padella di ghisa con 1 cucchiaio d'olio e lo spicchio d'aglio schiacciato.",
+      "Rosola i tentacoli a fuoco alto 3–4 minuti per lato finché sono croccanti e abbrustoliti.",
+      "Stendi la crema di patate, adagia i tentacoli, completa con olio a crudo, la paprika rimasta, prezzemolo tritato e scorza di limone."
+    ]
+  },
+  {
+    id: "branzino-crosta-patate",
+    titolo: "Branzino in crosta di patate con asparagi al burro e limone",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1580476262798-bddd9f4b7369"),
+    tempo_preparazione: "20 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "2 filetti (300 g) | branzino con pelle, già spinati",
+      "2 (300 g) | patate medie a pasta gialla",
+      "1 mazzo (400 g) | asparagi verdi",
+      "1 | limone non trattato",
+      "20 g | burro",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "qualche rametto | timo fresco",
+      "q.b. | erba cipollina",
+      "q.b. | sale in fiocchi e pepe bianco",
+      "1 cucchiaio | mandorle a lamelle tostate"
+    ],
+    passaggi: [
+      "Pela le patate e affettale sottilissime (1–2 mm) con una mandolina. Non lavarle: l'amido serve a farle aderire.",
+      "Sala leggermente il lato polpa dei filetti e disponi le fettine di patata sovrapposte a squame, premendo bene.",
+      "Elimina la parte legnosa degli asparagi e sbollentali in acqua salata per 3 minuti, poi passali in acqua fredda.",
+      "Scalda 3 cucchiai d'olio in una padella antiaderente larga a fuoco medio. Adagia i filetti dal lato delle patate.",
+      "Cuoci 6–7 minuti senza toccarli finché la crosta è dorata, poi girali con una spatola larga e cuoci altri 2–3 minuti sul lato della pelle.",
+      "In un'altra padella sciogli il burro, aggiungi gli asparagi e saltali 2–3 minuti con scorza grattugiata e un po' di succo di limone, sale e pepe.",
+      "Servi il branzino con la crosta verso l'alto sugli asparagi, completando con timo, erba cipollina e mandorle tostate."
+    ]
+  },
+  {
+    id: "salmone-nocciole",
+    titolo: "Salmone in crosta di nocciole su crema di spinaci",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1580959375944-abd7e991f971"),
+    tempo_preparazione: "15 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 tranci (320 g) | salmone fresco senza pelle",
+      "50 g | nocciole tostate",
+      "1 cucchiaio | senape di Digione",
+      "300 g | spinaci freschi",
+      "1 | scalogno",
+      "80 ml | panna fresca",
+      "20 g | parmigiano grattugiato",
+      "15 g | burro",
+      "2 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 pizzico | noce moscata",
+      "½ | arancia non trattata (scorza)",
+      "q.b. | erba cipollina",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 200°C e fodera una teglia con carta forno.",
+      "Trita grossolanamente le nocciole al coltello e mescolale con un pizzico di sale e la scorza d'arancia.",
+      "Spennella la superficie del salmone con la senape, poi premici sopra la granella di nocciole.",
+      "Inforna il salmone per 12–14 minuti: la crosta deve essere dorata e il cuore ancora rosato.",
+      "Intanto fai appassire lo scalogno tritato nel burro per 3 minuti, aggiungi gli spinaci e cuocili a fuoco vivo finché si riducono (3–4 minuti).",
+      "Versa la panna, unisci noce moscata, sale, pepe e parmigiano, poi frulla con il frullatore a immersione fino a ottenere una crema vellutata.",
+      "Stendi la crema di spinaci nei piatti caldi, adagia sopra il salmone e completa con un filo d'olio ed erba cipollina."
+    ]
+  },
+  {
+    id: "tartare-salmone",
+    titolo: "Tartare di salmone e avocado con chips di patata dolce",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1625944525533-473f1a3d54e7"),
+    tempo_preparazione: "20 min", tempo_cottura: "20 min", tempo_marinatura: "10 min", tempo_totale: "50 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "250 g | salmone freschissimo abbattuto (adatto al consumo crudo)",
+      "1 | avocado maturo",
+      "1 | lime",
+      "1 (350 g) | patata dolce americana",
+      "1 cucchiaio | salsa di soia",
+      "1 | cipollotto",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | semi di sesamo",
+      "q.b. | erba cipollina o aneto",
+      "1 cucchiaino | uova di salmone (per la decorazione)",
+      "½ cucchiaino | paprika dolce per le chips",
+      "q.b. | wasabi o peperoncino fresco"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 190°C. Affetta la patata dolce sottilissima (2 mm) con una mandolina.",
+      "Condisci le fette con 2 cucchiai d'olio, sale e paprika e disponile ben distanziate su due teglie con carta forno.",
+      "Cuoci le chips circa 20 minuti, girandole a metà, finché sono dorate ai bordi. Si induriscono raffreddando.",
+      "Elimina pelle e parti scure del salmone e taglialo a cubetti di 5 mm con un coltello ben affilato.",
+      "Condiscilo con soia, 1 cucchiaio d'olio, succo di mezzo lime, cipollotto tritato e sesamo; lascia marinare in frigo 10 minuti.",
+      "Taglia l'avocado a cubetti e condiscilo con il lime rimasto e un pizzico di sale.",
+      "Con un coppapasta componi uno strato di avocado e uno di salmone, premendo leggermente. Sfila il coppapasta.",
+      "Decora con uova di salmone ed erba cipollina e servi subito con le chips di patata dolce accanto."
+    ]
+  },
+  {
+    id: "spada-salmoriglio",
+    titolo: "Pesce spada alla griglia con salmoriglio e insalata di pomodori, cetrioli e feta",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1611599537845-1c7aca0091c0"),
+    tempo_preparazione: "15 min", tempo_cottura: "10 min", tempo_marinatura: "15 min", tempo_totale: "40 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 fette (350 g) | pesce spada, spesse 1,5 cm",
+      "1 | limone",
+      "200 g | pomodorini",
+      "1 | cetriolo",
+      "½ | cipolla rossa di Tropea",
+      "80 g | feta greca",
+      "8 | olive kalamata",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | origano secco",
+      "1 spicchio | aglio",
+      "1 ciuffo | prezzemolo",
+      "q.b. | menta fresca",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Prepara il salmoriglio: in una ciotola emulsiona 3 cucchiai d'olio, succo di mezzo limone, 2 cucchiai d'acqua tiepida, aglio tritato, origano, prezzemolo, sale e pepe.",
+      "Spennella il pesce spada con metà del salmoriglio e lascialo insaporire 15 minuti.",
+      "Nel frattempo taglia pomodorini a metà, cetriolo a mezzelune e cipolla a fettine sottili.",
+      "Condisci l'insalata con 2 cucchiai d'olio, un pizzico di sale e origano, poi aggiungi olive e feta sbriciolata a mano e qualche foglia di menta.",
+      "Scalda bene una piastra o padella rigata. Griglia il pesce spada 3–4 minuti per lato senza muoverlo, per avere le righe ben marcate. Non cuocerlo troppo: diventa asciutto.",
+      "Impiatta il pesce spada, irroralo con il salmoriglio rimasto e servi l'insalata accanto."
+    ]
+  },
+  {
+    id: "merluzzo-curry",
+    titolo: "Merluzzo al curry rosso thai e cocco con riso basmati al lime",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1574484284002-952d92456975"),
+    tempo_preparazione: "15 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 filetti (350 g) | merluzzo o salmone",
+      "200 ml | latte di cocco",
+      "1 cucchiaio | pasta di curry rosso thai",
+      "140 g | riso basmati",
+      "1 | lime",
+      "1 | peperone rosso",
+      "100 g | fagiolini",
+      "1 | scalogno",
+      "1 cucchiaio | salsa di pesce (o soia)",
+      "1 cucchiaio | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | zucchero di canna",
+      "1 ciuffo | coriandolo fresco",
+      "2 cm | zenzero fresco",
+      "q.b. | peperoncino fresco",
+      "1 cucchiaio | arachidi tostate"
+    ],
+    passaggi: [
+      "Sciacqua il riso basmati e cuocilo in 280 ml d'acqua salata, coperto, a fuoco minimo per 12 minuti. Spegni, lascia riposare 5 minuti e sgrana con la scorza del lime.",
+      "Affetta scalogno e peperone a listarelle e spunta i fagiolini tagliandoli a metà.",
+      "In una padella larga scalda l'olio, soffriggi scalogno e zenzero grattugiato 2 minuti, poi aggiungi la pasta di curry e tostala 1 minuto.",
+      "Versa il latte di cocco, salsa di pesce e zucchero, unisci peperone e fagiolini e cuoci 6–7 minuti.",
+      "Taglia il pesce in 2–3 pezzi per filetto, salalo leggermente e adagialo nel curry. Copri e cuoci a fuoco dolce 6–8 minuti senza mescolare per non sfaldarlo.",
+      "Spegni e aggiungi il succo di mezzo lime.",
+      "Servi il riso in una ciotola e il curry accanto, con coriandolo, arachidi tritate e peperoncino fresco."
+    ]
+  },
+  {
+    id: "spiedini-mare",
+    titolo: "Spiedini di gamberi e calamari con insalata di finocchi e arance",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1559737558-2f5a35f4523b"),
+    tempo_preparazione: "25 min", tempo_cottura: "10 min", tempo_marinatura: "15 min", tempo_totale: "50 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "8 | gamberi grandi",
+      "2 (300 g) | calamari puliti",
+      "1 | finocchio grande",
+      "2 | arance",
+      "½ | cipolla rossa",
+      "40 g | pangrattato",
+      "1 | limone",
+      "5 cucchiai | olio extravergine d'oliva",
+      "4 | spiedini di legno (in ammollo)"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | prezzemolo",
+      "1 spicchio | aglio",
+      "8 | olive nere",
+      "q.b. | finocchietto o barba del finocchio",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Metti gli spiedini di legno in acqua per 15 minuti così non bruciano.",
+      "Sguscia i gamberi lasciando la coda ed eliminane il filetto. Taglia i calamari ad anelli spessi 1,5 cm.",
+      "Marina gamberi e calamari 15 minuti con 2 cucchiai d'olio, succo di mezzo limone, aglio schiacciato, sale e pepe.",
+      "Prepara l'insalata: affetta il finocchio sottilissimo, pela a vivo le arance e tagliale a fette, aggiungi cipolla rossa a velo e olive.",
+      "Condisci l'insalata con 2 cucchiai d'olio, il succo raccolto dalle arance, sale e la barba del finocchio tritata.",
+      "Infila gamberi e anelli di calamaro alternati sugli spiedini.",
+      "Mescola il pangrattato con prezzemolo tritato e scorza di limone; passaci gli spiedini.",
+      "Cuocili su piastra o padella rovente con un filo d'olio 3–4 minuti per lato, finché la panatura è dorata. Servi subito con l'insalata."
+    ]
+  },
+  {
+    id: "guazzetto-mare",
+    titolo: "Guazzetto di cozze, vongole e gamberi con crostoni all'aglio",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1559847844-5315695dadae"),
+    tempo_preparazione: "25 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "500 g | cozze",
+      "400 g | vongole veraci",
+      "6 | gamberi o mazzancolle",
+      "250 g | passata o pomodorini",
+      "100 ml | vino bianco secco",
+      "3 spicchi | aglio",
+      "4 fette | pane casereccio",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | prezzemolo",
+      "1 pizzico | peperoncino",
+      "q.b. | pepe nero",
+      "½ | limone (scorza)"
+    ],
+    passaggi: [
+      "Metti le vongole in acqua fredda salata per almeno 1 ora a spurgare (se possibile, comprale già spurgate).",
+      "Raschia e lava le cozze, eliminando il bisso (la barbetta). Scarta quelle aperte o rotte.",
+      "In una casseruola larga scalda 3 cucchiai d'olio con 2 spicchi d'aglio e peperoncino. Aggiungi cozze e vongole, sfuma con il vino e copri.",
+      "Cuoci a fuoco vivo 3–4 minuti finché i molluschi si aprono. Scarta quelli rimasti chiusi.",
+      "Aggiungi pomodorini a metà o passata e cuoci 5 minuti, poi unisci i gamberi e cuoci altri 3 minuti.",
+      "Intanto tosta le fette di pane in padella o al forno e strofinale con l'aglio rimasto e un filo d'olio.",
+      "Completa il guazzetto con prezzemolo tritato, pepe e scorza di limone. Servi in piatti fondi con i crostoni da inzuppare nel sugo."
+    ]
+  },
+  {
+    id: "salmone-yogurt-aneto",
+    titolo: "Salmone al forno con salsa yogurt e aneto e patate novelle arrosto",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1467003909585-2f8a72700288"),
+    tempo_preparazione: "10 min", tempo_cottura: "35 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 tranci (320 g) | salmone fresco",
+      "400 g | patate novelle",
+      "125 g | yogurt greco",
+      "1 | limone",
+      "½ | cetriolo",
+      "1 spicchio | aglio",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 mazzetto | aneto fresco",
+      "1 cucchiaino | capperi",
+      "q.b. | rosmarino",
+      "q.b. | pepe nero e sale grosso"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 210°C. Lava bene le patate novelle senza sbucciarle e tagliale a metà.",
+      "Condiscile con 2 cucchiai d'olio, sale grosso, aglio in camicia e rosmarino e infornale per 20 minuti.",
+      "Prepara la salsa: grattugia il cetriolo, strizzalo e mescolalo con yogurt, aneto tritato, capperi, scorza e un po' di succo di limone, sale e pepe. Tieni in frigo.",
+      "Sposta le patate ai lati della teglia, adagia al centro il salmone condito con sale, olio e fettine di limone.",
+      "Cuoci insieme altri 12–15 minuti, finché il salmone si sfalda appena.",
+      "Servi il salmone con abbondante salsa allo yogurt e le patate croccanti accanto."
+    ]
+  },
+  {
+    id: "paella-mare",
+    titolo: "Paella di mare per due con insalata di pomodori e cipolla",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1515443961218-a51367888e4b"),
+    tempo_preparazione: "25 min", tempo_cottura: "35 min", tempo_marinatura: "—", tempo_totale: "1 h",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "160 g | riso bomba (o Carnaroli)",
+      "300 g | cozze",
+      "6 | gamberi o scampi",
+      "150 g | calamari ad anelli",
+      "1 | peperone rosso",
+      "60 g | piselli",
+      "1 | cipolla",
+      "2 spicchi | aglio",
+      "100 g | passata di pomodoro",
+      "550 ml | brodo di pesce",
+      "1 | limone",
+      "4 cucchiai | olio extravergine d'oliva",
+      "2 | pomodori cuore di bue (contorno)",
+      "½ | cipolla rossa (contorno)"
+    ],
+    spezie_e_extra: [
+      "1 bustina | zafferano",
+      "1 cucchiaino | paprika dolce affumicata",
+      "1 ciuffo | prezzemolo",
+      "q.b. | origano per l'insalata"
+    ],
+    passaggi: [
+      "Sciogli lo zafferano nel brodo caldo e tienilo sul fuoco basso.",
+      "Pulisci le cozze e falle aprire in padella coperta con un filo d'olio (3–4 minuti). Tieni da parte molluschi e filtra il loro liquido nel brodo.",
+      "In una paellera o padella larga da 28–30 cm scalda l'olio e rosola i gamberi 1 minuto per lato; toglili e tienili da parte.",
+      "Nella stessa padella soffriggi cipolla e aglio tritati e il peperone a listarelle per 5 minuti, poi aggiungi i calamari e cuoci 3 minuti.",
+      "Unisci passata e paprika, cuoci 2 minuti, poi aggiungi il riso e tostalo 1 minuto mescolando.",
+      "Versa tutto il brodo caldo, distribuisci il riso in modo uniforme e da questo momento NON mescolare più. Cuoci 18 minuti a fuoco medio, aggiungendo i piselli a metà cottura.",
+      "Disponi sopra gamberi e cozze, alza il fuoco per 1–2 minuti finché senti il riso sfrigolare: si forma il socarrat, la crosticina sul fondo.",
+      "Copri con un canovaccio e lascia riposare 5 minuti. Intanto taglia i pomodori a spicchi e la cipolla rossa a velo e condisci con olio, sale e origano.",
+      "Servi la paella in padella al centro della tavola con spicchi di limone, prezzemolo e l'insalata accanto."
+    ]
+  },
+  {
+    id: "trota-melograno",
+    titolo: "Trota salmonata al melograno con cavolfiore arrosto alla curcuma",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1560717845-968823efbee1"),
+    tempo_preparazione: "15 min", tempo_cottura: "30 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 filetti (320 g) | trota salmonata con pelle",
+      "1 | melograno",
+      "½ (400 g) | cavolfiore",
+      "½ | cipolla rossa",
+      "1 cucchiaio | miele",
+      "1 | limone",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | curcuma",
+      "½ cucchiaino | cumino",
+      "q.b. | menta o prezzemolo",
+      "1 cucchiaio | pistacchi tritati",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 220°C. Dividi il cavolfiore in cimette piccole.",
+      "Condisci il cavolfiore con 2 cucchiai d'olio, curcuma, cumino, sale e pepe e arrostiscilo in teglia per 25–30 minuti, girandolo a metà, finché è dorato.",
+      "Sgrana il melograno: tieni da parte metà dei chicchi e spremi gli altri per ottenere circa 4 cucchiai di succo.",
+      "In un pentolino riduci il succo di melograno con il miele e un po' di succo di limone per 3–4 minuti fino a una glassa sciropposa.",
+      "Asciuga la trota, sala e incidi leggermente la pelle. Cuocila in padella con 1 cucchiaio d'olio, pelle in giù, 4–5 minuti finché è croccante, poi girala per 1 minuto.",
+      "Spennella la trota con la glassa al melograno.",
+      "Servi la trota sul cavolfiore, con cipolla rossa a velo, chicchi di melograno, pistacchi ed erbe fresche."
+    ]
+  },
+  {
+    id: "poke-tonno",
+    titolo: "Poke bowl di tonno scottato con riso, avocado e insalata di cetrioli e wakame",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1546069901-ba9599a7e63c"),
+    tempo_preparazione: "20 min", tempo_cottura: "15 min", tempo_marinatura: "15 min", tempo_totale: "50 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "250 g | tonno fresco abbattuto",
+      "140 g | riso per sushi (o basmati)",
+      "1 | avocado",
+      "1 | cetriolo",
+      "10 g | alga wakame secca",
+      "100 g | edamame sgusciati surgelati",
+      "1 | carota",
+      "3 cucchiai | salsa di soia",
+      "2 cucchiai | aceto di riso",
+      "1 cucchiaio | olio di sesamo"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | semi di sesamo",
+      "1 | cipollotto",
+      "q.b. | maionese allo sriracha",
+      "1 | lime",
+      "q.b. | zenzero sottaceto"
+    ],
+    passaggi: [
+      "Cuoci il riso secondo le istruzioni (circa 12–15 minuti), poi condiscilo con 1 cucchiaio di aceto di riso e un pizzico di sale e lascialo intiepidire.",
+      "Taglia il tonno a cubetti di 2 cm e marinalo 15 minuti con 2 cucchiai di soia, olio di sesamo e cipollotto.",
+      "Reidrata la wakame in acqua fredda per 5 minuti, strizzala e mescolala con il cetriolo a fettine sottili, 1 cucchiaio di aceto di riso, 1 di soia e sesamo.",
+      "Sbollenta gli edamame 3 minuti e scolali. Taglia la carota a julienne e l'avocado a fette.",
+      "Scotta i cubetti di tonno in padella rovente 20 secondi per lato: fuori colorati, dentro crudi.",
+      "Componi le bowl: riso alla base, tonno, avocado, edamame, carota e l'insalata di cetrioli e wakame a spicchi. Completa con sesamo, lime e un filo di maionese allo sriracha."
+    ]
+  },
+
+  /* ------------------------------ CARNE ------------------------------ */
+  {
+    id: "pollo-miso-zucca",
+    titolo: "Pollo marinato al miso e spezie su vellutata di zucca",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1610057099443-fde8c4d50f91"),
+    tempo_preparazione: "20 min", tempo_cottura: "35 min", tempo_marinatura: "30 min", tempo_totale: "1 h 25 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "400 g | sovracosce di pollo disossate (o petto)",
+      "2 cucchiai | miso bianco",
+      "1 cucchiaio | salsa di soia",
+      "1 cucchiaio | miele",
+      "1 spicchio | aglio",
+      "2 cm | zenzero fresco",
+      "600 g | zucca delica (circa 450 g pulita)",
+      "1 | patata media",
+      "1 | scalogno",
+      "400 ml | brodo vegetale",
+      "50 ml | latte di cocco o panna",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | olio di sesamo tostato",
+      "½ cucchiaino | paprika affumicata o shichimi togarashi",
+      "1 pizzico | noce moscata",
+      "1 cucchiaio | semi di zucca tostati",
+      "1 | cipollotto",
+      "½ | lime"
+    ],
+    passaggi: [
+      "Prepara la marinata mescolando miso, soia, miele, olio di sesamo, aglio grattugiato, zenzero grattugiato e paprika.",
+      "Massaggia il pollo con la marinata, copri e lascia riposare in frigo almeno 30 minuti (fino a una notte per un sapore più intenso).",
+      "Sbuccia la zucca e la patata e tagliale a cubetti. Fai appassire lo scalogno tritato in 2 cucchiai d'olio per 3 minuti.",
+      "Aggiungi zucca e patata, lascia insaporire 2 minuti, copri con il brodo caldo e cuoci 20–25 minuti finché tutto è morbido.",
+      "Frulla con il frullatore a immersione aggiungendo latte di cocco, noce moscata, sale e pepe fino a una crema liscia e densa.",
+      "Accendi il forno ventilato a 200°C. Disponi il pollo su una teglia con carta forno, eliminando la marinata in eccesso.",
+      "Cuoci 20–25 minuti, poi accendi il grill per 2–3 minuti per caramellare la superficie (controlla: il miso scurisce in fretta).",
+      "Lascia riposare il pollo 3 minuti e taglialo a fette spesse.",
+      "Versa la vellutata in piatti fondi, adagia sopra il pollo e completa con semi di zucca, cipollotto a rondelle e qualche goccia di lime."
+    ]
+  },
+  {
+    id: "tagliata-rucola",
+    titolo: "Tagliata di manzo con rucola e grana e patate al forno al rosmarino",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1529692236671-f1f6cf9683ba"),
+    tempo_preparazione: "15 min", tempo_cottura: "40 min", tempo_marinatura: "—", tempo_totale: "55 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "500 g | controfiletto o entrecôte di manzo in un pezzo (spessore 3 cm)",
+      "60 g | rucola",
+      "40 g | Grana Padano in scaglie",
+      "500 g | patate",
+      "100 g | pomodorini",
+      "2 spicchi | aglio",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "2 rametti | rosmarino",
+      "1 cucchiaio | aceto balsamico o glassa",
+      "q.b. | sale grosso e sale in fiocchi",
+      "q.b. | pepe nero macinato fresco"
+    ],
+    passaggi: [
+      "Tira fuori la carne dal frigo 30 minuti prima. Accendi il forno ventilato a 210°C.",
+      "Taglia le patate a cubetti di 2 cm, condiscile con 3 cucchiai d'olio, aglio in camicia, rosmarino e sale e infornale 35–40 minuti, girandole a metà.",
+      "Quando le patate sono quasi pronte, scalda una padella di ghisa o piastra a fuoco alto fino a quando fuma leggermente.",
+      "Ungi la carne con un filo d'olio (non la padella) e cuocila 3–4 minuti per lato per una cottura al sangue/media, senza muoverla.",
+      "Sala solo a fine cottura e lascia riposare la carne su un tagliere 5 minuti coperta con alluminio.",
+      "Taglia la carne a fette spesse 1 cm in diagonale.",
+      "Stendi la rucola e i pomodorini sul piatto, adagia la tagliata, completa con scaglie di grana, sale in fiocchi, pepe e balsamico. Servi con le patate."
+    ]
+  },
+  {
+    id: "filetto-pepe-verde",
+    titolo: "Filetto di manzo al pepe verde con broccoletti saltati all'aglio",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1432139509613-5c4255815697"),
+    tempo_preparazione: "10 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "30 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "2 (180 g l'uno) | medaglioni di filetto di manzo",
+      "1 cucchiaio | pepe verde in salamoia",
+      "80 ml | panna fresca",
+      "30 ml | brandy o cognac",
+      "1 cucchiaino | senape",
+      "250 g | broccoletti o friarielli (o broccolini)",
+      "2 spicchi | aglio",
+      "20 g | burro",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 pizzico | peperoncino",
+      "q.b. | timo fresco",
+      "q.b. | sale in fiocchi",
+      "½ | limone (scorza)"
+    ],
+    passaggi: [
+      "Tira fuori i filetti dal frigo 20 minuti prima. Lava i broccoletti eliminando i gambi duri.",
+      "Sbollenta i broccoletti 3 minuti in acqua salata e scolali.",
+      "In padella scalda 2 cucchiai d'olio con aglio e peperoncino, aggiungi i broccoletti e saltali 4–5 minuti a fuoco vivo con un pizzico di sale e scorza di limone.",
+      "In un'altra padella scalda burro e un filo d'olio a fuoco alto. Rosola i filetti 3 minuti per lato (al sangue) o 4 (medio), bagnandoli con il burro.",
+      "Togli i filetti e tienili in caldo coperti.",
+      "Nella stessa padella sfuma con il brandy (attenzione alla fiamma), raschiando il fondo.",
+      "Aggiungi panna, senape e pepe verde leggermente schiacciato; fai addensare 2 minuti e regola di sale.",
+      "Rimetti i filetti nella salsa per 30 secondi, poi servi nappando con la salsa, i broccoletti accanto."
+    ]
+  },
+  {
+    id: "maiale-mele",
+    titolo: "Braciola di maiale con mele caramellate e patate schiacciate",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1432139555190-58524dae6a55"),
+    tempo_preparazione: "15 min", tempo_cottura: "35 min", tempo_marinatura: "—", tempo_totale: "50 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 (250 g l'una) | braciole di maiale con osso, spesse 2 cm",
+      "1 | mela Golden o Pink Lady",
+      "400 g | patate piccole",
+      "200 g | broccoli o cime di broccolo",
+      "20 g | burro",
+      "1 cucchiaio | zucchero di canna",
+      "1 cucchiaio | aceto di mele",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | salvia",
+      "q.b. | timo",
+      "1 pizzico | cannella",
+      "q.b. | pepe nero",
+      "1 cucchiaino | senape in grani"
+    ],
+    passaggi: [
+      "Lessa le patate con la buccia in acqua salata per 15–20 minuti. Accendi il forno ventilato a 220°C.",
+      "Disponi le patate su una teglia oliata e schiacciale con il fondo di un bicchiere. Condisci con olio, sale e timo e inforna 20 minuti finché sono croccanti. Aggiungi le cime di broccolo condite negli ultimi 12 minuti.",
+      "Incidi il grasso delle braciole ogni 2 cm perché non si arriccino. Sala, pepa e spalma con un velo di senape.",
+      "Scalda un filo d'olio in padella a fuoco medio-alto e cuoci le braciole 4–5 minuti per lato con qualche foglia di salvia, finché sono dorate.",
+      "Togli la carne e lasciala riposare. Nella stessa padella sciogli il burro, aggiungi la mela a spicchi, zucchero e cannella.",
+      "Cuoci le mele 4–5 minuti finché sono caramellate, poi sfuma con l'aceto di mele.",
+      "Servi la braciola con le mele e il loro fondo sopra, le patate schiacciate e i broccoli accanto."
+    ]
+  },
+  {
+    id: "costine-bbq",
+    titolo: "Costine di maiale BBQ al forno con coleslaw croccante",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1544025162-d76694265947"),
+    tempo_preparazione: "20 min", tempo_cottura: "2 h", tempo_marinatura: "30 min", tempo_totale: "2 h 50 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 kg | costine di maiale (baby back ribs)",
+      "100 ml | salsa barbecue",
+      "1 cucchiaio | miele",
+      "¼ (250 g) | cavolo cappuccio",
+      "1 | carota",
+      "2 cucchiai | maionese",
+      "2 cucchiai | yogurt greco",
+      "1 cucchiaio | aceto di mele"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | zucchero di canna",
+      "1 cucchiaino | paprika affumicata",
+      "½ cucchiaino | aglio in polvere",
+      "½ cucchiaino | cumino",
+      "q.b. | erba cipollina",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Togli la membrana bianca dal lato interno delle costine (sollevala con un coltello e tirala con un foglio di carta).",
+      "Mescola zucchero, paprika, aglio in polvere, cumino, sale e pepe e massaggia le costine su entrambi i lati. Lascia riposare 30 minuti.",
+      "Accendi il forno statico a 150°C. Avvolgi le costine strettamente in alluminio e cuocile 1 ora e 45 minuti.",
+      "Nel frattempo affetta finissimo il cavolo e grattugia la carota. Condiscili con maionese, yogurt, aceto di mele, sale e pepe. Tieni in frigo.",
+      "Mescola la salsa barbecue con il miele.",
+      "Apri l'alluminio, alza il forno a 220°C (grill), spennella le costine con la salsa e cuoci 10–15 minuti spennellando ancora a metà, finché sono glassate.",
+      "Taglia le costine tra un osso e l'altro e servile con il coleslaw ben freddo cosparso di erba cipollina."
+    ]
+  },
+  {
+    id: "polpette-limone",
+    titolo: "Polpette di manzo e ricotta al forno con insalata di rucola, pere e noci",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1529042410759-befb1204b468"),
+    tempo_preparazione: "20 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "300 g | macinato di manzo",
+      "100 g | ricotta vaccina",
+      "1 | uovo",
+      "30 g | parmigiano grattugiato",
+      "30 g | pangrattato",
+      "1 | limone non trattato",
+      "60 g | rucola",
+      "1 | pera",
+      "30 g | gherigli di noce",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | prezzemolo",
+      "q.b. | noce moscata",
+      "q.b. | scaglie di grana",
+      "1 cucchiaino | miele per il condimento"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 200°C e fodera una teglia con carta forno.",
+      "In una ciotola impasta macinato, ricotta, uovo, parmigiano, pangrattato, scorza di limone, prezzemolo tritato, noce moscata e sale.",
+      "Forma 12–14 polpette con le mani umide e disponile sulla teglia; spennellale con un filo d'olio.",
+      "Cuoci 18–20 minuti, girandole a metà, finché sono dorate.",
+      "Intanto taglia la pera a fettine sottili e tosta le noci in padella per 2 minuti.",
+      "Emulsiona 3 cucchiai d'olio, succo di mezzo limone, miele e sale.",
+      "Unisci rucola, pera e noci, condisci con l'emulsione e servi le polpette calde con l'insalata e qualche scaglia di grana."
+    ]
+  },
+  {
+    id: "pollo-limone-timo",
+    titolo: "Cosce di pollo arrosto al limone e timo con patate e cipolle",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1598103442097-8b74394b95c6"),
+    tempo_preparazione: "15 min", tempo_cottura: "50 min", tempo_marinatura: "—", tempo_totale: "1 h 05 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "4 (circa 700 g) | cosce o sovracosce di pollo con pelle",
+      "500 g | patate",
+      "2 | cipolle rosse",
+      "1 | limone",
+      "3 spicchi | aglio",
+      "50 ml | vino bianco",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 mazzetto | timo fresco",
+      "1 rametto | rosmarino",
+      "1 cucchiaino | paprika dolce",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 200°C.",
+      "Taglia le patate a spicchi e le cipolle in quarti; mettile in una teglia con 2 cucchiai d'olio, sale e rosmarino.",
+      "Asciuga bene il pollo con carta da cucina (pelle asciutta = pelle croccante). Strofinalo con olio, sale, pepe, paprika, timo e scorza di limone.",
+      "Adagia il pollo sopra le verdure con la pelle verso l'alto, aggiungi gli spicchi d'aglio schiacciati e il limone tagliato a spicchi.",
+      "Versa il vino sul fondo della teglia (non sul pollo) e inforna per 45–50 minuti, finché la pelle è dorata e il succo che esce è trasparente.",
+      "Gli ultimi 5 minuti accendi il grill per rendere la pelle extra croccante.",
+      "Servi le cosce con patate e cipolle, irrorando con il fondo di cottura e spremendo sopra il limone arrostito."
+    ]
+  },
+  {
+    id: "cotoletta-milanese",
+    titolo: "Cotoletta alla milanese con patate al forno e insalatina",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1599921841143-819065a55cc6"),
+    tempo_preparazione: "20 min", tempo_cottura: "40 min", tempo_marinatura: "—", tempo_totale: "1 h",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "2 (250 g l'una) | costolette di vitello con osso (o fesa, battute)",
+      "2 | uova",
+      "100 g | pangrattato",
+      "80 g | burro chiarificato",
+      "400 g | patate",
+      "100 g | misticanza",
+      "1 | limone",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | sale grosso",
+      "1 rametto | rosmarino",
+      "q.b. | marmellata di mirtilli rossi (alla tedesca)",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 210°C. Taglia le patate a cubetti, condiscile con olio, sale e rosmarino e infornale 35–40 minuti.",
+      "Batti le costolette con il batticarne fino a 1,5 cm di spessore (sono le classiche 'orecchie d'elefante' se le batti fino a 5 mm).",
+      "Sbatti le uova in un piatto fondo senza sale. Metti il pangrattato in un altro piatto.",
+      "Passa le costolette nell'uovo, poi nel pangrattato premendo bene con il palmo della mano.",
+      "Scalda il burro chiarificato in una padella larga a fuoco medio: deve sfrigolare se ci immergi un po' di pane.",
+      "Cuoci le cotolette 4–5 minuti per lato, finché la panatura è dorata e croccante, bagnandole con il burro.",
+      "Scolale su carta assorbente e sala solo adesso.",
+      "Servi con spicchi di limone, le patate al forno e la misticanza condita con olio, limone e sale."
+    ]
+  },
+  {
+    id: "spiedini-carne",
+    titolo: "Spiedini misti di carne con verdure grigliate e salsa allo yogurt",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1603360946369-dc9bb6258143"),
+    tempo_preparazione: "25 min", tempo_cottura: "15 min", tempo_marinatura: "30 min", tempo_totale: "1 h 10 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "200 g | lonza di maiale",
+      "200 g | petto di pollo",
+      "4 | salsicce fini (o 150 g di salsiccia)",
+      "1 | peperone giallo",
+      "1 | zucchina",
+      "1 | melanzana piccola",
+      "1 | cipolla rossa",
+      "125 g | yogurt greco",
+      "1 | limone",
+      "5 cucchiai | olio extravergine d'oliva",
+      "4–6 | spiedini"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | paprika dolce",
+      "1 cucchiaino | origano",
+      "1 spicchio | aglio",
+      "q.b. | menta fresca",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Taglia maiale e pollo a cubi di 3 cm e la salsiccia a tocchi di 3 cm.",
+      "Marina la carne 30 minuti con 3 cucchiai d'olio, succo di mezzo limone, paprika, origano, aglio schiacciato e pepe.",
+      "Prepara la salsa: yogurt, menta tritata, scorza di limone, un filo d'olio e un pizzico di sale.",
+      "Taglia il peperone a quadrati, la cipolla in spicchi e zucchina e melanzana a fette di 5 mm.",
+      "Infila sugli spiedini carne alternata a peperone e cipolla.",
+      "Griglia zucchina e melanzana su piastra rovente 2 minuti per lato e condiscile con olio, sale e menta.",
+      "Cuoci gli spiedini sulla stessa piastra 10–12 minuti girandoli spesso, finché la carne è dorata e il pollo è cotto all'interno.",
+      "Servi gli spiedini con le verdure grigliate e la salsa allo yogurt."
+    ]
+  },
+  {
+    id: "anatra-arancia",
+    titolo: "Petto d'anatra all'arancia con purè di sedano rapa",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1504973960431-1c467e159aa4"),
+    tempo_preparazione: "20 min", tempo_cottura: "35 min", tempo_marinatura: "—", tempo_totale: "55 min",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "1 grande (400 g) | petto d'anatra (o 2 piccoli)",
+      "2 | arance",
+      "1 cucchiaio | miele",
+      "30 ml | Grand Marnier o Cointreau (facoltativo)",
+      "100 ml | brodo di carne",
+      "1 (500 g) | sedano rapa",
+      "1 | patata",
+      "100 ml | latte",
+      "20 g | burro"
+    ],
+    spezie_e_extra: [
+      "2 | anice stellato o 1 stecca di cannella",
+      "q.b. | timo fresco",
+      "q.b. | pepe rosa",
+      "1 pizzico | noce moscata"
+    ],
+    passaggi: [
+      "Sbuccia sedano rapa e patata, tagliali a cubi e lessali in acqua salata per 20–25 minuti.",
+      "Togli l'anatra dal frigo e incidi la pelle a rombi senza arrivare alla carne. Sala bene entrambi i lati.",
+      "Metti il petto in una padella FREDDA, pelle in giù, e accendi a fuoco medio-basso: il grasso si scioglierà lentamente per 10–12 minuti.",
+      "Elimina man mano il grasso in eccesso (tienilo: è ottimo per le patate). Quando la pelle è dorata e croccante, gira e cuoci 3–4 minuti sul lato carne.",
+      "Fai riposare il petto 8 minuti avvolto nell'alluminio: deve restare rosa all'interno.",
+      "Nella stessa padella, senza grasso, versa succo di 1½ arance, miele, liquore, brodo e anice; riduci 5–6 minuti fino a una salsa sciropposa. Aggiungi la scorza a julienne.",
+      "Scola sedano rapa e patata e frullali con latte caldo, burro, sale e noce moscata fino a un purè vellutato.",
+      "Taglia l'anatra a fette di 1 cm, adagiala sul purè, nappa con la salsa all'arancia e completa con spicchi d'arancia pelati a vivo, timo e pepe rosa."
+    ]
+  },
+  {
+    id: "costata-patate",
+    titolo: "Costata di manzo con patate rustiche e burro alle erbe",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1608877907149-a206d75ba011"),
+    tempo_preparazione: "15 min", tempo_cottura: "45 min", tempo_marinatura: "—", tempo_totale: "1 h",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 (700–800 g) | costata di manzo con osso, alta 3–4 cm",
+      "500 g | patate",
+      "40 g | burro morbido",
+      "2 spicchi | aglio",
+      "100 g | spinacini o insalata verde",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | prezzemolo, timo e rosmarino freschi",
+      "q.b. | sale in fiocchi",
+      "q.b. | pepe nero in grani",
+      "1 cucchiaino | paprika per le patate"
+    ],
+    passaggi: [
+      "Tira fuori la costata dal frigo almeno 30 minuti prima. Accendi il forno ventilato a 210°C.",
+      "Taglia le patate a spicchi con la buccia, condiscile con olio, sale, paprika e rosmarino e infornale 40 minuti.",
+      "Prepara il burro alle erbe: lavora il burro morbido con aglio tritato, prezzemolo, timo e un pizzico di sale; arrotolalo nella pellicola e mettilo in frigo.",
+      "Scalda una padella di ghisa a fuoco altissimo. Ungi la carne e rosolala 4 minuti per lato, poi anche sul bordo grasso per 1 minuto.",
+      "Trasferisci la costata in forno sopra le patate per 5–8 minuti (al sangue: 50–52°C al cuore; media: 55–57°C).",
+      "Lascia riposare la carne 8 minuti su un tagliere coperta con alluminio.",
+      "Taglia a fette staccando la carne dall'osso, completa con fiocchi di sale, pepe macinato e dischetti di burro alle erbe che si sciolgono sopra. Servi con patate e spinacini conditi."
+    ]
+  },
+  {
+    id: "pollo-curry-cocco",
+    titolo: "Pollo al curry e latte di cocco con riso basmati e piselli",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1585937421612-70a008356fbe"),
+    tempo_preparazione: "15 min", tempo_cottura: "30 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "400 g | petto o sovracosce di pollo",
+      "200 ml | latte di cocco",
+      "200 g | polpa di pomodoro",
+      "1 | cipolla",
+      "2 spicchi | aglio",
+      "2 cm | zenzero fresco",
+      "140 g | riso basmati",
+      "80 g | piselli surgelati",
+      "2 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | curry in polvere (o garam masala)",
+      "½ cucchiaino | curcuma",
+      "½ cucchiaino | cumino",
+      "1 ciuffo | coriandolo",
+      "1 cucchiaio | yogurt per servire",
+      "q.b. | peperoncino"
+    ],
+    passaggi: [
+      "Taglia il pollo a bocconcini di 3 cm e salalo leggermente.",
+      "In una padella profonda scalda l'olio e soffriggi la cipolla tritata 5 minuti, poi aggiungi aglio e zenzero grattugiati per 1 minuto.",
+      "Unisci curry, curcuma e cumino e tostali 30 secondi mescolando: sprigionano tutto il profumo.",
+      "Aggiungi il pollo e rosolalo 4–5 minuti, poi versa la polpa di pomodoro e il latte di cocco.",
+      "Cuoci a fuoco dolce 15–20 minuti con coperchio socchiuso, finché la salsa è densa. Regola di sale.",
+      "Intanto cuoci il riso basmati in 280 ml d'acqua salata coperto a fuoco minimo per 12 minuti; negli ultimi 4 minuti aggiungi i piselli sopra il riso.",
+      "Sgrana riso e piselli con una forchetta e servi con il curry, una cucchiaiata di yogurt e coriandolo fresco."
+    ]
+  },
+  {
+    id: "gulasch-polenta",
+    titolo: "Gulasch di manzo alla paprika con polenta morbida",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1534939561126-855b8675edd7"),
+    tempo_preparazione: "20 min", tempo_cottura: "2 h", tempo_marinatura: "—", tempo_totale: "2 h 20 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "500 g | spezzatino di manzo (cappello del prete o guancia)",
+      "2 | cipolle dorate",
+      "1 | peperone rosso",
+      "2 cucchiai | concentrato di pomodoro",
+      "500 ml | brodo di carne",
+      "100 ml | vino rosso",
+      "125 g | farina di mais per polenta istantanea (o bramata)",
+      "20 g | burro",
+      "30 g | parmigiano",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | paprika dolce ungherese",
+      "1 cucchiaino | paprika piccante",
+      "1 cucchiaino | semi di cumino",
+      "2 foglie | alloro",
+      "q.b. | maggiorana",
+      "1 cucchiaio | panna acida per servire"
+    ],
+    passaggi: [
+      "Asciuga la carne e rosolala in una casseruola con l'olio a fuoco alto, poca alla volta, finché è ben dorata. Tienila da parte.",
+      "Nella stessa casseruola fai appassire le cipolle affettate a fuoco dolce per 10 minuti, finché sono morbide e dorate.",
+      "Aggiungi le paprike, il cumino e il concentrato e mescola 1 minuto (la paprika brucia facilmente: fuoco basso).",
+      "Rimetti la carne, sfuma con il vino rosso e lascia evaporare.",
+      "Aggiungi peperone a cubetti, alloro, maggiorana e brodo caldo fino a coprire. Cuoci coperto a fuoco minimo per 1 ora e 45 minuti, finché la carne si sfalda.",
+      "Negli ultimi 10 minuti porta a bollore 500 ml d'acqua salata, versa a pioggia la farina di mais mescolando con una frusta e cuoci secondo le istruzioni.",
+      "Manteca la polenta con burro e parmigiano: deve restare morbida e cremosa.",
+      "Servi la polenta nel piatto fondo con il gulasch sopra e un cucchiaio di panna acida."
+    ]
+  },
+  {
+    id: "pollo-griglia-verdure",
+    titolo: "Petto di pollo grigliato al limone con verdure grigliate e hummus",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1532550907401-a500c9a57435"),
+    tempo_preparazione: "15 min", tempo_cottura: "20 min", tempo_marinatura: "20 min", tempo_totale: "55 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 (350 g) | petti di pollo",
+      "1 | limone",
+      "1 | zucchina",
+      "1 | peperone rosso",
+      "1 | melanzana piccola",
+      "100 g | hummus di ceci",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 rametto | rosmarino",
+      "1 spicchio | aglio",
+      "1 cucchiaino | origano o za'atar",
+      "q.b. | menta e basilico",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Apri i petti di pollo a libro o battili a 1,5 cm di spessore per una cottura uniforme.",
+      "Marina 20 minuti con 2 cucchiai d'olio, succo e scorza di mezzo limone, aglio, rosmarino, origano e pepe.",
+      "Taglia zucchina e melanzana a fette di 5 mm e il peperone a falde.",
+      "Griglia le verdure su una piastra rovente 2–3 minuti per lato (il peperone anche 5), poi condiscile con olio, sale, menta e basilico.",
+      "Sala il pollo e grigliatelo 4–5 minuti per lato senza muoverlo, finché è dorato e cotto al cuore.",
+      "Lascia riposare il pollo 2 minuti e taglialo a fette.",
+      "Spalma un cucchiaio di hummus nel piatto, adagia le verdure e il pollo e completa con un filo d'olio e spicchi di limone."
+    ]
+  },
+  {
+    id: "agnello-erbe",
+    titolo: "Costolette d'agnello in crosta di erbe con tortino di patate e spinaci",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1580554530778-ca36943938b2"),
+    tempo_preparazione: "20 min", tempo_cottura: "30 min", tempo_marinatura: "—", tempo_totale: "50 min",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "1 carré (8 costolette, 500 g) | agnello (o costolette singole)",
+      "1 cucchiaio | senape di Digione",
+      "40 g | pangrattato",
+      "20 g | pecorino grattugiato",
+      "350 g | patate",
+      "200 g | spinaci freschi",
+      "40 ml | panna",
+      "20 g | burro",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | rosmarino, timo e menta freschi",
+      "1 spicchio | aglio",
+      "½ | limone (scorza)",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 200°C. Imburra due stampini o un piccolo coppapasta.",
+      "Affetta sottilissime le patate, condiscile con panna, sale e pepe e disponile a strati negli stampini. Inforna 25–30 minuti finché sono dorate e tenere.",
+      "Trita finemente erbe, aglio e scorza di limone e mescolali con pangrattato, pecorino e 1 cucchiaio d'olio.",
+      "Sala il carré e rosolalo in padella rovente con un filo d'olio 2 minuti per lato.",
+      "Spennella la parte grassa con la senape e premici sopra la panatura alle erbe.",
+      "Inforna il carré 12–15 minuti (rosa al cuore, 55°C), poi lascialo riposare 5 minuti.",
+      "Intanto salta gli spinaci in padella con il burro e un pizzico di sale per 2–3 minuti.",
+      "Taglia il carré in costolette e servile con il tortino di patate sformato e gli spinaci."
+    ]
+  },
+
+  /* -------------------------- SPECIALI / ALTRO -------------------------- */
+  {
+    id: "funghi-ripieni",
+    titolo: "Funghi ripieni di macinato, uova e formaggio con patate al forno",
+    categoria: "Speciali/Altro", cucina: "Italiana",
+    immagine: U("1504545102780-26774c1bb073"),
+    tempo_preparazione: "25 min", tempo_cottura: "40 min", tempo_marinatura: "—", tempo_totale: "1 h 05 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "8 grandi (400 g) | funghi champignon (o 4 portobello)",
+      "200 g | macinato misto manzo e maiale",
+      "1 | uovo",
+      "40 g | parmigiano grattugiato",
+      "60 g | scamorza affumicata o provola",
+      "3 cucchiai | pangrattato",
+      "1 | scalogno",
+      "500 g | patate",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | prezzemolo",
+      "q.b. | timo e rosmarino",
+      "1 spicchio | aglio",
+      "1 cucchiaino | paprika dolce",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 200°C.",
+      "Taglia le patate a spicchi, condiscile con 3 cucchiai d'olio, sale, rosmarino e paprika e infornale. Cuoceranno in tutto 40 minuti: girale a metà.",
+      "Pulisci i funghi con un panno umido (non lavarli sotto l'acqua), stacca i gambi e svuota leggermente le cappelle con un cucchiaino. Trita gambi e ritagli.",
+      "In padella soffriggi scalogno tritato e aglio con 1 cucchiaio d'olio per 2 minuti, aggiungi i gambi tritati e cuoci 4 minuti.",
+      "Unisci il macinato e rosolalo 6–7 minuti sgranandolo, con sale, pepe e timo. Lascia intiepidire.",
+      "In una ciotola mescola la carne con uovo, parmigiano, 2 cucchiai di pangrattato, prezzemolo tritato e scamorza a cubetti piccoli.",
+      "Riempi abbondantemente le cappelle, spolvera con il pangrattato rimasto e un filo d'olio e disponile in teglia.",
+      "Inforna i funghi quando le patate sono in forno da 15 minuti e cuoci tutto insieme per altri 25 minuti. Gli ultimi 3 minuti passa al grill per gratinare.",
+      "Servi i funghi ripieni ben filanti con le patate croccanti accanto."
+    ]
+  },
+  {
+    id: "parmigiana-leggera",
+    titolo: "Parmigiana di melanzane grigliate con insalata di rucola e pomodori",
+    categoria: "Vegetariane", cucina: "Italiana", veg: true,
+    immagine: U("1574894709920-11b28e7367e3"),
+    tempo_preparazione: "25 min", tempo_cottura: "40 min", tempo_marinatura: "—", tempo_totale: "1 h 05 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "2 (600 g) | melanzane tonde",
+      "400 g | passata di pomodoro",
+      "1 | mozzarella fiordilatte (200 g)",
+      "50 g | parmigiano grattugiato",
+      "1 spicchio | aglio",
+      "60 g | rucola",
+      "150 g | pomodorini",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 mazzetto | basilico fresco",
+      "q.b. | origano",
+      "1 pizzico | zucchero",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Prepara il sugo: soffriggi l'aglio in 1 cucchiaio d'olio, aggiungi la passata, un pizzico di sale e zucchero e cuoci 15 minuti. Unisci il basilico.",
+      "Taglia le melanzane a fette di 5 mm e grigliale su una piastra rovente 2 minuti per lato, finché morbide. (Più leggere della versione fritta.)",
+      "Taglia la mozzarella a cubetti e lasciala scolare in un colino.",
+      "Accendi il forno ventilato a 190°C. In una pirofila piccola stendi un velo di sugo.",
+      "Alterna strati: melanzane, sugo, mozzarella, parmigiano e basilico. Termina con sugo e parmigiano.",
+      "Inforna 25 minuti finché i bordi bollono e la superficie è gratinata.",
+      "Lascia riposare 10 minuti prima di tagliare: si compatta e si serve meglio.",
+      "Servi con l'insalata di rucola e pomodorini condita con olio, sale e origano."
+    ]
+  },
+  {
+    id: "uova-benedict-salmone",
+    titolo: "Uova in camicia su salmone affumicato con salsa olandese e asparagi",
+    categoria: "Speciali/Altro", cucina: "Straniera",
+    immagine: U("1608039829572-78524f79c4c7"),
+    tempo_preparazione: "15 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "30 min",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "4 freschissime | uova (più 2 tuorli per la salsa)",
+      "100 g | salmone affumicato",
+      "2 | english muffin (o 4 fette di pan brioche)",
+      "1 mazzo (300 g) | asparagi",
+      "80 g | burro",
+      "½ | limone",
+      "1 cucchiaio | aceto bianco"
+    ],
+    spezie_e_extra: [
+      "q.b. | erba cipollina",
+      "1 pizzico | pepe di Cayenna o paprika",
+      "q.b. | aneto",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Elimina la parte legnosa degli asparagi e cuocili a vapore o in acqua salata 4–5 minuti. Tienili in caldo con un filo di burro.",
+      "Salsa olandese: fondi il burro. In una ciotola a bagnomaria (acqua che sobbolle appena) sbatti i 2 tuorli con 1 cucchiaio d'acqua e qualche goccia di limone finché diventano spumosi.",
+      "Versa il burro fuso a filo continuando a sbattere fino a ottenere una salsa densa e lucida. Regola con sale, limone e Cayenna. Tieni tiepida (non sul fuoco).",
+      "Porta a leggero bollore una pentola d'acqua con l'aceto. Rompi ogni uovo in una tazzina.",
+      "Crea un vortice con un cucchiaio e fai scivolare un uovo alla volta al centro; cuoci 3 minuti. Scola con una schiumarola su carta assorbente.",
+      "Tosta i muffin tagliati a metà.",
+      "Componi: muffin, una fetta di salmone affumicato, l'uovo in camicia e abbondante olandese. Completa con erba cipollina e servi con gli asparagi accanto."
+    ]
+  },
+  /* ------------------------------ PASTA & NOODLES ------------------------------ */
+  {
+    id: "spaghetti-vongole",
+    titolo: "Spaghetti alle vongole con insalata di finocchi al limone",
+    categoria: "Pasta", cucina: "Italiana",
+    immagine: U("1595295333158-4742f28fbd85"),
+    tempo_preparazione: "15 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "30 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "180 g | spaghetti o vermicelli di grano duro",
+      "1 kg | vongole veraci già spurgate",
+      "2 spicchi | aglio",
+      "60 ml | vino bianco secco",
+      "1 ciuffo | prezzemolo",
+      "1 | finocchio",
+      "1 | limone",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 pizzico | peperoncino",
+      "q.b. | bottarga di muggine grattugiata",
+      "q.b. | pepe nero",
+      "q.b. | barba del finocchio"
+    ],
+    passaggi: [
+      "Sciacqua le vongole e sbattile una a una sul lavello per scartare quelle piene di sabbia. Se non sono spurgate, lasciale 1 ora in acqua fredda salata.",
+      "Affetta il finocchio sottilissimo, condiscilo con 1 cucchiaio d'olio, succo di mezzo limone, sale e la barba tritata. Tienilo in frigo.",
+      "Metti a bollire l'acqua per la pasta e salala poco: le vongole sono già sapide.",
+      "In una padella larga scalda 3 cucchiai d'olio con aglio in camicia, peperoncino e i gambi del prezzemolo.",
+      "Aggiungi le vongole, sfuma con il vino, copri e cuoci a fuoco vivo 3–4 minuti finché si aprono. Togli metà delle vongole dal guscio e scarta quelle chiuse.",
+      "Cuoci gli spaghetti 2 minuti in meno del tempo indicato e trasferiscili nella padella con l'acqua delle vongole.",
+      "Finisci la cottura in padella aggiungendo un mestolino d'acqua di cottura e mescolando: l'amido crea una crema con il fondo.",
+      "Spegni, aggiungi prezzemolo tritato, un filo d'olio a crudo e una grattata di bottarga. Servi con l'insalata di finocchi accanto."
+    ]
+  },
+  {
+    id: "carbonara",
+    titolo: "Spaghetti alla carbonara con zucchine trifolate alla menta",
+    categoria: "Pasta", cucina: "Italiana",
+    immagine: U("1612874742237-6526221588e3"),
+    tempo_preparazione: "10 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "25 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "180 g | spaghetti o rigatoni",
+      "100 g | guanciale",
+      "3 | tuorli d'uovo freschissimi (più 1 uovo intero)",
+      "50 g | Pecorino Romano DOP grattugiato",
+      "2 | zucchine",
+      "1 spicchio | aglio",
+      "2 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | pepe nero in grani da macinare al momento",
+      "qualche foglia | menta fresca",
+      "q.b. | sale grosso per l'acqua"
+    ],
+    passaggi: [
+      "Taglia le zucchine a rondelle e saltale in padella con olio e aglio 8–10 minuti a fuoco vivo, salale a fine cottura e completa con menta spezzettata.",
+      "Elimina la cotenna del guanciale e taglialo a listarelle spesse mezzo centimetro.",
+      "Rosola il guanciale in una padella fredda senza olio a fuoco medio, finché il grasso diventa trasparente e il bordo croccante (6–8 minuti). Spegni.",
+      "In una ciotola sbatti tuorli e uovo con il pecorino e abbondante pepe macinato fino a ottenere una crema densa.",
+      "Lessa la pasta in acqua salata e scolala al dente tenendo da parte un mestolo d'acqua di cottura.",
+      "Versa la pasta nella padella del guanciale (fuoco spento) e mescola per farla insaporire nel grasso.",
+      "Aggiungi la crema di uova e qualche cucchiaio d'acqua di cottura, mescolando velocemente: deve diventare cremosa senza rapprendersi a frittata. Se serve, appoggia la padella 10 secondi sul fuoco al minimo.",
+      "Servi subito con pepe e pecorino sopra e le zucchine alla menta accanto."
+    ]
+  },
+  {
+    id: "cacio-pepe",
+    titolo: "Tonnarelli cacio e pepe con carciofi alla romana",
+    categoria: "Pasta", cucina: "Italiana", veg: true,
+    immagine: U("1588013273468-315fd88ea34c"),
+    tempo_preparazione: "20 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "180 g | tonnarelli o spaghettoni",
+      "80 g | Pecorino Romano DOP grattugiato finissimo",
+      "4 | carciofi romaneschi (mammole)",
+      "1 | limone",
+      "2 spicchi | aglio",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "2 cucchiaini | pepe nero in grani",
+      "1 ciuffo | mentuccia romana (o menta)",
+      "1 ciuffo | prezzemolo"
+    ],
+    passaggi: [
+      "Pulisci i carciofi togliendo le foglie dure, taglia la punta, pela il gambo e mettili in acqua e limone.",
+      "Trita aglio, mentuccia e prezzemolo con sale e pepe e riempi i carciofi allargando le foglie.",
+      "Metti i carciofi a testa in giù in un tegame stretto, aggiungi olio e acqua fino a metà altezza, copri e cuoci a fuoco dolce 20–25 minuti.",
+      "Tosta il pepe in grani in una padella asciutta, poi pestalo grossolanamente nel mortaio.",
+      "Lessa la pasta in poca acqua (circa 1,5 litri) poco salata: serve un'acqua ricca d'amido.",
+      "In una ciotola lavora il pecorino con 2–3 cucchiai d'acqua di cottura tiepida (non bollente) fino a una crema liscia.",
+      "Nella padella del pepe versa un mestolo d'acqua di cottura, aggiungi la pasta al dente e falla risottare 1 minuto.",
+      "A fuoco spento unisci la crema di pecorino mescolando energicamente finché la salsa è lucida. Servi con i carciofi e il loro fondo."
+    ]
+  },
+  {
+    id: "tagliatelle-ragu",
+    titolo: "Tagliatelle al ragù alla bolognese con insalata verde",
+    categoria: "Pasta", cucina: "Italiana",
+    immagine: U("1611270629569-8b357cb88da9"),
+    tempo_preparazione: "20 min", tempo_cottura: "2 h", tempo_marinatura: "—", tempo_totale: "2 h 20 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "200 g | tagliatelle all'uovo",
+      "200 g | macinato di manzo (cartella o pancia)",
+      "70 g | pancetta tesa",
+      "½ | carota",
+      "½ costa | sedano",
+      "½ | cipolla",
+      "150 g | passata di pomodoro",
+      "70 ml | vino rosso",
+      "70 ml | latte intero",
+      "100 g | insalata verde mista",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | Parmigiano Reggiano grattugiato",
+      "1 cucchiaio | concentrato di pomodoro",
+      "q.b. | brodo di carne",
+      "1 noce | burro"
+    ],
+    passaggi: [
+      "Trita finemente carota, sedano e cipolla. Taglia la pancetta a cubetti piccolissimi.",
+      "In una casseruola rosola la pancetta con un filo d'olio, poi aggiungi il trito e fallo appassire 8 minuti a fuoco dolce.",
+      "Alza il fuoco, aggiungi il macinato e rosolalo bene finché sfrigola e perde l'acqua.",
+      "Sfuma con il vino rosso, poi unisci passata e concentrato sciolti in un mestolo di brodo.",
+      "Cuoci a fuoco minimo con coperchio socchiuso per almeno 1 ora e 45 minuti, aggiungendo brodo se si asciuga troppo.",
+      "Negli ultimi 15 minuti versa il latte: ammorbidisce l'acidità. Regola di sale e pepe.",
+      "Cuoci le tagliatelle 2–3 minuti in acqua salata, scolale e saltale nel ragù con una noce di burro e poca acqua di cottura.",
+      "Servi con parmigiano e l'insalata verde condita con olio, aceto e sale."
+    ]
+  },
+  {
+    id: "lasagne",
+    titolo: "Lasagne alla bolognese con insalata di rucola e pomodorini",
+    categoria: "Pasta", cucina: "Italiana",
+    immagine: U("1621510456681-2330135e5871"),
+    tempo_preparazione: "40 min", tempo_cottura: "2 h 30 min", tempo_marinatura: "—", tempo_totale: "3 h 10 min",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "200 g | sfoglie fresche per lasagne",
+      "250 g | macinato misto manzo e maiale",
+      "1 | carota, 1 costa di sedano, ½ cipolla",
+      "300 g | passata di pomodoro",
+      "70 ml | vino rosso",
+      "500 ml | latte intero (besciamella)",
+      "40 g | burro",
+      "40 g | farina 00",
+      "70 g | Parmigiano Reggiano grattugiato",
+      "60 g | rucola",
+      "150 g | pomodorini",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 pizzico | noce moscata",
+      "2 foglie | alloro",
+      "q.b. | basilico",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Prepara il ragù: soffriggi il trito di carota, sedano e cipolla in olio 8 minuti, rosola il macinato, sfuma con il vino, aggiungi passata e alloro e cuoci a fuoco minimo per 1 ora e 30 minuti.",
+      "Besciamella: sciogli il burro, aggiungi la farina e tosta 1 minuto, poi versa il latte caldo a filo frustando. Cuoci 5 minuti finché vela il cucchiaio, con sale e noce moscata.",
+      "Accendi il forno statico a 180°C. Se le sfoglie sono secche, sbollentale 1 minuto.",
+      "In una pirofila piccola (20×25 cm) stendi un velo di ragù e besciamella.",
+      "Alterna sfoglia, ragù, besciamella e parmigiano per 4–5 strati. Termina con besciamella, ragù e abbondante parmigiano.",
+      "Copri con alluminio e inforna 20 minuti, poi scopri e cuoci altri 15–20 minuti finché si forma la crosticina.",
+      "Lascia riposare 10–15 minuti prima di tagliare: le fette resteranno compatte.",
+      "Servi con rucola e pomodorini conditi con olio e sale."
+    ]
+  },
+  {
+    id: "penne-arrabbiata",
+    titolo: "Penne all'arrabbiata con fagiolini all'aglio",
+    categoria: "Pasta", cucina: "Italiana", veg: true,
+    immagine: U("1621996346565-e3dbc646d9a9"),
+    tempo_preparazione: "10 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "30 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "180 g | penne rigate",
+      "400 g | pomodori pelati",
+      "2 spicchi | aglio",
+      "200 g | fagiolini",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1–2 | peperoncini secchi (a piacere)",
+      "1 ciuffo | prezzemolo",
+      "q.b. | pecorino grattugiato",
+      "½ | limone (scorza)"
+    ],
+    passaggi: [
+      "Spunta i fagiolini e lessali in acqua salata 6–7 minuti, poi scolali.",
+      "Saltali in padella con 2 cucchiai d'olio, 1 spicchio d'aglio a fettine, sale e scorza di limone per 3 minuti.",
+      "In un'altra padella scalda 3 cucchiai d'olio con l'altro spicchio d'aglio schiacciato e il peperoncino sbriciolato, a fuoco dolce per 2 minuti.",
+      "Aggiungi i pelati schiacciati con una forchetta, sala e cuoci 12–15 minuti finché il sugo si addensa.",
+      "Lessa le penne in acqua salata e scolale al dente.",
+      "Salta la pasta nel sugo con un po' d'acqua di cottura e prezzemolo tritato. Servi con pecorino e i fagiolini accanto."
+    ]
+  },
+  {
+    id: "spaghetti-pomodoro",
+    titolo: "Spaghetti al pomodoro fresco e basilico con zucchine grigliate",
+    categoria: "Pasta", cucina: "Italiana", veg: true,
+    immagine: U("1626844131082-256783844137"),
+    tempo_preparazione: "10 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "30 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "180 g | spaghetti",
+      "400 g | pomodorini datterini maturi",
+      "1 spicchio | aglio",
+      "1 mazzetto | basilico",
+      "2 | zucchine",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | Parmigiano Reggiano",
+      "1 | burrata piccola (facoltativa)",
+      "q.b. | menta per le zucchine",
+      "1 pizzico | zucchero"
+    ],
+    passaggi: [
+      "Taglia le zucchine a fette di 5 mm per il lungo e grigliale su una piastra rovente 2 minuti per lato. Condiscile con olio, sale e menta.",
+      "Taglia i pomodorini a metà. In padella scalda 3 cucchiai d'olio con l'aglio in camicia.",
+      "Aggiungi i pomodorini, sale e un pizzico di zucchero, cuoci 10 minuti schiacciandoli leggermente finché diventano una salsa.",
+      "Lessa gli spaghetti e scolali 1 minuto prima del tempo indicato.",
+      "Finisci la cottura in padella con un mestolino d'acqua, poi spegni e aggiungi tanto basilico spezzettato e un filo d'olio a crudo.",
+      "Servi con parmigiano (o mezza burrata a testa) e le zucchine grigliate."
+    ]
+  },
+  {
+    id: "fettuccine-porcini",
+    titolo: "Fettuccine ai funghi porcini con spinaci saltati",
+    categoria: "Pasta", cucina: "Italiana", veg: true,
+    immagine: U("1645112411341-6c4fd023714a"),
+    tempo_preparazione: "15 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "200 g | fettuccine all'uovo",
+      "300 g | funghi porcini freschi o surgelati (o 20 g secchi + 200 g champignon)",
+      "1 | scalogno",
+      "1 spicchio | aglio",
+      "50 ml | panna fresca (facoltativa)",
+      "30 g | Parmigiano Reggiano",
+      "250 g | spinaci freschi",
+      "20 g | burro",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | prezzemolo",
+      "q.b. | timo fresco",
+      "q.b. | pepe nero",
+      "q.b. | olio al tartufo (un filo)"
+    ],
+    passaggi: [
+      "Pulisci i porcini con un panno umido e affettali. Se usi quelli secchi, ammollali 20 minuti in acqua tiepida e filtra l'acqua.",
+      "In padella rosola scalogno tritato in burro e olio, aggiungi l'aglio e i funghi e cuoci a fuoco vivo 6–8 minuti con timo, sale e pepe.",
+      "Se vuoi una salsa più avvolgente, aggiungi la panna (o un mestolo d'acqua dei porcini) e lascia ridurre 2 minuti.",
+      "In un'altra padella salta gli spinaci con un filo d'olio e un pizzico di sale per 2–3 minuti.",
+      "Cuoci le fettuccine e scolale direttamente nella padella dei funghi con un po' d'acqua di cottura.",
+      "Manteca con parmigiano e prezzemolo, completa a piacere con un filo d'olio al tartufo e servi con gli spinaci."
+    ]
+  },
+  {
+    id: "pappardelle-salsiccia",
+    titolo: "Pappardelle salsiccia e funghi con insalata di rucola e grana",
+    categoria: "Pasta", cucina: "Italiana",
+    immagine: U("1473093226795-af9932fe5856"),
+    tempo_preparazione: "15 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "200 g | pappardelle all'uovo",
+      "200 g | salsiccia di maiale",
+      "200 g | funghi champignon o misti",
+      "1 | scalogno",
+      "50 ml | vino bianco",
+      "60 g | rucola",
+      "30 g | Grana Padano a scaglie",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 rametto | rosmarino",
+      "q.b. | peperoncino",
+      "q.b. | pecorino grattugiato",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Togli il budello alla salsiccia e sbriciolala.",
+      "In padella rosola lo scalogno tritato in olio, poi aggiungi la salsiccia e cuocila 5 minuti finché è dorata.",
+      "Sfuma con il vino, aggiungi i funghi affettati e il rosmarino e cuoci a fuoco vivo 8 minuti.",
+      "Lessa le pappardelle, scolale nella padella e saltale con un mestolino d'acqua di cottura e pecorino.",
+      "Condisci la rucola con olio, sale e scaglie di grana e servila accanto alla pasta."
+    ]
+  },
+  {
+    id: "fusilli-trapanese",
+    titolo: "Fusilli al pesto alla trapanese con melanzane grigliate",
+    categoria: "Pasta", cucina: "Italiana", veg: true,
+    immagine: U("1608897013039-887f21d8c804"),
+    tempo_preparazione: "15 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "30 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "180 g | fusilli o busiate",
+      "250 g | pomodorini ciliegino maturi",
+      "40 g | mandorle pelate",
+      "1 mazzetto | basilico",
+      "1 spicchio | aglio",
+      "30 g | pecorino siciliano grattugiato",
+      "1 | melanzana",
+      "6 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | menta",
+      "q.b. | origano",
+      "q.b. | pangrattato tostato",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Tosta le mandorle in padella per 3 minuti.",
+      "Nel frullatore metti pomodorini, mandorle, basilico, aglio, pecorino, sale e 4 cucchiai d'olio. Frulla a scatti: il pesto deve restare un po' rustico.",
+      "Affetta la melanzana a rondelle di 5 mm e grigliala su piastra rovente 2–3 minuti per lato. Condiscila con olio, sale, menta e origano.",
+      "Lessa la pasta e scolala al dente.",
+      "Condisci la pasta a crudo con il pesto, allungando con un cucchiaio d'acqua di cottura se serve.",
+      "Completa con pangrattato tostato e basilico e servi con le melanzane grigliate."
+    ]
+  },
+  {
+    id: "amatriciana",
+    titolo: "Bucatini all'amatriciana con cicoria ripassata",
+    categoria: "Pasta", cucina: "Italiana",
+    immagine: U("1598866594230-a7c12756260f"),
+    tempo_preparazione: "10 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "180 g | bucatini o spaghetti",
+      "100 g | guanciale",
+      "300 g | pomodori pelati San Marzano",
+      "40 ml | vino bianco",
+      "50 g | Pecorino Romano DOP grattugiato",
+      "400 g | cicoria o catalogna",
+      "2 spicchi | aglio",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 | peperoncino secco",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Pulisci la cicoria e lessala in acqua salata 8–10 minuti. Scolala e strizzala.",
+      "Ripassala in padella con olio, aglio e peperoncino per 5 minuti.",
+      "Taglia il guanciale a listarelle e rosolalo in una padella senza olio finché è croccante. Tienilo da parte lasciando il grasso.",
+      "Sfuma il fondo con il vino, aggiungi i pelati schiacciati e un po' di peperoncino, cuoci 12–15 minuti.",
+      "Rimetti il guanciale nel sugo all'ultimo minuto, così resta croccante.",
+      "Lessa i bucatini al dente, saltali nel sugo e spegni aggiungendo pecorino e pepe. Servi con la cicoria."
+    ]
+  },
+  {
+    id: "pad-thai",
+    titolo: "Pad thai di gamberi con insalata di cetrioli piccante",
+    categoria: "Pasta", cucina: "Straniera",
+    immagine: U("1559314809-0d155014e29e"),
+    tempo_preparazione: "25 min", tempo_cottura: "10 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "150 g | noodles di riso piatti (5 mm)",
+      "200 g | gamberi sgusciati",
+      "2 | uova",
+      "100 g | germogli di soia",
+      "2 | cipollotti",
+      "40 g | arachidi tostate",
+      "2 cucchiai | salsa di pesce",
+      "1½ cucchiai | pasta di tamarindo (o succo di lime)",
+      "1 cucchiaio | zucchero di canna",
+      "1 | cetriolo",
+      "1 | lime",
+      "2 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | coriandolo",
+      "q.b. | peperoncino in fiocchi",
+      "1 cucchiaino | aceto di riso",
+      "1 spicchio | aglio"
+    ],
+    passaggi: [
+      "Ammolla i noodles in acqua tiepida per 15–20 minuti finché sono flessibili ma ancora sodi. Scolali.",
+      "Mescola salsa di pesce, tamarindo e zucchero: è la salsa del pad thai.",
+      "Insalata: affetta il cetriolo sottile e condiscilo con aceto di riso, un pizzico di zucchero, sale e peperoncino.",
+      "In un wok scalda l'olio a fuoco alto, salta i gamberi con l'aglio 2 minuti e spostali di lato.",
+      "Rompi le uova nel wok, strapazzale per 30 secondi, poi aggiungi i noodles e la salsa.",
+      "Salta tutto 2–3 minuti finché i noodles assorbono la salsa (aggiungi un goccio d'acqua se si attaccano).",
+      "Unisci germogli e cipollotti, salta altri 30 secondi.",
+      "Servi con arachidi tritate, coriandolo, spicchi di lime e l'insalata di cetrioli accanto."
+    ]
+  },
+  {
+    id: "ramen",
+    titolo: "Ramen di pollo e gamberi con uovo marinato ed edamame",
+    categoria: "Pasta", cucina: "Straniera",
+    immagine: U("1569718212165-3a8278d5f624"),
+    tempo_preparazione: "20 min", tempo_cottura: "30 min", tempo_marinatura: "1 h", tempo_totale: "1 h 50 min",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "160 g | noodles per ramen (freschi o secchi)",
+      "1 litro | brodo di pollo",
+      "1 | petto di pollo (200 g)",
+      "6 | gamberi",
+      "2 | uova",
+      "2 cucchiai | miso",
+      "4 cucchiai | salsa di soia",
+      "2 cucchiai | mirin",
+      "100 g | edamame",
+      "1 cespo | pak choi",
+      "2 | cipollotti",
+      "3 cm | zenzero"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | olio di sesamo",
+      "q.b. | semi di sesamo",
+      "q.b. | alga nori",
+      "q.b. | olio al peperoncino (rayu)"
+    ],
+    passaggi: [
+      "Uova marinate: cuocile 6½ minuti in acqua bollente, raffreddale in acqua e ghiaccio e sgusciale.",
+      "Marinale almeno 1 ora in frigo in 3 cucchiai di soia, mirin e 3 cucchiai d'acqua.",
+      "Scalda il brodo con zenzero a fette e la parte bianca dei cipollotti; aggiungi il petto di pollo e cuoci a fuoco dolce 15 minuti. Togli il pollo e affettalo.",
+      "Sciogli il miso in un mestolo di brodo e rimettilo nella pentola con 1 cucchiaio di soia e l'olio di sesamo. Non far bollire più.",
+      "Nel brodo cuoci i gamberi 2 minuti e il pak choi diviso a metà 1 minuto.",
+      "Lessa i noodles a parte secondo le istruzioni e scolali.",
+      "Componi le ciotole: noodles, brodo bollente, pollo, gamberi, pak choi, edamame sbollentati e mezzo uovo marinato.",
+      "Completa con cipollotto verde, sesamo, nori e olio al peperoncino."
+    ]
+  },
+  {
+    id: "noodles-verdure",
+    titolo: "Noodles saltati alle verdure e tofu croccante con edamame al sale",
+    categoria: "Pasta", cucina: "Straniera", veg: true,
+    immagine: U("1585032226651-759b368d7246"),
+    tempo_preparazione: "20 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "160 g | noodles all'uovo o di grano",
+      "200 g | tofu compatto",
+      "1 | carota",
+      "1 | peperone rosso",
+      "100 g | cavolo cappuccio o verza",
+      "2 | cipollotti",
+      "3 cucchiai | salsa di soia",
+      "1 cucchiaio | salsa hoisin o di ostrica vegetariana",
+      "1 cucchiaio | amido di mais",
+      "150 g | edamame in baccello surgelati",
+      "3 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "2 cm | zenzero",
+      "1 spicchio | aglio",
+      "q.b. | sesamo",
+      "q.b. | sale grosso o in fiocchi per gli edamame",
+      "q.b. | sriracha"
+    ],
+    passaggi: [
+      "Tampona il tofu, taglialo a cubetti e passalo nell'amido di mais.",
+      "Dora il tofu in padella con 2 cucchiai d'olio per 6–8 minuti, girandolo, finché è croccante. Tienilo da parte.",
+      "Lessa gli edamame 4 minuti, scolali e condiscili con sale in fiocchi.",
+      "Cuoci i noodles secondo le istruzioni, scolali e passali sotto acqua fredda.",
+      "Nel wok scalda l'olio rimasto, salta aglio e zenzero 30 secondi, poi carota e peperone a julienne e cavolo a strisce per 3–4 minuti a fuoco vivo.",
+      "Aggiungi noodles, soia e hoisin e salta 2 minuti. Unisci il tofu e i cipollotti.",
+      "Servi con sesamo e sriracha, con gli edamame al sale da sgranocchiare accanto."
+    ]
+  },
+  {
+    id: "dan-dan",
+    titolo: "Dan dan noodles con maiale piccante e pak choi",
+    categoria: "Pasta", cucina: "Straniera",
+    immagine: U("1600803907087-f56d462fd26b"),
+    tempo_preparazione: "15 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "30 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "160 g | noodles di grano",
+      "200 g | macinato di maiale",
+      "2 cucchiai | tahina (o burro d'arachidi)",
+      "3 cucchiai | salsa di soia",
+      "1 cucchiaio | aceto nero di Chinkiang (o di riso)",
+      "1 cucchiaino | zucchero",
+      "2 cespi | pak choi",
+      "2 | cipollotti",
+      "2 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "2 cucchiai | olio al peperoncino",
+      "1 cucchiaino | pepe di Sichuan pestato",
+      "1 spicchio | aglio",
+      "2 cm | zenzero",
+      "q.b. | arachidi tritate"
+    ],
+    passaggi: [
+      "Salsa: mescola tahina, 2 cucchiai di soia, aceto, zucchero, olio al peperoncino e pepe di Sichuan con 2 cucchiai d'acqua calda.",
+      "In un wok scalda l'olio e rosola il macinato a fuoco alto 5–6 minuti finché è croccante e scuro.",
+      "Aggiungi aglio e zenzero tritati e 1 cucchiaio di soia, salta 1 minuto.",
+      "Lessa i noodles e, nell'ultimo minuto, aggiungi il pak choi tagliato a metà nella stessa acqua.",
+      "Distribuisci la salsa sul fondo delle ciotole, aggiungi noodles con un goccio d'acqua di cottura e mescola.",
+      "Completa con il maiale croccante, cipollotto e arachidi, con il pak choi accanto."
+    ]
+  },
+
+  /* ------------------------------ VEGETARIANE ------------------------------ */
+  {
+    id: "risotto-porcini",
+    titolo: "Risotto ai funghi porcini con insalata di radicchio e noci",
+    categoria: "Vegetariane", cucina: "Italiana", veg: true,
+    immagine: U("1595908129746-57ca1a63dd4d"),
+    tempo_preparazione: "15 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "160 g | riso Carnaroli",
+      "250 g | funghi porcini freschi o surgelati",
+      "1 | scalogno",
+      "800 ml | brodo vegetale",
+      "60 ml | vino bianco secco",
+      "40 g | Parmigiano Reggiano",
+      "30 g | burro freddo",
+      "1 cespo | radicchio rosso",
+      "30 g | noci",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | prezzemolo",
+      "q.b. | timo",
+      "1 cucchiaino | miele per l'insalata",
+      "q.b. | aceto balsamico"
+    ],
+    passaggi: [
+      "Scalda il brodo e tienilo sul fuoco al minimo.",
+      "Trifola i porcini a pezzi in padella con olio e timo 5 minuti a fuoco vivo; sala e tienine da parte qualcuno per decorare.",
+      "In una casseruola appassisci lo scalogno tritato in 1 cucchiaio d'olio, aggiungi il riso e tostalo 2 minuti finché è traslucido.",
+      "Sfuma con il vino e, quando è evaporato, aggiungi i funghi e un mestolo di brodo alla volta, mescolando, per 16–18 minuti.",
+      "A fuoco spento manteca con burro freddo a cubetti e parmigiano, mescolando con energia. Copri e lascia riposare 1 minuto: deve essere 'all'onda'.",
+      "Taglia il radicchio a listarelle, condiscilo con olio, balsamico, miele, sale e noci tostate.",
+      "Servi il risotto con i porcini tenuti da parte, prezzemolo e l'insalata di radicchio."
+    ]
+  },
+  {
+    id: "shakshuka",
+    titolo: "Shakshuka con feta e pane pita tostato",
+    categoria: "Vegetariane", cucina: "Straniera", veg: true,
+    immagine: U("1590412200988-a436970781fa"),
+    tempo_preparazione: "10 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "4 | uova",
+      "400 g | pomodori pelati",
+      "1 | peperone rosso",
+      "1 | cipolla",
+      "2 spicchi | aglio",
+      "60 g | feta",
+      "2 | pane pita",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | cumino",
+      "1 cucchiaino | paprika dolce",
+      "1 pizzico | peperoncino o harissa",
+      "q.b. | coriandolo o prezzemolo",
+      "q.b. | yogurt greco"
+    ],
+    passaggi: [
+      "In una padella larga soffriggi cipolla e peperone a listarelle in olio per 8 minuti finché sono morbidi.",
+      "Aggiungi aglio, cumino, paprika e peperoncino e tosta 1 minuto.",
+      "Versa i pelati schiacciati, sala e cuoci 10 minuti finché il sugo è denso.",
+      "Con un cucchiaio crea 4 conche e rompici dentro le uova.",
+      "Copri e cuoci a fuoco dolce 5–7 minuti finché l'albume è rappreso e il tuorlo ancora morbido.",
+      "Intanto tosta le pite in padella o forno e tagliale a spicchi.",
+      "Completa con feta sbriciolata, erbe fresche e un cucchiaio di yogurt. Porta in tavola la padella con le pite per raccogliere il sugo."
+    ]
+  },
+  {
+    id: "chana-masala",
+    titolo: "Chana masala (curry di ceci e spinaci) con riso basmati e naan",
+    categoria: "Vegetariane", cucina: "Straniera", veg: true,
+    immagine: U("1631452180519-c014fe946bc7"),
+    tempo_preparazione: "15 min", tempo_cottura: "30 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "1 lattina (240 g sgocciolati) | ceci",
+      "200 g | polpa di pomodoro",
+      "100 ml | latte di cocco",
+      "100 g | spinaci freschi",
+      "1 | cipolla",
+      "2 spicchi | aglio",
+      "3 cm | zenzero",
+      "140 g | riso basmati",
+      "2 | pane naan",
+      "2 cucchiai | olio di semi o ghee"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | garam masala",
+      "1 cucchiaino | cumino in semi",
+      "½ cucchiaino | curcuma",
+      "1 cucchiaino | coriandolo in polvere",
+      "q.b. | coriandolo fresco",
+      "½ | limone"
+    ],
+    passaggi: [
+      "Cuoci il riso basmati in 280 ml d'acqua salata, coperto, a fuoco minimo per 12 minuti, poi lascialo riposare.",
+      "In una padella scalda l'olio e fai sfrigolare i semi di cumino 30 secondi.",
+      "Aggiungi cipolla tritata e cuocila 8 minuti finché è dorata, poi aglio e zenzero grattugiati per 1 minuto.",
+      "Unisci curcuma, coriandolo e metà del garam masala, tosta 30 secondi e versa la polpa di pomodoro.",
+      "Aggiungi i ceci sciacquati e il latte di cocco, cuoci 15 minuti schiacciando qualche cece per addensare.",
+      "Unisci gli spinaci e il resto del garam masala, cuoci 2 minuti finché appassiscono. Completa con succo di limone.",
+      "Scalda i naan in padella o forno e servi il curry con riso e coriandolo fresco."
+    ]
+  },
+  {
+    id: "dal-lenticchie",
+    titolo: "Dal di lenticchie rosse al cocco con riso e cavolfiore speziato",
+    categoria: "Vegetariane", cucina: "Straniera", veg: true,
+    immagine: U("1546833999-b9f581a1996d"),
+    tempo_preparazione: "10 min", tempo_cottura: "30 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "150 g | lenticchie rosse decorticate",
+      "200 ml | latte di cocco",
+      "200 g | pomodorini o polpa",
+      "1 | cipolla",
+      "2 spicchi | aglio",
+      "3 cm | zenzero",
+      "120 g | riso basmati",
+      "300 g | cavolfiore",
+      "3 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | curcuma",
+      "1 cucchiaino | cumino",
+      "½ cucchiaino | semi di senape",
+      "1 cucchiaino | garam masala",
+      "q.b. | coriandolo fresco",
+      "1 | lime"
+    ],
+    passaggi: [
+      "Accendi il forno a 220°C. Condisci il cavolfiore a cimette con 1 cucchiaio d'olio, cumino, sale e arrostiscilo 25 minuti.",
+      "Sciacqua le lenticchie finché l'acqua è limpida.",
+      "In una casseruola soffriggi cipolla, aglio e zenzero in 1 cucchiaio d'olio per 5 minuti, aggiungi curcuma e pomodori.",
+      "Unisci lenticchie, latte di cocco e 400 ml d'acqua, cuoci 20 minuti mescolando, finché sono cremose. Sala.",
+      "Cuoci il riso basmati coperto in 240 ml d'acqua per 12 minuti.",
+      "Tadka: scalda l'olio rimasto, fai scoppiettare i semi di senape con il garam masala per 30 secondi e versalo sul dal.",
+      "Servi il dal con riso, cavolfiore arrosto, coriandolo e spicchi di lime."
+    ]
+  },
+  {
+    id: "falafel-bowl",
+    titolo: "Bowl di falafel al forno con hummus, verdure croccanti e salsa tahina",
+    categoria: "Vegetariane", cucina: "Straniera", veg: true,
+    immagine: U("1623428187969-5da2dcea5ebf"),
+    tempo_preparazione: "25 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "50 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 lattina (240 g sgocciolati) | ceci",
+      "½ | cipolla",
+      "1 mazzetto | prezzemolo e coriandolo",
+      "2 cucchiai | farina di ceci (o 00)",
+      "120 g | hummus",
+      "2 cucchiai | tahina",
+      "1 | avocado",
+      "1 | cetriolo",
+      "150 g | pomodorini",
+      "100 g | cous cous o quinoa",
+      "1 | limone",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | cumino",
+      "1 cucchiaino | coriandolo in polvere",
+      "1 spicchio | aglio",
+      "q.b. | sesamo",
+      "q.b. | cipolla rossa sottaceto"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 200°C. Asciuga molto bene i ceci con carta da cucina.",
+      "Frulla a scatti ceci, cipolla, aglio, erbe, cumino, coriandolo, farina, sale e 1 cucchiaio d'olio: deve restare granuloso, non una crema.",
+      "Forma 10–12 palline leggermente schiacciate, spennellale d'olio e cuocile 20–25 minuti girandole a metà.",
+      "Cuoci il cous cous: versalo in una ciotola con la stessa quantità d'acqua bollente salata, copri 5 minuti e sgrana con olio e limone.",
+      "Salsa tahina: mescola tahina, succo di mezzo limone, un pizzico di sale e acqua fredda fino a renderla fluida.",
+      "Taglia cetriolo, pomodorini e avocado.",
+      "Componi le bowl con cous cous, verdure, una cucchiaiata di hummus e i falafel caldi. Completa con salsa tahina e sesamo."
+    ]
+  },
+  {
+    id: "bibimbap",
+    titolo: "Bibimbap vegetariano con uovo all'occhio di bue e kimchi",
+    categoria: "Vegetariane", cucina: "Straniera", veg: true,
+    immagine: U("1609501676725-7186f017a4b7"),
+    tempo_preparazione: "30 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "50 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "160 g | riso a chicco tondo",
+      "2 | uova",
+      "1 | zucchina",
+      "1 | carota",
+      "200 g | spinaci",
+      "150 g | funghi shiitake o champignon",
+      "100 g | germogli di soia",
+      "100 g | kimchi",
+      "2 cucchiai | gochujang (pasta di peperoncino coreana)",
+      "2 cucchiai | salsa di soia",
+      "2 cucchiai | olio di sesamo",
+      "1 cucchiaio | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | semi di sesamo",
+      "1 spicchio | aglio",
+      "1 cucchiaino | miele",
+      "1 cucchiaino | aceto di riso",
+      "1 | cipollotto"
+    ],
+    passaggi: [
+      "Cuoci il riso secondo le istruzioni e tienilo caldo.",
+      "Salsa: mescola gochujang, 1 cucchiaio di olio di sesamo, miele, aceto di riso e un cucchiaio d'acqua.",
+      "Sbollenta spinaci e germogli 1 minuto ciascuno, strizzali e condiscili separatamente con olio di sesamo, aglio, sesamo e sale.",
+      "Salta in padella, una alla volta, carota e zucchina a julienne (2 minuti ciascuna) e i funghi affettati con 1 cucchiaio di soia (4 minuti).",
+      "Cuoci le uova all'occhio di bue in olio di semi, con il bordo croccante e il tuorlo morbido.",
+      "Componi le ciotole: riso al centro, le verdure a spicchi intorno, il kimchi e l'uovo sopra.",
+      "Servi con la salsa al gochujang: si mescola tutto al momento di mangiare."
+    ]
+  },
+  {
+    id: "vellutata-zucca-burrata",
+    titolo: "Vellutata di zucca e zenzero con burrata e crostini al rosmarino",
+    categoria: "Vegetariane", cucina: "Italiana", veg: true,
+    immagine: U("1604152135912-04a022e23696"),
+    tempo_preparazione: "15 min", tempo_cottura: "30 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "700 g | zucca delica o mantovana",
+      "1 | patata",
+      "1 | scalogno",
+      "600 ml | brodo vegetale",
+      "1 | burrata (200 g)",
+      "4 fette | pane casereccio",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "2 cm | zenzero fresco",
+      "1 rametto | rosmarino",
+      "1 pizzico | noce moscata",
+      "q.b. | semi di zucca tostati",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Sbuccia zucca e patata e tagliale a cubetti.",
+      "In una casseruola appassisci lo scalogno in 1 cucchiaio d'olio, aggiungi zucca, patata e zenzero grattugiato.",
+      "Copri con il brodo caldo e cuoci 25 minuti finché le verdure sono morbide.",
+      "Frulla fino a una crema liscia, regola con sale, pepe e noce moscata.",
+      "Taglia il pane a cubetti e tostalo in padella con 2 cucchiai d'olio e rosmarino tritato finché è croccante.",
+      "Servi la vellutata con mezza burrata a testa al centro, crostini, semi di zucca e un filo d'olio."
+    ]
+  },
+  {
+    id: "melanzane-tahini",
+    titolo: "Melanzane arrosto con yogurt al tahini, melograno e cous cous alle erbe",
+    categoria: "Vegetariane", cucina: "Straniera", veg: true,
+    immagine: U("1518779578993-ec3579fee39f"),
+    tempo_preparazione: "15 min", tempo_cottura: "35 min", tempo_marinatura: "—", tempo_totale: "50 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 | melanzane medie",
+      "150 g | yogurt greco",
+      "1 cucchiaio | tahina",
+      "1 | melograno (o 80 g di chicchi)",
+      "150 g | pomodorini",
+      "½ | cipolla rossa",
+      "120 g | cous cous",
+      "1 | limone",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | za'atar o origano",
+      "½ cucchiaino | cumino",
+      "q.b. | menta e prezzemolo",
+      "1 spicchio | aglio",
+      "q.b. | sommacco o paprika"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 210°C. Taglia le melanzane a metà per il lungo e incidi la polpa a rombi.",
+      "Spennellale con 3 cucchiai d'olio, sala, cospargi di cumino e cuocile 30–35 minuti con la polpa verso l'alto finché sono morbide e dorate.",
+      "Mescola yogurt, tahina, aglio grattugiato, succo di mezzo limone e sale.",
+      "Cuoci il cous cous con la stessa quantità d'acqua bollente salata, copri 5 minuti, sgrana e condisci con olio, limone ed erbe tritate.",
+      "Taglia pomodorini e cipolla rossa e aggiungili al cous cous.",
+      "Servi le melanzane coperte di salsa allo yogurt, chicchi di melograno, za'atar e sommacco, con il cous cous accanto."
+    ]
+  },
+  {
+    id: "pizza-margherita",
+    titolo: "Pizza margherita fatta in casa con insalata mista",
+    categoria: "Vegetariane", cucina: "Italiana", veg: true,
+    immagine: U("1574071318508-1cdbab80d002"),
+    etichetta_attesa: "Lievitazione",
+    tempo_preparazione: "20 min", tempo_cottura: "10 min", tempo_marinatura: "4 h", tempo_totale: "4 h 30 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "300 g | farina 0 (o metà 00 e metà manitoba)",
+      "200 ml | acqua a temperatura ambiente",
+      "3 g | lievito di birra fresco (o 1 g secco)",
+      "8 g | sale",
+      "200 g | passata di pomodoro o pelati",
+      "1 | mozzarella fiordilatte (250 g)",
+      "100 g | insalata mista",
+      "1 | carota",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 mazzetto | basilico",
+      "q.b. | origano",
+      "q.b. | semola rimacinata per stendere",
+      "q.b. | Parmigiano Reggiano"
+    ],
+    passaggi: [
+      "Sciogli il lievito nell'acqua, aggiungi la farina e impasta 2 minuti, poi unisci il sale e 1 cucchiaio d'olio e impasta 8–10 minuti finché è liscio.",
+      "Copri e lascia lievitare 2 ore a temperatura ambiente.",
+      "Dividi in 2 panetti, pirlali (arrotondali tirando la superficie) e lasciali lievitare altre 2 ore coperti.",
+      "Scola la mozzarella tagliata a cubetti in un colino. Condisci la passata con sale, olio e origano.",
+      "Accendi il forno al massimo (250–280°C) con la teglia dentro per almeno 30 minuti.",
+      "Stendi i panetti con le mani su un piano con semola, spingendo l'aria verso il bordo (il cornicione) senza usare il mattarello.",
+      "Condisci con il pomodoro, inforna sulla teglia rovente 6–7 minuti nella parte bassa, poi aggiungi la mozzarella e cuoci altri 3–4 minuti in alto.",
+      "Completa con basilico fresco e un filo d'olio. Servi con l'insalata mista e la carota grattugiata."
+    ]
+  },
+
+  /* ------------------------------ STRANIERE: CARNE & PESCE ------------------------------ */
+  {
+    id: "tacos-pastor",
+    titolo: "Tacos di maiale al pastor con guacamole e fagioli neri",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1551504734-5ee1c4a1479b"),
+    tempo_preparazione: "25 min", tempo_cottura: "20 min", tempo_marinatura: "1 h", tempo_totale: "1 h 45 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "400 g | coppa o lonza di maiale a fette sottili",
+      "150 g | ananas fresco",
+      "6–8 | tortillas di mais piccole",
+      "1 | avocado maturo",
+      "2 | lime",
+      "1 | cipolla bianca",
+      "1 | pomodoro",
+      "1 lattina (240 g sgocciolati) | fagioli neri",
+      "2 cucchiai | succo d'arancia",
+      "1 cucchiaio | aceto di mele",
+      "2 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | paprika affumicata o chipotle",
+      "1 cucchiaino | cumino",
+      "1 cucchiaino | origano",
+      "1 ciuffo | coriandolo fresco",
+      "q.b. | jalapeño o peperoncino fresco",
+      "q.b. | panna acida",
+      "1 spicchio | aglio"
+    ],
+    passaggi: [
+      "Marinata: mescola paprika, cumino, origano, aceto, succo d'arancia, 1 cucchiaio d'olio, aglio e sale. Ricopri la carne e lasciala in frigo 1 ora.",
+      "Guacamole: schiaccia l'avocado con succo di 1 lime, sale, un po' di cipolla tritata, pomodoro a cubetti e coriandolo.",
+      "Scalda i fagioli neri in un pentolino con un po' di cipolla, cumino e sale, schiacciandone metà per renderli cremosi.",
+      "Taglia l'ananas a fette e grigliale 2 minuti per lato in una padella rovente, poi tagliale a cubetti.",
+      "Nella stessa padella cuoci la carne a fuoco alto 3–4 minuti per lato finché è caramellata, poi tagliala a straccetti.",
+      "Scalda le tortillas 30 secondi per lato in padella asciutta.",
+      "Farcisci con carne, ananas, cipolla cruda tritata, coriandolo e lime. Servi con guacamole e fagioli neri."
+    ]
+  },
+  {
+    id: "smash-burger",
+    titolo: "Smash burger gourmet con patate dolci al forno",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1586190848861-99aa4a171e90"),
+    tempo_preparazione: "20 min", tempo_cottura: "35 min", tempo_marinatura: "—", tempo_totale: "55 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "300 g | macinato di manzo con 20% di grasso",
+      "2 | panini brioche per hamburger",
+      "4 fette | formaggio cheddar",
+      "4 fette | bacon",
+      "1 | pomodoro",
+      "qualche foglia | lattuga",
+      "1 | cipolla rossa",
+      "2 (500 g) | patate dolci",
+      "2 cucchiai | maionese",
+      "1 cucchiaio | ketchup",
+      "3 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | paprika affumicata",
+      "1 cucchiaino | senape",
+      "q.b. | cetriolini sottaceto",
+      "q.b. | sale grosso e pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 220°C. Taglia le patate dolci a bastoncini, condiscile con olio, sale e paprika e cuocile 30–35 minuti girandole a metà.",
+      "Salsa: mescola maionese, ketchup, senape e cetriolini tritati.",
+      "Dividi la carne in 4 palline da 75 g senza lavorarla troppo.",
+      "Cuoci il bacon in una padella di ghisa finché è croccante e tienilo da parte.",
+      "Tosta i panini tagliati nella stessa padella per 1 minuto.",
+      "Alza il fuoco al massimo, metti due palline nella padella e schiacciale subito con una spatola fino a 1 cm. Sala e pepa.",
+      "Dopo 2 minuti girale, aggiungi il cheddar e cuoci 1 minuto. Ripeti con le altre due.",
+      "Componi: panino, salsa, lattuga, due burger sovrapposti, bacon, pomodoro e cipolla. Servi con le patate dolci."
+    ]
+  },
+  {
+    id: "sushi-casa",
+    titolo: "Sushi fatto in casa (nigiri e maki) con zuppa di miso",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1617196034796-73dfa7b1fd56"),
+    etichetta_attesa: "Riposo riso",
+    tempo_preparazione: "50 min", tempo_cottura: "20 min", tempo_marinatura: "20 min", tempo_totale: "1 h 30 min",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "200 g | riso per sushi",
+      "200 g | salmone abbattuto",
+      "100 g | tonno abbattuto",
+      "3 fogli | alga nori",
+      "1 | avocado",
+      "½ | cetriolo",
+      "40 ml | aceto di riso",
+      "1 cucchiaio | zucchero",
+      "1 cucchiaio | miso",
+      "50 g | tofu morbido",
+      "q.b. | salsa di soia"
+    ],
+    spezie_e_extra: [
+      "q.b. | wasabi",
+      "q.b. | zenzero sottaceto (gari)",
+      "1 cucchiaio | semi di sesamo",
+      "1 | cipollotto",
+      "q.b. | alga wakame secca"
+    ],
+    passaggi: [
+      "Sciacqua il riso più volte finché l'acqua è limpida e lascialo scolare 15 minuti.",
+      "Cuocilo con 220 ml d'acqua: bollore, poi fuoco minimo coperto 12 minuti, spegni e lascia riposare 10 minuti senza aprire.",
+      "Sciogli zucchero e un pizzico di sale nell'aceto di riso e condisci il riso in una ciotola larga, mescolando con movimenti a taglio mentre lo sventoli. Lascialo arrivare a temperatura ambiente (circa 20 minuti) coperto da un panno umido.",
+      "Taglia il pesce: fettine di 5 mm per i nigiri e bastoncini per i maki. Taglia avocado e cetriolo a bastoncini.",
+      "Maki: stendi mezzo foglio di nori sulla stuoia, copri con un velo di riso lasciando 1 cm libero, metti il ripieno al centro e arrotola stringendo. Taglia in 6 con un coltello bagnato.",
+      "Nigiri: con le mani bagnate forma dei cilindretti di riso da 20 g, metti un punto di wasabi e adagia sopra la fettina di pesce premendo leggermente.",
+      "Zuppa di miso: scalda 500 ml d'acqua con wakame, togli dal fuoco e sciogli il miso; aggiungi tofu a cubetti e cipollotto.",
+      "Servi il sushi con soia, wasabi, zenzero e la zuppa di miso calda."
+    ]
+  },
+  {
+    id: "biryani-pollo",
+    titolo: "Biryani di pollo con raita al cetriolo e menta",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1631515243349-e0cb75fb8d3a"),
+    tempo_preparazione: "20 min", tempo_cottura: "45 min", tempo_marinatura: "30 min", tempo_totale: "1 h 35 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "4 | sovracosce di pollo (o 2 cosce intere)",
+      "150 g | yogurt intero",
+      "160 g | riso basmati",
+      "2 | cipolle",
+      "2 spicchi | aglio",
+      "3 cm | zenzero",
+      "400 ml | brodo di pollo",
+      "1 | cetriolo",
+      "30 g | burro o ghee",
+      "2 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | garam masala",
+      "1 bustina | zafferano (o ½ cucchiaino di curcuma)",
+      "4 | baccelli di cardamomo",
+      "1 | stecca di cannella",
+      "q.b. | menta e coriandolo freschi",
+      "1 cucchiaio | uvetta e anacardi"
+    ],
+    passaggi: [
+      "Marina il pollo 30 minuti con 100 g di yogurt, aglio e zenzero grattugiati, garam masala e sale.",
+      "Affetta le cipolle sottili e friggile lentamente nell'olio e metà del burro per 12–15 minuti finché sono dorate e croccanti. Tienine da parte metà.",
+      "Nella stessa casseruola rosola il pollo con la marinata 8 minuti.",
+      "Sciacqua il riso e aggiungilo al pollo con cardamomo, cannella e lo zafferano sciolto nel brodo caldo.",
+      "Versa il brodo, porta a bollore, copri e cuoci a fuoco minimo 18–20 minuti senza mescolare.",
+      "Raita: grattugia il cetriolo, strizzalo e mescolalo con lo yogurt rimasto, menta tritata e sale.",
+      "Spegni, aggiungi il burro rimasto a fiocchi, copri e lascia riposare 5 minuti.",
+      "Servi con le cipolle croccanti, uvetta e anacardi tostati, coriandolo e la raita fresca."
+    ]
+  }
+];
+
+/* =========================================================
+   APP
+   ========================================================= */
+const STORE_KEY = "ricette.petta-mari.v1";
+let toastTimer;
+
+function loadState(){
+  const base = { hidden: [], tonight: null, shop: {}, steps: {}, notes: {} };
+  try{ return Object.assign(base, JSON.parse(localStorage.getItem(STORE_KEY)) || {}); }
+  catch(e){ return base; }
+}
+
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+// Confronto per parola: "fungo" trova "funghi", "pomodoro" trova "pomodorini",
+// ma "zucca" non trova "zucchine". Se si sta ancora scrivendo ("pist") basta il prefisso.
+const SUFFIX = /^(h?[aeiou]{0,2}|[aeiou]?(in|ett|ell|on)[aeiou])$/;
+function matchWord(w, t){
+  if (t.length < 4 || !/[aeiou]$/.test(t)) return w.startsWith(t);
+  const s = t.replace(/[aeiou]+$/, "");
+  return w.startsWith(s) && SUFFIX.test(w.slice(s.length));
+}
+
+function minutes(t){
+  const h = /(\d+)\s*h/.exec(t), m = /(\d+)\s*min/.exec(t);
+  return (h ? +h[1] * 60 : 0) + (m ? +m[1] : 0);
+}
+
+Vue.createApp({
+  data(){
+    return {
+      recipes: RICETTE.map(r => ({
+        ...r,
+        _words: norm([r.titolo, ...r.ingredienti_spesa, ...r.spezie_e_extra].join(" ")).split(/[^a-z0-9]+/).filter(Boolean)
+      })),
+      query: "",
+      category: "Tutte",
+      cuisine: "",
+      quickOnly: false,
+      difficulty: "",
+      showHidden: false,
+      current: null,
+      toast: "",
+      state: loadState(),
+      categories: [
+        { key: "Tutte", label: "Tutte", icon: "✨" },
+        { key: "Pesce", label: "Pesce", icon: "🐟" },
+        { key: "Carne", label: "Carne", icon: "🥩" },
+        { key: "Pasta", label: "Pasta & noodles", icon: "🍝" },
+        { key: "Vegetariane", label: "Vegetariane", icon: "🥦" },
+        { key: "Speciali/Altro", label: "Speciali", icon: "🍄" }
+      ],
+      cuisines: [
+        { key: "", label: "Tutte le cucine", icon: "🍽️" },
+        { key: "Italiana", label: "Classiche italiane", icon: "" },
+        { key: "Straniera", label: "Dal mondo", icon: "🌏" }
+      ]
+    };
+  },
+  computed: {
+    tokens(){ return norm(this.query).split(/[^a-z0-9]+/).filter(Boolean); },
+    filtered(){
+      return this.recipes.filter(r =>
+        this.tokens.every(t => r._words.some(w => matchWord(w, t))) &&
+        (!this.quickOnly || minutes(r.tempo_totale) <= 45) &&
+        (!this.difficulty || r.difficolta === this.difficulty) &&
+        (!this.cuisine || r.cucina === this.cuisine)
+      );
+    },
+    visible(){
+      return this.filtered.filter(r =>
+        this.inCategory(r, this.category) &&
+        this.isHidden(r) === this.showHidden
+      );
+    },
+    tonightRecipe(){ return this.recipes.find(r => r.id === this.state.tonight) || null; }
+  },
+  watch: {
+    state: { deep: true, handler(v){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(v)); }catch(e){} } },
+    current(v){ document.body.style.overflow = v ? "hidden" : ""; },
+    "state.hidden"(v){ if (!v.length) this.showHidden = false; }
+  },
+  methods: {
+    countFor(key){
+      return this.filtered.filter(r => this.inCategory(r, key) && this.isHidden(r) === this.showHidden).length;
+    },
+    // "Vegetariane" include anche la pasta e gli altri piatti senza carne né pesce
+    inCategory(r, key){
+      return key === "Tutte" || r.categoria === key || (key === "Vegetariane" && r.veg);
+    },
+    waitLabel(r){ return r.etichetta_attesa || "Marinatura"; },
+    parse(s){
+      const i = s.indexOf("|");
+      return i < 0 ? { q: "", n: s } : { q: s.slice(0, i).trim(), n: s.slice(i + 1).trim() };
+    },
+    preview(r){
+      return r.ingredienti_spesa.slice(0, 4).map(s => this.parse(s).n.replace(/\s*\(.*?\)/g, "").split(",")[0]);
+    },
+    thumb(url){ return url.replace("w=1600", "w=800"); },
+    imgError(e){ e.target.style.display = "none"; },
+    catStyle(c){
+      return {
+        "Pesce": { icon: "🐟", text: "text-sea" },
+        "Carne": { icon: "🥩", text: "text-meat" },
+        "Pasta": { icon: "🍝", text: "text-amber-700" },
+        "Vegetariane": { icon: "🥦", text: "text-emerald-700" },
+        "Speciali/Altro": { icon: "🍄", text: "text-special" }
+      }[c];
+    },
+    diffColor(d){ return { Facile: "text-emerald-600", Media: "text-amber-600", Avanzata: "text-rose-600" }[d]; },
+    times(r){
+      return [
+        { label: "Preparazione", value: r.tempo_preparazione },
+        { label: this.waitLabel(r), value: r.tempo_marinatura },
+        { label: "Cottura", value: r.tempo_cottura },
+        { label: "Totale", value: r.tempo_totale, main: true }
+      ];
+    },
+
+    isHidden(r){ return this.state.hidden.includes(r.id); },
+    toggleHidden(r){
+      if (this.isHidden(r)){
+        this.state.hidden = this.state.hidden.filter(id => id !== r.id);
+        this.flash("Ricetta ripristinata");
+      } else {
+        this.state.hidden.push(r.id);
+        if (this.state.tonight === r.id) this.state.tonight = null;
+        this.flash("Ricetta esclusa · la ritrovi in “Escluse”");
+      }
+    },
+    toggleTonight(r){
+      this.state.tonight = this.state.tonight === r.id ? null : r.id;
+      if (this.state.tonight){
+        this.flash("Scelta per stasera 🕯️");
+        if (!this.current) window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+
+    isChecked(r, kind, key){ return (this.state[kind][r.id] || []).includes(key); },
+    toggleCheck(r, kind, key){
+      const list = this.state[kind][r.id] || [];
+      this.state[kind][r.id] = list.includes(key) ? list.filter(k => k !== key) : [...list, key];
+    },
+    checkedCount(r, kind){ return (this.state[kind][r.id] || []).length; },
+    resetSteps(r){ this.state.steps[r.id] = []; },
+    setNote(r, text){ this.state.notes[r.id] = text; },
+
+    copyShopping(r){
+      const fmt = s => { const p = this.parse(s); return "• " + (p.q ? p.q + " " : "") + p.n; };
+      const text = [
+        "🛒 " + r.titolo + " (per 2)", "",
+        ...r.ingredienti_spesa.filter((_, i) => !this.isChecked(r, "shop", "b" + i)).map(fmt),
+        "", "Spezie & extra:",
+        ...r.spezie_e_extra.filter((_, i) => !this.isChecked(r, "shop", "s" + i)).map(fmt)
+      ].join("\n");
+      const done = () => this.flash("Lista spesa copiata 📋");
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => this.flash("Copia non riuscita"));
+      else this.flash("Copia non disponibile su questo browser");
+    },
+
+    open(r){ this.current = r; },
+    close(){ this.current = null; },
+    surprise(){
+      const pool = this.visible.length ? this.visible : this.recipes.filter(r => !this.isHidden(r));
+      if (pool.length) this.open(pool[Math.floor(Math.random() * pool.length)]);
+    },
+    resetFilters(){ this.query = ""; this.category = "Tutte"; this.cuisine = ""; this.quickOnly = false; this.difficulty = ""; },
+    flash(msg){
+      this.toast = msg;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => this.toast = "", 2200);
+    }
+  },
+  mounted(){
+    window.addEventListener("keydown", e => { if (e.key === "Escape") this.close(); });
+  }
+}).mount("#app");
+</script>
+</body>
+</html>
