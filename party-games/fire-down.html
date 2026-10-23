@@ -52,6 +52,21 @@
     font-weight: 600;
   }
   .timer-hint{ color: var(--text-muted); font-size: 0.95rem; }
+
+  /* Selettori Livello e Timer */
+  .fd-options{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .seg{
+    display: inline-flex; align-items: center; gap: 4px; padding: 4px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 999px;
+  }
+  .seg-label{ font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); padding: 0 8px 0 10px; }
+  .seg-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.88rem;
+    color: var(--text-muted); background: transparent; border: none;
+    padding: 7px 14px; border-radius: 999px; cursor: pointer; transition: background 0.2s ease, color 0.2s ease;
+  }
+  .seg-btn:hover{ color: #f2f4ff; }
+  .seg-btn.active{ background: var(--accent); color: #06090f; }
 </style>
 </head>
 <body class="theme-green">
@@ -66,12 +81,27 @@
 
 <!-- ============ SCHERMATA DI GIOCO ============ -->
 <main class="stage" id="gameView" style="display:none;">
+  <div class="fd-options">
+    <div class="seg" role="group" aria-label="Livello categorie">
+      <span class="seg-label">Livello</span>
+      <button type="button" class="seg-btn active" data-level="tutte">Tutte</button>
+      <button type="button" class="seg-btn" data-level="classiche">Classiche</button>
+      <button type="button" class="seg-btn" data-level="difficili">🧠 Difficili</button>
+    </div>
+    <div class="seg" role="group" aria-label="Durata timer">
+      <span class="seg-label">Timer</span>
+      <button type="button" class="seg-btn" data-sec="10">10s</button>
+      <button type="button" class="seg-btn active" data-sec="15">15s</button>
+      <button type="button" class="seg-btn" data-sec="20">20s</button>
+    </div>
+  </div>
+
   <div class="question-card">
     <div class="question-eyebrow">Categoria</div>
     <p class="question-text" id="categoryText">Caricamento...</p>
   </div>
 
-  <div class="fire-timer-circle" id="timerCircle">5</div>
+  <div class="fire-timer-circle" id="timerCircle">15</div>
 
   <div class="chip-grid" id="playersGrid"></div>
 
@@ -80,7 +110,7 @@
   </div>
 
   <div class="actions-row">
-    <button class="btn btn-outline" id="timerBtn">⏱ START TIMER (5s)</button>
+    <button class="btn btn-outline" id="timerBtn">⏱ START TIMER (15s)</button>
     <button class="btn btn-primary" id="nextCategoryBtn">PROSSIMA CATEGORIA ▶</button>
   </div>
 
@@ -323,6 +353,101 @@
     "Marche di gelati confezionati"
   ];
 
+  /* =========================================================
+     CATEGORIE DIFFICILI — più di nicchia, si scelgono dal
+     selettore "Livello" (oppure escono mescolate in "Tutte").
+     ========================================================= */
+  const HARD_CATEGORIES = [
+    "Personaggi Pixar",
+    "Personaggi di Game of Thrones",
+    "Personaggi di Breaking Bad",
+    "Personaggi di The Office",
+    "Cattivi della Marvel",
+    "Film di Quentin Tarantino",
+    "Film di Christopher Nolan",
+    "Film di Steven Spielberg",
+    "Attori italiani del passato",
+    "Attrici di Hollywood",
+    "Programmi TV italiani",
+    "Conduttori TV italiani",
+    "YouTuber e streamer famosi",
+    "Influencer italiani",
+    "Personaggi dei fumetti italiani (Diabolik, Tex…)",
+    "Abitanti di Paperopoli e Topolinia",
+    "Rapper italiani",
+    "DJ famosi",
+    "Canzoni di Laura Pausini",
+    "Canzoni dei Coldplay",
+    "Opere liriche di Verdi o Puccini",
+    "Quadri famosi",
+    "Musei famosi nel mondo",
+    "Scultori famosi",
+    "Filosofi",
+    "Scienziati famosi",
+    "Invenzioni italiane",
+    "Premi Nobel italiani",
+    "Papi",
+    "Re e regine d'Inghilterra",
+    "Battaglie famose",
+    "Esploratori famosi",
+    "Astronauti",
+    "Lune e satelliti del sistema solare",
+    "Muscoli del corpo umano",
+    "Malattie",
+    "Farmaci da banco",
+    "Città del Giappone",
+    "Città del Brasile",
+    "Capitali africane",
+    "Capitali asiatiche",
+    "Isole greche",
+    "Stati dell'Oceania",
+    "Catene montuose",
+    "Deserti del mondo",
+    "Stadi di calcio famosi",
+    "Razze di cavalli",
+    "Tipi di squalo",
+    "Serpenti",
+    "Animali dell'Australia",
+    "Animali estinti",
+    "Fiori",
+    "Piante d'appartamento",
+    "Piante grasse e cactus",
+    "Piatti giapponesi",
+    "Piatti della cucina cinese",
+    "Piatti della cucina messicana",
+    "Piatti della cucina francese",
+    "Piatti tipici emiliani",
+    "Pasta ripiena",
+    "Formaggi DOP italiani",
+    "Dolci napoletani o siciliani",
+    "Vitigni italiani",
+    "Cocktail a base di gin",
+    "Cocktail a base di rum",
+    "Spumanti e champagne",
+    "Varietà di mele",
+    "Tipi di riso",
+    "Tipi di tè",
+    "Salse del mondo",
+    "Giocatori dell'Inter (anche del passato)",
+    "Giocatori del Milan (anche del passato)",
+    "Giocatori della Juventus (anche del passato)",
+    "Allenatori di calcio",
+    "Scuderie di Formula 1 (anche del passato)",
+    "Circuiti di Formula 1",
+    "Ciclisti famosi",
+    "Giocatori NBA",
+    "Modelli di Ferrari o Lamborghini",
+    "Marche di orologi",
+    "Marche di trucchi e cosmetici",
+    "Pokémon leggendari"
+  ];
+  const LEVELS = {
+    tutte: () => [...CATEGORIES, ...HARD_CATEGORIES],
+    classiche: () => [...CATEGORIES],
+    difficili: () => [...HARD_CATEGORIES]
+  };
+  let level = "tutte";
+
   function shuffle(arr){
     for (let i = arr.length - 1; i > 0; i--){
       const j = Math.floor(Math.random() * (i + 1));
@@ -386,7 +511,7 @@
 
   function startGame(){
     players = buildPlayersFromGlobal();
-    catOrder = shuffle([...CATEGORIES]);
+    catOrder = shuffle(LEVELS[level]());
     catIndex = 0;
 
     renderPlayers();
@@ -440,7 +565,7 @@
   nextCategoryBtn.addEventListener("click", () => {
     catIndex++;
     if (catIndex >= catOrder.length){
-      catOrder = shuffle([...CATEGORIES]);
+      catOrder = shuffle(LEVELS[level]());
       catIndex = 0;
     }
     showCategory();
@@ -448,8 +573,9 @@
   });
 
   /* =========================================================
-     TIMER 5 SECONDI con cambio colore e beep
+     TIMER 15 SECONDI con cambio colore e beep
      ========================================================= */
+  let TIMER_SECONDS = 15;   // regolabile dal selettore Timer (10 / 15 / 20 s)
   function beep(freq, duration){
     try{
       const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
@@ -467,14 +593,30 @@
 
   function resetTimerDisplay(){
     if (timerInterval) clearInterval(timerInterval);
-    timerCircle.textContent = "5";
+    timerCircle.textContent = TIMER_SECONDS;
     timerCircle.classList.remove("warn", "danger");
     timerBtn.disabled = false;
   }
 
+  /* ---- Selettori: livello delle categorie e durata del timer ---- */
+  document.querySelectorAll(".seg-btn[data-level]").forEach(btn => btn.addEventListener("click", () => {
+    level = btn.dataset.level;
+    document.querySelectorAll(".seg-btn[data-level]").forEach(b => b.classList.toggle("active", b === btn));
+    catOrder = shuffle(LEVELS[level]());
+    catIndex = 0;
+    showCategory();
+    resetTimerDisplay();
+  }));
+  document.querySelectorAll(".seg-btn[data-sec]").forEach(btn => btn.addEventListener("click", () => {
+    TIMER_SECONDS = Number(btn.dataset.sec);
+    document.querySelectorAll(".seg-btn[data-sec]").forEach(b => b.classList.toggle("active", b === btn));
+    timerBtn.textContent = `⏱ START TIMER (${TIMER_SECONDS}s)`;
+    resetTimerDisplay();
+  }));
+
   timerBtn.addEventListener("click", () => {
     timerBtn.disabled = true;
-    let secondsLeft = 5;
+    let secondsLeft = TIMER_SECONDS;
     timerCircle.classList.remove("warn", "danger");
     timerCircle.textContent = secondsLeft;
     beep(523, 0.15);
@@ -483,9 +625,10 @@
       secondsLeft--;
       if (secondsLeft > 0){
         timerCircle.textContent = secondsLeft;
-        if (secondsLeft <= 2){ timerCircle.classList.add("danger"); timerCircle.classList.remove("warn"); }
-        else if (secondsLeft <= 3){ timerCircle.classList.add("warn"); }
-        beep(secondsLeft <= 2 ? 660 : 523, 0.15);
+        if (secondsLeft <= 3){ timerCircle.classList.add("danger"); timerCircle.classList.remove("warn"); }
+        else if (secondsLeft <= 5){ timerCircle.classList.add("warn"); }
+        // beep solo negli ultimi 5 secondi, per non stordire
+        if (secondsLeft <= 5) beep(secondsLeft <= 3 ? 660 : 523, 0.15);
       } else {
         clearInterval(timerInterval);
         timerCircle.textContent = "🔥";

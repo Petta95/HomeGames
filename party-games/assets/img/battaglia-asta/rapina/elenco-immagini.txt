@@ -1,0 +1,23 @@
+Immagini attese in questa cartella per la categoria "Squadra per una Rapina" del gioco Battaglia all'Asta.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - il_professore_la_casa_di_carta.jpg  (Il Professore (La casa di carta))
+ - tokyo_la_casa_di_carta.jpg  (Tokyo (La casa di carta))
+ - berlino_la_casa_di_carta.jpg  (Berlino (La casa di carta))
+ - danny_ocean_ocean_s_eleven.jpg  (Danny Ocean (Ocean's Eleven))
+ - rusty_ryan_ocean_s_eleven.jpg  (Rusty Ryan (Ocean's Eleven))
+ - lupin_iii.jpg  (Lupin III)
+ - assane_diop_lupin.jpg  (Assane Diop (Lupin))
+ - dom_toretto.jpg  (Dom Toretto)
+ - ethan_hunt.jpg  (Ethan Hunt)
+ - james_bond.jpg  (James Bond)
+ - macgyver.jpg  (MacGyver)
+ - baby_baby_driver.jpg  (Baby (Baby Driver))
+ - lara_croft.jpg  (Lara Croft)
+ - catwoman.jpg  (Catwoman)
+ - neo_matrix.jpg  (Neo (Matrix))
+ - jason_bourne.jpg  (Jason Bourne)
+ - tony_stark.jpg  (Tony Stark)
+ - mr_bean.jpg  (Mr. Bean)
+ - arsenio_lupin.jpg  (Arsenio Lupin)
+ - il_gatto_e_la_volpe.jpg  (Il Gatto e la Volpe)

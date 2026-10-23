@@ -70,7 +70,7 @@
           <a href="index.html" class="shrink-0 w-9 h-9 rounded-full grid place-content-center text-stone-500 hover:bg-stone-200/60 transition" title="Torna a Petta & Mari">←</a>
           <div class="min-w-0">
             <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-none">Ricette</h1>
-            <p class="text-xs sm:text-sm text-stone-500 mt-1 truncate">Cene a due · pesce, carne, pasta e veg, sempre con il contorno</p>
+            <p class="text-xs sm:text-sm text-stone-500 mt-1 truncate">Cene a due · pesce, carne, pasta, veg, antipasti e dolci</p>
           </div>
         </div>
         <button @click="surprise" class="shrink-0 inline-flex items-center gap-2 rounded-full bg-ink text-white text-sm font-semibold px-4 py-2 hover:bg-stone-700 transition">
@@ -2483,6 +2483,882 @@ const RICETTE = [
       "Spegni, aggiungi il burro rimasto a fiocchi, copri e lascia riposare 5 minuti.",
       "Servi con le cipolle croccanti, uvetta e anacardi tostati, coriandolo e la raita fresca."
     ]
+  },
+  /* ------------------------- ALTRI SECONDI DI PESCE E CARNE ------------------------- */
+  {
+    id: "calamari-griglia",
+    titolo: "Calamari alla griglia con insalata di patate, olive e capperi",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1476224203421-9ac39bcb3327"),
+    tempo_preparazione: "20 min", tempo_cottura: "25 min", tempo_marinatura: "15 min", tempo_totale: "1 h",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "4 medi (500 g) | calamari puliti",
+      "400 g | patate novelle",
+      "10 | olive taggiasche",
+      "1 cucchiaio | capperi",
+      "½ | cipolla rossa",
+      "1 | limone",
+      "1 spicchio | aglio",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | prezzemolo",
+      "1 pizzico | peperoncino",
+      "q.b. | origano",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Lessa le patate con la buccia in acqua salata per 18–20 minuti, poi tagliale a metà.",
+      "Condisci le patate ancora tiepide con olive, capperi, cipolla rossa a fettine, 2 cucchiai d'olio, origano e sale.",
+      "Incidi i calamari a griglia sul lato interno, così non si arrotolano in cottura.",
+      "Marinali 15 minuti con 2 cucchiai d'olio, aglio schiacciato, scorza di limone, peperoncino e prezzemolo.",
+      "Scalda bene una piastra o padella rigata e cuoci i calamari 2 minuti per lato (i tentacoli 1 minuto): se cuociono troppo diventano gommosi.",
+      "Sala, spruzza con il succo di limone e un filo d'olio e servi subito con l'insalata di patate."
+    ]
+  },
+  {
+    id: "manzo-thai",
+    titolo: "Manzo alla thailandese con insalata croccante e riso al gelsomino",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1504674900247-0877df9cc836"),
+    tempo_preparazione: "20 min", tempo_cottura: "15 min", tempo_marinatura: "20 min", tempo_totale: "55 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "350 g | controfiletto o scamone di manzo",
+      "140 g | riso jasmine",
+      "1 | cetriolo",
+      "1 | carota",
+      "100 g | cavolo cappuccio rosso",
+      "1 | cipollotto",
+      "2 | lime",
+      "2 cucchiai | salsa di pesce",
+      "2 cucchiai | salsa di soia",
+      "1 cucchiaio | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | menta e coriandolo",
+      "1 | peperoncino fresco",
+      "1 cucchiaino | zucchero di canna",
+      "1 cucchiaio | arachidi tostate"
+    ],
+    passaggi: [
+      "Marina la carne 20 minuti con soia, metà dell'olio e pepe.",
+      "Cuoci il riso jasmine in 210 ml d'acqua coperto a fuoco minimo per 12 minuti.",
+      "Condimento: mescola salsa di pesce, succo dei lime, zucchero e peperoncino tritato.",
+      "Taglia cetriolo e carota a julienne, il cavolo a striscioline sottili e il cipollotto a rondelle.",
+      "Scotta la carne in padella rovente 3 minuti per lato (rosata dentro), falla riposare 5 minuti e affettala sottile.",
+      "Mescola verdure, erbe e carne con il condimento e servi con il riso e le arachidi tritate."
+    ]
+  },
+  {
+    id: "anatra-frutti-bosco",
+    titolo: "Petto d'anatra ai frutti di bosco con insalata di spinacini e noci",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1514516345957-556ca7d90a29"),
+    tempo_preparazione: "15 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 grande (400 g) | petto d'anatra",
+      "150 g | frutti di bosco (lamponi e mirtilli)",
+      "1 cucchiaio | miele",
+      "2 cucchiai | aceto balsamico",
+      "80 g | spinacini",
+      "30 g | noci",
+      "40 g | caprino o feta",
+      "2 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | timo",
+      "q.b. | pepe rosa",
+      "q.b. | sale in fiocchi"
+    ],
+    passaggi: [
+      "Incidi la pelle dell'anatra a rombi senza toccare la carne e sala bene.",
+      "Mettila in padella fredda dal lato della pelle e cuoci a fuoco medio-basso 10–12 minuti, eliminando il grasso in eccesso.",
+      "Gira e cuoci 3–4 minuti sul lato carne, poi lasciala riposare 8 minuti avvolta nell'alluminio.",
+      "Nella stessa padella (senza grasso) cuoci metà dei frutti di bosco con miele, balsamico e timo per 4 minuti, finché fanno una salsa.",
+      "Condisci gli spinacini con olio, sale, noci tostate, caprino sbriciolato e il resto dei frutti di bosco.",
+      "Affetta l'anatra, nappala con la salsa e servi con l'insalata e un pizzico di pepe rosa."
+    ]
+  },
+  {
+    id: "salmone-sesamo-venere",
+    titolo: "Salmone in crosta di sesamo con riso venere e fagiolini",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1547592180-85f173990554"),
+    tempo_preparazione: "15 min", tempo_cottura: "40 min", tempo_marinatura: "—", tempo_totale: "55 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 tranci (320 g) | salmone senza pelle",
+      "140 g | riso venere",
+      "200 g | fagiolini",
+      "3 cucchiai | semi di sesamo misti",
+      "2 cucchiai | salsa di soia",
+      "1 cucchiaino | miele",
+      "1 | lime",
+      "2 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cm | zenzero",
+      "1 | cipollotto",
+      "q.b. | olio di sesamo",
+      "q.b. | peperoncino"
+    ],
+    passaggi: [
+      "Cuoci il riso venere in abbondante acqua salata per 35–40 minuti (controlla la confezione) e scolalo.",
+      "Sbollenta i fagiolini 6 minuti, poi saltali in padella con zenzero grattugiato e un goccio di soia.",
+      "Mescola 1 cucchiaio di soia con il miele, spennella il salmone e passalo nel sesamo.",
+      "Cuocilo in padella con l'olio a fuoco medio 3 minuti per lato, finché il sesamo è dorato.",
+      "Condisci il riso con olio di sesamo, succo di lime e cipollotto.",
+      "Servi il salmone sul riso venere con i fagiolini accanto."
+    ]
+  },
+  {
+    id: "grigliata-mista",
+    titolo: "Grigliata mista di carne con patate al cartoccio e salsa verde",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1555939594-58d7cb561ad1"),
+    tempo_preparazione: "20 min", tempo_cottura: "45 min", tempo_marinatura: "—", tempo_totale: "1 h 05 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 | salsicce",
+      "2 | costine di maiale",
+      "2 | fette di pancetta",
+      "2 (250 g) | sovracosce di pollo disossate",
+      "2 grandi | patate",
+      "1 | peperone",
+      "1 mazzetto | prezzemolo",
+      "1 cucchiaio | capperi",
+      "2 | acciughe sott'olio",
+      "5 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | rosmarino",
+      "1 spicchio | aglio",
+      "1 cucchiaio | aceto di vino",
+      "q.b. | sale grosso"
+    ],
+    passaggi: [
+      "Avvolgi le patate lavate nell'alluminio con rosmarino e sale grosso e cuocile in forno a 200°C (o sulla brace) per 45 minuti.",
+      "Salsa verde: trita prezzemolo, capperi, acciughe e aglio, unisci aceto e olio fino a una salsa densa.",
+      "Accendi la griglia o scalda una bistecchiera: inizia da costine e pollo (8–10 minuti per lato).",
+      "Aggiungi salsicce (bucherellate) e peperone a falde: 6–8 minuti per lato.",
+      "Per ultima la pancetta, 1 minuto per lato.",
+      "Sala la carne a fine cottura e servila con le patate aperte a fiore e la salsa verde."
+    ]
+  },
+  {
+    id: "picanha-chimichurri",
+    titolo: "Picanha alla brace con chimichurri e patate dolci arrosto",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1558030006-450675393462"),
+    tempo_preparazione: "15 min", tempo_cottura: "35 min", tempo_marinatura: "—", tempo_totale: "50 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "500 g | picanha (codone di manzo) con la sua copertura di grasso",
+      "2 | patate dolci",
+      "1 mazzetto | prezzemolo",
+      "2 spicchi | aglio",
+      "2 cucchiai | aceto di vino rosso",
+      "6 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | origano secco",
+      "1 pizzico | peperoncino in fiocchi",
+      "q.b. | sale grosso",
+      "q.b. | paprika affumicata"
+    ],
+    passaggi: [
+      "Taglia le patate dolci a spicchi, condiscile con 2 cucchiai d'olio, sale e paprika e arrostiscile a 210°C per 30–35 minuti.",
+      "Chimichurri: trita finissimi prezzemolo e aglio, aggiungi origano, peperoncino, aceto, 4 cucchiai d'olio e sale. Lascia riposare.",
+      "Taglia la picanha in 2 bistecche spesse 3 cm seguendo la fibra; incidi il grasso a rombi e sala con sale grosso.",
+      "Cuoci prima dal lato del grasso in padella o griglia rovente per 4 minuti, poi 3–4 minuti per lato.",
+      "Lascia riposare 5 minuti e taglia a fette controfibra.",
+      "Servi con il chimichurri sopra e le patate dolci accanto."
+    ]
+  },
+  {
+    id: "pollo-cornflakes",
+    titolo: "Pollo croccante alle corn flakes con salsa allo yogurt e insalata di cavolo",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1562967914-608f82629710"),
+    tempo_preparazione: "20 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "40 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "350 g | petto di pollo",
+      "80 g | corn flakes non zuccherati",
+      "1 | uovo",
+      "2 cucchiai | farina",
+      "125 g | yogurt greco",
+      "200 g | cavolo cappuccio",
+      "1 | carota",
+      "1 | limone",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | paprika dolce",
+      "½ cucchiaino | aglio in polvere",
+      "q.b. | erba cipollina",
+      "q.b. | senape"
+    ],
+    passaggi: [
+      "Accendi il forno ventilato a 200°C e fodera una teglia con carta forno.",
+      "Taglia il pollo a straccetti di 2 cm e sala.",
+      "Sbriciola le corn flakes con le mani e mescolale con paprika e aglio in polvere.",
+      "Passa il pollo nella farina, poi nell'uovo sbattuto e infine nelle corn flakes premendo bene.",
+      "Disponilo in teglia, spruzza un filo d'olio e cuoci 18–20 minuti girando a metà.",
+      "Salsa: yogurt, erba cipollina, succo di mezzo limone, un cucchiaino di senape e sale.",
+      "Insalata: cavolo a julienne e carota grattugiata con olio, limone e sale. Servi tutto insieme."
+    ]
+  },
+  {
+    id: "astice-catalana",
+    titolo: "Astice alla catalana con pomodori, cipolla rossa e sedano",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1590759668628-05b0fc34bb70"),
+    tempo_preparazione: "20 min", tempo_cottura: "12 min", tempo_marinatura: "—", tempo_totale: "32 min",
+    difficolta: "Avanzata",
+    ingredienti_spesa: [
+      "1 (600–700 g) | astice vivo o surgelato",
+      "250 g | pomodorini",
+      "1 | cipolla rossa di Tropea",
+      "2 coste | sedano",
+      "1 | limone",
+      "4 cucchiai | olio extravergine d'oliva",
+      "4 fette | pane tostato"
+    ],
+    spezie_e_extra: [
+      "q.b. | basilico",
+      "q.b. | prezzemolo",
+      "q.b. | sale grosso",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Porta a bollore abbondante acqua salata (30 g di sale per litro).",
+      "Immergi l'astice a testa in giù e cuocilo 10–12 minuti (circa 1 minuto ogni 60 g). Raffreddalo in acqua e ghiaccio.",
+      "Intanto taglia i pomodorini a metà, la cipolla a fettine sottili e il sedano a rondelle, con le sue foglie.",
+      "Con una forbice da cucina apri la coda sulla parte inferiore, estrai la polpa e tagliala a medaglioni; rompi le chele con lo schiaccianoci.",
+      "Condisci verdure e astice con olio, succo di limone, sale, pepe e basilico e lascia insaporire 5 minuti.",
+      "Servi in un piatto da portata con il pane tostato per raccogliere il condimento."
+    ]
+  },
+  {
+    id: "pollo-cacciatora",
+    titolo: "Bocconcini di pollo alla cacciatora con purè di patate",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1604908176997-125f25cc6f3d"),
+    tempo_preparazione: "15 min", tempo_cottura: "40 min", tempo_marinatura: "—", tempo_totale: "55 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "400 g | sovracosce di pollo disossate",
+      "300 g | passata di pomodoro",
+      "1 | cipolla",
+      "1 | carota",
+      "1 costa | sedano",
+      "10 | olive nere",
+      "80 ml | vino rosso",
+      "400 g | patate farinose",
+      "100 ml | latte",
+      "20 g | burro",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 rametto | rosmarino",
+      "2 foglie | alloro",
+      "1 spicchio | aglio",
+      "q.b. | basilico",
+      "1 pizzico | noce moscata"
+    ],
+    passaggi: [
+      "Taglia il pollo a bocconcini e rosolalo nell'olio a fuoco vivo finché è dorato. Tienilo da parte.",
+      "Nella stessa casseruola soffriggi cipolla, carota, sedano tritati e aglio per 6–7 minuti.",
+      "Rimetti il pollo, sfuma con il vino, aggiungi passata, olive, rosmarino e alloro.",
+      "Cuoci coperto a fuoco dolce 25–30 minuti, finché il sugo è denso.",
+      "Intanto lessa le patate, schiacciale e lavorale con latte caldo, burro, sale e noce moscata.",
+      "Servi il pollo con il suo sugo, basilico fresco e il purè accanto."
+    ]
+  },
+  {
+    id: "galletto-limone",
+    titolo: "Galletto arrosto al limone e erbe con verdure al forno",
+    categoria: "Carne", cucina: "Italiana",
+    immagine: U("1606728035253-49e8a23146de"),
+    tempo_preparazione: "20 min", tempo_cottura: "55 min", tempo_marinatura: "—", tempo_totale: "1 h 15 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 (700–800 g) | galletto intero",
+      "1 | limone",
+      "30 g | burro morbido",
+      "1 | zucchina",
+      "1 | peperone",
+      "1 | cipolla rossa",
+      "300 g | patate",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | rosmarino, timo e salvia",
+      "2 spicchi | aglio",
+      "q.b. | paprika dolce",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Accendi il forno statico a 200°C. Asciuga bene il galletto dentro e fuori.",
+      "Mescola burro, erbe tritate, scorza di limone, sale e pepe e spalmalo sotto la pelle del petto e sopra.",
+      "Riempi la cavità con il limone a spicchi, l'aglio e un rametto di rosmarino; lega le cosce con lo spago.",
+      "Taglia verdure e patate a pezzi simili, condiscile con olio, sale e paprika e disponile intorno al galletto in teglia.",
+      "Cuoci 50–55 minuti, bagnando il galletto con il fondo ogni 20 minuti, finché la pelle è dorata e il succo della coscia è trasparente.",
+      "Lascia riposare 10 minuti, dividilo a metà e servilo con le verdure e il fondo di cottura."
+    ]
+  },
+  {
+    id: "grigliata-pesce",
+    titolo: "Grigliata di pesce misto con verdure grigliate e salmoriglio",
+    categoria: "Pesce", cucina: "Italiana",
+    immagine: U("1615141982883-c7ad0e69fd62"),
+    tempo_preparazione: "25 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 (350 g) | orata o branzino",
+      "6 | gamberoni",
+      "2 | calamari puliti",
+      "1 | zucchina",
+      "1 | melanzana",
+      "1 | limone",
+      "6 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | origano",
+      "1 spicchio | aglio",
+      "1 ciuffo | prezzemolo",
+      "q.b. | sale grosso"
+    ],
+    passaggi: [
+      "Salmoriglio: emulsiona 4 cucchiai d'olio, succo di mezzo limone, 2 cucchiai d'acqua calda, origano, aglio e prezzemolo tritati e sale.",
+      "Squama ed eviscera il pesce (o fallo fare al banco) e pratica due tagli sui fianchi.",
+      "Griglia zucchina e melanzana a fette su piastra rovente 2 minuti per lato e condiscile con olio e sale.",
+      "Ungi il pesce e cuocilo sulla griglia 7–8 minuti per lato senza muoverlo troppo.",
+      "Negli ultimi minuti cuoci i gamberoni (2 minuti per lato) e i calamari incisi (2–3 minuti per lato).",
+      "Servi tutto su un vassoio irrorato con il salmoriglio e spicchi di limone, con le verdure accanto."
+    ]
+  },
+  {
+    id: "pollo-fritto-pannocchie",
+    titolo: "Pollo fritto all'americana con pannocchie al burro",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1626082927389-6cd097cdc6ec"),
+    tempo_preparazione: "20 min", tempo_cottura: "25 min", tempo_marinatura: "1 h", tempo_totale: "1 h 45 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "6 | fusi e sovracosce di pollo",
+      "250 ml | latticello (o yogurt bianco + latte)",
+      "150 g | farina 00",
+      "30 g | amido di mais",
+      "2 | pannocchie di mais precotte",
+      "30 g | burro",
+      "1 litro | olio di semi di arachide per friggere"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | paprika dolce",
+      "1 cucchiaino | aglio in polvere",
+      "1 cucchiaino | cipolla in polvere",
+      "q.b. | pepe di Cayenna",
+      "q.b. | prezzemolo"
+    ],
+    passaggi: [
+      "Marina il pollo almeno 1 ora in frigo nel latticello con sale e metà della paprika.",
+      "Mescola farina, amido, il resto della paprika, aglio e cipolla in polvere, Cayenna e sale.",
+      "Sgocciola il pollo e passalo nella farina premendo bene: per una crosta extra, ripassalo veloce nel latticello e di nuovo nella farina.",
+      "Scalda l'olio a 165°C in una pentola dai bordi alti e friggi 2–3 pezzi alla volta per 12–14 minuti, girandoli, finché sono dorati e cotti dentro.",
+      "Scola su carta assorbente e sala subito.",
+      "Intanto scotta le pannocchie in padella o sulla griglia, poi spennellale di burro con sale e prezzemolo. Servi tutto caldo."
+    ]
+  },
+  {
+    id: "agnello-curry",
+    titolo: "Agnello al curry (rogan josh) con riso basmati e raita",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1574653853027-5382a3d23a15"),
+    tempo_preparazione: "20 min", tempo_cottura: "1 h 15 min", tempo_marinatura: "—", tempo_totale: "1 h 35 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "450 g | spalla d'agnello a bocconcini",
+      "1 | cipolla grande",
+      "200 g | polpa di pomodoro",
+      "125 g | yogurt intero",
+      "2 spicchi | aglio",
+      "3 cm | zenzero",
+      "140 g | riso basmati",
+      "½ | cetriolo",
+      "2 cucchiai | olio di semi o ghee"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | garam masala",
+      "1 cucchiaino | paprika (o peperoncino del Kashmir)",
+      "4 | baccelli di cardamomo",
+      "1 | stecca di cannella",
+      "q.b. | coriandolo e menta"
+    ],
+    passaggi: [
+      "Rosola l'agnello nell'olio a fuoco vivo, poco alla volta, e tienilo da parte.",
+      "Nella stessa pentola fai dorare la cipolla affettata 10 minuti, poi aglio, zenzero, cardamomo e cannella per 1 minuto.",
+      "Aggiungi garam masala e paprika, mescola 30 secondi e unisci il pomodoro e metà dello yogurt.",
+      "Rimetti la carne, copri con 300 ml d'acqua e cuoci a fuoco dolce coperto per 1 ora, finché l'agnello è tenero.",
+      "Cuoci il riso basmati coperto in 280 ml d'acqua salata per 12 minuti.",
+      "Raita: cetriolo grattugiato e strizzato con lo yogurt rimasto, menta e sale. Servi il curry con riso, raita e coriandolo."
+    ]
+  },
+  {
+    id: "laksa-gamberi",
+    titolo: "Laksa di gamberi (zuppa al cocco piccante) con noodles e uovo",
+    categoria: "Pesce", cucina: "Straniera",
+    immagine: U("1617093727343-374698b1b08d"),
+    tempo_preparazione: "15 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "250 g | gamberi sgusciati",
+      "120 g | noodles di riso",
+      "400 ml | latte di cocco",
+      "400 ml | brodo di pesce o vegetale",
+      "2 cucchiai | pasta di curry rosso (o pasta laksa)",
+      "2 | uova",
+      "100 g | germogli di soia",
+      "1 | lime",
+      "1 cucchiaio | salsa di pesce",
+      "1 cucchiaio | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 ciuffo | coriandolo e menta",
+      "1 | peperoncino fresco",
+      "1 cucchiaino | zucchero di canna",
+      "q.b. | cipolla croccante"
+    ],
+    passaggi: [
+      "Rassoda le uova 7 minuti, raffreddale, sgusciale e tagliale a metà.",
+      "In una pentola scalda l'olio e tosta la pasta di curry 1 minuto.",
+      "Versa brodo e latte di cocco, aggiungi salsa di pesce e zucchero e fai sobbollire 8 minuti.",
+      "Ammolla o cuoci i noodles secondo la confezione e dividili in due ciotole.",
+      "Cuoci i gamberi nel brodo per 2–3 minuti e aggiusta con succo di lime.",
+      "Versa la zuppa sui noodles con i gamberi, completa con uovo, germogli, erbe, peperoncino e cipolla croccante."
+    ]
+  },
+  {
+    id: "steak-frites",
+    titolo: "Steak frites: bistecca con patatine fritte e burro alle erbe",
+    categoria: "Carne", cucina: "Straniera",
+    immagine: U("1600891964092-4316c288032e"),
+    tempo_preparazione: "20 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "45 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "2 (220 g l'una) | bistecche di controfiletto o bavetta",
+      "500 g | patate farinose",
+      "40 g | burro morbido",
+      "1 | scalogno",
+      "60 g | insalatina",
+      "1 litro | olio di semi di arachide per friggere"
+    ],
+    spezie_e_extra: [
+      "q.b. | prezzemolo e dragoncello",
+      "1 cucchiaino | senape di Digione",
+      "q.b. | sale in fiocchi",
+      "q.b. | pepe nero"
+    ],
+    passaggi: [
+      "Burro alle erbe: lavora il burro con scalogno tritato fine, erbe, senape e sale; arrotolalo nella pellicola e mettilo in frigo.",
+      "Taglia le patate a bastoncini di 1 cm, sciacquale in acqua fredda e asciugale molto bene.",
+      "Prima frittura a 150°C per 6–7 minuti (devono restare chiare). Scolale.",
+      "Cuoci le bistecche in padella rovente 2–3 minuti per lato e lasciale riposare.",
+      "Seconda frittura a 180°C per 2–3 minuti finché le patatine sono dorate e croccanti; sala subito.",
+      "Servi la bistecca con un disco di burro alle erbe sopra, le patatine e l'insalatina."
+    ]
+  },
+
+  /* ------------------------------ ANTIPASTI & APERITIVO ------------------------------ */
+  {
+    id: "bruschette-pomodoro",
+    titolo: "Bruschette al pomodoro, basilico e stracciatella",
+    categoria: "Antipasti", cucina: "Italiana", veg: true,
+    immagine: U("1505575967455-40e256f73376"),
+    tempo_preparazione: "10 min", tempo_cottura: "5 min", tempo_marinatura: "10 min", tempo_totale: "25 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "4 fette | pane casereccio",
+      "250 g | pomodorini datterini",
+      "100 g | stracciatella (facoltativa)",
+      "1 spicchio | aglio",
+      "4 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "q.b. | basilico",
+      "q.b. | origano",
+      "q.b. | sale in fiocchi"
+    ],
+    passaggi: [
+      "Taglia i pomodorini a cubetti e condiscili con olio, sale, origano e basilico: lasciali insaporire 10 minuti.",
+      "Tosta il pane in padella, griglia o forno finché è croccante fuori e morbido dentro.",
+      "Strofina le fette ancora calde con lo spicchio d'aglio.",
+      "Distribuisci i pomodorini con il loro sughetto, aggiungi un cucchiaio di stracciatella e un filo d'olio."
+    ]
+  },
+  {
+    id: "carpaccio-salmone",
+    titolo: "Carpaccio di salmone agli agrumi con pepe rosa e finocchio",
+    categoria: "Antipasti", cucina: "Italiana",
+    immagine: U("1559058789-672da06263d8"),
+    tempo_preparazione: "15 min", tempo_cottura: "—", tempo_marinatura: "20 min", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "200 g | salmone freschissimo abbattuto",
+      "1 | arancia",
+      "1 | lime",
+      "½ | finocchio",
+      "3 cucchiai | olio extravergine d'oliva"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | pepe rosa",
+      "q.b. | aneto o barba del finocchio",
+      "q.b. | sale in fiocchi"
+    ],
+    passaggi: [
+      "Metti il salmone 20 minuti in freezer: si affetta più facilmente.",
+      "Taglialo a fette sottilissime con un coltello ben affilato e disponile in un piatto freddo.",
+      "Emulsiona il succo di mezza arancia e del lime con l'olio e un pizzico di sale; versalo sul salmone.",
+      "Lascia marinare 20 minuti in frigo (il pesce diventa leggermente opaco).",
+      "Completa con finocchio affettato sottilissimo, spicchi d'arancia pelati a vivo, pepe rosa schiacciato e aneto."
+    ]
+  },
+  {
+    id: "cocktail-gamberi",
+    titolo: "Cocktail di gamberi con salsa rosa e lattuga croccante",
+    categoria: "Antipasti", cucina: "Italiana",
+    immagine: U("1565680018434-b513d5e5fd47"),
+    tempo_preparazione: "15 min", tempo_cottura: "3 min", tempo_marinatura: "—", tempo_totale: "18 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "250 g | gamberi",
+      "4 cucchiai | maionese",
+      "1 cucchiaio | ketchup",
+      "1 cuore | lattuga iceberg",
+      "1 | limone"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | brandy o cognac",
+      "q.b. | salsa Worcestershire",
+      "q.b. | paprika dolce",
+      "q.b. | erba cipollina"
+    ],
+    passaggi: [
+      "Sguscia i gamberi lasciando la coda a un paio per decorare ed elimina il filetto nero.",
+      "Sbollentali 2–3 minuti in acqua salata con una fetta di limone, poi raffreddali in acqua e ghiaccio.",
+      "Salsa rosa: maionese, ketchup, brandy, qualche goccia di Worcestershire e di limone.",
+      "Taglia la lattuga a listarelle sottili e mettila sul fondo di due coppe.",
+      "Aggiungi i gamberi conditi con metà della salsa, poi il resto della salsa, paprika ed erba cipollina."
+    ]
+  },
+  {
+    id: "avocado-toast",
+    titolo: "Avocado toast con uovo morbido e semi tostati",
+    categoria: "Antipasti", cucina: "Straniera", veg: true,
+    immagine: U("1541519227354-08fa5d50c44d"),
+    tempo_preparazione: "10 min", tempo_cottura: "7 min", tempo_marinatura: "—", tempo_totale: "17 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "2 fette | pane integrale o di segale",
+      "1 | avocado maturo",
+      "2 | uova",
+      "½ | lime"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | semi misti (sesamo, girasole, zucca)",
+      "q.b. | peperoncino in fiocchi",
+      "q.b. | sale in fiocchi e pepe",
+      "q.b. | olio extravergine d'oliva"
+    ],
+    passaggi: [
+      "Cuoci le uova 6½ minuti in acqua bollente, raffreddale e sgusciale (tuorlo morbido).",
+      "Tosta il pane e i semi in padella asciutta per 2 minuti.",
+      "Schiaccia l'avocado con succo di lime, sale e pepe.",
+      "Spalma l'avocado sul pane, adagia mezzo uovo per fetta e completa con semi, peperoncino e un filo d'olio."
+    ]
+  },
+  {
+    id: "insalata-fragole-feta",
+    titolo: "Insalata di spinacini, fragole, feta e noci caramellate",
+    categoria: "Antipasti", cucina: "Straniera", veg: true,
+    immagine: U("1505253716362-afaea1d3d1af"),
+    tempo_preparazione: "15 min", tempo_cottura: "5 min", tempo_marinatura: "—", tempo_totale: "20 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "100 g | spinacini",
+      "150 g | fragole",
+      "80 g | mirtilli",
+      "80 g | feta",
+      "40 g | noci",
+      "1 cucchiaio | miele",
+      "3 cucchiai | olio extravergine d'oliva",
+      "1 cucchiaio | aceto balsamico"
+    ],
+    spezie_e_extra: [
+      "q.b. | menta",
+      "q.b. | pepe nero",
+      "1 cucchiaino | senape"
+    ],
+    passaggi: [
+      "Caramella le noci in padella con il miele per 3–4 minuti, poi stendile su carta forno a raffreddare.",
+      "Taglia le fragole a spicchi e sbriciola la feta.",
+      "Emulsiona olio, balsamico, senape, sale e pepe.",
+      "Componi l'insalata con spinacini, fragole, mirtilli, feta, noci e menta, e condisci all'ultimo momento."
+    ]
+  },
+  {
+    id: "samosa-verdure",
+    titolo: "Samosa di verdure al forno con salsa allo yogurt e menta",
+    categoria: "Antipasti", cucina: "Straniera", veg: true,
+    immagine: U("1601050690597-df0568f70950"),
+    tempo_preparazione: "30 min", tempo_cottura: "25 min", tempo_marinatura: "—", tempo_totale: "55 min",
+    difficolta: "Media",
+    ingredienti_spesa: [
+      "1 rotolo | pasta fillo (o pasta sfoglia)",
+      "2 | patate medie",
+      "80 g | piselli surgelati",
+      "1 | cipolla piccola",
+      "125 g | yogurt greco",
+      "2 cucchiai | olio di semi"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaino | garam masala",
+      "½ cucchiaino | cumino",
+      "½ cucchiaino | curcuma",
+      "q.b. | menta e coriandolo",
+      "q.b. | peperoncino"
+    ],
+    passaggi: [
+      "Lessa le patate a cubetti 10 minuti e scolale.",
+      "Soffriggi la cipolla nell'olio, aggiungi le spezie, poi patate e piselli; cuoci 5 minuti schiacciando un po', sala e lascia raffreddare.",
+      "Taglia la pasta in strisce larghe 8 cm (se usi la fillo, due fogli sovrapposti spennellati d'olio).",
+      "Metti un cucchiaio di ripieno in fondo a ogni striscia e piega a triangolo fino alla fine.",
+      "Spennella d'olio e inforna a 200°C per 15–20 minuti finché sono dorati.",
+      "Servi con lo yogurt mescolato a menta tritata e sale."
+    ]
+  },
+  /* --------------------------------- DOLCI VELOCI --------------------------------- */
+  {
+    id: "tiramisu-coppa",
+    titolo: "Tiramisù veloce in coppa",
+    categoria: "Dolci", cucina: "Italiana",
+    immagine: U("1571877227200-a0d98ea607e9"),
+    tempo_preparazione: "20 min", tempo_cottura: "—", tempo_marinatura: "1 h", tempo_totale: "1 h 20 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "125 g | mascarpone",
+      "1 | uovo freschissimo",
+      "30 g | zucchero",
+      "8 | savoiardi",
+      "2 tazzine | caffè espresso"
+    ],
+    spezie_e_extra: [
+      "q.b. | cacao amaro",
+      "1 cucchiaio | liquore al caffè o marsala",
+      "q.b. | scaglie di cioccolato fondente"
+    ],
+    passaggi: [
+      "Prepara il caffè e lascialo raffreddare con il liquore.",
+      "Monta il tuorlo con lo zucchero finché è chiaro, poi incorpora il mascarpone.",
+      "Monta l'albume a neve e uniscilo alla crema con movimenti dal basso verso l'alto.",
+      "Spezza i savoiardi, inzuppali velocemente nel caffè e alternali alla crema in due coppe.",
+      "Copri e lascia in frigo almeno 1 ora. Prima di servire spolvera con cacao e scaglie di cioccolato."
+    ]
+  },
+  {
+    id: "panna-cotta-fragole",
+    titolo: "Panna cotta alla vaniglia con fragole",
+    categoria: "Dolci", cucina: "Italiana",
+    immagine: U("1488477181946-6428a0291777"),
+    tempo_preparazione: "10 min", tempo_cottura: "5 min", tempo_marinatura: "3 h", tempo_totale: "3 h 15 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "250 ml | panna fresca",
+      "40 g | zucchero",
+      "3 g | gelatina in fogli (1 foglio e mezzo)",
+      "150 g | fragole"
+    ],
+    spezie_e_extra: [
+      "½ | bacca di vaniglia (o 1 cucchiaino di estratto)",
+      "1 cucchiaino | succo di limone",
+      "q.b. | menta"
+    ],
+    passaggi: [
+      "Ammolla la gelatina in acqua fredda per 10 minuti.",
+      "Scalda panna, 30 g di zucchero e vaniglia fino quasi al bollore, poi spegni.",
+      "Strizza la gelatina e sciogliela nella panna calda mescolando bene.",
+      "Versa in due vasetti o bicchieri e lascia rassodare in frigo almeno 3 ore.",
+      "Taglia le fragole a cubetti con lo zucchero rimasto e il limone e mettile sopra la panna cotta con la menta."
+    ]
+  },
+  {
+    id: "brownie-gelato",
+    titolo: "Brownie al cioccolato caldo con gelato alla vaniglia",
+    categoria: "Dolci", cucina: "Straniera",
+    immagine: U("1624353365286-3f8d62daad51"),
+    tempo_preparazione: "15 min", tempo_cottura: "20 min", tempo_marinatura: "—", tempo_totale: "35 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "100 g | cioccolato fondente",
+      "70 g | burro",
+      "80 g | zucchero di canna",
+      "1 | uovo",
+      "40 g | farina",
+      "2 palline | gelato alla vaniglia"
+    ],
+    spezie_e_extra: [
+      "30 g | noci o nocciole",
+      "1 pizzico | sale",
+      "q.b. | cacao amaro"
+    ],
+    passaggi: [
+      "Accendi il forno statico a 180°C e fodera uno stampo piccolo (15×15 cm) con carta forno.",
+      "Sciogli cioccolato e burro a bagnomaria o al microonde.",
+      "Sbatti uovo e zucchero, unisci il cioccolato fuso, poi farina, sale e noci tritate.",
+      "Versa nello stampo e cuoci 18–20 minuti: il centro deve restare umido.",
+      "Taglia due quadrati ancora tiepidi e servili con una pallina di gelato e una spolverata di cacao."
+    ]
+  },
+  {
+    id: "cheesecake-mirtilli",
+    titolo: "Cheesecake ai mirtilli senza cottura (in bicchiere)",
+    categoria: "Dolci", cucina: "Straniera",
+    immagine: U("1567171466295-4afa63d45416"),
+    tempo_preparazione: "20 min", tempo_cottura: "5 min", tempo_marinatura: "2 h", tempo_totale: "2 h 25 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "80 g | biscotti digestive",
+      "35 g | burro",
+      "150 g | formaggio spalmabile",
+      "100 ml | panna fresca",
+      "40 g | zucchero a velo",
+      "150 g | mirtilli"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | zucchero per la salsa",
+      "1 cucchiaino | succo di limone",
+      "q.b. | scorza di limone"
+    ],
+    passaggi: [
+      "Trita i biscotti e mescolali con il burro fuso; dividili sul fondo di due bicchieri premendo bene.",
+      "Monta la panna e incorporala al formaggio lavorato con zucchero a velo e scorza di limone.",
+      "Versa la crema sui biscotti e metti in frigo almeno 2 ore.",
+      "Cuoci 100 g di mirtilli con zucchero e limone per 5 minuti finché fanno una salsa; lasciala raffreddare.",
+      "Prima di servire copri con la salsa e i mirtilli freschi rimasti."
+    ]
+  },
+  {
+    id: "crepes-fragole",
+    titolo: "Crêpes con fragole e panna montata",
+    categoria: "Dolci", cucina: "Straniera",
+    immagine: U("1587314168485-3236d6710814"),
+    tempo_preparazione: "10 min", tempo_cottura: "15 min", tempo_marinatura: "—", tempo_totale: "25 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "1 | uovo",
+      "125 ml | latte",
+      "60 g | farina",
+      "150 g | fragole",
+      "100 ml | panna da montare",
+      "15 g | burro"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | zucchero",
+      "q.b. | crema alla nocciola (facoltativa)",
+      "q.b. | zucchero a velo"
+    ],
+    passaggi: [
+      "Frulla uovo, latte, farina, zucchero e un pizzico di sale fino a una pastella liscia.",
+      "Scalda una padella antiaderente e ungila con poco burro.",
+      "Versa un mestolino di pastella ruotando la padella per velarne il fondo; cuoci 1 minuto per lato.",
+      "Monta la panna e taglia le fragole a fettine.",
+      "Farcisci le crêpes con panna e fragole (e un velo di crema alla nocciola se vuoi), piegale e spolvera di zucchero a velo."
+    ]
+  },
+  {
+    id: "cookies-cioccolato",
+    titolo: "Cookies con gocce di cioccolato (per due, più qualcuno per domani)",
+    categoria: "Dolci", cucina: "Straniera",
+    immagine: U("1558961363-fa8fdf82db35"),
+    tempo_preparazione: "15 min", tempo_cottura: "12 min", tempo_marinatura: "—", tempo_totale: "27 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "60 g | burro morbido",
+      "60 g | zucchero di canna",
+      "1 | tuorlo",
+      "90 g | farina",
+      "60 g | gocce di cioccolato fondente"
+    ],
+    spezie_e_extra: [
+      "½ cucchiaino | lievito per dolci",
+      "1 pizzico | sale",
+      "q.b. | sale in fiocchi da mettere sopra"
+    ],
+    passaggi: [
+      "Accendi il forno statico a 180°C e fodera una teglia con carta forno.",
+      "Lavora il burro con lo zucchero finché è cremoso, poi aggiungi il tuorlo.",
+      "Unisci farina, lievito e sale, poi le gocce di cioccolato.",
+      "Forma 6–8 palline e schiacciale leggermente sulla teglia ben distanziate.",
+      "Cuoci 10–12 minuti: devono essere dorati ai bordi e ancora morbidi al centro (si induriscono raffreddando). Un pizzico di sale in fiocchi sopra."
+    ]
+  },
+  {
+    id: "tartufi-cioccolato",
+    titolo: "Tartufini al cioccolato e cacao",
+    categoria: "Dolci", cucina: "Italiana",
+    immagine: U("1549007994-cb92caebd54b"),
+    tempo_preparazione: "15 min", tempo_cottura: "5 min", tempo_marinatura: "1 h", tempo_totale: "1 h 20 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "150 g | cioccolato fondente",
+      "80 ml | panna fresca",
+      "15 g | burro",
+      "q.b. | cacao amaro"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | rum o liquore all'arancia",
+      "q.b. | granella di nocciole o pistacchi",
+      "q.b. | cocco rapé"
+    ],
+    passaggi: [
+      "Trita il cioccolato e mettilo in una ciotola.",
+      "Scalda la panna fino quasi al bollore e versala sul cioccolato; aspetta 1 minuto e mescola fino a una crema lucida.",
+      "Aggiungi burro e liquore, mescola e lascia rassodare in frigo almeno 1 ora.",
+      "Preleva la ganache con un cucchiaino, forma delle palline con le mani fredde.",
+      "Rotolale nel cacao, nella granella o nel cocco e conservale in frigo fino al momento di servire."
+    ]
+  },
+  {
+    id: "coppa-cioccolato-biscotti",
+    titolo: "Coppa al cioccolato con panna e biscotti",
+    categoria: "Dolci", cucina: "Straniera",
+    immagine: U("1563805042-7684c019e1cb"),
+    tempo_preparazione: "15 min", tempo_cottura: "5 min", tempo_marinatura: "30 min", tempo_totale: "50 min",
+    difficolta: "Facile",
+    ingredienti_spesa: [
+      "250 ml | latte",
+      "20 g | amido di mais",
+      "40 g | zucchero",
+      "60 g | cioccolato fondente",
+      "100 ml | panna da montare",
+      "6 | biscotti al cacao (tipo Oreo)"
+    ],
+    spezie_e_extra: [
+      "1 cucchiaio | cacao amaro",
+      "q.b. | scaglie di cioccolato",
+      "1 pizzico | sale"
+    ],
+    passaggi: [
+      "In un pentolino mescola zucchero, amido e cacao, poi aggiungi il latte a filo mescolando con una frusta.",
+      "Cuoci a fuoco medio finché la crema si addensa (3–4 minuti), spegni e aggiungi il cioccolato tritato.",
+      "Copri a contatto con la pellicola e lascia raffreddare 30 minuti.",
+      "Monta la panna e sbriciola i biscotti.",
+      "In due coppe alterna crema al cioccolato, biscotti sbriciolati e panna, finendo con un biscotto intero e le scaglie."
+    ]
   }
 ];
 
@@ -2535,6 +3411,8 @@ Vue.createApp({
         { key: "Carne", label: "Carne", icon: "🥩" },
         { key: "Pasta", label: "Pasta & noodles", icon: "🍝" },
         { key: "Vegetariane", label: "Vegetariane", icon: "🥦" },
+        { key: "Antipasti", label: "Antipasti & aperitivo", icon: "🥂" },
+        { key: "Dolci", label: "Dolci veloci", icon: "🍰" },
         { key: "Speciali/Altro", label: "Speciali", icon: "🍄" }
       ],
       cuisines: [
@@ -2591,6 +3469,8 @@ Vue.createApp({
         "Carne": { icon: "🥩", text: "text-meat" },
         "Pasta": { icon: "🍝", text: "text-amber-700" },
         "Vegetariane": { icon: "🥦", text: "text-emerald-700" },
+        "Antipasti": { icon: "🥂", text: "text-amber-600" },
+        "Dolci": { icon: "🍰", text: "text-pink-600" },
         "Speciali/Altro": { icon: "🍄", text: "text-special" }
       }[c];
     },

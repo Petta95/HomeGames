@@ -1,0 +1,23 @@
+Immagini attese in questa cartella per la categoria "Calciatori Leggendari" del gioco Battaglia all'Asta.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - pele.jpg  (Pelé)
+ - diego_armando_maradona.jpg  (Diego Armando Maradona)
+ - lionel_messi.jpg  (Lionel Messi)
+ - cristiano_ronaldo.jpg  (Cristiano Ronaldo)
+ - zinedine_zidane.jpg  (Zinédine Zidane)
+ - ronaldo_il_fenomeno.jpg  (Ronaldo il Fenomeno)
+ - ronaldinho.jpg  (Ronaldinho)
+ - johan_cruijff.jpg  (Johan Cruijff)
+ - franz_beckenbauer.jpg  (Franz Beckenbauer)
+ - paolo_maldini.jpg  (Paolo Maldini)
+ - roberto_baggio.jpg  (Roberto Baggio)
+ - francesco_totti.jpg  (Francesco Totti)
+ - alessandro_del_piero.jpg  (Alessandro Del Piero)
+ - gianluigi_buffon.jpg  (Gianluigi Buffon)
+ - andrea_pirlo.jpg  (Andrea Pirlo)
+ - zlatan_ibrahimovic.jpg  (Zlatan Ibrahimović)
+ - kylian_mbappe.jpg  (Kylian Mbappé)
+ - erling_haaland.jpg  (Erling Haaland)
+ - thierry_henry.jpg  (Thierry Henry)
+ - kaka.jpg  (Kaká)

@@ -1,0 +1,23 @@
+Immagini attese in questa cartella per la categoria "Cantanti Italiani" del gioco Battaglia all'Asta.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - vasco_rossi.jpg  (Vasco Rossi)
+ - laura_pausini.jpg  (Laura Pausini)
+ - eros_ramazzotti.jpg  (Eros Ramazzotti)
+ - zucchero.jpg  (Zucchero)
+ - jovanotti.jpg  (Jovanotti)
+ - ligabue.jpg  (Ligabue)
+ - tiziano_ferro.jpg  (Tiziano Ferro)
+ - gianna_nannini.jpg  (Gianna Nannini)
+ - mina.jpg  (Mina)
+ - lucio_battisti.jpg  (Lucio Battisti)
+ - lucio_dalla.jpg  (Lucio Dalla)
+ - adriano_celentano.jpg  (Adriano Celentano)
+ - andrea_bocelli.jpg  (Andrea Bocelli)
+ - marco_mengoni.jpg  (Marco Mengoni)
+ - elodie.jpg  (Elodie)
+ - annalisa.jpg  (Annalisa)
+ - mahmood.jpg  (Mahmood)
+ - ultimo.jpg  (Ultimo)
+ - geolier.jpg  (Geolier)
+ - maneskin.jpg  (Måneskin)

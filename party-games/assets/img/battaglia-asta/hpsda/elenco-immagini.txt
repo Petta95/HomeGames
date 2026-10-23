@@ -1,0 +1,23 @@
+Immagini attese in questa cartella per la categoria "Harry Potter & Signore degli Anelli" del gioco Battaglia all'Asta.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - harry_potter.jpg  (Harry Potter)
+ - hermione_granger.jpg  (Hermione Granger)
+ - ron_weasley.jpg  (Ron Weasley)
+ - albus_silente.jpg  (Albus Silente)
+ - severus_piton.jpg  (Severus Piton)
+ - rubeus_hagrid.jpg  (Rubeus Hagrid)
+ - lord_voldemort.jpg  (Lord Voldemort)
+ - draco_malfoy.jpg  (Draco Malfoy)
+ - sirius_black.jpg  (Sirius Black)
+ - dobby.jpg  (Dobby)
+ - gandalf.jpg  (Gandalf)
+ - frodo_baggins.jpg  (Frodo Baggins)
+ - samvise_gamgee.jpg  (Samvise Gamgee)
+ - aragorn.jpg  (Aragorn)
+ - legolas.jpg  (Legolas)
+ - gimli.jpg  (Gimli)
+ - gollum.jpg  (Gollum)
+ - sauron.jpg  (Sauron)
+ - galadriel.jpg  (Galadriel)
+ - bilbo_baggins.jpg  (Bilbo Baggins)

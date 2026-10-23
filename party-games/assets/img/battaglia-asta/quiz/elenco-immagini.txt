@@ -1,0 +1,23 @@
+Immagini attese in questa cartella per la categoria "Squadra per un Quiz" del gioco Battaglia all'Asta.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - piero_angela.jpg  (Piero Angela)
+ - alberto_angela.jpg  (Alberto Angela)
+ - albert_einstein.jpg  (Albert Einstein)
+ - leonardo_da_vinci.jpg  (Leonardo da Vinci)
+ - rita_levi_montalcini.jpg  (Rita Levi-Montalcini)
+ - stephen_hawking.jpg  (Stephen Hawking)
+ - marie_curie.jpg  (Marie Curie)
+ - mike_bongiorno.jpg  (Mike Bongiorno)
+ - gerry_scotti.jpg  (Gerry Scotti)
+ - umberto_eco.jpg  (Umberto Eco)
+ - margherita_hack.jpg  (Margherita Hack)
+ - nikola_tesla.jpg  (Nikola Tesla)
+ - isaac_newton.jpg  (Isaac Newton)
+ - galileo_galilei.jpg  (Galileo Galilei)
+ - dante_alighieri.jpg  (Dante Alighieri)
+ - sherlock_holmes.jpg  (Sherlock Holmes)
+ - hermione_granger.jpg  (Hermione Granger)
+ - lisa_simpson.jpg  (Lisa Simpson)
+ - chatgpt.jpg  (ChatGPT)
+ - il_nonno_che_sa_tutto.jpg  (Il nonno che sa tutto)

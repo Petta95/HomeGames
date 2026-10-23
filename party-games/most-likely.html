@@ -11,7 +11,7 @@
 <style>
   /* Selettore pacchetto domande: Classiche / Spicy +18 */
   .pack-switch{
-    display: inline-flex; gap: 6px; padding: 5px; margin: 0 auto 18px;
+    display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 5px; margin: 0 auto 18px;
     background: var(--glass-bg); border: 1px solid var(--glass-border);
     border-radius: 999px; backdrop-filter: blur(12px);
   }
@@ -38,7 +38,9 @@
 <main class="stage">
   <div class="pack-switch" role="group" aria-label="Pacchetto domande">
     <button type="button" class="pack-btn active" data-pack="classic">🍻 Classiche</button>
+    <button type="button" class="pack-btn" data-pack="noi">👫 Tra di noi</button>
     <button type="button" class="pack-btn" data-pack="spicy">🌶️ Spicy +18</button>
+    <button type="button" class="pack-btn" data-pack="extra">🔥 Extra piccante</button>
   </div>
 
   <div class="question-card">
@@ -147,7 +149,113 @@
     "Chi si dimenticherebbe l'anniversario di una relazione?",
     "Chi accetterebbe di travestirsi in modo ridicolo per vincere una scommessa?",
     "Chi finirebbe per litigare per l'ultimo pezzo di pizza?",
-    "Chi si iscriverebbe a un corso strano solo per curiosità e poi lo abbandonerebbe subito?"
+    "Chi si iscriverebbe a un corso strano solo per curiosità e poi lo abbandonerebbe subito?",
+    "Chi dimenticherebbe il passaporto il giorno della partenza?",
+    "Chi prenoterebbe un hotel nella città sbagliata?",
+    "Chi tornerebbe da un viaggio con la valigia piena di souvenir inutili?",
+    "Chi farebbe amicizia con tutto il villaggio turistico in due giorni?",
+    "Chi si lamenterebbe del cibo all'estero e cercherebbe subito una pizzeria?",
+    "Chi perderebbe l'aereo per un ultimo caffè in aeroporto?",
+    "Chi partirebbe zaino in spalla per un anno senza un piano?",
+    "Chi si scotterebbe al sole il primo giorno di vacanza?",
+    "Chi organizzerebbe un viaggio con un foglio Excel minuto per minuto?",
+    "Chi si farebbe fregare da un tassista in un paese straniero?",
+    "Chi parlerebbe italiano a voce alta all'estero sperando che lo capiscano comunque?",
+    "Chi porterebbe tre valigie per un weekend?",
+    "Chi si licenzierebbe con un discorso epico davanti a tutti?",
+    "Chi si addormenterebbe durante una riunione importante?",
+    "Chi risponderebbe a una mail di lavoro in vacanza?",
+    "Chi diventerebbe il capo e lo farebbe pesare a tutti?",
+    "Chi aprirebbe un'attività assurda e la farebbe funzionare?",
+    "Chi manderebbe per sbaglio un messaggio sul capo al capo stesso?",
+    "Chi lavorerebbe in pigiama da casa per sempre se potesse?",
+    "Chi andrebbe in pensione per primo?",
+    "Chi si inventerebbe la scusa più creativa per un giorno di malattia?",
+    "Chi cambierebbe lavoro ogni anno?",
+    "Chi vincerebbe alla lotteria e perderebbe tutto in un anno?",
+    "Chi conserverebbe gli scontrini di tutto?",
+    "Chi presterebbe soldi senza mai farseli restituire?",
+    "Chi investirebbe tutto in una criptovaluta sconosciuta?",
+    "Chi comprerebbe qualcosa di inutile solo perché è in offerta?",
+    "Chi dividerebbe il conto al centesimo?",
+    "Chi diventerebbe milionario partendo da zero?",
+    "Chi spenderebbe una fortuna per un'auto e poi mangerebbe pasta in bianco tutto il mese?",
+    "Chi tornerebbe in negozio per un resto di 50 centesimi?",
+    "Chi aprirebbe un conto segreto per gli acquisti online?",
+    "Chi saluterebbe qualcuno che in realtà stava salutando un altro?",
+    "Chi cadrebbe davanti a tutti nel momento meno opportuno?",
+    "Chi chiamerebbe il partner con il nome dell'ex?",
+    "Chi spingerebbe una porta con scritto TIRARE davanti a tutti?",
+    "Chi si incastrerebbe da qualche parte e servirebbero i pompieri?",
+    "Chi riderebbe a un funerale?",
+    "Chi si dimenticherebbe il nome di una persona appena presentata?",
+    "Chi canterebbe a squarciagola in macchina con il finestrino aperto al semaforo?",
+    "Chi dimenticherebbe il microfono acceso in una videochiamata?",
+    "Chi andrebbe a una festa a tema sbagliando il tema?",
+    "Chi si presenterebbe a un appuntamento il giorno sbagliato?",
+    "Chi verrebbe beccato a parlare da solo per strada?",
+    "Chi ha più di 10.000 mail non lette?",
+    "Chi riuscirebbe a passare una giornata intera senza telefono?",
+    "Chi diventerebbe un hacker se fosse più bravo con il computer?",
+    "Chi chiederebbe all'intelligenza artificiale cosa mangiare per cena?",
+    "Chi ha il telefono con lo schermo rotto da più tempo?",
+    "Chi metterebbe like per sbaglio a una foto vecchia di 5 anni?",
+    "Chi usa la stessa password per tutto?",
+    "Chi passerebbe la notte a guardare video di gatti?",
+    "Chi registrerebbe una storia Instagram anche al proprio matrimonio?",
+    "Chi installerebbe una telecamera per spiare il proprio cane?",
+    "Chi resterebbe senza batteria nel momento peggiore?",
+    "Chi lascerebbe un commento polemico sotto il post di un giornale?",
+    "Chi si comprerebbe un robot aspirapolvere e gli darebbe un nome?",
+    "Chi passerebbe più ore a settimana sui videogiochi?",
+    "Chi avrebbe più app di incontri che app di lavoro?",
+    "Chi ha 47 schede del browser aperte in questo momento?"
+  ];
+
+  /* =========================================================
+     PACCHETTO "TRA DI NOI" — abitudini del gruppo o della coppia.
+     ========================================================= */
+  const NOI_QUESTIONS = [
+    "Chi si addormenta per primo sul divano?",
+    "Chi finisce sempre l'ultima fetta senza chiedere?",
+    "Chi ruba le coperte di notte?",
+    "Chi dice 'decidi tu' e poi boccia ogni proposta?",
+    "Chi ci mette più tempo a prepararsi per uscire?",
+    "Chi lascia i bicchieri sparsi per casa?",
+    "Chi cucina meglio il piatto della domenica?",
+    "Chi diventa più nervoso quando ha fame?",
+    "Chi guarda un episodio della serie di nascosto dagli altri?",
+    "Chi ha sempre freddo anche ad agosto?",
+    "Chi organizza le uscite del gruppo?",
+    "Chi arriva sempre in ritardo agli appuntamenti del gruppo?",
+    "Chi ricorda tutti i compleanni?",
+    "Chi scrive nel gruppo WhatsApp solo per mandare meme?",
+    "Chi si offre di guidare la sera?",
+    "Chi propone un ristorante e poi ordina sempre la stessa cosa?",
+    "Chi si lamenta della musica in macchina?",
+    "Chi fa più foto durante una serata insieme?",
+    "Chi fa da mediatore quando qualcuno litiga?",
+    "Chi è il più competitivo ai giochi da tavolo?",
+    "Chi bara a carte senza farsi scoprire?",
+    "Chi dimentica sempre le chiavi di casa?",
+    "Chi ha più vestiti nell'armadio?",
+    "Chi canta sotto la doccia a tutto volume?",
+    "Chi parla nel sonno?",
+    "Chi fa le pulizie solo quando arrivano ospiti?",
+    "Chi si commuove di più ai matrimoni?",
+    "Chi prenota le vacanze di gruppo all'ultimo minuto?",
+    "Chi tiene il telecomando e non lo molla?",
+    "Chi si dimentica di rispondere ai messaggi per giorni?",
+    "Chi porta sempre uno snack in borsa?",
+    "Chi ha più paura dei film horror?",
+    "Chi crolla per primo nei discorsi a tarda notte?",
+    "Chi propone sempre 'l'ultimo giro'?",
+    "Chi dorme di più nel weekend?",
+    "Chi conosce tutti i vicini di casa per nome?",
+    "Chi ricorda le battute di tutti i film visti insieme?",
+    "Chi è il fotografo ufficiale del gruppo?",
+    "Chi ha il gusto musicale più discutibile del gruppo?",
+    "Chi è il più bravo a fare regali?"
   ];
 
   /* =========================================================
@@ -207,6 +315,52 @@
     "Chi reggerebbe meno una settimana di astinenza?"
   ];
 
+  /* =========================================================
+     PACCHETTO EXTRA PICCANTE / +18 — ancora più esplicito.
+     ========================================================= */
+  const EXTRA_QUESTIONS = [
+    "Chi ha fatto la cosa più piccante in un posto dove non doveva?",
+    "Chi ha un video compromettente salvato da qualche parte?",
+    "Chi accetterebbe una notte con una celebrità anche se fidanzato/a?",
+    "Chi ha più contatti salvati con nomi in codice?",
+    "Chi conosce la posizione più strana del Kamasutra?",
+    "Chi è stato/a beccato/a in un momento intimo in vacanza?",
+    "Chi è finito/a a letto al primo appuntamento più volte?",
+    "Chi ha avuto storie con due persone dello stesso gruppo di amici?",
+    "Chi proverebbe un trio se ne avesse l'occasione?",
+    "Chi ha un giocattolo per adulti nascosto in un posto improbabile?",
+    "Chi ha fatto la telefonata più piccante della storia?",
+    "Chi ha fatto qualcosa di intimo in un camerino?",
+    "Chi farebbe la prima mossa nel modo più sfacciato?",
+    "Chi ha già pronta la playlist 'per l'occasione'?",
+    "Chi ha fatto la cosa più audace su un aereo o un treno?",
+    "Chi ha mandato una foto osé e se n'è pentito/a subito?",
+    "Chi si è fatto/a beccare dai genitori del partner?",
+    "Chi ha la fantasia più irrealizzabile?",
+    "Chi ha baciato qualcuno di questo gruppo (anche per gioco)?",
+    "Chi ha avuto una storia con il/la vicino/a di casa?",
+    "Chi girerebbe un video spinto se fosse pagato bene?",
+    "Chi ha lasciato il segno più evidente (morso, graffio) su qualcuno?",
+    "Chi ha fatto qualcosa di intimo in spiaggia?",
+    "Chi è uscito/a con qualcuno solo per far ingelosire l'ex?",
+    "Chi ha più storie di una notte tenute segrete?",
+    "Chi ha avuto un flirt con una persona famosa (anche poco)?",
+    "Chi ha detto la bugia più grossa per finire a letto con qualcuno?",
+    "Chi ha fatto qualcosa di piccante in ufficio?",
+    "Chi ha un tatuaggio in un punto che vedono in pochi?",
+    "Chi ha dimenticato qualcosa di intimo a casa di qualcuno?",
+    "Chi ha fatto più tardi a una festa solo per finire con qualcuno?",
+    "Chi ha usato le manette almeno una volta?",
+    "Chi ha la reputazione più pericolosa tra gli ex?",
+    "Chi ha fatto la cosa più piccante a una festa di compleanno?",
+    "Chi si è fatto/a scoprire per colpa di un succhiotto?",
+    "Chi ha avuto un appuntamento al buio finito molto bene?",
+    "Chi ha detto di no a una proposta e se n'è pentito/a?",
+    "Chi ha fatto un gesto romantico finito in modo molto piccante?",
+    "Chi ha più esperienza di tutti in questo gruppo?",
+    "Chi ha la confessione più scottante che stasera non dirà mai?"
+  ];
+
   /** Mescola l'array in place (Fisher-Yates) */
   function shuffle(arr){
     for (let i = arr.length - 1; i > 0; i--){
@@ -216,9 +370,15 @@
     return arr;
   }
 
-  let spicy = false;           // sezione attiva: false = classiche, true = Spicy / +18
-  let spicyConfirmed = false;  // conferma +18 chiesta una sola volta per sessione
-  const activeDeck = () => spicy ? SPICY_QUESTIONS : QUESTIONS;
+  const PACKS = {
+    classic: { deck: QUESTIONS,       adult: false, eyebrow: "Chi è più propenso a..." },
+    noi:     { deck: NOI_QUESTIONS,   adult: false, eyebrow: "👫 Tra di noi — Chi è più propenso a..." },
+    spicy:   { deck: SPICY_QUESTIONS, adult: true,  eyebrow: "🌶️ Spicy +18 — Chi è più propenso a..." },
+    extra:   { deck: EXTRA_QUESTIONS, adult: true,  eyebrow: "🔥 Extra piccante +18 — Chi è più propenso a..." }
+  };
+  let pack = "classic";        // pacchetto attivo
+  let adultConfirmed = false;  // conferma +18 chiesta una sola volta per sessione
+  const activeDeck = () => PACKS[pack].deck;
 
   let order = shuffle([...activeDeck()]);
   let index = 0;
@@ -230,23 +390,23 @@
   const voteBtn = document.getElementById("voteBtn");
   const packButtons = document.querySelectorAll(".pack-btn");
 
-  /* ---- Selettore pacchetto: Classiche / Spicy +18 ---- */
-  function setPack(wantSpicy){
-    if (wantSpicy === spicy) return;
-    if (wantSpicy && !spicyConfirmed){
+  /* ---- Selettore pacchetto: Classiche / Tra di noi / Spicy +18 / Extra piccante ---- */
+  function setPack(want){
+    if (want === pack) return;
+    if (PACKS[want].adult && !adultConfirmed){
       if (!confirm("🌶️ Pacchetto Spicy / +18\n\nDomande piccanti per adulti: giocatelo solo se tutti i presenti sono maggiorenni e d'accordo. Continuare?")) return;
-      spicyConfirmed = true;
+      adultConfirmed = true;
     }
-    spicy = wantSpicy;
-    document.body.classList.toggle("theme-orange", !spicy);
-    document.body.classList.toggle("theme-red", spicy);
-    packButtons.forEach(b => b.classList.toggle("active", (b.dataset.pack === "spicy") === spicy));
-    questionEyebrow.textContent = spicy ? "🌶️ Spicy +18 — Chi è più propenso a..." : "Chi è più propenso a...";
+    pack = want;
+    document.body.classList.toggle("theme-orange", !PACKS[pack].adult);
+    document.body.classList.toggle("theme-red", PACKS[pack].adult);
+    packButtons.forEach(b => b.classList.toggle("active", b.dataset.pack === pack));
+    questionEyebrow.textContent = PACKS[pack].eyebrow;
     order = shuffle([...activeDeck()]);
     index = 0;
     showQuestion();
   }
-  packButtons.forEach(b => b.addEventListener("click", () => setPack(b.dataset.pack === "spicy")));
+  packButtons.forEach(b => b.addEventListener("click", () => setPack(b.dataset.pack)));
 
   function showQuestion(){
     questionText.textContent = order[index];

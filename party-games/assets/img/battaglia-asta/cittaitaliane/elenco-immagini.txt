@@ -1,0 +1,23 @@
+Immagini attese in questa cartella per la categoria "Città Italiane" del gioco Battaglia all'Asta.
+Salva ogni foto con ESATTAMENTE questo nome (formato .jpg, meglio se quadrata):
+
+ - roma.jpg  (Roma)
+ - milano.jpg  (Milano)
+ - napoli.jpg  (Napoli)
+ - venezia.jpg  (Venezia)
+ - firenze.jpg  (Firenze)
+ - torino.jpg  (Torino)
+ - bologna.jpg  (Bologna)
+ - palermo.jpg  (Palermo)
+ - genova.jpg  (Genova)
+ - verona.jpg  (Verona)
+ - bari.jpg  (Bari)
+ - siena.jpg  (Siena)
+ - lecce.jpg  (Lecce)
+ - trieste.jpg  (Trieste)
+ - matera.jpg  (Matera)
+ - modena.jpg  (Modena)
+ - parma.jpg  (Parma)
+ - como.jpg  (Como)
+ - pisa.jpg  (Pisa)
+ - perugia.jpg  (Perugia)

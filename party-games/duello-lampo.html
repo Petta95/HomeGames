@@ -428,7 +428,10 @@
     memoria:     { label: "👀 Memoria" },
     simon:       { label: "🎵 Simon" },
     riflessi:    { label: "⚡ Riflessi" },
-    paroliere:   { label: "🔤 Paroliere" }
+    paroliere:   { label: "🔤 Paroliere" },
+    emoji:       { label: "🎬 Film dalle Emoji" },
+    proverbio:   { label: "📜 Completa il Proverbio" },
+    bandiera:    { label: "🚩 Bandiera Lampo" }
   };
 
   /* =========================================================
@@ -485,7 +488,37 @@
     { q: "Ha un ago ma non cuce, indica la strada ma non cammina. Cos'è?", a: "La bussola" },
     { q: "Si apre quando piove e si chiude quando smette, ma non è una finestra. Cos'è?", a: "L'ombrello" },
     { q: "Ha le corde ma non è un'altalena, si suona ma non è un campanello. Cos'è?", a: "La chitarra" },
-    { q: "È sempre davanti a te, ma non puoi vederlo. Cos'è?", a: "Il futuro" }
+    { q: "È sempre davanti a te, ma non puoi vederlo. Cos'è?", a: "Il futuro" },
+    { q: "Ha la barba ma non è un uomo, ha i denti ma non mangia. Cos'è?", a: "L'aglio" },
+    { q: "Più invecchia, più vale: lo trovi in cantina. Cos'è?", a: "Il vino" },
+    { q: "Cade dal cielo senza farsi male e d'inverno imbianca le città. Cos'è?", a: "La neve" },
+    { q: "Ha quattro ruote e tante mosche. Cos'è?", a: "Il camion della spazzatura" },
+    { q: "Più lo stringi, più ti scivola dalle mani. Cos'è?", a: "Il sapone" },
+    { q: "Ha gli occhi ma non vede, sta sottoterra e lo mangi fritto. Cos'è?", a: "La patata" },
+    { q: "Ha la coda ma non è un animale, vola ma non è un uccello. Cos'è?", a: "L'aquilone" },
+    { q: "Lo butti quando ti serve e lo tiri su quando non ti serve più. Cos'è?", a: "L'ancora" },
+    { q: "Puoi perderlo ma non ritrovarlo, tutti ne vorrebbero di più. Cos'è?", a: "Il tempo" },
+    { q: "Ha le squame ma non è un pesce, ha le ali ma non è un uccello, e sputa fuoco. Cos'è?", a: "Il drago" },
+    { q: "Ha il collo lungo e la testa piena di luce, ma solo di notte. Cos'è?", a: "Il lampione" },
+    { q: "Ha tre piedi ma non cammina, e regge la macchina fotografica. Cos'è?", a: "Il treppiede" },
+    { q: "Cresce all'ingiù, d'inverno, appeso alla grondaia. Cos'è?", a: "Il ghiacciolo" },
+    { q: "Ce l'hanno tutti, è al centro della pancia e non si può perdere. Cos'è?", a: "L'ombelico" },
+    { q: "Ha un buco al centro, gira gira e canta. Cos'è?", a: "Il disco in vinile" },
+    { q: "Ha la cresta ma non è un gallo, e si rompe sulla spiaggia. Cos'è?", a: "L'onda" },
+    { q: "Va in giro con la casa sulle spalle. Chi è?", a: "La lumaca" },
+    { q: "Nasce nell'acqua e nell'acqua muore. Cos'è?", a: "Il sale" },
+    { q: "Ha i raggi ma non è il sole. Cos'è?", a: "La ruota della bicicletta" },
+    { q: "Ha la lingua ma non parla, ha i lacci ma non è un regalo. Cos'è?", a: "La scarpa" },
+    { q: "Sta in tasca, ha i denti e apre le porte. Cos'è?", a: "La chiave" },
+    { q: "Più lo riempi, più diventa leggero e vola via. Cos'è?", a: "Il palloncino" },
+    { q: "Sta sul naso e ti fa vedere meglio. Cosa sono?", a: "Gli occhiali" },
+    { q: "Ha il cappello ma non la testa, e spunta nel bosco dopo la pioggia. Cos'è?", a: "Il fungo" },
+    { q: "Ha due ruote e non si stanca mai, ma se ti fermi cade. Cos'è?", a: "La bicicletta" },
+    { q: "Si mangia freddo e si scioglie al caldo: d'estate tutti lo vogliono. Cos'è?", a: "Il gelato" },
+    { q: "Ha tante pagine ma non è un libro: ogni giorno ne perde una. Cos'è?", a: "Il calendario" },
+    { q: "Ha un dente solo e mangia tutto il campo. Cos'è?", a: "L'aratro" },
+    { q: "Quando lo compri è nero, quando lo usi è rosso, quando lo butti è grigio. Cos'è?", a: "Il carbone" },
+    { q: "La trovi in mezzo al mare ma mai in mezzo al fiume. Cos'è?", a: "La lettera R" }
   ];
 
   const LOGICA = [
@@ -539,7 +572,37 @@
     { q: "Un orologio segna le 3:15. Che angolo formano le due lancette?", a: "7,5 gradi (la lancetta delle ore si è già spostata di un quarto d'ora)" },
     { q: "Hai 9 monete identiche, ma una è più pesante, e una bilancia a due piatti. Quante pesate servono, al minimo, per trovarla sicuramente?", a: "2 pesate (3 contro 3, poi 1 contro 1)" },
     { q: "Quante volte in 24 ore le lancette delle ore e dei minuti si sovrappongono?", a: "22 volte" },
-    { q: "Una bottiglia con il tappo costa 11 €. La bottiglia costa 10 € più del tappo. Quanto costa il tappo?", a: "50 centesimi (la bottiglia costa 10,50 €)" }
+    { q: "Una bottiglia con il tappo costa 11 €. La bottiglia costa 10 € più del tappo. Quanto costa il tappo?", a: "50 centesimi (la bottiglia costa 10,50 €)" },
+    { q: "Quanti compleanni ha in media una persona?", a: "Uno solo: gli altri sono anniversari del compleanno!" },
+    { q: "Un uomo abita al 10° piano. La mattina scende in ascensore fino al piano terra; la sera sale in ascensore fino al 7° e poi fa le scale, tranne quando piove. Perché?", a: "È basso: arriva solo al pulsante del 7°. Quando piove usa l'ombrello per premere il 10°." },
+    { q: "Quale parola è sempre scritta sbagliata nel dizionario?", a: "«Sbagliata»" },
+    { q: "Stai guidando un autobus con 10 persone: alla prima fermata ne scendono 3 e salgono 5, alla seconda ne scendono 6. Quanti anni ha l'autista?", a: "Quelli che hai tu: l'autista sei tu!" },
+    { q: "Su un ramo ci sono 10 uccelli. Un cacciatore ne colpisce uno. Quanti ne restano sul ramo?", a: "Nessuno: gli altri volano via al primo sparo." },
+    { q: "Scrivendo tutti i numeri da 1 a 100, quante volte scrivi la cifra 1?", a: "21 volte" },
+    { q: "Una ragazza ha tanti fratelli quante sorelle, ma ogni fratello ha la metà dei fratelli rispetto alle sorelle. Quanti figli ci sono in famiglia?", a: "7: 4 femmine e 3 maschi" },
+    { q: "Se ieri fosse domani, oggi sarebbe venerdì. Che giorno è oggi?", a: "Domenica" },
+    { q: "Compri un cavallo a 60 €, lo vendi a 70 €, lo ricompri a 80 € e lo rivendi a 90 €. Quanto hai guadagnato?", a: "20 €" },
+    { q: "Hai una brocca da 3 litri e una da 5 litri. Come ottieni esattamente 4 litri?", a: "Riempi la 5 e versala nella 3 (restano 2 litri). Svuota la 3, versaci i 2 litri, riempi di nuovo la 5 e rabbocca la 3: nella 5 restano 4 litri." },
+    { q: "Quanti quadrati (di tutte le dimensioni) ci sono su una scacchiera 8×8?", a: "204" },
+    { q: "Tre amici pagano una stanza 30 €. Il gestore restituisce 5 €: il facchino ne tiene 2 e ridà 1 € a testa. Hanno pagato 9 € a testa (27) + 2 del facchino = 29. Dov'è l'euro mancante?", a: "Non manca niente: 27 = 25 alla stanza + 2 al facchino. Sommare i 2 ai 27 è l'errore." },
+    { q: "Quante volte riesci a piegare a metà un normale foglio A4 a mano?", a: "Circa 7 volte" },
+    { q: "Una coppia ha due figli e almeno uno è maschio. Che probabilità c'è che siano entrambi maschi?", a: "1 su 3" },
+    { q: "Tre scatole hanno etichette tutte sbagliate: «Mele», «Arance», «Miste». Puoi pescare un frutto da una sola scatola: da quale peschi per sistemare tutto?", a: "Da quella con scritto «Miste»: il frutto che esce dice cosa contiene davvero, e le altre due si deducono." },
+    { q: "Devi portare oltre il fiume un lupo, una capra e un cavolo con una barca che porta solo te e una cosa. Cosa porti al primo viaggio?", a: "La capra" },
+    { q: "Una scaletta con i pioli ogni 30 cm è appesa a una barca e l'ultimo piolo tocca l'acqua. La marea sale di 15 cm all'ora: dopo 4 ore quanti pioli sono sott'acqua?", a: "Sempre uno: la barca sale con la marea!" },
+    { q: "Quanto fa 2 + 2 × 2?", a: "6 (prima la moltiplicazione)" },
+    { q: "Se una gallina e mezza fa un uovo e mezzo in un giorno e mezzo, quante uova fa una gallina in un giorno?", a: "2/3 di uovo" },
+    { q: "Come lanci un uovo crudo su un pavimento di cemento senza romperlo?", a: "Facile: il pavimento di cemento non si rompe!" },
+    { q: "Un uomo dice: «In questo momento sto mentendo». Dice il vero o il falso?", a: "Nessuna delle due: è il paradosso del mentitore." },
+    { q: "Se 1 = 5, 2 = 25, 3 = 125 e 4 = 625, quanto fa 5?", a: "1, perché 1 = 5!" },
+    { q: "In un parcheggio i posti sono numerati 16, 06, 68, 88, ?, 98. Che numero c'è sotto l'auto?", a: "87: guardate i numeri capovolti (86, 87, 88, 89, 90, 91)." },
+    { q: "Un chilo di patate è fatto al 99% d'acqua. Le lasci seccare finché l'acqua è il 98%. Quanto pesano ora?", a: "Mezzo chilo" },
+    { q: "Di notte, fari spenti, niente luna e lampioni rotti: un camionista vestito di nero vede un gatto nero attraversare e frena in tempo. Come ha fatto?", a: "Era giorno!" },
+    { q: "Si porta in tavola, si taglia, ma non si mangia. Cos'è?", a: "Il mazzo di carte" },
+    { q: "Quante volte al giorno un orologio fermo segna l'ora giusta?", a: "Due volte" },
+    { q: "Al buio hai 10 calzini neri e 10 bianchi. Quanti ne devi prendere per essere sicuro di avere un paio dello stesso colore?", a: "3" },
+    { q: "Stessi calzini: quanti ne devi prendere per essere sicuro di avere due calzini neri?", a: "12" },
+    { q: "Una moneta esce testa 9 volte di fila. Che probabilità c'è che al 10° lancio esca testa?", a: "50%: la moneta non ha memoria." }
   ];
 
   const SEQUENZE = [
@@ -629,7 +692,8 @@
     "ARCOBALENO", "LAMPADINA", "CAPPUCCINO", "ASCENSORE", "ZANZARA", "PAPPAGALLO", "OROLOGIO", "CONCHIGLIA",
     "SCOIATTOLO", "MARGHERITA", "CAMPANILE", "BICICLETTA", "SPUMANTE", "LAVAGNA", "TRAMONTO", "UNIVERSO",
     "PRIMAVERA", "FORMAGGIO", "SEMAFORO",
-    "CASTELLO", "PANCHINA", "CARAMELLA", "LAMPONE", "TEMPESTA", "CANGURO", "FORMICA", "SPECCHIO", "ARANCIA", "CUSCINO", "LUMACA", "FINESTRA", "CAMMELLO", "ANGURIA", "POLTRONA", "PIPISTRELLO", "MAGLIONE", "CROCIERA", "PATENTE", "FARMACIA"
+    "CASTELLO", "PANCHINA", "CARAMELLA", "LAMPONE", "TEMPESTA", "CANGURO", "FORMICA", "SPECCHIO", "ARANCIA", "CUSCINO", "LUMACA", "FINESTRA", "CAMMELLO", "ANGURIA", "POLTRONA", "PIPISTRELLO", "MAGLIONE", "CROCIERA", "PATENTE", "FARMACIA",
+    "CANDELA", "SCRIVANIA", "FORCHETTA", "COLTELLO", "CUCCHIAIO", "PALLONCINO", "AEROPLANO", "TRATTORE", "CAVALLETTA", "LIBELLULA", "CARCIOFO", "MELANZANA", "PEPERONE", "ZUCCHINA", "CETRIOLO", "ALBICOCCA", "CILIEGIA", "TORTELLINI", "LASAGNA", "SPAGHETTI", "GELATERIA", "PIZZERIA", "OSPEDALE", "STAZIONE", "AEROPORTO", "SPIAGGIA", "OMBRELLONE", "ASCIUGAMANO", "CAPPELLO", "CRAVATTA", "PANTALONI", "CINTURA", "ORECCHINO", "BRACCIALE", "COLLANA", "PROFUMO", "TELEVISORE", "MICROFONO", "CHITARRA", "VIOLINO"
   ];
 
   const INTRUSI = [
@@ -724,7 +788,131 @@
     { q: "In che anno è stato inventato il World Wide Web?", a: 1989, unit: "" },
     { q: "Quanti Oscar ha vinto il film Titanic?", a: 11, unit: "Oscar" },
     { q: "Quante calorie hanno 100 g di Nutella (circa)?", a: 539, unit: "kcal" },
-    { q: "Quanti secondi ci sono in un giorno?", a: 86400, unit: "secondi" }
+    { q: "Quanti secondi ci sono in un giorno?", a: 86400, unit: "secondi" },
+    { q: "Quanti metri è alto il Colosseo?", a: 48, unit: "m" },
+    { q: "In che anno è stata fondata Google?", a: 1998, unit: "" },
+    { q: "Quanti milioni di abitanti ha l'Italia (circa)?", a: 59, unit: "milioni" },
+    { q: "A quanti km/h può correre un ghepardo?", a: 110, unit: "km/h" },
+    { q: "Quanti metri è alto il Duomo di Milano fino alla Madonnina?", a: 108, unit: "m" },
+    { q: "In che anno è stato fondato il Milan?", a: 1899, unit: "" },
+    { q: "Quanti anni è durata la Guerra dei Cent'anni?", a: 116, unit: "anni" },
+    { q: "In che anno è nato Leonardo da Vinci?", a: 1452, unit: "" },
+    { q: "A quanti km/h viaggia il Frecciarossa alla massima velocità commerciale?", a: 300, unit: "km/h" },
+    { q: "Quante sono le province e città metropolitane italiane?", a: 107, unit: "" },
+    { q: "Quanto pesa una balenottera azzurra adulta (circa)?", a: 150000, unit: "kg" },
+    { q: "Quanti km è lunga la costa italiana (circa)?", a: 7500, unit: "km" },
+    { q: "In che anno Marco Polo partì per la Cina?", a: 1271, unit: "" },
+    { q: "Quanti metri è alto l'Empire State Building (con l'antenna)?", a: 443, unit: "m" },
+    { q: "Qual è il record di velocità su terra di un'auto?", a: 1228, unit: "km/h" },
+    { q: "Quante lettere ha l'alfabeto italiano?", a: 21, unit: "lettere" },
+    { q: "Quanti anni visse Michelangelo?", a: 88, unit: "anni" },
+    { q: "Quanti metri è alta la Statua della Libertà, dalla base del piedistallo alla torcia?", a: 93, unit: "m" },
+    { q: "Quante ossa ci sono in una mano umana?", a: 27, unit: "ossa" },
+    { q: "In che anno l'Italia ha vinto il suo primo Mondiale di calcio?", a: 1934, unit: "" },
+    { q: "Quanti km di diametro ha la Luna?", a: 3474, unit: "km" },
+    { q: "Quanti minuti dura il film Titanic?", a: 195, unit: "minuti" },
+    { q: "Quanti metri è alta la torre del Big Ben?", a: 96, unit: "m" },
+    { q: "Quanti km ci sono in linea d'aria tra Roma e New York?", a: 6900, unit: "km" },
+    { q: "In che anno è morto Michael Jackson?", a: 2009, unit: "" },
+    { q: "Quanti piani ha il Burj Khalifa?", a: 163, unit: "piani" },
+    { q: "Quanti km è lungo il Canale di Suez?", a: 193, unit: "km" },
+    { q: "Quante specie di pinguini esistono?", a: 18, unit: "specie" },
+    { q: "Quanti grammi pesa una pallina da tennis?", a: 58, unit: "g" },
+    { q: "Quanti abitanti ha la Città del Vaticano (circa)?", a: 800, unit: "abitanti" }
+  ];
+
+  /* ---- Nuovi tipi: film dalle emoji, proverbi da completare, bandiere lampo ---- */
+  const EMOJI_FILM = [
+    { q: "🦁👑", a: "Il Re Leone" },
+    { q: "🧊🚢💔", a: "Titanic" },
+    { q: "🦖🏝️🧬", a: "Jurassic Park" },
+    { q: "👻🚫📞", a: "Ghostbusters" },
+    { q: "🕷️🧑‍🎓🏙️", a: "Spider-Man" },
+    { q: "💍🌋🧙‍♂️", a: "Il Signore degli Anelli" },
+    { q: "🐠🔍🌊", a: "Alla ricerca di Nemo" },
+    { q: "⭐⚔️🌌", a: "Star Wars" },
+    { q: "🦈🏖️😱", a: "Lo squalo" },
+    { q: "🍫🏭🎫", a: "La fabbrica di cioccolato" },
+    { q: "👽📞🏠", a: "E.T. l'extra-terrestre" },
+    { q: "🏠🎈👴", a: "Up" },
+    { q: "🧸🤠🚀", a: "Toy Story" },
+    { q: "❄️👸⛄", a: "Frozen" },
+    { q: "🐭👨‍🍳🍲", a: "Ratatouille" },
+    { q: "🥊🏃‍♂️🇺🇸", a: "Rocky" },
+    { q: "🦍🏙️✈️", a: "King Kong" },
+    { q: "🚗⚡⏰", a: "Ritorno al futuro" },
+    { q: "💊🕶️🐇", a: "Matrix" },
+    { q: "🧜‍♀️🐚🦀", a: "La sirenetta" },
+    { q: "🐉🧒🔥", a: "Dragon Trainer" },
+    { q: "🏴‍☠️⚓💀", a: "Pirati dei Caraibi" },
+    { q: "🦇🃏🌃", a: "Il cavaliere oscuro" },
+    { q: "🍎👸🪞", a: "Biancaneve" },
+    { q: "🧪👨‍🏫💵", a: "Breaking Bad" },
+    { q: "🐼🥋🍜", a: "Kung Fu Panda" },
+    { q: "👦🏠🎄🕵️", a: "Mamma ho perso l'aereo" },
+    { q: "🚀🌽⏳", a: "Interstellar" }
+  ];
+  const PROVERBI = [
+    { q: "Chi dorme…", a: "…non piglia pesci" },
+    { q: "Chi va piano…", a: "…va sano e va lontano" },
+    { q: "Tra il dire e il fare…", a: "…c'è di mezzo il mare" },
+    { q: "Chi trova un amico…", a: "…trova un tesoro" },
+    { q: "L'erba del vicino…", a: "…è sempre più verde" },
+    { q: "Non tutto il male…", a: "…vien per nuocere" },
+    { q: "Chi semina vento…", a: "…raccoglie tempesta" },
+    { q: "Can che abbaia…", a: "…non morde" },
+    { q: "Chi la fa…", a: "…l'aspetti" },
+    { q: "Rosso di sera…", a: "…bel tempo si spera" },
+    { q: "Una mela al giorno…", a: "…toglie il medico di torno" },
+    { q: "Il mattino…", a: "…ha l'oro in bocca" },
+    { q: "Chi fa da sé…", a: "…fa per tre" },
+    { q: "Meglio un uovo oggi…", a: "…che una gallina domani" },
+    { q: "Paese che vai…", a: "…usanza che trovi" },
+    { q: "Chi tace…", a: "…acconsente" },
+    { q: "Ride bene…", a: "…chi ride ultimo" },
+    { q: "Occhio non vede…", a: "…cuore non duole" },
+    { q: "Batti il ferro…", a: "…finché è caldo" },
+    { q: "A caval donato…", a: "…non si guarda in bocca" },
+    { q: "Chi rompe…", a: "…paga e i cocci sono suoi" },
+    { q: "Natale con i tuoi…", a: "…Pasqua con chi vuoi" },
+    { q: "L'abito non fa…", a: "…il monaco" },
+    { q: "Moglie e buoi…", a: "…dei paesi tuoi" },
+    { q: "Gallina vecchia…", a: "…fa buon brodo" },
+    { q: "Chi di spada ferisce…", a: "…di spada perisce" },
+    { q: "Non c'è due…", a: "…senza tre" },
+    { q: "Quando il gatto non c'è…", a: "…i topi ballano" }
+  ];
+  const BANDIERE = [
+    { name: "Giappone", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Flag_of_Japan.svg/500px-Flag_of_Japan.svg.png" },
+    { name: "Brasile", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Flag_of_Brazil.svg/500px-Flag_of_Brazil.svg.png" },
+    { name: "Canada", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Flag_of_Canada.svg/500px-Flag_of_Canada.svg.png" },
+    { name: "Svizzera", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Flag_of_Switzerland.svg/500px-Flag_of_Switzerland.svg.png" },
+    { name: "Grecia", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Flag_of_Greece.svg/500px-Flag_of_Greece.svg.png" },
+    { name: "Svezia", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Flag_of_Sweden.svg/500px-Flag_of_Sweden.svg.png" },
+    { name: "Norvegia", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Flag_of_Norway.svg/500px-Flag_of_Norway.svg.png" },
+    { name: "Portogallo", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Flag_of_Portugal.svg/500px-Flag_of_Portugal.svg.png" },
+    { name: "Messico", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Flag_of_Mexico.svg/500px-Flag_of_Mexico.svg.png" },
+    { name: "Argentina", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_Argentina.svg/500px-Flag_of_Argentina.svg.png" },
+    { name: "Turchia", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/500px-Flag_of_Turkey.svg.png" },
+    { name: "Corea del Sud", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Flag_of_South_Korea.svg/500px-Flag_of_South_Korea.svg.png" },
+    { name: "India", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Flag_of_India.svg/500px-Flag_of_India.svg.png" },
+    { name: "Sudafrica", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Flag_of_South_Africa.svg/500px-Flag_of_South_Africa.svg.png" },
+    { name: "Kenya", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Flag_of_Kenya.svg/500px-Flag_of_Kenya.svg.png" },
+    { name: "Giamaica", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/Flag_of_Jamaica.svg/500px-Flag_of_Jamaica.svg.png" },
+    { name: "Nepal", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Flag_of_Nepal.svg/500px-Flag_of_Nepal.svg.png" },
+    { name: "Libano", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Flag_of_Lebanon.svg/500px-Flag_of_Lebanon.svg.png" },
+    { name: "Cipro", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Flag_of_Cyprus.svg/500px-Flag_of_Cyprus.svg.png" },
+    { name: "Israele", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Flag_of_Israel.svg/500px-Flag_of_Israel.svg.png" },
+    { name: "Australia", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Flag_of_Australia.svg/500px-Flag_of_Australia.svg.png" },
+    { name: "Nuova Zelanda", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Flag_of_New_Zealand.svg/500px-Flag_of_New_Zealand.svg.png" },
+    { name: "Cile", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Flag_of_Chile.svg/500px-Flag_of_Chile.svg.png" },
+    { name: "Irlanda", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Flag_of_Ireland.svg/500px-Flag_of_Ireland.svg.png" },
+    { name: "Belgio", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/Flag_of_Belgium.svg/500px-Flag_of_Belgium.svg.png" },
+    { name: "Austria", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Flag_of_Austria.svg/500px-Flag_of_Austria.svg.png" },
+    { name: "Ucraina", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Flag_of_Ukraine.svg/500px-Flag_of_Ukraine.svg.png" },
+    { name: "Vietnam", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/500px-Flag_of_Vietnam.svg.png" },
+    { name: "Cuba", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Flag_of_Cuba.svg/500px-Flag_of_Cuba.svg.png" },
+    { name: "Croazia", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Flag_of_Croatia.svg/500px-Flag_of_Croatia.svg.png" }
   ];
 
   const MEMO_POOL = ["🍎","🚗","🎸","🐶","⚽","🌵","🍕","📱","🎩","🐙","🚀","🍩","🔑","🌈","🦁","🎈","☂️","🧲","🍌","🐢",
@@ -877,6 +1065,9 @@
     add("elenco", ELENCHI);
     add("intruso", INTRUSI);
     add("stima", STIME);
+    add("emoji", EMOJI_FILM);
+    add("proverbio", PROVERBI);
+    add("bandiera", BANDIERE);
     if (enabledTypes.has("anagramma")) ANAGRAMMI.forEach(w => cards.push({ type: "anagramma", word: w }));
     Object.entries(GENERATED_COPIES).forEach(([type, n]) => {
       if (enabledTypes.has(type)) for (let i = 0; i < n; i++) cards.push({ type });
@@ -1079,6 +1270,31 @@
      RENDERER DEI TIPI DI SFIDA
      ========================================================= */
   const RENDERERS = {
+    /* ---- Nuovi tipi ---- */
+    emoji(){
+      promptEl.textContent = card.q;
+      promptEl.classList.add("big");
+      promptEl.style.fontSize = "clamp(2.6rem, 9vw, 4.5rem)";
+      cleanupFns.push(() => { promptEl.style.fontSize = ""; });
+      hintEl.textContent = "Quale film (o serie) raccontano queste emoji? Chi lo dice per primo vince.";
+      setupTimer(30);
+      setSolution(card.a);
+    },
+    proverbio(){
+      promptEl.textContent = card.q;
+      promptEl.classList.add("big");
+      hintEl.textContent = "Completate il proverbio: chi lo finisce per primo, parola per parola, prende il punto.";
+      setupTimer(15);
+      setSolution(card.a);
+    },
+    bandiera(){
+      promptEl.textContent = "Di che Paese è questa bandiera?";
+      widget.innerHTML = `<img src="${card.img}" alt="Bandiera" style="display:block;margin:6px auto 0;max-width:min(360px,80%);max-height:220px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.4);background:#fff">`;
+      hintEl.textContent = "Chi lo dice per primo vince: avete 10 secondi!";
+      setupTimer(10);
+      setSolution(card.name);
+    },
+
     /* ---- Sfide a voce con soluzione ---- */
     indovinello(){
       promptEl.textContent = card.q;

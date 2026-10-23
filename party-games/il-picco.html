@@ -312,7 +312,7 @@
     <div class="modal-title">📖 Come si Gioca</div>
     <p class="modal-note">Gioco cooperativo: niente squadre, niente punti. Tutto il gruppo lavora insieme per indovinare "il Picco".</p>
     <ol>
-      <li><strong>Un soggetto a schermo.</strong> Viene mostrata una celebrità o un artista/band con una sfida: trovare il film con il voto IMDb più alto, oppure la canzone più ascoltata su Spotify.</li>
+      <li><strong>Un soggetto a schermo.</strong> Viene mostrata una celebrità o un artista/band con una sfida: trovare il film con il voto IMDb più alto, la canzone più ascoltata su Spotify oppure, per una serie TV, l'episodio con il voto IMDb più alto (vale anche il numero, es. "5x14").</li>
       <li>Il gruppo grida ad alta voce un titolo. Petta lo digita nel campo in basso e preme <strong>Invio</strong> — non serve scrivere il titolo perfetto, piccoli errori di battitura (1-2 lettere) vanno benissimo.</li>
       <li>Se il titolo è valido ma <strong>non</strong> è il record, la riga si illumina di <strong>giallo/arancione</strong> con il punteggio reale: buon tentativo, si continua a provare.</li>
       <li>Se il titolo indovinato <strong>è il record assoluto</strong>, la riga si illumina di <strong>verde</strong>, parte la celebrazione e compare il badge <strong>"RECORD RAGGIUNTO!"</strong>.</li>
@@ -371,7 +371,9 @@
      DATABASE SOGGETTI — ogni voce ha il titolo "Picco" (record
      assoluto reale) e 4 titoli famosi alternativi con il loro
      punteggio reale, usati per riconoscere anche i tentativi
-     validi ma non vincenti. I punteggi Spotify sono stime
+     validi ma non vincenti. Tipi: "imdb" (film), "spotify"
+     (canzoni) e "serie" (episodi, con foto del protagonista).
+     I voti degli episodi sono approssimativi. I punteggi Spotify sono stime
      approssimative di stream totali (in miliardi).
      ========================================================= */
   const SUBJECTS = [
@@ -1526,6 +1528,654 @@
         { title: "One Call Away", score: 1.1, aliases: ["one call away"] },
         { title: "Light Switch", score: 0.6, aliases: ["light switch"] }
       ]
+    },
+    {
+      name: "Denis Villeneuve",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5a/DVilleneuveRFH121024_%2812_of_23%29_%2854061976489%29_%28cropped%29.jpg/500px-DVilleneuveRFH121024_%2812_of_23%29_%2854061976489%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Dune: Parte Due", peakScore: 8.5, peakAliases: ["dune parte due", "dune part two", "dune 2"],
+      others: [
+        { title: "La donna che canta (Incendies)", score: 8.3, aliases: ["incendies", "la donna che canta"] },
+        { title: "Prisoners", score: 8.1, aliases: ["prisoners"] },
+        { title: "Dune", score: 8.0, aliases: ["dune"] },
+        { title: "Blade Runner 2049", score: 8.0, aliases: ["blade runner 2049", "blade runner"] }
+      ]
+    },
+    {
+      name: "Matthew McConaughey",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Matthew_McConaughey_at_the_2025_Toronto_Film_Festival_%283x4_cropped%29.jpg/500px-Matthew_McConaughey_at_the_2025_Toronto_Film_Festival_%283x4_cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Interstellar", peakScore: 8.7, peakAliases: ["interstellar"],
+      others: [
+        { title: "The Wolf of Wall Street", score: 8.2, aliases: ["wolf of wall street", "il lupo di wall street"] },
+        { title: "Dallas Buyers Club", score: 8.0, aliases: ["dallas buyers club"] },
+        { title: "The Gentlemen", score: 7.8, aliases: ["the gentlemen", "gentlemen"] },
+        { title: "Mud", score: 7.4, aliases: ["mud"] }
+      ]
+    },
+    {
+      name: "Russell Crowe",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Russell_Crowe_Venice_2026.jpg/500px-Russell_Crowe_Venice_2026.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Il gladiatore", peakScore: 8.5, peakAliases: ["gladiator", "il gladiatore"],
+      others: [
+        { title: "A Beautiful Mind", score: 8.2, aliases: ["a beautiful mind"] },
+        { title: "L.A. Confidential", score: 8.2, aliases: ["la confidential", "l.a. confidential"] },
+        { title: "Cinderella Man", score: 8.0, aliases: ["cinderella man"] },
+        { title: "Insider - Dietro la verità", score: 7.8, aliases: ["the insider", "insider"] }
+      ]
+    },
+    {
+      name: "Jim Carrey",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Jim_Carrey_2008.jpg/500px-Jim_Carrey_2008.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Se mi lasci ti cancello", peakScore: 8.3, peakAliases: ["eternal sunshine", "se mi lasci ti cancello", "eternal sunshine of the spotless mind"],
+      others: [
+        { title: "The Truman Show", score: 8.2, aliases: ["truman show", "the truman show"] },
+        { title: "Scemo & più scemo", score: 7.3, aliases: ["dumb and dumber", "scemo e piu scemo"] },
+        { title: "The Mask", score: 6.9, aliases: ["the mask", "mask"] },
+        { title: "Ace Ventura", score: 6.9, aliases: ["ace ventura"] }
+      ]
+    },
+    {
+      name: "Ralph Fiennes",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/ConclaveBFILFF101024_%2816_of_44%29_%2854062064271%29_%28cropped%29.jpg/500px-ConclaveBFILFF101024_%2816_of_44%29_%2854062064271%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Schindler's List", peakScore: 9.0, peakAliases: ["schindlers list", "schindler's list"],
+      others: [
+        { title: "Grand Budapest Hotel", score: 8.1, aliases: ["grand budapest hotel", "the grand budapest hotel"] },
+        { title: "Harry Potter e i Doni della Morte - Parte 2", score: 8.1, aliases: ["doni della morte", "deathly hallows", "harry potter"] },
+        { title: "Skyfall", score: 7.8, aliases: ["skyfall"] },
+        { title: "Il paziente inglese", score: 7.4, aliases: ["il paziente inglese", "the english patient"] }
+      ]
+    },
+    {
+      name: "Liam Neeson",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Liam_Neeson_Deauville_2012_2.jpg/500px-Liam_Neeson_Deauville_2012_2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Schindler's List", peakScore: 9.0, peakAliases: ["schindlers list", "schindler's list"],
+      others: [
+        { title: "Batman Begins", score: 8.2, aliases: ["batman begins"] },
+        { title: "Io vi troverò (Taken)", score: 7.8, aliases: ["taken", "io vi trovero"] },
+        { title: "Love Actually", score: 7.6, aliases: ["love actually"] },
+        { title: "Star Wars: La minaccia fantasma", score: 6.5, aliases: ["la minaccia fantasma", "phantom menace", "star wars"] }
+      ]
+    },
+    {
+      name: "Jodie Foster",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Jodie_Foster_Taxi_Driver_Tribeca_Festival_2026-20_%28cropped%29.jpg/500px-Jodie_Foster_Taxi_Driver_Tribeca_Festival_2026-20_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Il silenzio degli innocenti", peakScore: 8.6, peakAliases: ["silenzio degli innocenti", "silence of the lambs"],
+      others: [
+        { title: "Taxi Driver", score: 8.2, aliases: ["taxi driver"] },
+        { title: "Inside Man", score: 7.6, aliases: ["inside man"] },
+        { title: "Contact", score: 7.5, aliases: ["contact"] },
+        { title: "Panic Room", score: 6.8, aliases: ["panic room"] }
+      ]
+    },
+    {
+      name: "Clint Eastwood",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Clint_Eastwood_visits_MCB_Camp_Pendleton_%281%29_%28cropped%29.jpg/500px-Clint_Eastwood_visits_MCB_Camp_Pendleton_%281%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Il buono, il brutto, il cattivo", peakScore: 8.8, peakAliases: ["il buono il brutto il cattivo", "the good the bad and the ugly"],
+      others: [
+        { title: "Gli spietati", score: 8.2, aliases: ["gli spietati", "unforgiven"] },
+        { title: "Per qualche dollaro in più", score: 8.2, aliases: ["per qualche dollaro in piu", "for a few dollars more"] },
+        { title: "Gran Torino", score: 8.1, aliases: ["gran torino"] },
+        { title: "Million Dollar Baby", score: 8.1, aliases: ["million dollar baby"] }
+      ]
+    },
+    {
+      name: "Mel Gibson",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Mel_Gibson_Cannes_2016_2.jpg/500px-Mel_Gibson_Cannes_2016_2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Braveheart", peakScore: 8.3, peakAliases: ["braveheart"],
+      others: [
+        { title: "La battaglia di Hacksaw Ridge", score: 8.1, aliases: ["hacksaw ridge"] },
+        { title: "Apocalypto", score: 7.8, aliases: ["apocalypto"] },
+        { title: "Arma letale", score: 7.6, aliases: ["arma letale", "lethal weapon"] },
+        { title: "Interceptor - Il guerriero della strada", score: 7.6, aliases: ["mad max 2", "interceptor", "the road warrior"] }
+      ]
+    },
+    {
+      name: "Hayao Miyazaki",
+      type: "imdb",
+      image: "https://upload.wikimedia.org/wikipedia/commons/f/ff/HayaoMiyazakiCCJuly09.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      peakTitle: "La città incantata", peakScore: 8.6, peakAliases: ["la citta incantata", "spirited away"],
+      others: [
+        { title: "Principessa Mononoke", score: 8.3, aliases: ["principessa mononoke", "mononoke"] },
+        { title: "Il castello errante di Howl", score: 8.2, aliases: ["howl", "il castello errante di howl"] },
+        { title: "Il mio vicino Totoro", score: 8.1, aliases: ["totoro", "il mio vicino totoro"] },
+        { title: "Nausicaä della Valle del vento", score: 8.0, aliases: ["nausicaa"] }
+      ]
+    },
+    {
+      name: "James Cameron",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/James_Cameron_at_53rd_Saturn_Awards_2026-01_%28cropped%29.jpg/500px-James_Cameron_at_53rd_Saturn_Awards_2026-01_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Terminator 2 - Il giorno del giudizio", peakScore: 8.6, peakAliases: ["terminator 2", "t2"],
+      others: [
+        { title: "Aliens - Scontro finale", score: 8.4, aliases: ["aliens", "aliens scontro finale"] },
+        { title: "Terminator", score: 8.1, aliases: ["terminator", "the terminator"] },
+        { title: "Titanic", score: 7.9, aliases: ["titanic"] },
+        { title: "Avatar", score: 7.9, aliases: ["avatar"] }
+      ]
+    },
+    {
+      name: "David Fincher",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/TheKillerBFILFF051023_%288_of_22%29_%2853255176376%29_%28cropped2%29.jpg/500px-TheKillerBFILFF051023_%288_of_22%29_%2853255176376%29_%28cropped2%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Fight Club", peakScore: 8.8, peakAliases: ["fight club"],
+      others: [
+        { title: "Seven", score: 8.6, aliases: ["seven", "se7en"] },
+        { title: "L'amore bugiardo - Gone Girl", score: 8.1, aliases: ["gone girl", "l'amore bugiardo"] },
+        { title: "The Social Network", score: 7.8, aliases: ["social network", "the social network"] },
+        { title: "Zodiac", score: 7.7, aliases: ["zodiac"] }
+      ]
+    },
+    {
+      name: "Sergio Leone",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Sergio_Leone_1975.jpg/500px-Sergio_Leone_1975.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Il buono, il brutto, il cattivo", peakScore: 8.8, peakAliases: ["il buono il brutto il cattivo", "the good the bad and the ugly"],
+      others: [
+        { title: "C'era una volta il West", score: 8.5, aliases: ["c'era una volta il west", "once upon a time in the west"] },
+        { title: "C'era una volta in America", score: 8.3, aliases: ["c'era una volta in america", "once upon a time in america"] },
+        { title: "Per qualche dollaro in più", score: 8.2, aliases: ["per qualche dollaro in piu"] },
+        { title: "Per un pugno di dollari", score: 7.9, aliases: ["per un pugno di dollari", "a fistful of dollars"] }
+      ]
+    },
+    {
+      name: "Giuseppe Tornatore",
+      type: "imdb",
+      image: "https://upload.wikimedia.org/wikipedia/commons/4/4a/Giuseppe_Tornatore.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      peakTitle: "Nuovo Cinema Paradiso", peakScore: 8.5, peakAliases: ["nuovo cinema paradiso", "cinema paradiso"],
+      others: [
+        { title: "La leggenda del pianista sull'oceano", score: 8.0, aliases: ["la leggenda del pianista", "pianista sull'oceano"] },
+        { title: "La migliore offerta", score: 7.8, aliases: ["la migliore offerta", "the best offer"] },
+        { title: "Malèna", score: 7.5, aliases: ["malena"] },
+        { title: "Baarìa", score: 7.0, aliases: ["baaria"] }
+      ]
+    },
+    {
+      name: "Keira Knightley",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Knightley_Bafta_2015_07.png/500px-Knightley_Bafta_2015_07.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Pirati dei Caraibi - La maledizione della prima luna", peakScore: 8.1, peakAliases: ["pirati dei caraibi", "la maledizione della prima luna", "pirates of the caribbean"],
+      others: [
+        { title: "The Imitation Game", score: 8.0, aliases: ["imitation game", "the imitation game"] },
+        { title: "Orgoglio e pregiudizio", score: 7.8, aliases: ["orgoglio e pregiudizio", "pride and prejudice"] },
+        { title: "Espiazione", score: 7.8, aliases: ["espiazione", "atonement"] },
+        { title: "Love Actually", score: 7.6, aliases: ["love actually"] }
+      ]
+    },
+    {
+      name: "Jamie Foxx",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/TIFF_2019_jamie_foxx_%28cropped%29.jpg/500px-TIFF_2019_jamie_foxx_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Django Unchained", peakScore: 8.5, peakAliases: ["django unchained", "django"],
+      others: [
+        { title: "Soul", score: 8.0, aliases: ["soul"] },
+        { title: "Ray", score: 7.7, aliases: ["ray"] },
+        { title: "Collateral", score: 7.5, aliases: ["collateral"] },
+        { title: "Baby Driver", score: 7.5, aliases: ["baby driver"] }
+      ]
+    },
+    {
+      name: "Christoph Waltz",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Christoph_Waltz_at_82nd_Venice_International_Film_Festival-1_%28cropped%29.jpg/500px-Christoph_Waltz_at_82nd_Venice_International_Film_Festival-1_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Django Unchained", peakScore: 8.5, peakAliases: ["django unchained", "django"],
+      others: [
+        { title: "Bastardi senza gloria", score: 8.4, aliases: ["bastardi senza gloria", "inglourious basterds"] },
+        { title: "Alita - Angelo della battaglia", score: 7.3, aliases: ["alita"] },
+        { title: "Big Eyes", score: 7.0, aliases: ["big eyes"] },
+        { title: "Spectre", score: 6.8, aliases: ["spectre"] }
+      ]
+    },
+    {
+      name: "Daniel Craig",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/Daniel_Craig_TIFF_2025_Red_Carpet_%28cropped%29.jpg/500px-Daniel_Craig_TIFF_2025_Red_Carpet_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Casino Royale", peakScore: 8.0, peakAliases: ["casino royale"],
+      others: [
+        { title: "Cena con delitto - Knives Out", score: 7.9, aliases: ["knives out", "cena con delitto"] },
+        { title: "Skyfall", score: 7.8, aliases: ["skyfall"] },
+        { title: "Millennium - Uomini che odiano le donne", score: 7.8, aliases: ["millennium", "uomini che odiano le donne", "the girl with the dragon tattoo"] },
+        { title: "La truffa dei Logan", score: 7.0, aliases: ["logan lucky", "la truffa dei logan"] }
+      ]
+    },
+    {
+      name: "Hugh Grant",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Hugh_Grant_in_2014.jpg/500px-Hugh_Grant_in_2014.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Paddington 2", peakScore: 7.8, peakAliases: ["paddington 2", "paddington"],
+      others: [
+        { title: "Love Actually", score: 7.6, aliases: ["love actually"] },
+        { title: "Notting Hill", score: 7.2, aliases: ["notting hill"] },
+        { title: "Quattro matrimoni e un funerale", score: 7.1, aliases: ["quattro matrimoni e un funerale", "four weddings"] },
+        { title: "Il diario di Bridget Jones", score: 6.7, aliases: ["bridget jones"] }
+      ]
+    },
+    {
+      name: "Woody Harrelson",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Woody_Harrelson_191020-N-NU281-1028_%28cropped%29.jpg/500px-Woody_Harrelson_191020-N-NU281-1028_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Non è un paese per vecchi", peakScore: 8.2, peakAliases: ["non e un paese per vecchi", "no country for old men"],
+      others: [
+        { title: "Tre manifesti a Ebbing, Missouri", score: 8.1, aliases: ["tre manifesti", "three billboards"] },
+        { title: "Benvenuti a Zombieland", score: 7.5, aliases: ["zombieland"] },
+        { title: "Now You See Me - I maghi del crimine", score: 7.2, aliases: ["now you see me", "i maghi del crimine"] },
+        { title: "Hunger Games", score: 7.2, aliases: ["hunger games"] }
+      ]
+    },
+    {
+      name: "Robert Pattinson",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Robert_Pattinson_Venice_Film_Festival_%28cropped%29.jpg/500px-Robert_Pattinson_Venice_Film_Festival_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "The Batman", peakScore: 7.8, peakAliases: ["the batman", "batman"],
+      others: [
+        { title: "Harry Potter e il calice di fuoco", score: 7.7, aliases: ["calice di fuoco", "goblet of fire", "harry potter"] },
+        { title: "The Lighthouse", score: 7.4, aliases: ["the lighthouse", "lighthouse"] },
+        { title: "Tenet", score: 7.3, aliases: ["tenet"] },
+        { title: "Twilight", score: 5.3, aliases: ["twilight"] }
+      ]
+    },
+    {
+      name: "Florence Pugh",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Florence_Pugh_2026.jpg/500px-Florence_Pugh_2026.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Dune: Parte Due", peakScore: 8.5, peakAliases: ["dune parte due", "dune part two", "dune 2"],
+      others: [
+        { title: "Oppenheimer", score: 8.3, aliases: ["oppenheimer"] },
+        { title: "Piccole donne", score: 7.8, aliases: ["piccole donne", "little women"] },
+        { title: "Midsommar", score: 7.1, aliases: ["midsommar"] },
+        { title: "Black Widow", score: 6.7, aliases: ["black widow"] }
+      ]
+    },
+    {
+      name: "Austin Butler",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Austin_Butler_at_the_2025_Cannes_Film_Festival_02.jpg/500px-Austin_Butler_at_the_2025_Cannes_Film_Festival_02.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Dune: Parte Due", peakScore: 8.5, peakAliases: ["dune parte due", "dune part two", "dune 2"],
+      others: [
+        { title: "C'era una volta a... Hollywood", score: 7.6, aliases: ["c'era una volta a hollywood", "once upon a time in hollywood"] },
+        { title: "Elvis", score: 7.3, aliases: ["elvis"] },
+        { title: "The Bikeriders", score: 6.7, aliases: ["bikeriders", "the bikeriders"] },
+        { title: "I morti non muoiono", score: 5.9, aliases: ["i morti non muoiono", "the dead don't die"] }
+      ]
+    },
+    {
+      name: "Jason Momoa",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Jason_Momoa_%2843055621224%29_%28cropped%29.jpg/500px-Jason_Momoa_%2843055621224%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Dune", peakScore: 8.0, peakAliases: ["dune"],
+      others: [
+        { title: "Zack Snyder's Justice League", score: 7.9, aliases: ["snyder cut", "zack snyder's justice league"] },
+        { title: "Aquaman", score: 6.8, aliases: ["aquaman"] },
+        { title: "Fast X", score: 5.7, aliases: ["fast x", "fast and furious 10"] },
+        { title: "Minecraft - Il film", score: 5.7, aliases: ["minecraft"] }
+      ]
+    },
+    {
+      name: "Adam Sandler",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Jackie_Sandler_Adam_Sandler_Jay_Kelly-36_%283x4%29.jpg/500px-Jackie_Sandler_Adam_Sandler_Jay_Kelly-36_%283x4%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Diamanti grezzi", peakScore: 7.4, peakAliases: ["diamanti grezzi", "uncut gems"],
+      others: [
+        { title: "Un tipo imprevedibile", score: 7.0, aliases: ["happy gilmore", "un tipo imprevedibile"] },
+        { title: "50 volte il primo bacio", score: 6.8, aliases: ["50 volte il primo bacio", "50 first dates"] },
+        { title: "Hustle", score: 7.3, aliases: ["hustle"] },
+        { title: "Cambia la tua vita con un click", score: 6.4, aliases: ["click", "cambia la tua vita con un click"] }
+      ]
+    },
+    {
+      name: "Vin Diesel",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Vin_Diesel_by_Gage_Skidmore_2.jpg/500px-Vin_Diesel_by_Gage_Skidmore_2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Salvate il soldato Ryan", peakScore: 8.6, peakAliases: ["salvate il soldato ryan", "saving private ryan"],
+      others: [
+        { title: "Avengers: Endgame", score: 8.4, aliases: ["endgame", "avengers endgame"] },
+        { title: "Il gigante di ferro", score: 8.1, aliases: ["il gigante di ferro", "the iron giant"] },
+        { title: "Guardiani della Galassia", score: 8.0, aliases: ["guardiani della galassia", "guardians of the galaxy"] },
+        { title: "Fast & Furious 5", score: 7.3, aliases: ["fast five", "fast and furious 5"] }
+      ]
+    },
+    {
+      name: "Dwayne Johnson",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg/500px-Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Oceania", peakScore: 7.6, peakAliases: ["oceania", "moana"],
+      others: [
+        { title: "Fast & Furious 5", score: 7.3, aliases: ["fast five", "fast and furious 5"] },
+        { title: "Jumanji - Benvenuti nella giungla", score: 6.9, aliases: ["jumanji"] },
+        { title: "Una spia e mezzo", score: 6.3, aliases: ["una spia e mezzo", "central intelligence"] },
+        { title: "San Andreas", score: 6.1, aliases: ["san andreas"] }
+      ]
+    },
+    {
+      name: "Peter Jackson",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Peter_Jackson_SDCC_2014.jpg/500px-Peter_Jackson_SDCC_2014.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Il Signore degli Anelli - Il ritorno del re", peakScore: 9.0, peakAliases: ["il ritorno del re", "return of the king"],
+      others: [
+        { title: "Il Signore degli Anelli - La Compagnia dell'Anello", score: 8.9, aliases: ["la compagnia dell'anello", "fellowship of the ring"] },
+        { title: "Il Signore degli Anelli - Le due torri", score: 8.8, aliases: ["le due torri", "the two towers"] },
+        { title: "Lo Hobbit - Un viaggio inaspettato", score: 7.8, aliases: ["lo hobbit", "the hobbit", "un viaggio inaspettato"] },
+        { title: "King Kong", score: 7.2, aliases: ["king kong"] }
+      ]
+    },
+    {
+      name: "Sam Mendes",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Sam_Mendes_in_2022-2.jpg/500px-Sam_Mendes_in_2022-2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "American Beauty", peakScore: 8.3, peakAliases: ["american beauty"],
+      others: [
+        { title: "1917", score: 8.2, aliases: ["1917"] },
+        { title: "Skyfall", score: 7.8, aliases: ["skyfall"] },
+        { title: "Era mio padre", score: 7.7, aliases: ["era mio padre", "road to perdition"] },
+        { title: "Revolutionary Road", score: 7.3, aliases: ["revolutionary road"] }
+      ]
+    },
+    {
+      name: "Wes Anderson",
+      type: "imdb",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Wes_Anderson-7541_%28cropped%29.jpg/500px-Wes_Anderson-7541_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Grand Budapest Hotel", peakScore: 8.1, peakAliases: ["grand budapest hotel", "the grand budapest hotel"],
+      others: [
+        { title: "Fantastic Mr. Fox", score: 7.9, aliases: ["fantastic mr fox", "fantastic mr. fox"] },
+        { title: "Moonrise Kingdom", score: 7.8, aliases: ["moonrise kingdom"] },
+        { title: "L'isola dei cani", score: 7.8, aliases: ["l'isola dei cani", "isle of dogs"] },
+        { title: "I Tenenbaum", score: 7.6, aliases: ["i tenenbaum", "the royal tenenbaums"] }
+      ]
+    },
+    {
+      name: "Måneskin",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Maneskin_2018.jpg/500px-Maneskin_2018.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Beggin'", peakScore: 2.0, peakAliases: ["beggin", "beggin'"],
+      others: [
+        { title: "I Wanna Be Your Slave", score: 1.0, aliases: ["i wanna be your slave"] },
+        { title: "Zitti e buoni", score: 0.6, aliases: ["zitti e buoni"] },
+        { title: "Coraline", score: 0.3, aliases: ["coraline"] },
+        { title: "Supermodel", score: 0.2, aliases: ["supermodel"] }
+      ]
+    },
+    {
+      name: "Harry Styles",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/HarryStylesWembley170623_%2865_of_93%29_%2852982678051%29_%28cropped_2%29.jpg/500px-HarryStylesWembley170623_%2865_of_93%29_%2852982678051%29_%28cropped_2%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "As It Was", peakScore: 4.0, peakAliases: ["as it was"],
+      others: [
+        { title: "Watermelon Sugar", score: 2.6, aliases: ["watermelon sugar"] },
+        { title: "Adore You", score: 1.6, aliases: ["adore you"] },
+        { title: "Sign of the Times", score: 1.5, aliases: ["sign of the times"] },
+        { title: "Late Night Talking", score: 1.1, aliases: ["late night talking"] }
+      ]
+    },
+    {
+      name: "Lewis Capaldi",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Glasto2025-41_%28cropped%29.jpg/500px-Glasto2025-41_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Someone You Loved", peakScore: 3.9, peakAliases: ["someone you loved"],
+      others: [
+        { title: "Before You Go", score: 2.1, aliases: ["before you go"] },
+        { title: "Bruises", score: 1.0, aliases: ["bruises"] },
+        { title: "Hold Me While You Wait", score: 0.8, aliases: ["hold me while you wait"] },
+        { title: "Forget Me", score: 0.3, aliases: ["forget me"] }
+      ]
+    },
+    {
+      name: "Glass Animals",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Glass_Animals_-_Brooklyn_Mirage_2022_07_%28cropped%29.jpg/500px-Glass_Animals_-_Brooklyn_Mirage_2022_07_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Heat Waves", peakScore: 3.8, peakAliases: ["heat waves"],
+      others: [
+        { title: "Gooey", score: 0.4, aliases: ["gooey"] },
+        { title: "The Other Side of Paradise", score: 0.3, aliases: ["the other side of paradise"] },
+        { title: "Youth", score: 0.2, aliases: ["youth"] },
+        { title: "Tangerine", score: 0.1, aliases: ["tangerine"] }
+      ]
+    },
+    {
+      name: "Tones and I",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Tones_and_I_-_Southside_Festival_2022_-_IMG_3968_-_1.jpg/500px-Tones_and_I_-_Southside_Festival_2022_-_IMG_3968_-_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Dance Monkey", peakScore: 3.3, peakAliases: ["dance monkey"],
+      others: [
+        { title: "Never Seen the Rain", score: 0.2, aliases: ["never seen the rain"] },
+        { title: "Fly Away", score: 0.2, aliases: ["fly away"] },
+        { title: "Bad Child", score: 0.1, aliases: ["bad child"] },
+        { title: "Johnny Run Away", score: 0.1, aliases: ["johnny run away"] }
+      ]
+    },
+    {
+      name: "Hozier",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Hozier_2015_01_%28cropped%29.jpg/500px-Hozier_2015_01_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Take Me to Church", peakScore: 2.8, peakAliases: ["take me to church"],
+      others: [
+        { title: "Too Sweet", score: 1.8, aliases: ["too sweet"] },
+        { title: "Work Song", score: 0.8, aliases: ["work song"] },
+        { title: "From Eden", score: 0.5, aliases: ["from eden"] },
+        { title: "Cherry Wine", score: 0.3, aliases: ["cherry wine"] }
+      ]
+    },
+    {
+      name: "Vance Joy",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Vance_Joy_By_Daniel_%C3%85hs_Karlsson.jpg/500px-Vance_Joy_By_Daniel_%C3%85hs_Karlsson.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Riptide", peakScore: 2.6, peakAliases: ["riptide"],
+      others: [
+        { title: "Mess Is Mine", score: 0.3, aliases: ["mess is mine"] },
+        { title: "Lay It on Me", score: 0.2, aliases: ["lay it on me"] },
+        { title: "Georgia", score: 0.2, aliases: ["georgia"] },
+        { title: "Fire and the Flood", score: 0.1, aliases: ["fire and the flood"] }
+      ]
+    },
+    {
+      name: "SZA",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/KendrickSZASPurs230725-19_-_54683179509_%28cropped%29_%28cropped%29.jpg/500px-KendrickSZASPurs230725-19_-_54683179509_%28cropped%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Kill Bill", peakScore: 2.3, peakAliases: ["kill bill"],
+      others: [
+        { title: "Snooze", score: 1.7, aliases: ["snooze"] },
+        { title: "Good Days", score: 1.0, aliases: ["good days"] },
+        { title: "I Hate U", score: 0.8, aliases: ["i hate u"] },
+        { title: "Saturn", score: 0.8, aliases: ["saturn"] }
+      ]
+    },
+    {
+      name: "Juice WRLD",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/Juice_WRLD_-_Les_Ardentes_2019_%28cropped_2%29.jpg/500px-Juice_WRLD_-_Les_Ardentes_2019_%28cropped_2%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Lucid Dreams", peakScore: 2.6, peakAliases: ["lucid dreams"],
+      others: [
+        { title: "All Girls Are the Same", score: 1.0, aliases: ["all girls are the same"] },
+        { title: "Robbery", score: 1.0, aliases: ["robbery"] },
+        { title: "Wishing Well", score: 0.8, aliases: ["wishing well"] },
+        { title: "Legends", score: 0.6, aliases: ["legends"] }
+      ]
+    },
+    {
+      name: "Avicii",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Avicii_2014_003cr.jpg/500px-Avicii_2014_003cr.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Wake Me Up", peakScore: 2.6, peakAliases: ["wake me up"],
+      others: [
+        { title: "The Nights", score: 1.9, aliases: ["the nights"] },
+        { title: "Hey Brother", score: 1.1, aliases: ["hey brother"] },
+        { title: "Waiting for Love", score: 1.0, aliases: ["waiting for love"] },
+        { title: "Levels", score: 0.9, aliases: ["levels"] }
+      ]
+    },
+    {
+      name: "Nirvana",
+      type: "spotify",
+      image: "https://upload.wikimedia.org/wikipedia/commons/1/19/Nirvana_around_1992.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      peakTitle: "Smells Like Teen Spirit", peakScore: 2.1, peakAliases: ["smells like teen spirit"],
+      others: [
+        { title: "Come as You Are", score: 1.0, aliases: ["come as you are"] },
+        { title: "Something in the Way", score: 0.7, aliases: ["something in the way"] },
+        { title: "Heart-Shaped Box", score: 0.6, aliases: ["heart shaped box"] },
+        { title: "Lithium", score: 0.5, aliases: ["lithium"] }
+      ]
+    },
+    {
+      name: "Oasis",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Oasis_-_Principality_Stadium%2C_Cardiff_-_Friday_4th_July_2025_member_collage.jpg/500px-Oasis_-_Principality_Stadium%2C_Cardiff_-_Friday_4th_July_2025_member_collage.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Wonderwall", peakScore: 2.4, peakAliases: ["wonderwall"],
+      others: [
+        { title: "Don't Look Back in Anger", score: 0.8, aliases: ["don't look back in anger", "dont look back in anger"] },
+        { title: "Champagne Supernova", score: 0.6, aliases: ["champagne supernova"] },
+        { title: "Stop Crying Your Heart Out", score: 0.5, aliases: ["stop crying your heart out"] },
+        { title: "Live Forever", score: 0.4, aliases: ["live forever"] }
+      ]
+    },
+    {
+      name: "The Killers",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/KillersBST080717-38_%2835742625041%29_%28cropped%29_%28cropped%29.jpg/500px-KillersBST080717-38_%2835742625041%29_%28cropped%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Mr. Brightside", peakScore: 2.3, peakAliases: ["mr brightside", "mr. brightside"],
+      others: [
+        { title: "Somebody Told Me", score: 0.6, aliases: ["somebody told me"] },
+        { title: "When You Were Young", score: 0.6, aliases: ["when you were young"] },
+        { title: "Human", score: 0.6, aliases: ["human"] },
+        { title: "Smile Like You Mean It", score: 0.2, aliases: ["smile like you mean it"] }
+      ]
+    },
+    {
+      name: "Fleetwood Mac",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Fleetwood_Mac_Billboard_1977.jpg/500px-Fleetwood_Mac_Billboard_1977.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Dreams", peakScore: 1.8, peakAliases: ["dreams"],
+      others: [
+        { title: "The Chain", score: 0.9, aliases: ["the chain"] },
+        { title: "Everywhere", score: 0.8, aliases: ["everywhere"] },
+        { title: "Landslide", score: 0.8, aliases: ["landslide"] },
+        { title: "Go Your Own Way", score: 0.8, aliases: ["go your own way"] }
+      ]
+    },
+    {
+      name: "Elton John",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/EltonDocBFILFF101024_%284_of_17%29_%28cropped%29.jpg/500px-EltonDocBFILFF101024_%284_of_17%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Cold Heart (PNAU Remix)", peakScore: 1.7, peakAliases: ["cold heart"],
+      others: [
+        { title: "Tiny Dancer", score: 1.1, aliases: ["tiny dancer"] },
+        { title: "Rocket Man", score: 1.1, aliases: ["rocket man"] },
+        { title: "I'm Still Standing", score: 0.9, aliases: ["i'm still standing", "im still standing"] },
+        { title: "Your Song", score: 0.6, aliases: ["your song"] }
+      ]
+    },
+    {
+      name: "Daft Punk",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/Daft_Punk_in_2013_2-_centered.jpg/500px-Daft_Punk_in_2013_2-_centered.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Get Lucky", peakScore: 1.6, peakAliases: ["get lucky"],
+      others: [
+        { title: "Instant Crush", score: 1.1, aliases: ["instant crush"] },
+        { title: "One More Time", score: 0.9, aliases: ["one more time"] },
+        { title: "Harder, Better, Faster, Stronger", score: 0.6, aliases: ["harder better faster stronger"] },
+        { title: "Around the World", score: 0.3, aliases: ["around the world"] }
+      ]
+    },
+    {
+      name: "Shawn Mendes",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/191125_Shawn_Mendes_at_the_2019_American_Music_Awards.png/500px-191125_Shawn_Mendes_at_the_2019_American_Music_Awards.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Señorita", peakScore: 2.9, peakAliases: ["senorita", "señorita"],
+      others: [
+        { title: "There's Nothing Holdin' Me Back", score: 1.7, aliases: ["there's nothing holdin me back", "theres nothing holding me back"] },
+        { title: "Stitches", score: 1.6, aliases: ["stitches"] },
+        { title: "Treat You Better", score: 1.5, aliases: ["treat you better"] },
+        { title: "Mercy", score: 0.9, aliases: ["mercy"] }
+      ]
+    },
+    {
+      name: "Lukas Graham",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Lukas_Graham_Stavernfestivalen_%28181424%29.jpg/500px-Lukas_Graham_Stavernfestivalen_%28181424%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "7 Years", peakScore: 2.0, peakAliases: ["7 years", "seven years"],
+      others: [
+        { title: "Love Someone", score: 0.6, aliases: ["love someone"] },
+        { title: "Mama Said", score: 0.3, aliases: ["mama said"] },
+        { title: "Happy Home", score: 0.1, aliases: ["happy home"] },
+        { title: "Lie", score: 0.1, aliases: ["lie"] }
+      ]
+    },
+    {
+      name: "Passenger",
+      type: "spotify",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Passenger-1983.jpg/500px-Passenger-1983.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Let Her Go", peakScore: 3.0, peakAliases: ["let her go"],
+      others: [
+        { title: "Anywhere", score: 0.1, aliases: ["anywhere"] },
+        { title: "Holes", score: 0.1, aliases: ["holes"] },
+        { title: "Hearts on Fire", score: 0.1, aliases: ["hearts on fire"] },
+        { title: "Simple Song", score: 0.05, aliases: ["simple song"] }
+      ]
+    },
+    {
+      name: "Breaking Bad",
+      type: "serie",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/BryanCranston-byPhilipRomano_%28cropped%29.jpg/500px-BryanCranston-byPhilipRomano_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Ozymandias (5x14)", peakScore: 10.0, peakAliases: ["ozymandias", "5x14"],
+      others: [
+        { title: "Felina (5x16)", score: 9.9, aliases: ["felina", "5x16"] },
+        { title: "Faccia a faccia (4x13)", score: 9.9, aliases: ["face off", "faccia a faccia", "4x13"] },
+        { title: "To'hajiilee (5x13)", score: 9.8, aliases: ["tohajiilee", "to'hajiilee", "5x13"] },
+        { title: "Granite State (5x15)", score: 9.7, aliases: ["granite state", "5x15"] }
+      ]
+    },
+    {
+      name: "I Soprano",
+      type: "serie",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/James_Gandolfini_%40_Toronto_International_Film_Festival_2011.jpg/500px-James_Gandolfini_%40_Toronto_International_Film_Festival_2011.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Long Term Parking (5x12)", peakScore: 9.7, peakAliases: ["long term parking", "5x12"],
+      others: [
+        { title: "Funhouse (2x13)", score: 9.5, aliases: ["funhouse", "2x13"] },
+        { title: "Whitecaps (4x13)", score: 9.5, aliases: ["whitecaps", "4x13"] },
+        { title: "The Blue Comet (6x20)", score: 9.6, aliases: ["the blue comet", "6x20"] },
+        { title: "Made in America (6x21)", score: 9.1, aliases: ["made in america", "6x21"] }
+      ]
+    },
+    {
+      name: "Better Call Saul",
+      type: "serie",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Bob_Odenkirk_at_53rd_Saturn_Awards_2026-02.jpg/500px-Bob_Odenkirk_at_53rd_Saturn_Awards_2026-02.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Piano ed esecuzione (6x07)", peakScore: 9.9, peakAliases: ["plan and execution", "piano ed esecuzione", "6x07"],
+      others: [
+        { title: "Fun and Games (6x09)", score: 9.6, aliases: ["fun and games", "6x09"] },
+        { title: "Saul Gone (6x13)", score: 9.6, aliases: ["saul gone", "6x13"] },
+        { title: "Bagman (5x08)", score: 9.5, aliases: ["bagman", "5x08"] },
+        { title: "Point and Shoot (6x08)", score: 9.6, aliases: ["point and shoot", "6x08"] }
+      ]
+    },
+    {
+      name: "Stranger Things",
+      type: "serie",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Millie_Bobby_Brown_2025_%281%29.png/500px-Millie_Bobby_Brown_2025_%281%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Capitolo quattro: Caro Billy (4x04)", peakScore: 9.6, peakAliases: ["dear billy", "caro billy", "4x04"],
+      others: [
+        { title: "Capitolo nove: Il piano (4x09)", score: 9.3, aliases: ["the piggyback", "il piano", "4x09"] },
+        { title: "Capitolo otto: Il Sottosopra (1x08)", score: 8.9, aliases: ["the upside down", "il sottosopra", "1x08"] },
+        { title: "Capitolo otto: Il Mind Flayer (2x08)", score: 9.0, aliases: ["the mind flayer", "2x08"] },
+        { title: "Capitolo sette: Il massacro al laboratorio di Hawkins (4x07)", score: 9.3, aliases: ["massacre at hawkins lab", "4x07"] }
+      ]
+    },
+    {
+      name: "Succession",
+      type: "serie",
+      image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Brian_Cox_Edinburgh_2025.jpg/500px-Brian_Cox_Edinburgh_2025.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      peakTitle: "Il matrimonio di Connor (4x03)", peakScore: 9.7, peakAliases: ["connor's wedding", "connors wedding", "il matrimonio di connor", "4x03"],
+      others: [
+        { title: "With Open Eyes (4x10)", score: 9.3, aliases: ["with open eyes", "4x10"] },
+        { title: "All the Bells Say (3x09)", score: 9.3, aliases: ["all the bells say", "3x09"] },
+        { title: "This Is Not for Tears (2x10)", score: 9.3, aliases: ["this is not for tears", "2x10"] },
+        { title: "America Decides (4x08)", score: 9.2, aliases: ["america decides", "4x08"] }
+      ]
     }
   ];
 
@@ -1638,6 +2288,9 @@
     const b = normalize(candidate);
     if (!a || !b) return false;
     if (a === b) return true;
+    // Numeri diversi = titoli diversi ("terminator" ≠ "terminator 2", "5x13" ≠ "5x14")
+    const digits = s => (s.match(/\d+/g) || []).join(",");
+    if (digits(a) !== digits(b)) return false;
     // Tollera aggiunte come "(film)" o troncamenti, solo per titoli
     // abbastanza lunghi da evitare falsi positivi su titoli brevi.
     const minLen = Math.min(a.length, b.length);
@@ -1653,6 +2306,12 @@
       { title: subject.peakTitle, score: subject.peakScore, aliases: subject.peakAliases, isPeak: true },
       ...subject.others.map(o => ({ ...o, isPeak: false }))
     ];
+    // Prima una corrispondenza esatta, poi quella approssimata
+    const g = normalize(guess);
+    for (const target of targets){
+      const candidates = [target.title, ...(target.aliases || [])];
+      if (candidates.some(c => normalize(c) === g)) return target;
+    }
     for (const target of targets){
       const candidates = [target.title, ...(target.aliases || [])];
       if (candidates.some(c => isFuzzyMatch(guess, c))) return target;
@@ -1667,7 +2326,7 @@
   }
 
   function formatScore(target){
-    return subject.type === "imdb"
+    return subject.type !== "spotify"
       ? `${target.score.toFixed(1)} IMDb`
       : `${target.score.toFixed(1)} Mld stream (stima)`;
   }
@@ -1697,9 +2356,11 @@
     subjectImg.alt = subject.name;
     subjectImg.nextElementSibling.style.display = "none";
     subjectName.textContent = subject.name;
-    challengeBadge.textContent = subject.type === "imdb"
-      ? "🎬 Film con il voto IMDb più alto"
-      : "🎧 Canzone più ascoltata su Spotify";
+    challengeBadge.textContent = {
+      imdb: "🎬 Film con il voto IMDb più alto",
+      spotify: "🎧 Canzone più ascoltata su Spotify",
+      serie: "📺 Episodio con il voto IMDb più alto"
+    }[subject.type];
 
     peakCard.classList.remove("show", "solved", "revealed");
     attemptsList.innerHTML = `<div class="attempts-empty">Nessun tentativo ancora — indovinate ad alta voce!</div>`;

@@ -8,6 +8,39 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<style>
+  /* Selettore tipo di dilemma */
+  .pack-switch{
+    display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 5px; margin: 0 auto 18px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 999px; backdrop-filter: blur(12px);
+  }
+  .pack-btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.92rem;
+    color: var(--text-muted); background: transparent; border: none;
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .pack-btn:hover{ color: #f2f4ff; }
+  .pack-btn.active{ background: var(--accent); color: #06090f; box-shadow: 0 0 18px -4px var(--accent-glow); }
+
+  /* Voti: ogni tocco su un'opzione aggiunge un voto */
+  .vote-col{ display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .vote-col .dilemma-option{ width: 100%; flex: 1; }
+  .vote-option{ cursor: pointer; user-select: none; transition: transform 0.12s ease; }
+  .vote-option:active{ transform: scale(0.97); }
+  .vote-count{ font-weight: 700; font-size: 0.95rem; color: var(--text-muted); }
+  .vote-summary{ width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 8px; }
+  .vote-bar{
+    height: 10px; border-radius: 999px; overflow: hidden;
+    background: linear-gradient(90deg, var(--accent) 0 var(--pa, 50%), #4dd9ff var(--pa, 50%) 100%);
+    transition: background 0.3s ease;
+  }
+  .vote-bar.empty{ background: var(--glass-bg); border: 1px solid var(--glass-border); }
+  .vote-summary-row{ display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--text-muted); font-weight: 600; font-size: 0.92rem; }
+  .vote-reset{ background: none; border: none; color: var(--text-muted); font: inherit; cursor: pointer; text-decoration: underline; }
+  .vote-reset:hover{ color: #f2f4ff; }
+</style>
 </head>
 <body class="theme-red">
 
@@ -20,15 +53,36 @@
 </nav>
 
 <main class="stage">
+  <div class="pack-switch" role="group" aria-label="Tipo di dilemma">
+    <button type="button" class="pack-btn active" data-pack="tutti">🎲 Tutti</button>
+    <button type="button" class="pack-btn" data-pack="morali">⚖️ Morali</button>
+    <button type="button" class="pack-btn" data-pack="preferiresti">🤪 Preferiresti</button>
+    <button type="button" class="pack-btn" data-pack="soldi">💰 Lo faresti per…</button>
+  </div>
+
   <div class="question-card">
     <div class="question-eyebrow">Dilemma morale</div>
     <p class="question-text" id="questionText">Caricamento...</p>
   </div>
 
   <div class="dilemma-grid">
-    <div class="dilemma-option" id="optionA">A</div>
+    <div class="vote-col">
+      <div class="dilemma-option vote-option" id="optionA" role="button" tabindex="0">A</div>
+      <span class="vote-count" id="voteA">0 voti</span>
+    </div>
     <div class="dilemma-vs">VS</div>
-    <div class="dilemma-option" id="optionB">B</div>
+    <div class="vote-col">
+      <div class="dilemma-option vote-option" id="optionB" role="button" tabindex="0">B</div>
+      <span class="vote-count" id="voteB">0 voti</span>
+    </div>
+  </div>
+
+  <div class="vote-summary">
+    <div class="vote-bar empty" id="voteBar"></div>
+    <div class="vote-summary-row">
+      <span id="voteResult">Tocca A o B per votare</span>
+      <button type="button" class="vote-reset" id="resetVotesBtn">↺ azzera voti</button>
+    </div>
   </div>
 
   <div class="info-box">
@@ -163,8 +217,101 @@
     { q: "Per 1 milione di euro, confesseresti la tua passione più imbarazzante davanti a tutti i colleghi?", a: "Confesso tutto", b: "Rimane segreta" },
     { q: "Per 1 milione di euro, ti perderesti il matrimonio del tuo migliore amico/a?", a: "Prendo i soldi", b: "Non lo perderei mai" },
     { q: "Per 1 milione di euro, rinunceresti per sempre a dolci e cioccolato?", a: "Addio dolci", b: "Non posso vivere senza" },
-    { q: "Per 1 milione di euro, lasceresti che qualcun altro scegliesse tutti i tuoi vestiti per 5 anni?", a: "Scegliete voi", b: "Il mio stile è mio" }
+    { q: "Per 1 milione di euro, lasceresti che qualcun altro scegliesse tutti i tuoi vestiti per 5 anni?", a: "Scegliete voi", b: "Il mio stile è mio" },
+
+    /* ---- Lo faresti per…? (cifre diverse) ---- */
+    { q: "Per 100 euro, mangeresti un cucchiaio di senape pura?", a: "Prendo i 100 €", b: "No grazie" },
+    { q: "Per 100 euro, canteresti l'inno nazionale in mezzo a una piazza piena?", a: "Canto", b: "Resto zitto" },
+    { q: "Per 100 euro, ti presenteresti al lavoro con un costume da dinosauro?", a: "Dinosauro al lavoro", b: "Non ci penso" },
+    { q: "Per 100 euro, chiameresti un ex solo per dirgli 'mi manchi'?", a: "Chiamo", b: "Neanche morto" },
+    { q: "Per 100 euro, ti faresti tingere i capelli di verde per un mese?", a: "Capelli verdi", b: "Rifiuto" },
+    { q: "Per 100 euro, leggeresti ad alta voce l'ultimo messaggio che hai mandato?", a: "Leggo", b: "Segreto" },
+    { q: "Per 100 euro, staresti 24 ore senza telefono?", a: "24 ore offline", b: "Non ce la faccio" },
+    { q: "Per 100 euro, berresti un bicchiere di acqua del mare?", a: "Bevo", b: "Rifiuto" },
+    { q: "Per 10.000 euro, ti raderesti le sopracciglia?", a: "Via le sopracciglia", b: "Le tengo" },
+    { q: "Per 10.000 euro, ti faresti un tatuaggio scelto dagli amici?", a: "Scelgono loro", b: "Il mio corpo è mio" },
+    { q: "Per 10.000 euro, passeresti una settimana senza lavarti?", a: "Una settimana sporco", b: "Rifiuto" },
+    { q: "Per 10.000 euro, faresti un'intera giornata senza parlare?", a: "Muto per un giorno", b: "Non resisto" },
+    { q: "Per 10.000 euro, mangeresti solo pane e acqua per un mese?", a: "Pane e acqua", b: "Rifiuto" },
+    { q: "Per 10.000 euro, daresti a un amico l'accesso completo al tuo telefono per un giorno?", a: "Telefono libero", b: "Mai" },
+    { q: "Per 10.000 euro, faresti una dichiarazione d'amore a uno sconosciuto per strada?", a: "Dichiarazione", b: "Che vergogna" },
+    { q: "Per 10.000 euro, cambieresti legalmente il tuo nome in 'Gnocco'?", a: "Mi chiamo Gnocco", b: "Mai" },
+    { q: "Per 10.000 euro, staresti un mese senza social?", a: "Un mese offline", b: "Non ce la faccio" },
+    { q: "Per 100.000 euro, vivresti per un anno senza riscaldamento in inverno?", a: "Un anno al freddo", b: "Rifiuto" },
+    { q: "Per 100.000 euro, ti trasferiresti per sempre in un paese di cui non conosci la lingua?", a: "Parto", b: "Resto qui" },
+    { q: "Per 100.000 euro, rinunceresti alla carne per sempre?", a: "Vegetariano a vita", b: "Rifiuto" },
+    { q: "Per 100.000 euro, lasceresti il tuo lavoro attuale domani?", a: "Mi licenzio", b: "Resto" },
+    { q: "Per 100.000 euro, non vedresti il tuo migliore amico per un anno?", a: "Un anno senza", b: "Neanche per sogno" },
+    { q: "Per 100.000 euro, parteciperesti a un reality show in cui ti riprendono 24 ore su 24?", a: "Reality", b: "Privacy prima di tutto" },
+    { q: "Per 100.000 euro, mangeresti solo lo stesso piatto per un anno?", a: "Stesso piatto", b: "Rifiuto" },
+    { q: "Per 100.000 euro, ti faresti filmare mentre dormi e pubblicare il video online?", a: "Pubblicate pure", b: "Mai" }
   ];
+
+  /* =========================================================
+     "PREFERIRESTI…" — scelte assurde e leggere.
+     ========================================================= */
+  const PREFERISCI = [
+    { q: "Preferiresti avere le mani al posto dei piedi o i piedi al posto delle mani?", a: "Mani al posto dei piedi", b: "Piedi al posto delle mani" },
+    { q: "Preferiresti parlare solo in rima o solo cantando?", a: "Solo in rima", b: "Solo cantando" },
+    { q: "Preferiresti starnutire ogni volta che dici una bugia o singhiozzare ogni volta che sei nervoso?", a: "Starnuto da bugia", b: "Singhiozzo da ansia" },
+    { q: "Preferiresti avere sempre le scarpe bagnate o sempre un sassolino nella scarpa?", a: "Scarpe bagnate", b: "Sassolino eterno" },
+    { q: "Preferiresti poter parlare con gli animali o parlare tutte le lingue del mondo?", a: "Parlo con gli animali", b: "Tutte le lingue" },
+    { q: "Preferiresti avere un dito in più o un dito in meno?", a: "Un dito in più", b: "Un dito in meno" },
+    { q: "Preferiresti essere sempre in anticipo di 30 minuti o sempre in ritardo di 10?", a: "Sempre in anticipo", b: "Sempre in ritardo" },
+    { q: "Preferiresti mangiare solo pizza per un anno o non mangiarla mai più?", a: "Solo pizza per un anno", b: "Mai più pizza" },
+    { q: "Preferiresti avere la voce di Topolino o la voce di Darth Vader per sempre?", a: "Voce di Topolino", b: "Voce di Darth Vader" },
+    { q: "Preferiresti volare a 10 km/h o teletrasportarti ma solo di 10 metri?", a: "Volo lento", b: "Teletrasporto corto" },
+    { q: "Preferiresti vivere in un film Disney o in un film di Harry Potter?", a: "Film Disney", b: "Mondo di Harry Potter" },
+    { q: "Preferiresti avere sempre fame o sempre sonno?", a: "Sempre fame", b: "Sempre sonno" },
+    { q: "Preferiresti che i tuoi pensieri apparissero in un fumetto sopra la testa o che una colonna sonora ti seguisse ovunque?", a: "Fumetto dei pensieri", b: "Colonna sonora" },
+    { q: "Preferiresti fare la doccia sempre fredda o non usare mai più l'aria condizionata?", a: "Doccia fredda", b: "Niente condizionatore" },
+    { q: "Preferiresti essere alto 1,40 m o 2,20 m?", a: "1,40 m", b: "2,20 m" },
+    { q: "Preferiresti ridere ogni volta che qualcuno piange o piangere ogni volta che qualcuno ride?", a: "Rido quando piangono", b: "Piango quando ridono" },
+    { q: "Preferiresti indossare per sempre il costume di carnevale o il pigiama?", a: "Costume di carnevale", b: "Pigiama" },
+    { q: "Preferiresti avere un cane grande come un gatto o un gatto grande come un cane?", a: "Cane mini", b: "Gatto gigante" },
+    { q: "Preferiresti non sentire più i sapori o non sentire più gli odori?", a: "Niente sapori", b: "Niente odori" },
+    { q: "Preferiresti vivere senza musica o senza film e serie TV?", a: "Senza musica", b: "Senza film e serie" },
+    { q: "Preferiresti avere i capelli che cambiano colore con l'umore o la pelle che brilla al buio?", a: "Capelli dell'umore", b: "Pelle fosforescente" },
+    { q: "Preferiresti dover urlare tutto quello che dici o poter solo sussurrare?", a: "Urlo sempre", b: "Sussurro sempre" },
+    { q: "Preferiresti viaggiare nel passato o nel futuro, senza poter tornare?", a: "Nel passato", b: "Nel futuro" },
+    { q: "Preferiresti ritrovarti in un videogioco di Mario o di GTA?", a: "Super Mario", b: "GTA" },
+    { q: "Preferiresti mangiare un cucchiaio di wasabi o un limone intero?", a: "Cucchiaio di wasabi", b: "Limone intero" },
+    { q: "Preferiresti non poter mai più usare il telefono o non poter mai più guidare?", a: "Niente telefono", b: "Niente auto" },
+    { q: "Preferiresti avere un pulsante per mettere in pausa la vita o uno per tornare indietro di 10 secondi?", a: "Pausa", b: "Indietro di 10 secondi" },
+    { q: "Preferiresti essere il miglior giocatore di una squadra perdente o il peggiore di una squadra vincente?", a: "Migliore tra i perdenti", b: "Peggiore tra i vincenti" },
+    { q: "Preferiresti avere un drago grande come un gatto o un gatto grande come un drago?", a: "Drago mini", b: "Gatto drago" },
+    { q: "Preferiresti vivere in una casa sull'albero o in una casa sott'acqua?", a: "Casa sull'albero", b: "Casa sott'acqua" },
+    { q: "Preferiresti che ogni canzone che ascolti fosse 'Jingle Bells' o che ogni film fosse 'Mamma ho perso l'aereo'?", a: "Sempre Jingle Bells", b: "Sempre Mamma ho perso l'aereo" },
+    { q: "Preferiresti poter respirare sott'acqua o non dover mai dormire?", a: "Respiro sott'acqua", b: "Mai più sonno" },
+    { q: "Preferiresti avere le orecchie da elefante o il naso da Pinocchio?", a: "Orecchie da elefante", b: "Naso da Pinocchio" },
+    { q: "Preferiresti saper cucinare come uno chef stellato o ballare come un professionista?", a: "Chef stellato", b: "Ballerino professionista" },
+    { q: "Preferiresti vincere un Oscar o una medaglia d'oro olimpica?", a: "Oscar", b: "Oro olimpico" },
+    { q: "Preferiresti avere sempre il singhiozzo o sempre il prurito al naso?", a: "Singhiozzo eterno", b: "Prurito al naso" },
+    { q: "Preferiresti vivere in montagna senza mare o al mare senza montagna?", a: "Solo montagna", b: "Solo mare" },
+    { q: "Preferiresti essere invisibile solo quando nessuno ti guarda o volare solo quando nessuno ti guarda?", a: "Invisibile di nascosto", b: "Volo di nascosto" },
+    { q: "Preferiresti avere un maggiordomo robot o un'auto che si guida da sola?", a: "Maggiordomo robot", b: "Auto autonoma" },
+    { q: "Preferiresti festeggiare il compleanno ogni mese o mai più?", a: "Ogni mese", b: "Mai più" },
+    { q: "Preferiresti mangiare solo dolce o solo salato per il resto della vita?", a: "Solo dolce", b: "Solo salato" },
+    { q: "Preferiresti essere un supereroe senza poteri come Batman o un supereroe goffo con superpoteri?", a: "Batman senza poteri", b: "Goffo ma potente" },
+    { q: "Preferiresti che i tuoi vicini sentissero tutto quello che dici o che vedessero tutto quello che fai?", a: "Sentono tutto", b: "Vedono tutto" },
+    { q: "Preferiresti avere una coda o le ali, ma piccole e inutili?", a: "Una coda", b: "Ali inutili" },
+    { q: "Preferiresti vivere senza frigorifero o senza lavatrice?", a: "Senza frigorifero", b: "Senza lavatrice" },
+    { q: "Preferiresti che il tuo nome fosse 'Ascensore' o 'Lavatrice'?", a: "Ascensore", b: "Lavatrice" },
+    { q: "Preferiresti sapere quando morirai o come morirai?", a: "Quando", b: "Come" },
+    { q: "Preferiresti avere il potere di fermare il tempo o di leggere nel pensiero?", a: "Fermare il tempo", b: "Leggere nel pensiero" },
+    { q: "Preferiresti trovarti in un horror o in una commedia romantica imbarazzante?", a: "Film horror", b: "Commedia imbarazzante" },
+    { q: "Preferiresti che ogni tua foto venisse con gli occhi chiusi o mossa?", a: "Occhi chiusi", b: "Sempre mossa" }
+  ];
+
+  // Pacchetti: i dilemmi "Per ... euro" formano la sezione Soldi
+  const isMoney = d => /^Per [\d.]+( milione di)? euro/.test(d.q);
+  const PACKS = {
+    tutti: () => [...DILEMMAS, ...PREFERISCI],
+    morali: () => DILEMMAS.filter(d => !isMoney(d)),
+    preferiresti: () => PREFERISCI,
+    soldi: () => DILEMMAS.filter(isMoney)
+  };
+  let pack = "tutti";
 
   function shuffle(arr){
     for (let i = arr.length - 1; i > 0; i--){
@@ -174,7 +321,7 @@
     return arr;
   }
 
-  let order = shuffle([...DILEMMAS]);
+  let order = shuffle(PACKS[pack]());
   let index = 0;
   let discussTimer = null;
 
@@ -203,6 +350,7 @@
     questionText.textContent = d.q;
     optionA.textContent = "A) " + d.a;
     optionB.textContent = "B) " + d.b;
+    resetVotes();
     counter.textContent = `Dilemma ${index + 1}/${order.length}`;
     resetTimerBar();
   }
@@ -210,7 +358,7 @@
   nextBtn.addEventListener("click", () => {
     index++;
     if (index >= order.length){
-      order = shuffle([...DILEMMAS]);
+      order = shuffle(PACKS[pack]());
       index = 0;
     }
     showDilemma();
@@ -233,6 +381,36 @@
       }
     }, 1000);
   });
+
+  /* ---- Selettore pacchetto ---- */
+  const packButtons = document.querySelectorAll(".pack-btn");
+  packButtons.forEach(btn => btn.addEventListener("click", () => {
+    pack = btn.dataset.pack;
+    packButtons.forEach(b => b.classList.toggle("active", b === btn));
+    order = shuffle(PACKS[pack]());
+    index = 0;
+    showDilemma();
+  }));
+
+  /* ---- Conteggio voti: tocca un'opzione per aggiungere un voto ---- */
+  const votes = { a: 0, b: 0 };
+  const voteA = document.getElementById("voteA");
+  const voteB = document.getElementById("voteB");
+  const voteBar = document.getElementById("voteBar");
+  function renderVotes(){
+    const tot = votes.a + votes.b;
+    voteA.textContent = votes.a + (votes.a === 1 ? " voto" : " voti");
+    voteB.textContent = votes.b + (votes.b === 1 ? " voto" : " voti");
+    voteBar.style.setProperty("--pa", tot ? (votes.a / tot * 100) + "%" : "50%");
+    voteBar.classList.toggle("empty", !tot);
+    document.getElementById("voteResult").textContent = tot
+      ? `A ${Math.round(votes.a / tot * 100)}% · B ${Math.round(votes.b / tot * 100)}%`
+      : "Tocca A o B per votare";
+  }
+  function resetVotes(){ votes.a = 0; votes.b = 0; renderVotes(); }
+  optionA.addEventListener("click", () => { votes.a++; renderVotes(); });
+  optionB.addEventListener("click", () => { votes.b++; renderVotes(); });
+  document.getElementById("resetVotesBtn").addEventListener("click", resetVotes);
 
   showDilemma();
 </script>
