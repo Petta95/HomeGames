@@ -431,7 +431,8 @@
     paroliere:   { label: "🔤 Paroliere" },
     emoji:       { label: "🎬 Film dalle Emoji" },
     proverbio:   { label: "📜 Completa il Proverbio" },
-    bandiera:    { label: "🚩 Bandiera Lampo" }
+    bandiera:    { label: "🚩 Bandiera Lampo" },
+    fisica:      { label: "🏃 Sfida Fisica" }
   };
 
   /* =========================================================
@@ -882,6 +883,55 @@
     { q: "Non c'è due…", a: "…senza tre" },
     { q: "Quando il gatto non c'è…", a: "…i topi ballano" }
   ];
+  /* ---- Sfide fisiche: il gioco mostra solo la regola, poi si gioca dal vivo.
+     {N} nella regola diventa un numero casuale preso da range [min, max, passo]. ---- */
+  const SFIDE_FISICHE = [
+    { title: "⚖️ Peso a occhio", rule: "Ognuno va a prendere un oggetto qualsiasi in casa: vince chi si avvicina di più a {N} grammi. Poi si pesa tutto con la bilancia da cucina.", needs: "Bilancia da cucina", time: 60, range: [150, 1500, 50] },
+    { title: "🥛 Il bicchiere giusto", rule: "A turno, senza misurini, versate acqua in un bicchiere cercando di arrivare a esattamente {N} ml. Poi si controlla con il misurino o la bilancia (1 ml = 1 g): vince chi ci va più vicino.", needs: "Bicchieri, acqua, misurino o bilancia", range: [80, 300, 10] },
+    { title: "🍚 Chicchi a occhio", rule: "Prendete con le dita una manciata di riso (o pasta corta) cercando di avere esattamente {N} chicchi, senza contarli. Poi si contano: vince chi si avvicina di più.", needs: "Riso o pasta corta", range: [15, 60, 5] },
+    { title: "📏 Striscia perfetta", rule: "Strappate a mano da un foglio una striscia lunga esattamente {N} cm, senza righello. Poi si misura: vince chi ci va più vicino.", needs: "Fogli di carta, righello o metro", range: [8, 30, 1] },
+    { title: "📐 Distanza dal muro", rule: "Mettete un oggetto a esattamente {N} cm dal muro, a occhio. Poi si misura col metro: vince il più preciso.", needs: "Un oggetto a testa, metro", range: [40, 300, 10] },
+    { title: "🧂 Zucchero a occhio", rule: "Versate zucchero (o farina) in una tazza cercando di arrivare a esattamente {N} grammi, senza guardare la bilancia. Poi si pesa: vince chi si avvicina di più.", needs: "Zucchero o farina, tazze, bilancia", range: [20, 200, 10] },
+    { title: "🍎 Metà perfette", rule: "Tagliate una mela (o una fetta di pane) in due parti il più uguali possibile. Pesate le due metà: vince chi ha la differenza più piccola.", needs: "Mele o pane, coltello, bilancia" },
+    { title: "👣 Al buio sul segno", rule: "Fate un segno sul pavimento a circa {N} metri da voi. Guardatelo bene, chiudete gli occhi e camminate fino a fermarvi esattamente sopra: vince chi si ferma più vicino. Uno alla volta, senza sbirciare!", needs: "Spazio libero, nastro adesivo o un oggetto come segno", range: [2, 5, 1] },
+    { title: "🍾 La bottiglia astuta", rule: "Ognuno ha una bottiglia uguale e piena (non si può riempire di nuovo!) e un bicchiere. A ogni manche entrambi versano acqua nel proprio bicchiere di nascosto, poi si confronta: chi ne ha messa di più prende 1 punto e i bicchieri si svuotano. Vince chi arriva per primo a 3 punti: dosate bene la bottiglia, è un gioco d'astuzia!", needs: "2 bottiglie uguali piene, 2 bicchieri" },
+    { title: "🪙 Monete nascoste", rule: "Ognuno ha 10 monete (o fagioli). A ogni manche entrambi ne nascondono un po' in mano e le mostrano insieme: chi ne ha di più prende 1 punto, ma le monete giocate sono perse. Vince chi arriva prima a 3 punti.", needs: "10 monete o fagioli a testa" },
+    { title: "✊ Morra cinese", rule: "Sasso, carta, forbice al meglio dei 5 round.", needs: "Niente" },
+    { title: "🤞 Pari o dispari a squadre", rule: "Al meglio dei 5: a turno una squadra dice «pari» o «dispari», poi tutti buttano le dita insieme. Si somma tutto: chi indovina prende il round.", needs: "Niente" },
+    { title: "🪙 Moneta nel bicchiere", rule: "Da 2 metri di distanza, 5 lanci a testa: vince chi fa entrare più monete nel bicchiere.", needs: "Un bicchiere, 5 monete" },
+    { title: "🧦 Canestro col calzino", rule: "Appallottolate un paio di calzini: 5 tiri a testa da 3 metri dentro una cesta o un secchio. Vince chi ne fa entrare di più.", needs: "Calzini, cesta o secchio" },
+    { title: "🏓 Pallina nel bicchiere", rule: "Un tiro a testa per turno: la pallina deve finire in uno dei 6 bicchieri sul tavolo (anche di rimbalzo). Vince chi svuota per primo il tavolo dell'avversario.", needs: "12 bicchieri, una pallina da ping pong" },
+    { title: "🍾 Bottle flip", rule: "Lanciate una bottiglia d'acqua mezza piena facendola ruotare: vince chi per primo la fa atterrare in piedi 3 volte.", needs: "Bottiglietta d'acqua riempita a un terzo" },
+    { title: "🎯 Tappo sul bordo", rule: "Fate scivolare un tappo sul tavolo con un colpo di dito: vince chi lo ferma più vicino al bordo senza farlo cadere. 3 tentativi a testa, conta il migliore.", needs: "Tappi di bottiglia" },
+    { title: "✈️ Aeroplano di carta", rule: "3 minuti per costruire un aeroplano di carta, poi un lancio a testa: vince quello che vola più lontano.", needs: "Fogli A4", time: 180 },
+    { title: "🎈 Palloncino in volo", rule: "Tenete in aria un palloncino solo soffiando, senza toccarlo: vince chi lo tiene su più a lungo.", needs: "Palloncini gonfi" },
+    { title: "🤹 Battiti di mani", rule: "Lanciate una pallina in aria e battete le mani più volte possibile prima di riprenderla. 3 tentativi: conta il record.", needs: "Una pallina o un'arancia" },
+    { title: "💪 Monete dal gomito", rule: "Mettete una pila di monete sul gomito piegato, poi abbassate il braccio di scatto e afferratele al volo. Vince chi ne prende di più.", needs: "Monete" },
+    { title: "🃏 Castello di carte", rule: "Avete 90 secondi: vince chi costruisce il castello di carte più alto (conta quello in piedi allo scadere).", needs: "Due mazzi di carte", time: 90 },
+    { title: "🥤 Piramide di bicchieri", rule: "Costruite una piramide di 10 bicchieri (4-3-2-1) e poi rimettete tutti i bicchieri in una sola pila: vince il più veloce.", needs: "10 bicchieri di plastica a testa" },
+    { title: "🪙 Torre di monete", rule: "Con una mano sola, in 30 secondi: vince chi impila più monete in una torre che resta in piedi.", needs: "Tante monete", time: 30 },
+    { title: "🪡 Filo nell'ago", rule: "Vince chi infila per primo il filo nella cruna dell'ago.", needs: "2 aghi e filo" },
+    { title: "🍪 Biscotto in bocca", rule: "Biscotto appoggiato sulla fronte: portatelo fino alla bocca solo con i muscoli del viso, senza mani. Vince il più veloce (se cade si ricomincia).", needs: "Biscotti tipo Oreo", time: 60 },
+    { title: "🥄 Cucchiaio sul naso", rule: "Appendete un cucchiaio al naso (alitateci un po' sopra prima): vince chi lo tiene su più a lungo.", needs: "Cucchiai" },
+    { title: "🥚 Uovo sul cucchiaio", rule: "Con il cucchiaio in bocca e un uovo (o una pallina) sopra, fate un percorso fino all'altra parte della stanza e ritorno. Se cade si riparte: vince il più veloce.", needs: "Cucchiai, uova sode o palline" },
+    { title: "✍️ Mano sbagliata", rule: "Scrivete «Duello Lampo» con la mano che non usate di solito. Il resto del gruppo vota la scritta più leggibile.", needs: "Fogli e penne", time: 30 },
+    { title: "⭕ Cerchio perfetto", rule: "Disegnate a occhi chiusi un cerchio il più perfetto possibile. Il gruppo vota il migliore.", needs: "Fogli e penne" },
+    { title: "🧩 Nodo veloce", rule: "Fate un fiocco ai lacci di una scarpa (o a un nastro) con una mano sola: vince il più veloce.", needs: "Scarpe con lacci o nastri" },
+    { title: "📃 Foglio piegato", rule: "Chi riesce a piegare a metà un foglio A4 più volte vince. Niente aiuti!", needs: "Fogli A4" },
+    { title: "🦩 Fenicottero", rule: "In piedi su una gamba sola, a occhi chiusi e braccia incrociate: vince chi resiste di più.", needs: "Spazio libero" },
+    { title: "🧱 Plank", rule: "Posizione di plank sui gomiti: vince chi resiste più a lungo.", needs: "Un tappeto" },
+    { title: "🪑 Sedia invisibile", rule: "Schiena al muro e gambe a 90 gradi, come seduti su una sedia invisibile: vince chi resiste più a lungo.", needs: "Un muro libero" },
+    { title: "🥛 Braccio teso", rule: "Tenete un bicchiere pieno d'acqua a braccio teso davanti a voi: vince chi resiste più a lungo senza abbassare il braccio.", needs: "Bicchieri pieni d'acqua" },
+    { title: "🏋️ Squat lampo", rule: "Vince chi fa più squat completi in 30 secondi (contano solo quelli fatti bene!).", needs: "Spazio libero", time: 30 },
+    { title: "👀 Gara di sguardi", rule: "Fissatevi negli occhi: perde chi sbatte le palpebre, distoglie lo sguardo o ride per primo.", needs: "Niente" },
+    { title: "😐 Non ridere", rule: "Un avversario ha 30 secondi per far ridere l'altro (senza toccarlo). Poi si invertono i ruoli: vince chi resiste.", needs: "Niente", time: 30 },
+    { title: "🤐 Fischio col cracker", rule: "Mangiate un cracker intero: vince il primo che riesce a fischiare.", needs: "Cracker" },
+    { title: "🔍 Caccia al tesoro", rule: "Chi conduce dice un oggetto (es. «qualcosa di giallo», «un cucchiaio», «un calzino»): vince chi lo porta per primo. Al meglio dei 3.", needs: "La casa!" },
+    { title: "🦘 Salto da fermo", rule: "Salto in lungo a piedi uniti da fermi: vince chi salta più lontano. 2 tentativi a testa.", needs: "Spazio libero, metro" },
+    { title: "🧺 Mollette lampo", rule: "Attaccate più mollette possibile al bordo di una scatola o di un cesto in 30 secondi, con una mano sola.", needs: "Mollette per i panni", time: 30 },
+    { title: "🥢 Bacchette", rule: "Spostate da un piatto all'altro più fagioli secchi (o ceci) possibile usando le bacchette, in 30 secondi.", needs: "Bacchette, fagioli secchi, piatti", time: 30 },
+    { title: "🎵 Sedie musicali (a due)", rule: "Una sedia sola e musica: quando la musica si ferma, chi si siede per primo prende il punto. Al meglio dei 5.", needs: "Una sedia, musica" }
+  ];
   const BANDIERE = [
     { name: "Giappone", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Flag_of_Japan.svg/500px-Flag_of_Japan.svg.png" },
     { name: "Brasile", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Flag_of_Brazil.svg/500px-Flag_of_Brazil.svg.png" },
@@ -1068,6 +1118,7 @@
     add("emoji", EMOJI_FILM);
     add("proverbio", PROVERBI);
     add("bandiera", BANDIERE);
+    add("fisica", SFIDE_FISICHE);
     if (enabledTypes.has("anagramma")) ANAGRAMMI.forEach(w => cards.push({ type: "anagramma", word: w }));
     Object.entries(GENERATED_COPIES).forEach(([type, n]) => {
       if (enabledTypes.has(type)) for (let i = 0; i < n; i++) cards.push({ type });
@@ -1271,6 +1322,27 @@
      ========================================================= */
   const RENDERERS = {
     /* ---- Nuovi tipi ---- */
+    fisica(){
+      let rule = card.rule;
+      if (card.range){
+        const [min, max, step] = card.range;
+        const n = min + step * Math.floor(Math.random() * (Math.floor((max - min) / step) + 1));
+        rule = rule.split("{N}").join(String(n));
+      }
+      promptEl.textContent = card.title;
+      promptEl.classList.add("big");
+      const box = document.createElement("div");
+      box.style.cssText = "max-width:640px;text-align:left;line-height:1.55;font-size:1.08rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:16px 20px";
+      const p = document.createElement("p");
+      p.textContent = rule;
+      const needs = document.createElement("p");
+      needs.style.cssText = "margin-top:10px;font-size:0.92rem;opacity:0.75";
+      needs.textContent = "🧰 Serve: " + card.needs;
+      box.append(p, needs);
+      widget.appendChild(box);
+      hintEl.textContent = "Fate la sfida dal vivo, poi assegnate il punto al vincitore.";
+      setupTimer(card.time || 0);
+    },
     emoji(){
       promptEl.textContent = card.q;
       promptEl.classList.add("big");
