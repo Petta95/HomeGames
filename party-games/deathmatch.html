@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deathmatch — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     DEATHMATCH — 12 tessere, una classifica nascosta. File
+     singolo e autocontenuto con lo stesso sistema grafico e la
+     stessa gestione squadre/punteggi globali degli altri giochi.
+     Categorie e immagini sono quelle di Ordina.
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+    --glass-bg: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --accent: #ff3b5c;
+    --accent2: #a855f7;
+    --accent-soft: rgba(255, 59, 92, 0.16);
+    --accent-glow: rgba(255, 59, 92, 0.5);
+    --gold: #ffd54a;
+    --silver: #cfd8e3;
+    --bronze: #e0915a;
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden]{ display: none !important; }
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-blobs{
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #1a1230 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.26;
+    animation: float 22s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+  .bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+  @keyframes float{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-25px) scale(1.08); }
+  }
+
+  /* ---- Navbar ---- */
+  .navbar{
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+  }
+  .nav-back{
+    text-decoration: none; color: var(--text-main);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+  .nav-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  }
+  .nav-title .dot{ width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .nav-right{ display: flex; align-items: center; gap: 10px; }
+  .nav-counter{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
+    background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 999px;
+  }
+  .nav-info-btn{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+
+  /* ---- Stage ---- */
+  .stage{
+    max-width: 1180px; margin: 0 auto; padding: 28px 24px 100px;
+    min-height: calc(100vh - 68px);
+    display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;
+  }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Pulsanti ---- */
+  .btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem;
+    padding: 16px 30px; border-radius: 16px; border: none; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #fff; box-shadow: 0 0 25px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+  .btn-outline{ background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+  .btn-outline:hover{ background: var(--accent-soft); }
+  .btn-ghost{ background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
+  .btn-ghost:hover{ border-color: var(--accent); color: var(--accent); }
+  .btn-small{ padding: 9px 16px; font-size: 0.85rem; border-radius: 11px; }
+  .btn:active{ transform: scale(0.97); }
+  .btn-row{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Tabellone punteggi ---- */
+  .score-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; width: 100%; max-width: 900px; }
+  .score-card{
+    position: relative; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 18px;
+    padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.3s ease;
+  }
+  .score-card.turn{ border-color: var(--team); box-shadow: 0 0 28px -6px var(--team); transform: translateY(-3px); }
+  .score-card.turn::after{
+    content: "TOCCA A TE"; position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    background: var(--team); color: #06090f; font-size: 0.66rem; font-weight: 900; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .score-card.bump{ animation: bump 0.5s ease; }
+  @keyframes bump{ 40%{ transform: translateY(-3px) scale(1.07); } }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
+  .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); line-height: 1.1; }
+  .score-round{ font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+
+  /* ---- Categoria ---- */
+  .question-card{
+    width: 100%; max-width: 900px; border-radius: 26px; padding: 22px 26px;
+    background: linear-gradient(160deg, rgba(255,59,92,0.14), rgba(168,85,247,0.08));
+    border: 2px solid var(--accent); box-shadow: 0 0 50px -16px var(--accent-glow);
+    animation: fadeIn 0.4s ease;
+  }
+  .q-eyebrow{ display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .q-tag{
+    font-size: 0.74rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent);
+  }
+  .q-text{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.3rem, 3.4vw, 2rem); line-height: 1.25; }
+  .q-hint{ margin-top: 8px; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; line-height: 1.45; }
+  .q-hint b{ color: var(--gold); }
+
+  .turn-banner{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+    padding: 10px 22px; border-radius: 999px; background: var(--glass-bg); border: 2px solid var(--team, var(--accent));
+    box-shadow: 0 0 24px -8px var(--team, var(--accent)); transition: all 0.3s ease; animation: fadeIn 0.3s ease;
+  }
+  .turn-banner b{ color: var(--team, var(--accent)); }
+
+  /* ---- Griglia 3x4 delle tessere (flip 3D) ---- */
+  .cards{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: 1000px; }
+  .flip{ display: block; width: 100%; perspective: 1000px; min-height: 228px; cursor: pointer; border: none; background: none; padding: 0; color: inherit; font: inherit; text-align: center; }
+  .flip:disabled{ cursor: default; }
+  .flip-inner{
+    display: block; position: relative; width: 100%; height: 100%; min-height: 228px;
+    transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(.3,.8,.3,1.1);
+  }
+  .flip.revealed .flip-inner{ transform: rotateY(180deg); }
+  .face{
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 18px; padding: 12px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+    border: 2px solid var(--glass-border); background: var(--glass-bg);
+  }
+  .face.front{ transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+  .flip:not(:disabled):hover .face.front{ border-color: var(--accent); box-shadow: 0 0 26px -8px var(--accent-glow); transform: translateY(-3px); }
+  .face.back{
+    transform: rotateY(180deg);
+    border-color: var(--team, var(--accent));
+    background: linear-gradient(160deg, color-mix(in srgb, var(--team, #ff3b5c) 26%, transparent), rgba(255,255,255,0.03));
+    box-shadow: 0 0 26px -10px var(--team, var(--accent));
+  }
+  .thumb{
+    position: relative; width: 104px; height: 104px; border-radius: 16px; overflow: hidden; flex-shrink: 0;
+    background: rgba(255,255,255,0.08); display: grid; place-items: center; font-size: 2.2rem;
+  }
+  .thumb img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #fff; }
+  .back .thumb{ width: 56px; height: 56px; border-radius: 12px; font-size: 1.4rem; }
+  .card-name{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.95rem; line-height: 1.2; }
+  .card-q{ font-size: 0.72rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.4px; }
+  .card-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.05rem; line-height: 1.15; }
+  .card-unit{
+    font-size: 0.7rem; font-weight: 700; color: var(--text-muted); line-height: 1.2; margin-top: -4px;
+    display: block; flex-shrink: 0; max-height: 2.4em; overflow: hidden; max-width: 100%;
+  }
+  .card-rank{
+    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 0.82rem; letter-spacing: 0.4px;
+    padding: 3px 11px; border-radius: 999px; background: rgba(255,255,255,0.12);
+  }
+  .rank-1 .card-rank{ background: var(--gold); color: #3a2a00; }
+  .rank-2 .card-rank{ background: var(--silver); color: #1e2632; }
+  .rank-3 .card-rank{ background: var(--bronze); color: #3a1c06; }
+  .card-pts{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.1rem; color: var(--team, var(--gold)); }
+  .card-by{ font-size: 0.7rem; color: var(--text-muted); font-weight: 700; }
+
+  .controls{ display: flex; flex-direction: column; align-items: center; gap: 14px; }
+
+  /* ---- Reveal: popup al centro con posizione e punti ---- */
+  .reveal-pop{
+    position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; pointer-events: none;
+  }
+  .reveal-box{
+    background: #0f1426; border: 2px solid var(--team, var(--accent)); border-radius: 26px;
+    padding: 22px 34px; min-width: 260px; text-align: center;
+    box-shadow: 0 0 70px -10px var(--team, var(--accent)), 0 30px 80px -20px rgba(0,0,0,0.7);
+    animation: popIn 1.9s ease forwards;
+  }
+  .reveal-rank{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(2.4rem, 8vw, 3.6rem); line-height: 1; }
+  .reveal-name{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.15rem; margin-top: 8px; }
+  .reveal-value{ color: var(--text-muted); font-weight: 700; margin-top: 4px; }
+  .reveal-pts{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.9rem; margin-top: 10px; color: var(--team, var(--gold)); }
+  @keyframes popIn{
+    0%{ opacity: 0; transform: scale(0.6); }
+    12%{ opacity: 1; transform: scale(1.06); }
+    20%{ transform: scale(1); }
+    80%{ opacity: 1; transform: scale(1); }
+    100%{ opacity: 0; transform: scale(0.94); }
+  }
+
+  /* ---- Modali ---- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)); background-color: #0f1426;
+    border: 1px solid var(--glass-border); border-radius: 26px; padding: 30px;
+    max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97); transition: transform 0.25s ease; text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.5rem; color: var(--accent); margin-bottom: 14px; }
+  .modal-card ol{ padding-left: 22px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; line-height: 1.5; font-size: 0.98rem; }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 18px; line-height: 1.45; }
+
+  /* ---- Riepilogo di fine round ---- */
+  .sum-section{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin: 6px 0 10px; }
+  .sum-teams{ display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .sum-team{
+    display: grid; grid-template-columns: 34px 1fr auto auto; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+  }
+  .sum-team.first{ border-color: var(--gold); box-shadow: 0 0 22px -10px var(--gold); }
+  .sum-pos{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.15rem; text-align: center; }
+  .sum-name{ font-weight: 700; display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .sum-name span:last-child{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sum-round{ color: var(--text-muted); font-weight: 700; font-size: 0.9rem; }
+  .sum-total{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: var(--accent); min-width: 44px; text-align: right; }
+  .sum-order{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; margin-bottom: 22px; font-size: 0.88rem; }
+  .sum-order div{ display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+  .sum-order b{ font-family: 'Poppins', sans-serif; min-width: 30px; color: var(--gold); }
+  .sum-order span{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sum-order em{ font-style: normal; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
+
+  /* ---- Coriandoli ---- */
+  .confetti{ position: fixed; inset: 0; pointer-events: none; z-index: 2000; overflow: hidden; }
+  .confetti i{ position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: fall linear forwards; }
+  @keyframes fall{ to{ transform: translate(var(--dx), 110vh) rotate(var(--rot)); } }
+
+  @media (max-width: 860px){
+    .cards{ grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  }
+  @media (max-width: 600px){
+    .navbar{ padding: 10px 14px; gap: 8px; }
+    .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+    .nav-title{ font-size: 1.05rem; gap: 7px; }
+    .nav-counter{ display: none; }
+    .stage{ padding: 18px 10px 70px; gap: 14px; }
+    .btn{ padding: 14px 22px; font-size: 0.95rem; border-radius: 13px; }
+    .score-grid{ gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .score-value{ font-size: 1.6rem; }
+    .question-card{ padding: 16px; border-radius: 20px; }
+    .cards{ gap: 8px; }
+    .face{ padding: 8px 6px; gap: 5px; border-radius: 14px; }
+    .thumb{ width: 72px; height: 72px; border-radius: 12px; }
+    .back .thumb{ width: 40px; height: 40px; }
+    .card-name{ font-size: 0.8rem; }
+    .card-value{ font-size: 0.85rem; }
+    .card-q{ display: none; }
+    .flip, .flip-inner{ min-height: 178px; }
+    .back .thumb, .card-by{ display: none; }
+    .card-pts{ font-size: 0.95rem; }
+    .card-rank{ font-size: 0.72rem; padding: 2px 8px; }
+    .modal-card{ padding: 22px; }
+    .sum-order{ grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>💀 Deathmatch</span>
+  <div class="nav-right">
+    <span class="nav-counter" id="counter">Round 1</span>
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">12 tessere, una classifica nascosta: scegli quelle che stanno più in alto!</p>
+    <ol>
+      <li>A ogni round compare una <strong>categoria</strong> con la sua regola (es. "Ordina dal film uscito prima al più recente") e <strong>12 tessere</strong> coperte, con foto e nome.</li>
+      <li>Le 12 tessere hanno una <strong>classifica nascosta</strong> secondo la regola: il <strong>1° posto vale 12 punti</strong>, il 2° 11 punti… fino al <strong>12° che vale 1 punto</strong>.</li>
+      <li>Le squadre giocano <strong>a turno</strong>: chi è di turno sceglie una tessera, che si gira e mostra il <strong>valore reale</strong>, la <strong>posizione</strong> e i <strong>punti</strong> guadagnati. Poi tocca alla squadra successiva.</li>
+      <li>Quando tutte e 12 le tessere sono scoperte il round finisce: compare il <strong>riepilogo</strong> con la classifica delle squadre e l'ordine completo. Con <strong>➡ Prossima categoria</strong> si continua, e i punti si sommano round dopo round.</li>
+      <li>A ogni round inizia una squadra diversa, così nessuno si prende sempre le scelte migliori.</li>
+    </ol>
+    <p class="modal-note">Categorie, valori e immagini sono gli stessi del gioco Ordina. I punti finiscono anche nel punteggio di serata delle squadre.</p>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ MODAL FINE ROUND ============ -->
+<div class="modal-overlay" id="summaryModal">
+  <div class="modal-card">
+    <div class="modal-title" id="sumTitle">🏁 Fine round</div>
+    <div class="sum-section">Classifica squadre</div>
+    <div class="sum-teams" id="sumTeams"></div>
+    <div class="sum-section" id="sumOrderTitle">Classifica del tabellone</div>
+    <div class="sum-order" id="sumOrder"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="closeSummaryBtn" type="button">👁 Guarda il tabellone</button>
+      <button class="btn btn-primary" id="nextCatBtn" type="button">➡ Prossima categoria</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage">
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <section class="question-card" id="questionCard">
+    <div class="q-eyebrow" id="qTags"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-hint" id="qHint"></div>
+  </section>
+
+  <div class="turn-banner" id="turnBanner"></div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="controls">
+    <div class="btn-row">
+      <button class="btn btn-outline" id="summaryBtn" type="button" hidden>🏁 Riepilogo del round</button>
+      <button class="btn btn-primary" id="nextBtn" type="button" hidden>➡ Prossima categoria</button>
+    </div>
+    <button class="btn btn-ghost btn-small" id="skipBtn" type="button">⏭ Cambia categoria (prima di iniziare)</button>
+  </div>
+</main>
+
+<script>
+  /* =========================================================
+     DATABASE CATEGORIE — copiato da ordina.html (stesso formato:
+     { id, title, rule, order, unit, items:[{ name, slug, value }] },
+     immagini in assets/img/<id>/<slug>.jpg). Se aggiungi
+     categorie a Ordina, copiale anche qui.
+     ========================================================= */
+  /* Età attuale calcolata dalla data di nascita (AAAA-MM-GG), così la
+     categoria "Età delle Celebrità" resta sempre aggiornata. */
+  function ageFrom(birth){
+    const b = new Date(birth + "T00:00:00");
+    const now = new Date();
+    let age = now.getFullYear() - b.getFullYear();
+    if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--;
+    return age;
+  }
+
+  const CATEGORIES = [
+    {
+      id: "vittime-animali", title: "Animali Più Letali",
+      rule: "Ordina dall'animale che causa più vittime umane all'anno a quello che ne causa meno",
+      order: "desc", unit: "vittime/anno",
+      items: [
+        { name: "Zanzara", slug: "zanzara", value: 725000 },
+        { name: "Uomo", slug: "uomo", value: 475000 },
+        { name: "Serpente", slug: "serpente", value: 50000 },
+        { name: "Cane", slug: "cane", value: 25000 },
+        { name: "Lumaca d'Acqua Dolce", slug: "lumaca-dacqua-dolce", value: 8000 },
+        { name: "Scorpione", slug: "scorpione", value: 3000 },
+        { name: "Coccodrillo", slug: "coccodrillo", value: 1000 },
+        { name: "Ippopotamo", slug: "ippopotamo", value: 500 },
+        { name: "Elefante", slug: "elefante", value: 100 },
+        { name: "Leone", slug: "leone", value: 90 },
+        { name: "Medusa", slug: "medusa", value: 70 },
+        { name: "Ragno", slug: "ragno", value: 50 },
+        { name: "Orso", slug: "orso", value: 20 },
+        { name: "Lupo", slug: "lupo", value: 10 },
+        { name: "Squalo", slug: "squalo", value: 6 }
+      ]
+    },
+    {
+      id: "popolazione-citta-it", title: "Città Italiane per Popolazione",
+      rule: "Ordina dalla città più popolosa alla meno popolosa",
+      order: "desc", unit: "abitanti",
+      items: [
+        { name: "Roma", slug: "roma", value: 2748000 },
+        { name: "Milano", slug: "milano", value: 1352000 },
+        { name: "Napoli", slug: "napoli", value: 909000 },
+        { name: "Torino", slug: "torino", value: 848000 },
+        { name: "Palermo", slug: "palermo", value: 630000 },
+        { name: "Genova", slug: "genova", value: 558000 },
+        { name: "Bologna", slug: "bologna", value: 391000 },
+        { name: "Firenze", slug: "firenze", value: 366000 },
+        { name: "Bari", slug: "bari", value: 316000 },
+        { name: "Catania", slug: "catania", value: 293000 },
+        { name: "Verona", slug: "verona", value: 257000 },
+        { name: "Venezia", slug: "venezia", value: 254000 },
+        { name: "Messina", slug: "messina", value: 216000 },
+        { name: "Padova", slug: "padova", value: 202000 },
+        { name: "Modena", slug: "modena", value: 185000 }
+      ]
+    },
+    {
+      id: "monumenti-altezza", title: "Altezza dei Monumenti",
+      rule: "Ordina dal monumento più alto al più basso",
+      order: "desc", unit: "metri",
+      items: [
+        { name: "Burj Khalifa", slug: "burj-khalifa", value: 828 },
+        { name: "Tokyo Skytree", slug: "tokyo-skytree", value: 634 },
+        { name: "Shanghai Tower", slug: "shanghai-tower", value: 632 },
+        { name: "Empire State Building", slug: "empire-state-building", value: 381 },
+        { name: "Tokyo Tower", slug: "tokyo-tower", value: 333 },
+        { name: "Torre Eiffel", slug: "torre-eiffel", value: 330 },
+        { name: "Sagrada Familia", slug: "sagrada-familia", value: 172 },
+        { name: "Piramide di Cheope", slug: "piramide-di-cheope", value: 147 },
+        { name: "Duomo di Milano", slug: "duomo-di-milano", value: 108 },
+        { name: "Big Ben", slug: "big-ben", value: 96 },
+        { name: "Statua della Libertà", slug: "statua-della-liberta", value: 93 },
+        { name: "Ghirlandina", slug: "ghirlandina", value: 89 },
+        { name: "Torre di Pisa", slug: "torre-di-pisa", value: 57 },
+        { name: "Arco di Trionfo", slug: "arco-di-trionfo", value: 50 },
+        { name: "Colosseo", slug: "colosseo", value: 48 }
+      ]
+    },
+    {
+      id: "velocita-animali", title: "Velocità Massima",
+      rule: "Ordina dall'animale (o persona) più veloce al più lento",
+      order: "desc", unit: "km/h",
+      items: [
+        { name: "Falco Pellegrino", slug: "falco-pellegrino", value: 389 },
+        { name: "Aquila Reale", slug: "aquila-reale", value: 240 },
+        { name: "Ghepardo", slug: "ghepardo", value: 120 },
+        { name: "Pesce Vela", slug: "pesce-vela", value: 110 },
+        { name: "Marlin Nero", slug: "marlin-nero", value: 100 },
+        { name: "Antilope", slug: "antilope-pronghorn", value: 88 },
+        { name: "Leone", slug: "leone", value: 80 },
+        { name: "Struzzo", slug: "struzzo", value: 70 },
+        { name: "Cavallo di Razza", slug: "cavallo-di-razza", value: 69 },
+        { name: "Coyote", slug: "coyote", value: 65 },
+        { name: "Gatto Domestico", slug: "gatto-domestico", value: 48 },
+        { name: "Usain Bolt", slug: "usain-bolt", value: 44 },
+        { name: "Elefante", slug: "elefante", value: 40 },
+        { name: "Persona che Corre (media)", slug: "persona-che-corre", value: 24 },
+        { name: "Lumaca", slug: "lumaca", value: 0.05 }
+      ]
+    },
+    {
+      id: "gradazione-drink", title: "Gradazione Alcolica dei Drink",
+      rule: "Ordina dal drink più alcolico al meno alcolico",
+      order: "desc", unit: "° alcolici",
+      items: [
+        { name: "Alcol Puro", slug: "alcol-puro", value: 95 },
+        { name: "Assenzio", slug: "assenzio", value: 70 },
+        { name: "Whisky", slug: "whisky", value: 43 },
+        { name: "Vodka Liscia", slug: "vodka-liscia", value: 40 },
+        { name: "Rum", slug: "rum", value: 38 },
+        { name: "Gin", slug: "gin", value: 37 },
+        { name: "Tequila", slug: "tequila", value: 35 },
+        { name: "Amaro", slug: "amaro", value: 30 },
+        { name: "Negroni", slug: "negroni", value: 24 },
+        { name: "Vino Rosso", slug: "vino-rosso", value: 13 },
+        { name: "Vino Bianco", slug: "vino-bianco", value: 12 },
+        { name: "Prosecco", slug: "prosecco", value: 11.5 },
+        { name: "Mojito", slug: "mojito", value: 11 },
+        { name: "Spritz", slug: "spritz", value: 8 },
+        { name: "Birra", slug: "birra", value: 5 }
+      ]
+    },
+    {
+      id: "anime-episodi", title: "Anime con Più Episodi",
+      rule: "Ordina dall'anime con più episodi totali a quello con meno episodi",
+      order: "desc", unit: "episodi totali",
+      items: [
+        { name: "Sazae-san", slug: "sazae-san", value: 7800 },
+        { name: "Doraemon", slug: "doraemon", value: 2400 },
+        { name: "Pokémon", slug: "pokemon", value: 1250 },
+        { name: "Detective Conan", slug: "detective-conan", value: 1130 },
+        { name: "One Piece", slug: "one-piece", value: 1100 },
+        { name: "Naruto", slug: "naruto-shippuden", value: 720 },
+        { name: "Dragon Ball", slug: "dragon-ball", value: 639 },
+        { name: "Bleach", slug: "bleach", value: 366 },
+        { name: "Fairy Tail", slug: "fairy-tail", value: 328 },
+        { name: "My Hero Academia", slug: "my-hero-academia", value: 159 },
+        { name: "Attack on Titan", slug: "attack-on-titan", value: 94 },
+        { name: "Fullmetal Alchemist", slug: "fullmetal-alchemist-brotherhood", value: 64 },
+        { name: "Death Note", slug: "death-note", value: 37 },
+        { name: "Cowboy Bebop", slug: "cowboy-bebop", value: 26 },
+        { name: "Neon Genesis Evangelion", slug: "neon-genesis-evangelion", value: 25 }
+      ]
+    },
+    {
+      id: "instagram-follower", title: "Follower Instagram (Celebrità)",
+      rule: "Ordina dal profilo con più follower a quello con meno follower",
+      order: "desc", unit: "milioni di follower",
+      items: [
+        { name: "Cristiano Ronaldo", slug: "cristiano-ronaldo", value: 680 },
+        { name: "Lionel Messi", slug: "lionel-messi", value: 510 },
+        { name: "Selena Gomez", slug: "selena-gomez", value: 430 },
+        { name: "Kylie Jenner", slug: "kylie-jenner", value: 400 },
+        { name: "Dwayne Johnson", slug: "dwayne-johnson", value: 395 },
+        { name: "Ariana Grande", slug: "ariana-grande", value: 380 },
+        { name: "Kim Kardashian", slug: "kim-kardashian", value: 360 },
+        { name: "Beyoncé", slug: "beyonce", value: 310 },
+        { name: "Justin Bieber", slug: "justin-bieber", value: 293 },
+        { name: "Taylor Swift", slug: "taylor-swift", value: 280 },
+        { name: "Neymar", slug: "neymar", value: 220 },
+        { name: "Nicki Minaj", slug: "nicki-minaj", value: 215 },
+        { name: "Zendaya", slug: "zendaya", value: 185 },
+        { name: "Cardi B", slug: "cardi-b", value: 165 },
+        { name: "Drake", slug: "drake", value: 140 }
+      ]
+    },
+    {
+      id: "calorie-cibo", title: "Cibi più Calorici",
+      rule: "Ordina dall'alimento più calorico (per 100g) al meno calorico",
+      order: "desc", unit: "kcal/100g",
+      items: [
+        { name: "Olio d'Oliva", slug: "olio-doliva", value: 884 },
+        { name: "Burro", slug: "burro", value: 717 },
+        { name: "Noci", slug: "noci", value: 654 },
+        { name: "Cioccolato Fondente", slug: "cioccolato-fondente", value: 546 },
+        { name: "Pancetta", slug: "pancetta", value: 541 },
+        { name: "Nutella", slug: "nutella", value: 539 },
+        { name: "Salame", slug: "salame", value: 407 },
+        { name: "Parmigiano", slug: "parmigiano", value: 392 },
+        { name: "Patatine Fritte", slug: "patatine-fritte", value: 312 },
+        { name: "Pizza Margherita", slug: "pizza-margherita", value: 266 },
+        { name: "Pane", slug: "pane", value: 265 },
+        { name: "Pasta al Pomodoro", slug: "pasta-al-pomodoro", value: 158 },
+        { name: "Banana", slug: "banana", value: 89 },
+        { name: "Mela", slug: "mela", value: 52 },
+        { name: "Insalata Verde", slug: "insalata-verde", value: 15 }
+      ]
+    },
+    {
+      id: "incassi-film", title: "Film Più Redditizi di Sempre",
+      rule: "Ordina dal film che ha incassato di più al botteghino mondiale a quello che ha incassato di meno",
+      order: "desc", unit: "milioni $ incasso mondiale",
+      items: [
+        { name: "Avatar", slug: "avatar", value: 2923 },
+        { name: "Avengers: Endgame", slug: "avengers-endgame", value: 2799 },
+        { name: "Avatar: La Via dell'Acqua", slug: "avatar-la-via-dellacqua", value: 2320 },
+        { name: "Titanic", slug: "titanic", value: 2264 },
+        { name: "Star Wars: Il Risveglio della Forza", slug: "star-wars-risveglio-della-forza", value: 2071 },
+        { name: "Avengers: Infinity War", slug: "avengers-infinity-war", value: 2048 },
+        { name: "Spider-Man: No Way Home", slug: "spider-man-no-way-home", value: 1921 },
+        { name: "Inside Out 2", slug: "inside-out-2", value: 1698 },
+        { name: "Jurassic World", slug: "jurassic-world", value: 1671 },
+        { name: "Il Re Leone (2019)", slug: "il-re-leone-2019", value: 1663 },
+        { name: "The Avengers", slug: "the-avengers", value: 1519 },
+        { name: "Furious 7", slug: "furious-7", value: 1516 },
+        { name: "Top Gun: Maverick", slug: "top-gun-maverick", value: 1496 },
+        { name: "Frozen II", slug: "frozen-2", value: 1450 },
+        { name: "Barbie", slug: "barbie", value: 1447 }
+      ]
+    },
+    {
+      id: "anno-uscita-film", title: "Anno di Uscita dei Film Cult",
+      rule: "Ordina dal film uscito prima al più recente",
+      order: "asc", unit: "anno di uscita",
+      items: [
+        { name: "Il Padrino", slug: "il-padrino", value: 1972 },
+        { name: "Star Wars: Una Nuova Speranza", slug: "star-wars-una-nuova-speranza", value: 1977 },
+        { name: "E.T. l'Extra-Terrestre", slug: "et-lextra-terrestre", value: 1982 },
+        { name: "Ritorno al Futuro", slug: "ritorno-al-futuro", value: 1985 },
+        { name: "Jurassic Park", slug: "jurassic-park", value: 1993 },
+        { name: "Titanic", slug: "titanic", value: 1997 },
+        { name: "Il Signore degli Anelli: La Compagnia dell'Anello", slug: "signore-degli-anelli-compagnia-anello", value: 2001 },
+        { name: "Pirati dei Caraibi: La Maledizione della Prima Luna", slug: "pirati-dei-caraibi-maledizione-prima-luna", value: 2003 },
+        { name: "Avatar", slug: "avatar", value: 2009 },
+        { name: "Inception", slug: "inception", value: 2010 },
+        { name: "The Avengers", slug: "the-avengers", value: 2012 },
+        { name: "Frozen - Il Regno di Ghiaccio", slug: "frozen", value: 2013 },
+        { name: "Interstellar", slug: "interstellar", value: 2014 },
+        { name: "Joker", slug: "joker", value: 2019 },
+        { name: "Barbie", slug: "barbie", value: 2023 }
+      ]
+    },
+    {
+      id: "stati-popolazione", title: "Stati più Popolosi al Mondo",
+      rule: "Ordina dallo stato con più abitanti a quello con meno abitanti",
+      order: "desc", unit: "milioni di abitanti",
+      items: [
+        { name: "India", slug: "india", value: 1441 },
+        { name: "Cina", slug: "cina", value: 1425 },
+        { name: "Stati Uniti", slug: "stati-uniti", value: 340 },
+        { name: "Indonesia", slug: "indonesia", value: 277 },
+        { name: "Pakistan", slug: "pakistan", value: 240 },
+        { name: "Nigeria", slug: "nigeria", value: 227 },
+        { name: "Brasile", slug: "brasile", value: 216 },
+        { name: "Bangladesh", slug: "bangladesh", value: 173 },
+        { name: "Russia", slug: "russia", value: 144 },
+        { name: "Messico", slug: "messico", value: 129 },
+        { name: "Etiopia", slug: "etiopia", value: 126 },
+        { name: "Giappone", slug: "giappone", value: 124 },
+        { name: "Filippine", slug: "filippine", value: 117 },
+        { name: "Egitto", slug: "egitto", value: 113 },
+        { name: "Vietnam", slug: "vietnam", value: 100 }
+      ]
+    },
+    {
+      id: "anno-fondazione-brand", title: "Anno di Fondazione dei Brand",
+      rule: "Ordina le aziende dal brand più vecchio al più recente",
+      order: "asc", unit: "anno di fondazione",
+      items: [
+        { name: "Fiat", slug: "fiat", value: 1899 },
+        { name: "Levi's", slug: "levis", value: 1853 },
+        { name: "Coca-Cola", slug: "coca-cola", value: 1886 },
+        { name: "Nintendo", slug: "nintendo", value: 1889 },
+        { name: "Gucci", slug: "gucci", value: 1921 },
+        { name: "Lego", slug: "lego", value: 1932 },
+        { name: "Samsung", slug: "samsung", value: 1938 },
+        { name: "McDonald's", slug: "mcdonalds", value: 1940 },
+        { name: "Disney", slug: "disney", value: 1923 },
+        { name: "Ferrari", slug: "ferrari", value: 1947 },
+        { name: "Amazon", slug: "amazon", value: 1994 },
+        { name: "Nike", slug: "nike", value: 1964 },
+        { name: "Microsoft", slug: "microsoft", value: 1975 },
+        { name: "Apple", slug: "apple", value: 1976 },
+        { name: "Google", slug: "google", value: 1998 }
+      ]
+    },
+    {
+      id: "ascolti-spotify", title: "Brani Più Ascoltati su Spotify",
+      rule: "Ordina i brani dal più ascoltato (streams totali) al meno ascoltato",
+      order: "desc", unit: "miliardi di streams",
+      items: [
+        { name: "Blinding Lights - The Weeknd", slug: "blinding-lights", value: 5.5 },
+        { name: "Shape of You - Ed Sheeran", slug: "shape-of-you", value: 5.0 },
+        { name: "One Dance - Drake", slug: "one-dance", value: 4.4 },
+        { name: "Someone You Loved - Lewis Capaldi", slug: "someone-you-loved", value: 4.3 },
+        { name: "Perfect - Ed Sheeran", slug: "perfect", value: 4.0 },
+        { name: "Viva La Vida - Coldplay", slug: "viva-la-vida", value: 3.4 },
+        { name: "Bohemian Rhapsody - Queen", slug: "bohemian-rhapsody", value: 3.2 },
+        { name: "Beat It - Michael Jackson", slug: "beat-it", value: 2.1 },
+        { name: "Without Me - Eminem", slug: "without-me", value: 2.8 },
+        { name: "Sorry - Justin Bieber", slug: "sorry", value: 2.3 },
+        { name: "Baby One More Time - Britney Spears", slug: "baby-one-more-time", value: 1.3 },
+        { name: "Somewhere Over The Rainbow - Israel", slug: "somewhere-over-the-rainbow", value: 1.8 },
+        { name: "As It Was - Harry Stiles", slug: "as-it-was", value: 4.5 },
+        { name: "Another Love - Tom Odell", slug: "another-love", value: 3.6 },
+        { name: "Gangnam Style - PSY", slug: "gangnam-style", value: 0.7 }
+      ]
+    },
+    {
+      id: "costo-m2-citta-it", title: "Prezzo delle Case per Metro Quadro",
+      rule: "Ordina le città italiane dal prezzo medio al m² più alto al più basso",
+      order: "desc", unit: "€/m²",
+      items: [
+        { name: "Milano", slug: "milano", value: 5200 },
+        { name: "Firenze", slug: "firenze", value: 4300 },
+        { name: "Venezia", slug: "venezia", value: 4100 },
+        { name: "Bologna", slug: "bologna", value: 3400 },
+        { name: "Roma", slug: "roma", value: 3300 },
+        { name: "Napoli", slug: "napoli", value: 2600 },
+        { name: "Verona", slug: "verona", value: 2300 },
+        { name: "Padova", slug: "padova", value: 2100 },
+        { name: "Torino", slug: "torino", value: 2000 },
+        { name: "Genova", slug: "genova", value: 1950 },
+        { name: "Modena", slug: "modena", value: 1900 },
+        { name: "Bari", slug: "bari", value: 1750 },
+        { name: "Palermo", slug: "palermo", value: 1500 },
+        { name: "Catania", slug: "catania", value: 1350 },
+        { name: "Messina", slug: "messina", value: 1200 }
+      ]
+    },
+    {
+      id: "anno-invenzione", title: "Anno di Invenzione degli Oggetti Quotidiani",
+      rule: "Ordina gli oggetti quotidiani dall'anno di invenzione più antico a quello più recente",
+      order: "asc", unit: "anno di invenzione",
+      items: [
+        { name: "Forchetta", slug: "forchetta", value: 1004 },
+        { name: "Occhiali da Vista", slug: "occhiali-da-vista", value: 1286 },
+        { name: "Gabinetto con Sciacquone", slug: "gabinetto-sciacquone", value: 1596 },
+        { name: "Fotografia", slug: "fotografia", value: 1826 },
+        { name: "Paracadute", slug: "paracadute", value: 1783 },
+        { name: "Aereoplano", slug: "aereoplano", value: 1903 },
+        { name: "Fiammiferi", slug: "fiammiferi", value: 1827 },
+        { name: "Anestesia", slug: "anestesia", value: 1846 },
+        { name: "Carta Igienica", slug: "carta-igienica", value: 1857 },
+        { name: "Telefono", slug: "telefono", value: 1876 },
+        { name: "Lampadina", slug: "lampadina", value: 1879 },
+        { name: "Lenti a Contatto", slug: "lenti-a-contatto", value: 1887 },
+        { name: "Cerniera Lampo (Zip)", slug: "cerniera-lampo", value: 1893 },
+        { name: "Microonde", slug: "microonde", value: 1946 },
+        { name: "Pianoforte", slug: "pianoforte", value: 1700 }
+      ]
+    },
+    {
+      id: "anno-uscita-classici-animazione", title: "Anno di Uscita dei Classici d'Animazione",
+      rule: "Ordina i classici Disney/Pixar/DreamWorks dal più vecchio al più recente",
+      order: "asc", unit: "anno di uscita",
+      items: [
+        { name: "Biancaneve e i Sette Nani", slug: "biancaneve-e-i-sette-nani", value: 1937 },
+        { name: "Pinocchio", slug: "pinocchio", value: 1940 },
+        { name: "Bambi", slug: "bambi", value: 1942 },
+        { name: "Cenerentola", slug: "cenerentola", value: 1950 },
+        { name: "La Bella Addormentata nel Bosco", slug: "la-bella-addormentata-nel-bosco", value: 1959 },
+        { name: "La Carica dei 101", slug: "la-carica-dei-101", value: 1961 },
+        { name: "Il Libro della Giungla", slug: "il-libro-della-giungla", value: 1967 },
+        { name: "La Sirenetta", slug: "la-sirenetta", value: 1989 },
+        { name: "La Bella e la Bestia", slug: "la-bella-e-la-bestia", value: 1991 },
+        { name: "Aladdin", slug: "aladdin", value: 1992 },
+        { name: "Il Re Leone", slug: "il-re-leone", value: 1994 },
+        { name: "Toy Story", slug: "toy-story", value: 1995 },
+        { name: "Shrek", slug: "shrek", value: 2001 },
+        { name: "Alla Ricerca di Nemo", slug: "alla-ricerca-di-nemo", value: 2003 },
+        { name: "Frozen", slug: "frozen", value: 2013 }
+      ]
+    },
+    {
+      id: "animali-piu-numerosi", title: "Animali più Numerosi al Mondo",
+      rule: "Ordina gli animali (esclusi pesci e insetti) dalla popolazione mondiale stimata più alta alla più bassa",
+      order: "desc", unit: "esemplari stimati",
+      items: [
+        { name: "Polli", slug: "polli", value: 33000000000 },
+        { name: "Esseri Umani", slug: "esseri-umani", value: 8100000000 },
+        { name: "Bovini", slug: "bovini", value: 1500000000 },
+        { name: "Pecore", slug: "pecore", value: 1200000000 },
+        { name: "Anatre", slug: "anatre", value: 1100000000 },
+        { name: "Maiali", slug: "maiali", value: 980000000 },
+        { name: "Cani", slug: "cani", value: 900000000 },
+        { name: "Gatti", slug: "gatti", value: 600000000 },
+        { name: "Capre", slug: "capre", value: 570000000 },
+        { name: "Cavalli", slug: "cavalli", value: 60000000 },
+        { name: "Elefanti", slug: "elefanti", value: 415000 },
+        { name: "Gorilla", slug: "gorilla", value: 316000 },
+        { name: "Leoni", slug: "leoni", value: 20000 },
+        { name: "Tigri", slug: "tigri", value: 5500 },
+        { name: "Panda Giganti", slug: "panda-giganti", value: 1864 }
+      ]
+    },
+    {
+      id: "ricchezza-personaggi-fantasy", title: "Ricchezza dei Personaggi Fantasy",
+      rule: "Ordina i personaggi immaginari dal patrimonio stimato più alto al più basso",
+      order: "desc", unit: "miliardi $ (stima)",
+      items: [
+        { name: "Paperon de' Paperoni", slug: "paperon-de-paperoni", value: 65.4 },
+        { name: "Smaug", slug: "smaug", value: 54.1 },
+        { name: "Jabba the Hutt", slug: "jabba-the-hutt", value: 40 },
+        { name: "Tony Stark", slug: "tony-stark", value: 12.4 },
+        { name: "Mr Monopoli", slug: "mr-monopoli", value: 2.5 },
+        { name: "Bruce Wayne", slug: "bruce-wayne", value: 9.2 },
+        { name: "Mr. Burns", slug: "mr-burns", value: 8.4 },
+        { name: "Willy Wonka", slug: "willy-wonka", value: 8 },
+        { name: "Crudelia De Mon", slug: "cruella-de-vil", value: 6.5 },
+        { name: "Conte Dracula", slug: "conte-dracula", value: 5 },
+        { name: "Jafar", slug: "jafar", value: 3.8 },
+        { name: "Capitan Uncino", slug: "capitan-uncino", value: 2.1 },
+        { name: "Aladdin", slug: "aladdin-principe", value: 1.5 },
+        { name: "Robin Hood", slug: "robin-hood", value: 0.9 },
+        { name: "Jack Sparrow", slug: "jack-sparrow", value: 0.4 }
+      ]
+    },
+    {
+      id: "prezzo-cibi-lusso", title: "Prezzo dei Cibi di Lusso al Chilogrammo",
+      rule: "Ordina i cibi pregiati dal più costoso al meno costoso al chilogrammo",
+      order: "desc", unit: "€/kg (stima)",
+      items: [
+        { name: "Zafferano", slug: "zafferano", value: 8000 },
+        { name: "Tartufo Bianco d'Alba", slug: "tartufo-bianco-dalba", value: 6000 },
+        { name: "Caviale Beluga", slug: "caviale-beluga", value: 5000 },
+        { name: "Formaggio Pule", slug: "formaggio-pule", value: 1000 },
+        { name: "Tartufo Nero Pregiato", slug: "tartufo-nero-pregiato", value: 800 },
+        { name: "Aceto Balsamico Tradizionale Extravecchio", slug: "aceto-balsamico-tradizionale-extravecchio", value: 400 },
+        { name: "Vaniglia del Madagascar", slug: "vaniglia-del-madagascar", value: 350 },
+        { name: "Carne Wagyu A5", slug: "carne-wagyu-a5", value: 300 },
+        { name: "Prosciutto Iberico di Bellota", slug: "prosciutto-iberico-di-bellota", value: 150 },
+        { name: "Foie Gras", slug: "foie-gras", value: 120 },
+        { name: "Miele di Manuka", slug: "miele-di-manuka", value: 100 },
+        { name: "Parmigiano Reggiano 36 mesi", slug: "parmigiano-reggiano-36-mesi", value: 40 },
+        { name: "Salmone Selvaggio Affumicato", slug: "salmone-selvaggio-affumicato", value: 35 },
+        { name: "Olio Extravergine DOP", slug: "olio-extravergine-dop", value: 25 },
+        { name: "Cioccolato Fondente Gourmet 85%", slug: "cioccolato-fondente-gourmet", value: 20 }
+      ]
+    },
+    {
+      id: "altezza-personaggi-famosi", title: "Altezza dei Personaggi Super Famosi",
+      rule: "Ordina i personaggi dal più alto al più basso",
+      order: "desc", unit: "cm",
+      items: [
+        { name: "Ben Affleck", slug: "ben-affleck", value: 192 },
+        { name: "Dwayne Johnson", slug: "dwayne-johnson", value: 190 },
+        { name: "Will Smith", slug: "will-smith", value: 188 },
+        { name: "Cristiano Ronaldo", slug: "cristiano-ronaldo", value: 187 },
+        { name: "Leonardo DiCaprio", slug: "leonardo-dicaprio", value: 183 },
+        { name: "Brad Pitt", slug: "brad-pitt", value: 180 },
+        { name: "Zendaya", slug: "zendaya", value: 178 },
+        { name: "Justin Bieber", slug: "justin-bieber", value: 175 },
+        { name: "Tom Holland", slug: "tom-holland", value: 173 },
+        { name: "Tom Cruise", slug: "tom-cruise", value: 170 },
+        { name: "Bruno Mars", slug: "bruno-mars", value: 165 },
+        { name: "Scarlett Johansson", slug: "scarlett-johansson", value: 160 },
+        { name: "Giacomino Poretti", slug: "giacomino-poretti", value: 158 },
+        { name: "Ariana Grande", slug: "ariana-grande", value: 154 },
+        { name: "Kim Kardashian", slug: "kim-kardashian", value: 157 }
+      ]
+    },
+    {
+      id: "paesi-piu-visitati", title: "Paesi più Visitati al Mondo",
+      rule: "Ordina i paesi dal maggior numero di arrivi turistici internazionali all'anno al minore",
+      order: "desc", unit: "milioni di turisti/anno",
+      items: [
+        { name: "Francia", slug: "francia", value: 90 },
+        { name: "Spagna", slug: "spagna", value: 83.7 },
+        { name: "Stati Uniti", slug: "stati-uniti", value: 79.3 },
+        { name: "Cina", slug: "cina", value: 65.7 },
+        { name: "Italia", slug: "italia", value: 64.5 },
+        { name: "Turchia", slug: "turchia", value: 51.2 },
+        { name: "Messico", slug: "messico", value: 45 },
+        { name: "Thailandia", slug: "thailandia", value: 39.8 },
+        { name: "Germania", slug: "germania", value: 39.6 },
+        { name: "Regno Unito", slug: "regno-unito", value: 39.4 },
+        { name: "Giappone", slug: "giappone", value: 32.2 },
+        { name: "Austria", slug: "austria", value: 31.9 },
+        { name: "Grecia", slug: "grecia", value: 31.3 },
+        { name: "Malesia", slug: "malesia", value: 26.1 },
+        { name: "Russia", slug: "russia", value: 24.4 }
+      ]
+    },
+    {
+      id: "sport-piu-praticati", title: "Sport più Praticati al Mondo",
+      rule: "Ordina gli sport dal maggior numero stimato di praticanti/appassionati nel mondo al minore",
+      order: "desc", unit: "milioni di praticanti/appassionati stimati",
+      items: [
+        { name: "Calcio", slug: "calcio", value: 4000 },
+        { name: "Cricket", slug: "cricket", value: 2500 },
+        { name: "Pallacanestro", slug: "pallacanestro", value: 2200 },
+        { name: "Hockey su Prato", slug: "hockey-su-prato", value: 2000 },
+        { name: "Tennis", slug: "tennis", value: 1000 },
+        { name: "Pallavolo", slug: "pallavolo", value: 900 },
+        { name: "Tennistavolo", slug: "tennistavolo", value: 875 },
+        { name: "Baseball", slug: "baseball", value: 500 },
+        { name: "Rugby", slug: "rugby", value: 475 },
+        { name: "Golf", slug: "golf", value: 450 },
+        { name: "Football Americano", slug: "football-americano", value: 410 },
+        { name: "Boxe", slug: "boxe", value: 400 },
+        { name: "Nuoto", slug: "nuoto", value: 370 },
+        { name: "Ciclismo", slug: "ciclismo", value: 250 },
+        { name: "Badminton", slug: "badminton", value: 220 }
+      ]
+    },
+    {
+      id: "sport-piu-decessi", title: "Sport con più Decessi all'Anno",
+      rule: "Ordina gli sport dal maggior numero stimato di decessi all'anno nel mondo al minore (incidenza e volume dei praticanti)",
+      order: "desc", unit: "decessi stimati/anno nel mondo",
+      items: [
+        { name: "Nuoto", slug: "nuoto", value: 236000 },
+        { name: "Ciclismo", slug: "ciclismo", value: 41000 },
+        { name: "Calcio", slug: "calcio", value: 900 },
+        { name: "Corsa", slug: "corsa", value: 300 },
+        { name: "Sci Alpino", slug: "sci-alpino", value: 200 },
+        { name: "Equitazione", slug: "equitazione", value: 150 },
+        { name: "Immersioni Subacquee", slug: "immersioni-subacquee", value: 130 },
+        { name: "Football Americano", slug: "football-americano", value: 110 },
+        { name: "Alpinismo", slug: "alpinismo", value: 100 },
+        { name: "Apnea / Freediving", slug: "apnea-freediving", value: 60 },
+        { name: "Boxe", slug: "boxe", value: 40 },
+        { name: "Paracadutismo", slug: "paracadutismo", value: 30 },
+        { name: "Rugby", slug: "rugby", value: 25 },
+        { name: "Wingsuit Flying", slug: "wingsuit-flying", value: 20 },
+        { name: "BASE Jumping", slug: "base-jumping", value: 15 }
+      ]
+    },
+    {
+      id: "velocita-veicoli", title: "Velocità Massima dei Veicoli",
+      rule: "Ordina i veicoli dal più veloce al più lento (velocità massima raggiungibile)",
+      order: "desc", unit: "km/h",
+      items: [
+        { name: "Navetta Spaziale", slug: "navetta-spaziale", value: 28000 },
+        { name: "Jet Militare", slug: "jet-militare-sr-71", value: 3540 },
+        { name: "Jet Privato", slug: "jet-privato", value: 1130 },
+        { name: "Aereo di Linea", slug: "aereo-di-linea", value: 920 },
+        { name: "Auto Sportiva Stradale", slug: "auto-sportiva-bugatti-chiron", value: 490 },
+        { name: "Elicottero", slug: "elicottero", value: 472 },
+        { name: "Treno Maglev", slug: "treno-maglev", value: 431 },
+        { name: "Auto di Formula 1", slug: "auto-formula-1", value: 372 },
+        { name: "Moto da Superbike (MotoGP)", slug: "moto-superbike-motogp", value: 366 },
+        { name: "Treno Proiettile", slug: "treno-proiettile-shinkansen", value: 320 },
+        { name: "Auto Comune", slug: "auto-comune", value: 180 },
+        { name: "Moto Comune", slug: "moto-comune", value: 130 },
+        { name: "Quad / ATV", slug: "quad-atv", value: 120 },
+        { name: "Bicicletta", slug: "bicicletta", value: 45 },
+        { name: "Monopattino Elettrico", slug: "monopattino-elettrico", value: 25 }
+      ]
+    },
+    {
+      id: "dipendenze-piu-comuni", title: "Dipendenze più Comuni al Mondo",
+      rule: "Ordina le dipendenze dal maggior numero stimato di persone affette nel mondo al minore",
+      order: "desc", unit: "milioni di persone (stima)",
+      items: [
+        { name: "Caffeina", slug: "caffeina", value: 2700 },
+        { name: "Nicotina (Tabacco)", slug: "nicotina-tabacco", value: 1300 },
+        { name: "Alcol", slug: "alcol", value: 400 },
+        { name: "Zucchero", slug: "zucchero", value: 300 },
+        { name: "Internet / Smartphone", slug: "internet-smartphone", value: 210 },
+        { name: "Cannabis", slug: "cannabis", value: 200 },
+        { name: "Gioco d'Azzardo", slug: "gioco-dazzardo", value: 80 },
+        { name: "Oppioidi", slug: "oppioidi", value: 65 },
+        { name: "Videogiochi", slug: "videogiochi", value: 60 },
+        { name: "Anfetamine e Stimolanti", slug: "anfetamine-e-stimolanti", value: 29 },
+        { name: "Cocaina", slug: "cocaina", value: 22 },
+        { name: "Benzodiazepine", slug: "benzodiazepine", value: 18 },
+        { name: "Shopping Compulsivo", slug: "shopping-compulsivo", value: 15 },
+        { name: "Eroina", slug: "eroina", value: 10 },
+        { name: "Allucinogeni", slug: "allucinogeni", value: 8 }
+      ]
+    },
+    {
+      id: "bevande-piu-consumate", title: "Bevande più Consumate al Mondo",
+      rule: "Ordina le bevande dal volume di consumo mondiale stimato più alto al più basso",
+      order: "desc", unit: "miliardi di litri/anno (stima)",
+      items: [
+        { name: "Acqua", slug: "acqua", value: 500000 },
+        { name: "Tè", slug: "te", value: 1300 },
+        { name: "Bevande Gassate", slug: "bevande-gassate", value: 600 },
+        { name: "Caffè", slug: "caffe", value: 500 },
+        { name: "Birra", slug: "birra", value: 190 },
+        { name: "Latte", slug: "latte", value: 180 },
+        { name: "Succhi di Frutta", slug: "succhi-di-frutta", value: 120 },
+        { name: "Superalcolici", slug: "superalcolici", value: 30 },
+        { name: "Vino", slug: "vino", value: 26 },
+        { name: "Bevande Energetiche", slug: "bevande-energetiche", value: 15 },
+        { name: "Bevande Vegetali (Soia/Avena/Mandorla)", slug: "bevande-vegetali", value: 10 },
+        { name: "Sidro", slug: "sidro", value: 5 },
+        { name: "Cioccolata Calda", slug: "cioccolata-calda", value: 2 },
+        { name: "Kombucha", slug: "kombucha", value: 1 },
+        { name: "Acqua di Cocco", slug: "acqua-di-cocco", value: 0.7 }
+      ]
+    },
+    {
+      id: "catastrofi-naturali-vittime", title: "Tipi di Catastrofi Naturali per Numero di Vittime",
+      rule: "Ordina le tipologie di catastrofi naturali dalla maggior somma stimata di vittime storiche complessive alla minore",
+      order: "desc", unit: "vittime stimate (somma storica complessiva, milioni)",
+      items: [
+        { name: "Siccità e Carestie", slug: "siccita", value: 40000000 },
+        { name: "Alluvioni", slug: "alluvioni", value: 6000000 },
+        { name: "Terremoti", slug: "terremoti", value: 2500000 },
+        { name: "Cicloni / Uragani / Tifoni", slug: "cicloni", value: 1500000 },
+        { name: "Tsunami", slug: "tsunami", value: 500000 },
+        { name: "Eruzioni Vulcaniche", slug: "eruzioni-vulcaniche", value: 250000 },
+        { name: "Ondate di Calore", slug: "ondate-di-calore", value: 150000 },
+        { name: "Frane e Smottamenti", slug: "frane-e-smottamenti", value: 60000 },
+        { name: "Valanghe", slug: "valanghe", value: 25000 },
+        { name: "Tornado", slug: "tornado", value: 10000 }
+      ]
+    },
+    {
+      id: "siti-web-piu-visitati", title: "Siti Web più Visitati al Mondo",
+      rule: "Ordina i siti web dal maggior numero stimato di visite mensili al minore",
+      order: "desc", unit: "miliardi di visite mensili (stima)",
+      items: [
+        { name: "Google", slug: "google", value: 84 },
+        { name: "YouTube", slug: "youtube", value: 34 },
+        { name: "Facebook", slug: "facebook", value: 16 },
+        { name: "Instagram", slug: "instagram", value: 6.5 },
+        { name: "Wikipedia", slug: "wikipedia", value: 5.6 },
+        { name: "Twitter / X", slug: "twitter-x", value: 5.4 },
+        { name: "Amazon", slug: "amazon", value: 4.8 },
+        { name: "TikTok", slug: "tiktok", value: 3.6 },
+        { name: "Yahoo", slug: "yahoo", value: 3 },
+        { name: "WhatsApp Web", slug: "whatsapp-web", value: 2.8 },
+        { name: "Netflix", slug: "netflix", value: 2.4 },
+        { name: "Reddit", slug: "reddit", value: 2.2 },
+        { name: "LinkedIn", slug: "linkedin", value: 1.9 },
+        { name: "Bing", slug: "bing", value: 1.6 },
+        { name: "Pinterest", slug: "pinterest", value: 1 }
+      ]
+    },
+    {
+      id: "regioni-italiane-superficie", title: "Regioni Italiane per Superficie Territoriale",
+      rule: "Ordina le regioni italiane dalla superficie territoriale più grande alla più piccola",
+      order: "desc", unit: "km²",
+      items: [
+        { name: "Sicilia", slug: "sicilia", value: 25832 },
+        { name: "Piemonte", slug: "piemonte", value: 25387 },
+        { name: "Sardegna", slug: "sardegna", value: 24090 },
+        { name: "Lombardia", slug: "lombardia", value: 23844 },
+        { name: "Toscana", slug: "toscana", value: 22987 },
+        { name: "Emilia-Romagna", slug: "emilia-romagna", value: 22453 },
+        { name: "Puglia", slug: "puglia", value: 19541 },
+        { name: "Veneto", slug: "veneto", value: 18345 },
+        { name: "Lazio", slug: "lazio", value: 17232 },
+        { name: "Calabria", slug: "calabria", value: 15222 },
+        { name: "Campania", slug: "campania", value: 13671 },
+        { name: "Trentino-Alto Adige", slug: "trentino-alto-adige", value: 13607 },
+        { name: "Abruzzo", slug: "abruzzo", value: 10832 },
+        { name: "Basilicata", slug: "basilicata", value: 9995 },
+        { name: "Marche", slug: "marche", value: 9401 }
+      ]
+    },
+    {
+      id: "calorie-frutta-verdura", title: "Frutta e Verdura: Calorie per 100g",
+      rule: "Ordina frutta e verdura dalla più calorica (per 100g) alla meno calorica",
+      order: "desc", unit: "kcal/100g",
+      items: [
+        { name: "Cocco (polpa fresca)", slug: "cocco", value: 354 },
+        { name: "Avocado", slug: "avocado", value: 160 },
+        { name: "Banana", slug: "banana", value: 89 },
+        { name: "Mais Dolce", slug: "mais-dolce", value: 86 },
+        { name: "Melograno", slug: "melograno", value: 83 },
+        { name: "Patata", slug: "patata", value: 77 },
+        { name: "Uva", slug: "uva", value: 69 },
+        { name: "Mango", slug: "mango", value: 60 },
+        { name: "Mela", slug: "mela", value: 52 },
+        { name: "Carota", slug: "carota", value: 41 },
+        { name: "Broccoli", slug: "broccoli", value: 34 },
+        { name: "Cavolfiore", slug: "cavolfiore", value: 25 },
+        { name: "Pomodoro", slug: "pomodoro", value: 18 },
+        { name: "Zucchina", slug: "zucchina", value: 17 },
+        { name: "Cetriolo", slug: "cetriolo", value: 15 }
+      ]
+    },
+    {
+      id: "peperoncini-scoville", title: "Piccantezza dei Peperoncini (Scala Scoville)",
+      rule: "Ordina dal più piccante al meno piccante",
+      order: "desc", unit: "SHU",
+      items: [
+        { name: "Capsaicina Pura", slug: "capsaicina-pura", value: 16000000 },
+        { name: "Pepper X", slug: "pepper-x", value: 2693000 },
+        { name: "Carolina Reaper", slug: "carolina-reaper", value: 2200000 },
+        { name: "Trinidad Moruga Scorpion", slug: "trinidad-moruga-scorpion", value: 2009000 },
+        { name: "Bhut Jolokia (Ghost Pepper)", slug: "bhut-jolokia", value: 1041000 },
+        { name: "Habanero", slug: "habanero", value: 350000 },
+        { name: "Peperoncino Thai", slug: "peperoncino-thai", value: 100000 },
+        { name: "Pepe di Cayenna", slug: "pepe-di-cayenna", value: 50000 },
+        { name: "Peperoncino Calabrese", slug: "peperoncino-calabrese", value: 30000 },
+        { name: "Serrano", slug: "serrano", value: 23000 },
+        { name: "Jalapeño", slug: "jalapeno", value: 8000 },
+        { name: "Salsa Tabasco", slug: "salsa-tabasco", value: 2500 },
+        { name: "Sriracha", slug: "sriracha", value: 2200 },
+        { name: "Poblano", slug: "poblano", value: 1500 },
+        { name: "Peperone Dolce", slug: "peperone-dolce", value: 0 }
+      ]
+    },
+    {
+      id: "caffeina-bevande", title: "Caffeina per Bevanda",
+      rule: "Ordina dalla bevanda (porzione tipica) con più caffeina a quella con meno",
+      order: "desc", unit: "mg di caffeina",
+      items: [
+        { name: "Caffè Filtro Starbucks Venti (590 ml)", slug: "starbucks-venti", value: 410 },
+        { name: "Pre-Workout (1 dose)", slug: "pre-workout", value: 300 },
+        { name: "Cold Brew (350 ml)", slug: "cold-brew", value: 200 },
+        { name: "Monster Energy (500 ml)", slug: "monster-energy", value: 160 },
+        { name: "Espresso Doppio", slug: "espresso-doppio", value: 130 },
+        { name: "Caffè Americano (tazza 240 ml)", slug: "caffe-americano", value: 95 },
+        { name: "Red Bull (250 ml)", slug: "red-bull", value: 80 },
+        { name: "Espresso", slug: "espresso", value: 65 },
+        { name: "Tè Nero (tazza)", slug: "te-nero", value: 47 },
+        { name: "Pepsi Max (330 ml)", slug: "pepsi-max", value: 43 },
+        { name: "Coca-Cola (330 ml)", slug: "coca-cola", value: 32 },
+        { name: "Tè Verde (tazza)", slug: "te-verde", value: 28 },
+        { name: "Cioccolata Calda (tazza)", slug: "cioccolata-calda", value: 7 },
+        { name: "Caffè Decaffeinato", slug: "caffe-decaffeinato", value: 3 },
+        { name: "Camomilla", slug: "camomilla", value: 0 }
+      ]
+    },
+    {
+      id: "longevita-animali", title: "Longevità degli Animali",
+      rule: "Ordina dall'animale più longevo (record di età registrato) al meno longevo",
+      order: "desc", unit: "anni",
+      items: [
+        { name: "Vongola Islandica", slug: "vongola-islandica", value: 507 },
+        { name: "Squalo della Groenlandia", slug: "squalo-della-groenlandia", value: 400 },
+        { name: "Balena della Groenlandia", slug: "balena-della-groenlandia", value: 211 },
+        { name: "Tartaruga Gigante", slug: "tartaruga-gigante", value: 190 },
+        { name: "Essere Umano", slug: "essere-umano", value: 122 },
+        { name: "Elefante", slug: "elefante", value: 86 },
+        { name: "Cacatua", slug: "cacatua", value: 83 },
+        { name: "Gorilla", slug: "gorilla", value: 68 },
+        { name: "Cavallo", slug: "cavallo", value: 62 },
+        { name: "Pesce Rosso", slug: "pesce-rosso", value: 43 },
+        { name: "Gatto", slug: "gatto", value: 38 },
+        { name: "Cane", slug: "cane", value: 29 },
+        { name: "Coniglio", slug: "coniglio", value: 18 },
+        { name: "Criceto", slug: "criceto", value: 4 },
+        { name: "Mosca Domestica", slug: "mosca-domestica", value: 0.08 }
+      ]
+    },
+    {
+      id: "peso-animali", title: "Peso degli Animali",
+      rule: "Ordina dall'animale più pesante (adulto medio) al più leggero",
+      order: "desc", unit: "kg",
+      items: [
+        { name: "Balenottera Azzurra", slug: "balenottera-azzurra", value: 150000 },
+        { name: "Squalo Balena", slug: "squalo-balena", value: 19000 },
+        { name: "Elefante Africano", slug: "elefante-africano", value: 6000 },
+        { name: "Orca", slug: "orca", value: 4500 },
+        { name: "Ippopotamo", slug: "ippopotamo", value: 1500 },
+        { name: "Giraffa", slug: "giraffa", value: 1200 },
+        { name: "Orso Polare", slug: "orso-polare", value: 450 },
+        { name: "Leone", slug: "leone", value: 190 },
+        { name: "Gorilla", slug: "gorilla", value: 160 },
+        { name: "Essere Umano", slug: "essere-umano", value: 70 },
+        { name: "Pinguino Imperatore", slug: "pinguino-imperatore", value: 30 },
+        { name: "Gatto", slug: "gatto", value: 4.5 },
+        { name: "Coniglio", slug: "coniglio", value: 2 },
+        { name: "Criceto", slug: "criceto", value: 0.12 },
+        { name: "Colibrì", slug: "colibri", value: 0.003 }
+      ]
+    },
+    {
+      id: "prezzo-big-mac", title: "Prezzo di un Big Mac nel Mondo",
+      rule: "Ordina dal Paese dove il Big Mac costa di più a quello dove costa meno (Big Mac Index 2025, circa)",
+      order: "desc", unit: "$",
+      items: [
+        { name: "Svizzera", slug: "svizzera", value: 7.99 },
+        { name: "Norvegia", slug: "norvegia", value: 6.7 },
+        { name: "Italia", slug: "italia", value: 5.95 },
+        { name: "Stati Uniti", slug: "stati-uniti", value: 5.79 },
+        { name: "Regno Unito", slug: "regno-unito", value: 5.57 },
+        { name: "Canada", slug: "canada", value: 5.35 },
+        { name: "Emirati Arabi Uniti", slug: "emirati-arabi", value: 5.1 },
+        { name: "Australia", slug: "australia", value: 4.75 },
+        { name: "Messico", slug: "messico", value: 4.4 },
+        { name: "Brasile", slug: "brasile", value: 3.9 },
+        { name: "Cina", slug: "cina", value: 3.45 },
+        { name: "Giappone", slug: "giappone", value: 3.1 },
+        { name: "Sudafrica", slug: "sudafrica", value: 2.95 },
+        { name: "India", slug: "india", value: 2.6 },
+        { name: "Indonesia", slug: "indonesia", value: 2.3 }
+      ]
+    },
+    {
+      id: "eta-celebrita", title: "Età Attuale delle Celebrità",
+      rule: "Ordina dalla celebrità più anziana alla più giovane",
+      order: "desc", unit: "anni",
+      items: [
+        { name: "Clint Eastwood", slug: "clint-eastwood", value: ageFrom("1930-05-31") },
+        { name: "Sophia Loren", slug: "sophia-loren", value: ageFrom("1934-09-20") },
+        { name: "Morgan Freeman", slug: "morgan-freeman", value: ageFrom("1937-06-01") },
+        { name: "Al Pacino", slug: "al-pacino", value: ageFrom("1940-04-25") },
+        { name: "Paul McCartney", slug: "paul-mccartney", value: ageFrom("1942-06-18") },
+        { name: "Vasco Rossi", slug: "vasco-rossi", value: ageFrom("1952-02-07") },
+        { name: "Madonna", slug: "madonna", value: ageFrom("1958-08-16") },
+        { name: "Tom Cruise", slug: "tom-cruise", value: ageFrom("1962-07-03") },
+        { name: "Brad Pitt", slug: "brad-pitt", value: ageFrom("1963-12-18") },
+        { name: "Jennifer Aniston", slug: "jennifer-aniston", value: ageFrom("1969-02-11") },
+        { name: "Leonardo DiCaprio", slug: "leonardo-dicaprio", value: ageFrom("1974-11-11") },
+        { name: "Cristiano Ronaldo", slug: "cristiano-ronaldo", value: ageFrom("1985-02-05") },
+        { name: "Taylor Swift", slug: "taylor-swift", value: ageFrom("1989-12-13") },
+        { name: "Zendaya", slug: "zendaya", value: ageFrom("1996-09-01") },
+        { name: "Billie Eilish", slug: "billie-eilish", value: ageFrom("2001-12-18") }
+      ]
+    },
+    {
+      id: "durata-film", title: "Durata dei Film Cult",
+      rule: "Ordina dal film più lungo al più corto",
+      order: "desc", unit: "minuti",
+      items: [
+        { name: "Via col Vento", slug: "via-col-vento", value: 238 },
+        { name: "Lawrence d'Arabia", slug: "lawrence-d-arabia", value: 227 },
+        { name: "Il Signore degli Anelli - Il Ritorno del Re", slug: "il-ritorno-del-re", value: 201 },
+        { name: "Titanic", slug: "titanic", value: 194 },
+        { name: "Il Miglio Verde", slug: "il-miglio-verde", value: 189 },
+        { name: "Avengers: Endgame", slug: "avengers-endgame", value: 181 },
+        { name: "Il Padrino", slug: "il-padrino", value: 175 },
+        { name: "Interstellar", slug: "interstellar", value: 169 },
+        { name: "Pulp Fiction", slug: "pulp-fiction", value: 154 },
+        { name: "Il Cavaliere Oscuro", slug: "il-cavaliere-oscuro", value: 152 },
+        { name: "Forrest Gump", slug: "forrest-gump", value: 142 },
+        { name: "Matrix", slug: "matrix", value: 136 },
+        { name: "Jurassic Park", slug: "jurassic-park", value: 127 },
+        { name: "Ritorno al Futuro", slug: "ritorno-al-futuro", value: 116 },
+        { name: "Il Re Leone", slug: "il-re-leone", value: 88 }
+      ]
+    },
+    {
+      id: "distanza-da-modena", title: "Distanza delle Città da Modena",
+      rule: "Ordina dalla città più lontana da Modena (in linea d'aria) alla più vicina",
+      order: "desc", unit: "km",
+      items: [
+        { name: "Sydney", slug: "sydney", value: 16433 },
+        { name: "New York", slug: "new-york", value: 6627 },
+        { name: "Londra", slug: "londra", value: 1119 },
+        { name: "Parigi", slug: "parigi", value: 803 },
+        { name: "Palermo", slug: "palermo", value: 754 },
+        { name: "Napoli", slug: "napoli", value: 502 },
+        { name: "Roma", slug: "roma", value: 331 },
+        { name: "Milano", slug: "milano", value: 164 },
+        { name: "Venezia", slug: "venezia", value: 140 },
+        { name: "Firenze", slug: "firenze", value: 101 },
+        { name: "Verona", slug: "verona", value: 88 },
+        { name: "Parma", slug: "parma", value: 50 },
+        { name: "Bologna", slug: "bologna", value: 37 },
+        { name: "Reggio Emilia", slug: "reggio-emilia", value: 24 },
+        { name: "Carpi", slug: "carpi", value: 16 }
+      ]
+    },
+    {
+      id: "nascita-personaggi-storici", title: "Anno di Nascita dei Personaggi Storici",
+      rule: "Ordina dal personaggio nato per primo a quello nato più di recente",
+      order: "asc", unit: "anno di nascita",
+      items: [
+        { name: "Marco Polo", slug: "marco-polo", value: 1254 },
+        { name: "Dante Alighieri", slug: "dante", value: 1265 },
+        { name: "Giovanna d'Arco", slug: "giovanna-darco", value: 1412 },
+        { name: "Lorenzo il Magnifico", slug: "lorenzo-magnifico", value: 1449 },
+        { name: "Cristoforo Colombo", slug: "colombo", value: 1451 },
+        { name: "Leonardo da Vinci", slug: "leonardo", value: 1452 },
+        { name: "Michelangelo", slug: "michelangelo", value: 1475 },
+        { name: "Elisabetta I d'Inghilterra", slug: "elisabetta-i", value: 1533 },
+        { name: "Galileo Galilei", slug: "galileo", value: 1564 },
+        { name: "Isaac Newton", slug: "newton", value: 1643 },
+        { name: "Wolfgang Amadeus Mozart", slug: "mozart", value: 1756 },
+        { name: "Napoleone Bonaparte", slug: "napoleone", value: 1769 },
+        { name: "Giuseppe Garibaldi", slug: "garibaldi", value: 1807 },
+        { name: "Marie Curie", slug: "marie-curie", value: 1867 },
+        { name: "Albert Einstein", slug: "einstein", value: 1879 }
+      ]
+    },
+    {
+      id: "prezzo-oggetti-iconici", title: "Prezzo degli Oggetti Iconici",
+      rule: "Ordina dall'oggetto più caro al più economico (prezzo di listino indicativo in Italia, nuovo)",
+      order: "desc", unit: "€ (circa)",
+      items: [
+        { name: "Bugatti Chiron", slug: "bugatti-chiron", value: 3000000 },
+        { name: "Ferrari Roma", slug: "ferrari-roma", value: 230000 },
+        { name: "Tesla Model 3", slug: "tesla-model-3", value: 40000 },
+        { name: "Fiat Panda", slug: "fiat-panda", value: 16000 },
+        { name: "Rolex Submariner", slug: "rolex-submariner", value: 11000 },
+        { name: "Vespa Primavera 125", slug: "vespa", value: 4900 },
+        { name: "Bimby (Thermomix TM7)", slug: "bimby", value: 1649 },
+        { name: "iPhone 16 Pro", slug: "iphone-16-pro", value: 1239 },
+        { name: "PlayStation 5", slug: "playstation-5", value: 550 },
+        { name: "Nintendo Switch 2", slug: "switch-2", value: 470 },
+        { name: "AirPods Pro 2", slug: "airpods-pro", value: 279 },
+        { name: "Abbonamento Netflix Standard (1 mese)", slug: "netflix", value: 13.49 },
+        { name: "Biglietto del cinema", slug: "biglietto-cinema", value: 9 },
+        { name: "Big Mac", slug: "big-mac", value: 5 },
+        { name: "Caffè al bar", slug: "caffe-bar", value: 1.3 }
+      ]
+    },
+    {
+      id: "altezza-torri-italiane", title: "Altezza di Grattacieli e Torri Italiane",
+      rule: "Ordina dalla costruzione più alta alla più bassa",
+      order: "desc", unit: "metri",
+      items: [
+        { name: "UniCredit Tower (Milano)", slug: "unicredit-tower", value: 231 },
+        { name: "Torre Allianz (Milano)", slug: "torre-allianz", value: 209 },
+        { name: "Torre Generali (Milano)", slug: "torre-generali", value: 177 },
+        { name: "Mole Antonelliana (Torino)", slug: "mole-antonelliana", value: 167.5 },
+        { name: "Palazzo Lombardia (Milano)", slug: "palazzo-lombardia", value: 161 },
+        { name: "Torre Diamante (Milano)", slug: "torre-diamante", value: 140 },
+        { name: "Grattacielo Pirelli (Milano)", slug: "pirellone", value: 127 },
+        { name: "Madonnina del Duomo di Milano", slug: "duomo-milano", value: 108.5 },
+        { name: "Torre Velasca (Milano)", slug: "torre-velasca", value: 106 },
+        { name: "Campanile di San Marco (Venezia)", slug: "campanile-san-marco", value: 98.6 },
+        { name: "Torre degli Asinelli (Bologna)", slug: "torre-asinelli", value: 97.2 },
+        { name: "Torre del Mangia (Siena)", slug: "torre-mangia", value: 88 },
+        { name: "Torre di Pisa", slug: "torre-pisa", value: 57 },
+        { name: "Torre Garisenda (Bologna)", slug: "torre-garisenda", value: 48 },
+        { name: "Torre Guinigi (Lucca)", slug: "torre-guinigi", value: 45 }
+      ]
+    },
+    {
+      id: "anno-indipendenza", title: "Anno di Indipendenza dei Paesi",
+      rule: "Ordina dal Paese diventato indipendente per primo al più recente",
+      order: "asc", unit: "anno di indipendenza",
+      items: [
+        { name: "Stati Uniti", slug: "usa", value: 1776 },
+        { name: "Argentina", slug: "argentina", value: 1816 },
+        { name: "Messico", slug: "messico", value: 1821 },
+        { name: "Brasile", slug: "brasile", value: 1822 },
+        { name: "Belgio", slug: "belgio", value: 1830 },
+        { name: "Norvegia", slug: "norvegia", value: 1905 },
+        { name: "Finlandia", slug: "finlandia", value: 1917 },
+        { name: "Islanda", slug: "islanda", value: 1944 },
+        { name: "India", slug: "india", value: 1947 },
+        { name: "Israele", slug: "israele", value: 1948 },
+        { name: "Ghana", slug: "ghana", value: 1957 },
+        { name: "Algeria", slug: "algeria", value: 1962 },
+        { name: "Croazia", slug: "croazia", value: 1991 },
+        { name: "Montenegro", slug: "montenegro", value: 2006 },
+        { name: "Sud Sudan", slug: "sud-sudan", value: 2011 }
+      ]
+    },
+    {
+      id: "altezza-montagne-italiane", title: "Altezza delle Montagne Italiane",
+      rule: "Ordina dalla montagna più alta alla più bassa",
+      order: "desc", unit: "metri",
+      items: [
+        { name: "Monte Bianco", slug: "monte-bianco", value: 4806 },
+        { name: "Monte Rosa (Punta Dufour)", slug: "monte-rosa", value: 4634 },
+        { name: "Cervino", slug: "cervino", value: 4478 },
+        { name: "Gran Paradiso", slug: "gran-paradiso", value: 4061 },
+        { name: "Ortles", slug: "ortles", value: 3905 },
+        { name: "Adamello", slug: "adamello", value: 3539 },
+        { name: "Marmolada", slug: "marmolada", value: 3343 },
+        { name: "Gran Sasso (Corno Grande)", slug: "gran-sasso", value: 2912 },
+        { name: "Monte Pollino", slug: "pollino", value: 2248 },
+        { name: "Monte Terminillo", slug: "terminillo", value: 2217 },
+        { name: "Monte Cimone", slug: "cimone", value: 2165 },
+        { name: "Gennargentu (Punta La Marmora)", slug: "gennargentu", value: 1834 },
+        { name: "Monte Amiata", slug: "amiata", value: 1738 },
+        { name: "Vesuvio", slug: "vesuvio", value: 1281 },
+        { name: "Monte Conero", slug: "conero", value: 572 }
+      ]
+    },
+    {
+      id: "lunghezza-ponti", title: "Lunghezza dei Ponti più Famosi",
+      rule: "Ordina dal ponte più lungo al più corto",
+      order: "desc", unit: "metri",
+      items: [
+        { name: "Danyang–Kunshan (Cina)", slug: "danyang-kunshan", value: 164800 },
+        { name: "Lake Pontchartrain Causeway (USA)", slug: "pontchartrain", value: 38400 },
+        { name: "Ponte Vasco da Gama (Lisbona)", slug: "vasco-da-gama", value: 12300 },
+        { name: "Ponte di Øresund (Danimarca–Svezia)", slug: "oresund", value: 7845 },
+        { name: "Ponte di Akashi Kaikyō (Giappone)", slug: "akashi", value: 3911 },
+        { name: "Ponte della Libertà (Venezia)", slug: "ponte-liberta", value: 3850 },
+        { name: "Golden Gate (San Francisco)", slug: "golden-gate", value: 2737 },
+        { name: "Viadotto di Millau (Francia)", slug: "millau", value: 2460 },
+        { name: "Ponte di Brooklyn (New York)", slug: "brooklyn", value: 1834 },
+        { name: "Ponte sul Bosforo (Istanbul)", slug: "bosforo", value: 1560 },
+        { name: "Harbour Bridge (Sydney)", slug: "sydney-harbour", value: 1149 },
+        { name: "Ponte San Giorgio (Genova)", slug: "san-giorgio-genova", value: 1067 },
+        { name: "Ponte Carlo (Praga)", slug: "ponte-carlo", value: 516 },
+        { name: "Tower Bridge (Londra)", slug: "tower-bridge", value: 244 },
+        { name: "Ponte di Rialto (Venezia)", slug: "rialto", value: 48 }
+      ]
+    },
+    {
+      id: "anno-lancio-app", title: "Anno di Lancio di Siti e App",
+      rule: "Ordina dal servizio lanciato per primo al più recente",
+      order: "asc", unit: "anno di lancio",
+      items: [
+        { name: "eBay", slug: "ebay", value: 1995 },
+        { name: "Netflix", slug: "netflix", value: 1997 },
+        { name: "Wikipedia", slug: "wikipedia", value: 2001 },
+        { name: "LinkedIn", slug: "linkedin", value: 2003 },
+        { name: "Facebook", slug: "facebook", value: 2004 },
+        { name: "YouTube", slug: "youtube", value: 2005 },
+        { name: "Twitter (X)", slug: "twitter", value: 2006 },
+        { name: "Spotify", slug: "spotify", value: 2008 },
+        { name: "WhatsApp", slug: "whatsapp", value: 2009 },
+        { name: "Instagram", slug: "instagram", value: 2010 },
+        { name: "Discord", slug: "discord", value: 2015 },
+        { name: "TikTok", slug: "tiktok", value: 2016 },
+        { name: "ChatGPT", slug: "chatgpt", value: 2022 }
+      ]
+    },
+    {
+      id: "anno-uscita-console", title: "Anno di Uscita delle Console",
+      rule: "Ordina dalla console uscita per prima alla più recente (prima uscita mondiale)",
+      order: "asc", unit: "anno di uscita",
+      items: [
+        { name: "Atari 2600", slug: "atari-2600", value: 1977 },
+        { name: "NES (Nintendo)", slug: "nes", value: 1983 },
+        { name: "Game Boy", slug: "game-boy", value: 1989 },
+        { name: "Super Nintendo", slug: "snes", value: 1990 },
+        { name: "PlayStation", slug: "playstation", value: 1994 },
+        { name: "Nintendo 64", slug: "n64", value: 1996 },
+        { name: "PlayStation 2", slug: "ps2", value: 2000 },
+        { name: "Xbox", slug: "xbox", value: 2001 },
+        { name: "Nintendo DS", slug: "nintendo-ds", value: 2004 },
+        { name: "Xbox 360", slug: "xbox-360", value: 2005 },
+        { name: "Wii", slug: "wii", value: 2006 },
+        { name: "PlayStation 4", slug: "ps4", value: 2013 },
+        { name: "Nintendo Switch", slug: "switch", value: 2017 },
+        { name: "PlayStation 5", slug: "ps5", value: 2020 },
+        { name: "Nintendo Switch 2", slug: "switch-2", value: 2025 }
+      ]
+    },
+    {
+      id: "gestazione-animali", title: "Durata della Gravidanza negli Animali",
+      rule: "Ordina dall'animale con la gravidanza più lunga a quello con la più breve (media)",
+      order: "desc", unit: "giorni",
+      items: [
+        { name: "Elefante africano", slug: "elefante", value: 645 },
+        { name: "Giraffa", slug: "giraffa", value: 455 },
+        { name: "Delfino tursiope", slug: "delfino", value: 365 },
+        { name: "Cavallo", slug: "cavallo", value: 340 },
+        { name: "Essere umano", slug: "essere-umano", value: 280 },
+        { name: "Scimpanzé", slug: "scimpanze", value: 230 },
+        { name: "Pecora", slug: "pecora", value: 150 },
+        { name: "Maiale", slug: "maiale", value: 114 },
+        { name: "Cane", slug: "cane", value: 63 },
+        { name: "Coniglio", slug: "coniglio", value: 31 },
+        { name: "Topo", slug: "topo", value: 20 },
+        { name: "Criceto dorato", slug: "criceto", value: 16 },
+        { name: "Opossum della Virginia", slug: "opossum", value: 13 }
+      ]
+    },
+    {
+      id: "distanza-pianeti", title: "Distanza dal Sole",
+      rule: "Ordina dal corpo celeste più vicino al Sole al più lontano (distanza media)",
+      order: "asc", unit: "milioni di km",
+      items: [
+        { name: "Mercurio", slug: "mercurio", value: 58 },
+        { name: "Venere", slug: "venere", value: 108 },
+        { name: "Terra", slug: "terra", value: 150 },
+        { name: "Marte", slug: "marte", value: 228 },
+        { name: "Cerere (pianeta nano)", slug: "cerere", value: 414 },
+        { name: "Giove", slug: "giove", value: 778 },
+        { name: "Saturno", slug: "saturno", value: 1434 },
+        { name: "Urano", slug: "urano", value: 2871 },
+        { name: "Nettuno", slug: "nettuno", value: 4495 },
+        { name: "Plutone (pianeta nano)", slug: "plutone", value: 5906 }
+      ]
+    },
+    {
+      id: "anno-uscita-libri", title: "Anno di Uscita dei Libri Famosi",
+      rule: "Ordina dal libro più antico al più recente",
+      order: "asc", unit: "anno",
+      items: [
+        { name: "Divina Commedia (completata)", slug: "divina-commedia", value: 1321 },
+        { name: "Don Chisciotte", slug: "don-chisciotte", value: 1605 },
+        { name: "Robinson Crusoe", slug: "robinson-crusoe", value: 1719 },
+        { name: "Orgoglio e pregiudizio", slug: "orgoglio-pregiudizio", value: 1813 },
+        { name: "Frankenstein", slug: "frankenstein", value: 1818 },
+        { name: "I promessi sposi (prima edizione)", slug: "promessi-sposi", value: 1827 },
+        { name: "Moby Dick", slug: "moby-dick", value: 1851 },
+        { name: "Le avventure di Pinocchio", slug: "pinocchio", value: 1883 },
+        { name: "Dracula", slug: "dracula", value: 1897 },
+        { name: "Il Piccolo Principe", slug: "piccolo-principe", value: 1943 },
+        { name: "1984", slug: "1984", value: 1949 },
+        { name: "Il Signore degli Anelli (primo volume)", slug: "signore-anelli", value: 1954 },
+        { name: "Il Gattopardo", slug: "gattopardo", value: 1958 },
+        { name: "Il nome della rosa", slug: "nome-della-rosa", value: 1980 },
+        { name: "Harry Potter e la pietra filosofale", slug: "harry-potter", value: 1997 }
+      ]
+    },
+    {
+      id: "superficie-laghi-italiani", title: "Superficie dei Laghi Italiani",
+      rule: "Ordina dal lago più grande al più piccolo",
+      order: "desc", unit: "km²",
+      items: [
+        { name: "Lago di Garda", slug: "garda", value: 370 },
+        { name: "Lago Maggiore", slug: "maggiore", value: 212 },
+        { name: "Lago di Como", slug: "como", value: 146 },
+        { name: "Lago Trasimeno", slug: "trasimeno", value: 128 },
+        { name: "Lago di Bolsena", slug: "bolsena", value: 114 },
+        { name: "Lago d'Iseo", slug: "iseo", value: 65 },
+        { name: "Lago di Varano", slug: "varano", value: 60 },
+        { name: "Lago di Bracciano", slug: "bracciano", value: 57 },
+        { name: "Lago di Lesina", slug: "lesina", value: 51 },
+        { name: "Lago di Lugano", slug: "lugano", value: 49 },
+        { name: "Lago d'Orta", slug: "orta", value: 18 },
+        { name: "Lago di Vico", slug: "vico", value: 12 },
+        { name: "Lago Albano", slug: "albano", value: 6 },
+        { name: "Lago di Nemi", slug: "nemi", value: 1.7 },
+        { name: "Lago di Braies", slug: "braies", value: 0.3 }
+      ]
+    },
+    {
+      id: "fondazione-squadre-calcio", title: "Anno di Fondazione delle Squadre di Calcio",
+      rule: "Ordina dalla squadra fondata per prima alla più giovane",
+      order: "asc", unit: "anno di fondazione",
+      items: [
+        { name: "Manchester United", slug: "manchester-united", value: 1878 },
+        { name: "Arsenal", slug: "arsenal", value: 1886 },
+        { name: "Liverpool", slug: "liverpool", value: 1892 },
+        { name: "Genoa", slug: "genoa", value: 1893 },
+        { name: "Juventus", slug: "juventus", value: 1897 },
+        { name: "Milan", slug: "milan", value: 1899 },
+        { name: "Lazio", slug: "lazio", value: 1900 },
+        { name: "Real Madrid", slug: "real-madrid", value: 1902 },
+        { name: "Chelsea", slug: "chelsea", value: 1905 },
+        { name: "Torino", slug: "torino", value: 1906 },
+        { name: "Atalanta", slug: "atalanta", value: 1907 },
+        { name: "Inter", slug: "inter", value: 1908 },
+        { name: "Bologna", slug: "bologna", value: 1909 },
+        { name: "Napoli", slug: "napoli", value: 1926 },
+        { name: "Roma", slug: "roma", value: 1927 }
+      ]
+    },
+    /* ---- Categorie esclusive di Deathmatch (non presenti in Ordina) ----
+       Voti IMDb: dataset ufficiale IMDb (ottobre 2026). Visitatori: MiC, rilevazione 2024 (luoghi statali a pagamento).
+       Villain e sopravvivenza: stime indicative; 'label' sostituisce il numero sulla tessera. */
+    {
+      id: "horror-villain-deathmatch", title: "Horror Villain Deathmatch",
+      rule: "Ordina dal cattivo horror con più possibilità di vincere un deathmatch tra tutti al meno favorito",
+      order: "desc", unit: "punti forza",
+      items: [
+        { name: "Pennywise", slug: "pennywise", value: 97 },
+        { name: "Pinhead", slug: "pinhead", value: 93 },
+        { name: "Freddy Krueger", slug: "freddy-krueger", value: 90 },
+        { name: "Dracula", slug: "dracula", value: 87 },
+        { name: "Xenomorfo (Alien)", slug: "xenomorfo", value: 84 },
+        { name: "Predator", slug: "predator", value: 81 },
+        { name: "Samara (The Ring)", slug: "samara", value: 77 },
+        { name: "The Creeper", slug: "the-creeper", value: 73 },
+        { name: "Candyman", slug: "candyman", value: 69 },
+        { name: "Jason Voorhees", slug: "jason-voorhees", value: 65 },
+        { name: "Michael Myers", slug: "michael-myers", value: 61 },
+        { name: "Art the Clown", slug: "art-the-clown", value: 56 },
+        { name: "Mostro di Frankenstein", slug: "frankenstein", value: 50 },
+        { name: "Leatherface", slug: "leatherface", value: 44 },
+        { name: "Chucky", slug: "chucky", value: 39 },
+        { name: "Ghostface", slug: "ghostface", value: 31 },
+        { name: "Jigsaw", slug: "jigsaw", value: 25 },
+        { name: "Hannibal Lecter", slug: "hannibal-lecter", value: 20 }
+      ]
+    },
+    {
+      id: "imdb-commedie", title: "Commedie: Voto IMDb",
+      rule: "Ordina dalla commedia con il voto IMDb più alto alla più bassa",
+      order: "desc", unit: "su IMDb",
+      items: [
+        { name: "La vita è bella", slug: "la-vita-e-bella", value: 8.6 },
+        { name: "Quasi amici", slug: "quasi-amici", value: 8.5 },
+        { name: "Il grande dittatore", slug: "il-grande-dittatore", value: 8.4 },
+        { name: "Il dottor Stranamore", slug: "dottor-stranamore", value: 8.3 },
+        { name: "The Truman Show", slug: "truman-show", value: 8.2 },
+        { name: "Il grande Lebowski", slug: "grande-lebowski", value: 8.1 },
+        { name: "Ricomincio da capo", slug: "ricomincio-da-capo", value: 8.0 },
+        { name: "Amici miei", slug: "amici-miei", value: 7.9 },
+        { name: "Mamma, ho perso l'aereo", slug: "mamma-ho-perso-l-aereo", value: 7.8 },
+        { name: "Una notte da leoni", slug: "una-notte-da-leoni", value: 7.7 },
+        { name: "Suxbad", slug: "suxbad", value: 7.6 },
+        { name: "Borat", slug: "borat", value: 7.4 },
+        { name: "Scemo & più scemo", slug: "scemo-e-piu-scemo", value: 7.3 },
+        { name: "Johnny Stecchino", slug: "johnny-stecchino", value: 7.2 },
+        { name: "Mrs. Doubtfire", slug: "mrs-doubtfire", value: 7.1 },
+        { name: "The Mask", slug: "the-mask", value: 7.0 },
+        { name: "Ace Ventura", slug: "ace-ventura", value: 6.9 },
+        { name: "Il ciclone", slug: "il-ciclone", value: 6.8 },
+        { name: "Benvenuti al Sud", slug: "benvenuti-al-sud", value: 6.6 },
+        { name: "Zoolander", slug: "zoolander", value: 6.5 }
+      ]
+    },
+    {
+      id: "imdb-drammatici", title: "Film Drammatici: Voto IMDb",
+      rule: "Ordina dal film drammatico con il voto IMDb più alto al più basso",
+      order: "desc", unit: "su IMDb",
+      items: [
+        { name: "Le ali della libertà", slug: "ali-della-liberta", value: 9.3 },
+        { name: "Il padrino", slug: "il-padrino", value: 9.2 },
+        { name: "Schindler's List", slug: "schindlers-list", value: 9.0 },
+        { name: "Forrest Gump", slug: "forrest-gump", value: 8.8 },
+        { name: "Il miglio verde", slug: "il-miglio-verde", value: 8.6 },
+        { name: "Il gladiatore", slug: "il-gladiatore", value: 8.5 },
+        { name: "Will Hunting - Genio ribelle", slug: "will-hunting", value: 8.4 },
+        { name: "Joker", slug: "joker", value: 8.3 },
+        { name: "A Beautiful Mind", slug: "a-beautiful-mind", value: 8.2 },
+        { name: "L'attimo fuggente", slug: "attimo-fuggente", value: 8.1 },
+        { name: "Titanic", slug: "titanic", value: 8.0 },
+        { name: "Storia di un matrimonio", slug: "storia-di-un-matrimonio", value: 7.9 },
+        { name: "Le pagine della nostra vita", slug: "pagine-della-nostra-vita", value: 7.8 },
+        { name: "La grande bellezza", slug: "la-grande-bellezza", value: 7.7 },
+        { name: "A Star Is Born", slug: "a-star-is-born", value: 7.6 },
+        { name: "Io prima di te", slug: "io-prima-di-te", value: 7.4 },
+        { name: "A un metro da te", slug: "a-un-metro-da-te", value: 7.2 },
+        { name: "Twilight", slug: "twilight", value: 5.4 },
+        { name: "After", slug: "after", value: 5.3 },
+        { name: "Cinquanta sfumature di grigio", slug: "cinquanta-sfumature", value: 4.2 }
+      ]
+    },
+    {
+      id: "sopravvivenza-un-cibo", title: "Sopravvivere Mangiando Solo...",
+      rule: "Ordina dal cibo che ti fa vivere più a lungo (mangiando solo quello) al meno",
+      order: "desc", unit: "stima",
+      items: [
+        { name: "Patate", slug: "patate", value: 450, label: "oltre 1 anno" },
+        { name: "Latte intero", slug: "latte-intero", value: 330, label: "9-12 mesi" },
+        { name: "Fagioli", slug: "fagioli", value: 240, label: "6-9 mesi" },
+        { name: "Avocado", slug: "avocado", value: 180, label: "5-7 mesi" },
+        { name: "Uova", slug: "uova", value: 150, label: "4-6 mesi" },
+        { name: "Salmone", slug: "salmone", value: 135, label: "4-5 mesi" },
+        { name: "Burro di arachidi", slug: "burro-di-arachidi", value: 115, label: "3-5 mesi" },
+        { name: "Pollo fritto", slug: "pollo-fritto", value: 100, label: "3-4 mesi" },
+        { name: "Riso bianco", slug: "riso-bianco", value: 90, label: "circa 3 mesi" },
+        { name: "Cioccolato fondente", slug: "cioccolato-fondente", value: 80, label: "fino a 3 mesi" },
+        { name: "Mele", slug: "mele", value: 70, label: "2-3 mesi" },
+        { name: "Banane", slug: "banane", value: 60, label: "circa 2 mesi" },
+        { name: "Lattuga", slug: "lattuga", value: 40, label: "1-2 mesi" },
+        { name: "Carne di coniglio", slug: "carne-di-coniglio", value: 21, label: "2-3 settimane" },
+        { name: "Fegato", slug: "fegato", value: 14, label: "circa 2 settimane" }
+      ]
+    },
+    {
+      id: "monumenti-piu-visitati-italia", title: "Monumenti e Musei Più Visitati d'Italia",
+      rule: "Ordina dal luogo statale più visitato nel 2024 al meno visitato",
+      order: "desc", unit: "visitatori (2024)",
+      items: [
+        { name: "Colosseo e Foro Romano", slug: "colosseo", value: 14733395 },
+        { name: "Gallerie degli Uffizi", slug: "uffizi", value: 5294968 },
+        { name: "Scavi di Pompei", slug: "pompei", value: 4267233 },
+        { name: "Pantheon", slug: "pantheon", value: 4086947 },
+        { name: "Galleria dell'Accademia (David)", slug: "galleria-accademia", value: 2189103 },
+        { name: "Castel Sant'Angelo", slug: "castel-sant-angelo", value: 1315063 },
+        { name: "Museo Egizio", slug: "museo-egizio", value: 1036689 },
+        { name: "Reggia di Caserta", slug: "reggia-di-caserta", value: 902410 },
+        { name: "Villa d'Este e Villa Adriana", slug: "villa-d-este", value: 729907 },
+        { name: "Vittoriano", slug: "vittoriano", value: 672230 },
+        { name: "Galleria Borghese", slug: "galleria-borghese", value: 599104 },
+        { name: "Cenacolo Vinciano", slug: "cenacolo-vinciano", value: 529422 },
+        { name: "Scavi di Ercolano", slug: "ercolano", value: 521514 },
+        { name: "Reggia di Venaria", slug: "venaria-reale", value: 501787 },
+        { name: "Templi di Paestum", slug: "paestum", value: 450677 },
+        { name: "Castello di Miramare", slug: "castello-di-miramare", value: 404785 },
+        { name: "Terme di Caracalla", slug: "terme-di-caracalla", value: 258687 }
+      ]
+    }
+  ];
+
+  /* =========================================================
+     IMPOSTAZIONI
+     ========================================================= */
+  const BOARD_SIZE = 12;                      // tessere per round (griglia 3x4)
+  const PLAYABLE = CATEGORIES.filter(c => c.items.length >= BOARD_SIZE);
+
+  /* =========================================================
+     Squadre globali (nomi/colori/punteggio impostati in
+     index.html) — stesso sistema condiviso degli altri giochi.
+     scoreBaseline tiene il punteggio già accumulato prima di
+     questa partita, così il totale di serata non si perde.
+     ========================================================= */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  const TEAM_COLORS = ["#ff2e88", "#4dd9ff", "#00e676", "#ffd600", "#a05bff", "#fb5607"];
+  let scoreBaseline = [];
+
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalScore(index, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+  }
+
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+  }
+  const $ = id => document.getElementById(id);
+
+  /* ---- Beep via Web Audio API: nessun file audio esterno ---- */
+  function beep(freq, duration, type){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+
+  function confetti(colors){
+    const box = document.createElement("div");
+    box.className = "confetti";
+    const palette = colors && colors.length ? colors : ["#ff3b5c", "#a855f7", "#ffd54a"];
+    box.innerHTML = Array.from({ length: 110 }, () => {
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      return `<i style="left:${Math.random() * 100}%;background:${c};animation-duration:${2 + Math.random() * 2}s;animation-delay:${Math.random() * 0.5}s;--dx:${(Math.random() - 0.5) * 300}px;--rot:${Math.random() * 1080 - 540}deg;width:${6 + Math.random() * 8}px"></i>`;
+    }).join("");
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 4800);
+  }
+
+  /* ---- Valori: gli anni senza separatore delle migliaia ---- */
+  const isYear = unit => /^anno/i.test(unit || "");
+  function formatNumber(value, unit){
+    if (isYear(unit)) return String(value);
+    return Number.isInteger(value) ? value.toLocaleString("it-IT") : value.toLocaleString("it-IT", { maximumFractionDigits: 2 });
+  }
+  function formatValue(value, unit){
+    return isYear(unit) ? formatNumber(value, unit) : `${formatNumber(value, unit)} ${unit}`.trim();
+  }
+  const MEDALS = ["🥇", "🥈", "🥉"];
+  const rankLabel = r => `${MEDALS[r - 1] || ""} ${r}° posto`.trim();
+
+  /* =========================================================
+     ROUND: 12 elementi casuali della categoria, con posizione
+     calcolata secondo la regola (in caso di parità, stessa
+     posizione per entrambi). Punti = 13 − posizione.
+     ========================================================= */
+  function buildRound(cat){
+    const picks = shuffle(cat.items).slice(0, BOARD_SIZE);
+    const better = (a, b) => cat.order === "asc" ? a.value < b.value : a.value > b.value;
+    const cards = picks.map(it => {
+      const rank = 1 + picks.filter(o => better(o, it)).length;
+      return { ...it, rank, points: BOARD_SIZE + 1 - rank, img: `assets/img/${cat.id}/${it.slug}.jpg`, by: -1 };
+    });
+    return { cat, cards };
+  }
+
+  /* =========================================================
+     STATO
+     phase: "play" (si scelgono le tessere) → "over" (round finito)
+     ========================================================= */
+  let state = null;
+
+  function buildTeams(){
+    const global = loadGlobalTeams();
+    if (global){
+      const n = Math.min(global.count || global.teams.length, 6);
+      scoreBaseline = global.teams.slice(0, n).map(t => t.score || 0);
+      return global.teams.slice(0, n).map((t, i) => ({ gi: i, name: t.name, color: t.color || TEAM_COLORS[i % TEAM_COLORS.length], local: 0, round: 0 }));
+    }
+    scoreBaseline = [0, 0];
+    return [
+      { gi: -1, name: "Squadra 1", color: TEAM_COLORS[0], local: 0, round: 0 },
+      { gi: -1, name: "Squadra 2", color: TEAM_COLORS[1], local: 0, round: 0 }
+    ];
+  }
+  const total = i => (scoreBaseline[i] || 0) + state.teams[i].local;
+
+  function startGame(){
+    state = { teams: buildTeams(), queue: shuffle(PLAYABLE), queuePos: 0, count: 0, startTeam: -1, turn: 0, round: null, phase: "play", revealed: 0 };
+    nextCategory();
+  }
+
+  function nextCategory(){
+    if (state.queuePos >= state.queue.length){ state.queue = shuffle(PLAYABLE); state.queuePos = 0; }
+    state.round = buildRound(state.queue[state.queuePos++]);
+    state.count++;
+    state.startTeam = (state.startTeam + 1) % state.teams.length;   // a ogni round inizia una squadra diversa
+    state.turn = state.startTeam;
+    state.phase = "play";
+    state.revealed = 0;
+    state.teams.forEach(t => t.round = 0);
+    $("summaryModal").classList.remove("active");
+    renderCategory();
+    renderCards();
+    renderScoreboard();
+    renderTurn();
+    $("summaryBtn").hidden = true;
+    $("nextBtn").hidden = true;
+    $("skipBtn").hidden = false;
+    $("counter").textContent = `Round ${state.count}`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+  function renderScoreboard(bumpIndex){
+    $("scoreGrid").innerHTML = state.teams.map((team, i) => {
+      const cls = (state.phase === "play" && i === state.turn ? " turn" : "") + (i === bumpIndex ? " bump" : "");
+      return `<div class="score-card${cls}" style="--team:${escapeHtml(team.color)}">
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+        </div>
+        <div class="score-value">${total(i)}</div>
+        <div class="score-round">+${team.round} in questo round</div>
+      </div>`;
+    }).join("");
+  }
+  function renderCategory(){
+    const cat = state.round.cat;
+    $("qTags").innerHTML = `<span class="q-tag">💀 ${escapeHtml(cat.title)}</span><span class="q-tag">📏 ${escapeHtml(cat.unit)}</span>`;
+    $("qText").textContent = cat.rule;
+    $("qHint").innerHTML = `Il <b>1° posto</b> di questa classifica vale <b>${BOARD_SIZE} punti</b>, il 2° ${BOARD_SIZE - 1}… fino al ${BOARD_SIZE}° che vale 1 punto.`;
+    const card = $("questionCard");
+    card.style.animation = "none"; void card.offsetWidth; card.style.animation = "";
+  }
+  function renderTurn(message){
+    const b = $("turnBanner");
+    const team = state.teams[state.turn];
+    b.style.setProperty("--team", team.color);
+    b.innerHTML = message || `🎯 Tocca a <b>${escapeHtml(team.name)}</b>: scegliete una tessera`;
+    b.style.animation = "none"; void b.offsetWidth; b.style.animation = "";
+  }
+  function thumbHTML(c){
+    return `<span class="thumb">🖼️<img src="${escapeHtml(c.img)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+  }
+  function renderCards(){
+    const unit = state.round.cat.unit;
+    $("cards").innerHTML = state.round.cards.map((c, i) => `
+      <button type="button" class="flip rank-${c.rank}" data-i="${i}" aria-label="${escapeHtml(c.name)}">
+        <span class="flip-inner">
+          <span class="face front">${thumbHTML(c)}<span class="card-name">${escapeHtml(c.name)}</span><span class="card-q">❔ tocca per scoprire</span></span>
+          <span class="face back">${thumbHTML(c)}<span class="card-name">${escapeHtml(c.name)}</span>
+            <span class="card-value">${escapeHtml(c.label || formatNumber(c.value, unit))}</span>${isYear(unit) ? "" : `<span class="card-unit">${escapeHtml(unit)}</span>`}
+            <span class="card-rank">${rankLabel(c.rank)}</span>
+            <span class="card-pts"></span><span class="card-by"></span></span>
+        </span>
+      </button>`).join("");
+  }
+
+  /* Gira la tessera: by = squadra che l'ha scelta */
+  function revealCard(i, by){
+    const c = state.round.cards[i];
+    const el = $("cards").querySelector(`.flip[data-i="${i}"]`);
+    if (!el || el.classList.contains("revealed")) return;
+    const team = state.teams[by];
+    el.style.setProperty("--team", team.color);
+    el.classList.add("revealed");
+    el.disabled = true;
+    el.querySelector(".card-pts").textContent = `+${c.points} punti`;
+    el.querySelector(".card-by").textContent = `scelta da ${team.name}`;
+    c.by = by;
+  }
+
+  function showRevealPop(c, team){
+    const pop = document.createElement("div");
+    pop.className = "reveal-pop";
+    pop.innerHTML = `<div class="reveal-box" style="--team:${escapeHtml(team.color)}">
+      <div class="reveal-rank">${rankLabel(c.rank)}</div>
+      <div class="reveal-name">${escapeHtml(c.name)}</div>
+      <div class="reveal-value">${escapeHtml(c.label || formatValue(c.value, state.round.cat.unit))}</div>
+      <div class="reveal-pts">+${c.points} punti!</div>
+    </div>`;
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 1950);
+  }
+
+  /* =========================================================
+     TURNO: la tessera scelta assegna 13 − posizione punti alla
+     squadra di turno, poi la mano passa alla squadra successiva
+     ========================================================= */
+  $("cards").addEventListener("click", e => {
+    const el = e.target.closest(".flip");
+    if (!el || el.disabled || state.phase !== "play") return;
+    const i = Number(el.dataset.i);
+    const c = state.round.cards[i];
+    const who = state.turn;
+    const team = state.teams[who];
+    revealCard(i, who);
+    team.local += c.points;
+    team.round += c.points;
+    if (team.gi >= 0) saveGlobalScore(team.gi, total(who));
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+    showRevealPop(c, team);
+    if (c.rank === 1){ beep(660, 0.12); setTimeout(() => beep(880, 0.12), 110); setTimeout(() => beep(1175, 0.2), 220); confetti([team.color, "#ffd54a"]); }
+    else if (c.rank >= BOARD_SIZE - 1){ beep(220, 0.25, "sawtooth"); }
+    else { beep(520 + (BOARD_SIZE - c.rank) * 30, 0.14); }
+
+    state.revealed++;
+    $("skipBtn").hidden = true;
+    if (state.revealed === BOARD_SIZE){
+      state.phase = "over";
+      renderScoreboard(who);
+      setTimeout(endRound, 1700);
+      return;
+    }
+    state.turn = (state.turn + 1) % state.teams.length;
+    renderScoreboard(who);
+    renderTurn(`${c.rank === 1 ? "🔥" : "✅"} ${escapeHtml(team.name)} +${c.points}! Ora tocca a <b>${escapeHtml(state.teams[state.turn].name)}</b>`);
+  });
+
+  /* ---- Fine round: classifica squadre + ordine completo ---- */
+  function endRound(){
+    const order = state.teams.map((t, i) => i).sort((a, b) => total(b) - total(a));
+    const best = Math.max(...state.teams.map(t => t.round));
+    const winners = state.teams.filter(t => t.round === best);
+    $("sumTitle").textContent = `🏁 Fine round ${state.count}`;
+    $("sumTeams").innerHTML = order.map((i, pos) => {
+      const t = state.teams[i];
+      return `<div class="sum-team${pos === 0 ? " first" : ""}">
+        <span class="sum-pos">${MEDALS[pos] || pos + 1}</span>
+        <span class="sum-name"><span class="team-dot" style="background:${escapeHtml(t.color)}; color:${escapeHtml(t.color)};"></span><span>${escapeHtml(t.name)}</span></span>
+        <span class="sum-round">+${t.round}</span>
+        <span class="sum-total">${total(i)}</span>
+      </div>`;
+    }).join("");
+    $("sumOrderTitle").textContent = state.round.cat.rule;
+    $("sumOrder").innerHTML = [...state.round.cards].sort((a, b) => a.rank - b.rank).map(c =>
+      `<div><b>${c.rank}°</b><span>${escapeHtml(c.name)}</span><em>${escapeHtml(c.label || formatValue(c.value, state.round.cat.unit))}</em></div>`).join("");
+    renderTurn(`🏁 Round finito! Il round lo vince <b>${winners.map(t => escapeHtml(t.name)).join(" e ")}</b> con +${best}`);
+    $("turnBanner").style.setProperty("--team", winners[0].color);
+    $("summaryBtn").hidden = false;
+    $("nextBtn").hidden = false;
+    $("summaryModal").classList.add("active");
+    confetti(winners.map(t => t.color));
+  }
+
+  $("nextBtn").addEventListener("click", nextCategory);
+  $("nextCatBtn").addEventListener("click", nextCategory);
+  $("summaryBtn").addEventListener("click", () => $("summaryModal").classList.add("active"));
+  $("closeSummaryBtn").addEventListener("click", () => $("summaryModal").classList.remove("active"));
+  $("skipBtn").addEventListener("click", () => {
+    if (state.phase !== "play" || state.revealed > 0) return;
+    state.startTeam = (state.startTeam - 1 + state.teams.length) % state.teams.length;   // la squadra che inizia non cambia
+    state.count--;
+    nextCategory();
+  });
+
+  /* ---- Modal Regole ---- */
+  document.querySelectorAll(".openInfoBtn").forEach(btn => btn.addEventListener("click", () => $("infoModal").classList.add("active")));
+  $("closeInfoBtn").addEventListener("click", () => $("infoModal").classList.remove("active"));
+  $("infoModal").addEventListener("click", e => { if (e.target === $("infoModal")) $("infoModal").classList.remove("active"); });
+  $("summaryModal").addEventListener("click", e => { if (e.target === $("summaryModal")) $("summaryModal").classList.remove("active"); });
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    const global = loadGlobalTeams();
+    if (!global || !state) return;
+    scoreBaseline = state.teams.map((t, i) => (t.gi >= 0 && global.teams[t.gi] ? (global.teams[t.gi].score || 0) - t.local : 0));
+    renderScoreboard();
+  });
+
+  startGame();
+</script>
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5); font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+  }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55); background: rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  @media (max-width: 560px){ .global-score-widget{ bottom: 8px; right: 8px; } .gsw-name{ max-width: 72px; } }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){ try{ var raw=localStorage.getItem(KEY); if(raw){var d=JSON.parse(raw); if(d&&Array.isArray(d.teams)&&d.teams.length>=2) return d;} }catch(e){} return null; }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){ var div=document.createElement("div"); div.textContent = s==null?"":s; return div.innerHTML; }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML=""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0,n).map(function(t,i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:'+esc(t.color||"#4dd9ff")+'"></span>' +
+        '<span class="gsw-name">'+esc(t.name)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">'+(t.score||0)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load(); if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score||0)+d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load(); if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
+</script>
+</body>
+</html>
