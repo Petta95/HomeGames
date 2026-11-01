@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colore Esatto — Party Games Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     COLORE ESATTO — un personaggio con una parte in grigio e 9
+     colori: indovina quello giusto. File singolo e autocontenuto
+     con lo stesso sistema grafico e la stessa gestione
+     squadre/punteggi globali degli altri giochi.
+     ========================================================= */
+  :root{
+    --bg-deep: #0a0e1a;
+    --text-main: #f2f4ff;
+    --text-muted: #9aa3c0;
+    --glass-bg: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --accent: #ffc83d;
+    --accent2: #ff4fb8;
+    --accent-soft: rgba(255, 200, 61, 0.16);
+    --accent-glow: rgba(255, 200, 61, 0.5);
+    --ok: #00e676;
+    --ok-soft: rgba(0, 230, 118, 0.16);
+    --ko: #ff3b5c;
+    --ko-soft: rgba(255, 59, 92, 0.16);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden]{ display: none !important; }
+  html, body{
+    min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-blobs{
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #131a33 0%, var(--bg-deep) 55%);
+  }
+  .bg-blobs span{
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.24;
+    animation: float 22s ease-in-out infinite;
+  }
+  .bg-blobs span:nth-child(1){ width: 480px; height: 480px; background: var(--accent); top: -12%; left: -10%; }
+  .bg-blobs span:nth-child(2){ width: 520px; height: 520px; background: var(--accent2); bottom: -15%; right: -10%; animation-delay: -8s; }
+  .bg-blobs span:nth-child(3){ width: 380px; height: 380px; background: #3ad0ff; top: 40%; left: 45%; animation-delay: -15s; opacity: 0.14; }
+  @keyframes float{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-25px) scale(1.08); }
+  }
+
+  /* ---- Navbar ---- */
+  .navbar{
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+  }
+  .nav-back{
+    text-decoration: none; color: var(--text-main);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .nav-back:hover{ border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+  .nav-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  }
+  .nav-title .dot{ width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .nav-right{ display: flex; align-items: center; gap: 10px; }
+  .nav-counter{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
+    background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 999px;
+  }
+  .nav-info-btn{
+    background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .nav-info-btn:hover{ border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+
+  /* ---- Stage ---- */
+  .stage{
+    max-width: 1100px; margin: 0 auto; padding: 28px 24px 100px;
+    min-height: calc(100vh - 68px);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    gap: 22px; text-align: center;
+  }
+  .view{ width: 100%; display: none; flex-direction: column; align-items: center; gap: 20px; animation: fadeIn 0.4s ease; }
+  .view.active{ display: flex; }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  .section-title{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.4rem, 3.4vw, 2rem); }
+  .section-title span{
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .muted{ color: var(--text-muted); font-weight: 600; }
+
+  /* ---- Pulsanti ---- */
+  .btn{
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem;
+    padding: 16px 30px; border-radius: 16px; border: none; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #06090f; box-shadow: 0 0 25px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+  .btn-ghost{ background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
+  .btn-ghost:hover{ border-color: var(--accent); color: var(--accent); }
+  .btn-small{ padding: 9px 14px; font-size: 0.85rem; border-radius: 11px; }
+  .btn:active{ transform: scale(0.97); }
+  .btn:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
+  .btn-row{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Tabellone squadre (tutte quelle in gioco, a turno) ---- */
+  .score-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; width: 100%; max-width: 900px; }
+  .score-card{
+    position: relative; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 18px;
+    padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.3s ease;
+  }
+  .score-card.turn{ border-color: var(--team); box-shadow: 0 0 28px -6px var(--team); transform: translateY(-3px); }
+  .score-card.turn::after{
+    content: "TOCCA A TE"; position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    background: var(--team); color: #06090f; font-size: 0.66rem; font-weight: 900; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .score-card.out{ opacity: 0.45; }
+  .score-card.bump{ animation: bump 0.5s ease; }
+  @keyframes bump{ 40%{ transform: translateY(-3px) scale(1.07); } }
+  .team-dot{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+  .team-name-row{ display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .team-name{ font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
+  .score-value{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); line-height: 1.1; }
+  .score-sub{ font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+
+  /* ---- Setup: chi gioca ---- */
+  .setup-card{
+    width: 100%; max-width: 640px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 26px; display: flex; flex-direction: column; gap: 18px; align-items: center;
+  }
+  .team-chips{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .team-chip{
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--text-muted);
+    background: rgba(0,0,0,0.25); border: 2px solid var(--glass-border); border-radius: 999px; padding: 9px 16px;
+    transition: all 0.2s ease;
+  }
+  .team-chip.on{ color: var(--text-main); border-color: var(--team); box-shadow: 0 0 18px -6px var(--team); }
+  .team-chip .tick{ width: 18px; text-align: center; }
+  .setup-stats{ display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .pill{
+    font-size: 0.82rem; font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,0.25);
+    border: 1px solid var(--glass-border); border-radius: 999px; padding: 6px 12px;
+  }
+  .pill b{ color: var(--accent); }
+
+  /* ---- Domanda e turno ---- */
+  .question-card{
+    width: 100%; max-width: 900px; padding: 18px 24px; border-radius: 22px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); animation: fadeIn 0.35s ease;
+  }
+  .q-tags{ display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .q-tag{
+    font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(255,200,61,0.35);
+    padding: 4px 12px; border-radius: 999px;
+  }
+  .q-text{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(1.25rem, 3.2vw, 1.85rem); line-height: 1.25; }
+  .q-text em{ font-style: normal; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .turn-banner{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: clamp(1rem, 2.5vw, 1.25rem);
+    padding: 10px 22px; border-radius: 999px; background: var(--glass-bg); border: 2px solid var(--team, var(--accent));
+    box-shadow: 0 0 24px -8px var(--team, var(--accent)); transition: all 0.3s ease; animation: fadeIn 0.3s ease;
+  }
+  .turn-banner b{ color: var(--team, var(--accent)); }
+  .turn-banner.ok{ border-color: var(--ok); box-shadow: 0 0 30px -6px var(--ok); }
+  .turn-banner.ko{ border-color: var(--ko); box-shadow: 0 0 30px -6px var(--ko); }
+
+  /* ---- Area di gioco: immagine + griglia colori ---- */
+  .game{
+    width: 100%; max-width: 940px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+    gap: 22px; align-items: stretch;
+  }
+  .canvas-box{
+    position: relative; border-radius: 24px; padding: 16px; min-height: 320px;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(255,255,255,0.10), rgba(255,255,255,0.02) 70%),
+      var(--glass-bg);
+    border: 2px solid var(--glass-border); display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .canvas-box.ok{ border-color: var(--ok); box-shadow: 0 0 40px -8px var(--ok); }
+  .canvas-box.ko{ border-color: var(--ko); box-shadow: 0 0 40px -8px var(--ko); animation: shake 0.45s ease; }
+  @keyframes shake{ 20%, 60%{ transform: translateX(-8px); } 40%, 80%{ transform: translateX(8px); } }
+  #cv{ max-width: 100%; max-height: 400px; width: auto; height: auto; display: block; filter: drop-shadow(0 12px 26px rgba(0,0,0,0.45)); }
+  #cv.pulse{ animation: pulse 0.35s ease; }
+  @keyframes pulse{ 50%{ transform: scale(1.025); } }
+  .canvas-loading{ position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 700; }
+  .badge{
+    position: absolute; top: 12px; left: 12px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.4px;
+    background: rgba(8,10,20,0.8); border: 1px solid var(--glass-border); border-radius: 999px; padding: 4px 10px; color: var(--text-muted);
+  }
+  .badge.ok{ color: var(--ok); border-color: var(--ok); }
+
+  .side{ display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+  .swatches{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 330px; margin: 0 auto; }
+  .swatch{
+    position: relative; aspect-ratio: 1 / 1; border-radius: 18px; cursor: pointer;
+    border: 3px solid rgba(255,255,255,0.14); background: var(--c);
+    box-shadow: inset 0 -10px 22px rgba(0,0,0,0.22), 0 8px 20px -10px rgba(0,0,0,0.6);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+  }
+  .swatch:hover:not(:disabled){ transform: translateY(-3px) scale(1.04); }
+  .swatch.sel{ border-color: #fff; transform: scale(1.06); box-shadow: 0 0 0 4px var(--team, var(--accent)), 0 0 30px -4px var(--c); }
+  .swatch.wrong{ opacity: 0.28; cursor: not-allowed; transform: none; }
+  .swatch.wrong::after, .swatch.right::after{
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 900; text-shadow: 0 2px 8px rgba(0,0,0,0.7); color: #fff;
+  }
+  .swatch.wrong::after{ content: "✕"; }
+  .swatch.right{ border-color: var(--ok); box-shadow: 0 0 0 4px var(--ok), 0 0 34px -2px var(--ok); }
+  .swatch.right::after{ content: "✓"; }
+  .swatch:disabled{ cursor: default; }
+  .wrong-by{
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); max-width: 92%;
+    font-size: 0.62rem; font-weight: 800; color: #fff; background: rgba(0,0,0,0.6); border-radius: 999px;
+    padding: 2px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 1;
+  }
+  .side .btn{ width: 100%; max-width: 330px; margin: 0 auto; }
+  .hint{ font-size: 0.85rem; color: var(--text-muted); font-weight: 600; min-height: 1.2em; }
+
+  /* ---- Feedback centrale ---- */
+  .pop{
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    z-index: 900; pointer-events: none;
+  }
+  .pop-box{
+    background: #0f1426; border: 3px solid var(--c); border-radius: 26px; padding: 24px 34px;
+    box-shadow: 0 0 60px -6px var(--c); text-align: center; animation: popIn 0.35s cubic-bezier(.2,1.4,.4,1);
+    max-width: 90vw;
+  }
+  .pop-big{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(2rem, 7vw, 3.2rem); line-height: 1; color: var(--c); }
+  .pop-sub{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; margin-top: 10px; }
+  @keyframes popIn{ from{ opacity: 0; transform: scale(0.6); } to{ opacity: 1; transform: scale(1); } }
+  .pop.out .pop-box{ animation: popOut 0.3s ease forwards; }
+  @keyframes popOut{ to{ opacity: 0; transform: scale(0.85); } }
+  body.flash-ko::before{
+    content: ""; position: fixed; inset: 0; z-index: 800; pointer-events: none;
+    background: radial-gradient(circle, rgba(255,59,92,0) 40%, rgba(255,59,92,0.45)); animation: flash 0.6s ease forwards;
+  }
+  @keyframes flash{ to{ opacity: 0; } }
+
+  /* ---- Modali ---- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(5,7,14,0.86);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active{ opacity: 1; pointer-events: all; }
+  .modal-card{
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)); background-color: #0f1426;
+    border: 1px solid var(--glass-border); border-radius: 26px; padding: 30px;
+    max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    transform: translateY(18px) scale(0.97); transition: transform 0.25s ease; text-align: left;
+  }
+  .modal-overlay.active .modal-card{ transform: translateY(0) scale(1); }
+  .modal-title{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.5rem; color: var(--accent); margin-bottom: 14px; }
+  .modal-card ol{ padding-left: 22px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; line-height: 1.5; font-size: 0.98rem; }
+  .modal-card li strong{ color: var(--accent); }
+  .modal-card p.modal-note{ color: var(--text-muted); font-size: 0.88rem; margin-bottom: 18px; line-height: 1.45; }
+  .m-section{ font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin: 18px 0 10px; }
+  .m-answer{ display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); }
+  .m-answer i{ width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3); }
+  .m-answer b{ font-family: 'Poppins', sans-serif; }
+  .m-answer small{ display: block; color: var(--text-muted); font-weight: 600; }
+  .m-teams{ display: flex; flex-direction: column; gap: 8px; }
+  .m-team{
+    display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 8px; align-items: center;
+    padding: 8px 12px; border-radius: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+  }
+  .m-team .nm{ display: flex; align-items: center; gap: 8px; font-weight: 700; min-width: 0; }
+  .m-team .nm span:last-child{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .m-team .sc{ font-family: 'Poppins', sans-serif; font-weight: 900; color: var(--accent); min-width: 34px; text-align: center; }
+  .m-team .btn{ padding: 6px 11px; }
+  .m-actions{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .m-actions .btn{ width: 100%; }
+
+  /* ---- Coriandoli ---- */
+  .confetti{ position: fixed; inset: 0; pointer-events: none; z-index: 2000; overflow: hidden; }
+  .confetti i{ position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: fall linear forwards; }
+  @keyframes fall{ to{ transform: translate(var(--dx), 110vh) rotate(var(--rot)); } }
+
+  .toast{
+    position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 30px); opacity: 0; z-index: 1500;
+    background: #151b33; border: 1px solid var(--glass-border); border-radius: 999px; padding: 11px 20px;
+    font-weight: 700; transition: all 0.3s ease; pointer-events: none; max-width: 90vw; text-align: center;
+  }
+  .toast.show{ opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 760px){
+    .game{ grid-template-columns: 1fr; gap: 14px; }
+    .canvas-box{ min-height: 0; padding: 12px; }
+    #cv{ max-height: 300px; }
+    .swatches{ gap: 9px; max-width: 300px; }
+  }
+  @media (max-width: 600px){
+    .navbar{ padding: 10px 14px; gap: 8px; }
+    .nav-back{ padding: 8px 14px; font-size: 0.85rem; }
+    .nav-title{ font-size: 1.05rem; gap: 7px; }
+    .nav-counter{ display: none; }
+    .nav-info-btn{ width: 38px; height: 38px; font-size: 1rem; }
+    .stage{ padding: 18px 12px 70px; gap: 14px; }
+    .btn{ padding: 14px 22px; font-size: 0.95rem; border-radius: 13px; }
+    .score-grid{ gap: 10px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+    .score-card{ padding: 10px 8px; }
+    .score-value{ font-size: 1.5rem; }
+    .team-name{ font-size: 0.85rem; }
+    .question-card{ padding: 14px; border-radius: 18px; }
+    .modal-card{ padding: 22px; }
+    .m-actions{ grid-template-columns: 1fr; }
+    .swatch{ border-radius: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span><span></span></div>
+
+<nav class="navbar">
+  <a class="nav-back" href="menu.html">← Menu</a>
+  <span class="nav-title"><span class="dot"></span>🎨 Colore Esatto</span>
+  <div class="nav-right">
+    <span class="nav-counter" id="counter">Personaggio 1</span>
+    <button class="nav-info-btn" id="masterNavBtn" type="button" title="Pannello Master">🛠️</button>
+    <button class="nav-info-btn openInfoBtn" type="button" title="Regole del gioco">ℹ️</button>
+  </div>
+</nav>
+
+<!-- ============ MODAL REGOLE ============ -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-title">📖 Come si Gioca</div>
+    <p class="modal-note">Conosci davvero i colori dei personaggi che hai visto mille volte?</p>
+    <ol>
+      <li>Compare un <strong>personaggio</strong> con una parte in <strong>grigio</strong> (capelli, maglia, salopette, scarpe…). La domanda dice quale.</li>
+      <li>A fianco ci sono <strong>9 colori</strong>, mescolati ogni volta: solo uno è quello originale.</li>
+      <li>La squadra di turno <strong>tocca un colore</strong>: la parte grigia si colora subito con quella tinta, così potete provarne quanti volete prima di decidere.</li>
+      <li>Premete <strong>✅ Conferma</strong>. Se è <strong>giusto</strong> la squadra guadagna <strong>+1 punto</strong> e si passa al personaggio successivo.</li>
+      <li>Se è <strong>sbagliato</strong> il colore viene barrato e il turno passa <strong>subito</strong> alla squadra seguente, che riprova con i colori rimasti.</li>
+      <li>A ogni personaggio inizia una squadra diversa. I punti vanno direttamente nel <strong>punteggio di serata</strong>.</li>
+      <li><strong>Pannello Master 🛠️</strong>: mostra la risposta, salta il personaggio, cambia turno o corregge i punti a mano.</li>
+    </ol>
+    <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
+  </div>
+</div>
+
+<!-- ============ MODAL MASTER ============ -->
+<div class="modal-overlay" id="masterModal">
+  <div class="modal-card">
+    <div class="modal-title">🛠️ Pannello Master</div>
+    <div id="mBody"></div>
+    <div class="btn-row" style="justify-content:flex-end; margin-top:18px">
+      <button class="btn btn-ghost btn-small" id="mClose" type="button">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCHERMATA DI GIOCO ============ -->
+<main class="stage">
+
+  <div class="score-grid" id="scoreGrid"></div>
+
+  <!-- 1. Chi gioca -->
+  <section class="view active" id="setupView">
+    <div class="section-title">Chi <span>gioca</span>?</div>
+    <div class="setup-card">
+      <p class="muted" id="setupNote">Tocca le squadre per escluderle o includerle: giocheranno a turno.</p>
+      <div class="team-chips" id="teamChips"></div>
+      <div class="setup-stats" id="setupStats"></div>
+      <button class="btn btn-primary" id="startBtn" type="button">🎨 Inizia</button>
+    </div>
+  </section>
+
+  <!-- 2. Partita -->
+  <section class="view" id="playView">
+    <div class="question-card" id="questionCard">
+      <div class="q-tags" id="qTags"></div>
+      <div class="q-text" id="qText"></div>
+    </div>
+    <div class="turn-banner" id="turnBanner"></div>
+    <div class="game">
+      <div class="canvas-box" id="canvasBox">
+        <span class="badge" id="badge">🎨 Anteprima</span>
+        <canvas id="cv" width="10" height="10"></canvas>
+        <div class="canvas-loading" id="loading">Caricamento…</div>
+      </div>
+      <div class="side">
+        <div class="swatches" id="swatches"></div>
+        <div class="hint" id="hint"></div>
+        <button class="btn btn-primary" id="confirmBtn" type="button" disabled>✅ Conferma</button>
+        <button class="btn btn-primary" id="nextBtn" type="button" hidden>Prossimo personaggio ➜</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* =========================================================
+     DATABASE PERSONAGGI
+     Ogni voce: nome, dettaglio (la parte in grigio, con articolo),
+     colore (hex esatto della parte), img (originale) e parte
+     (PNG con la sola parte in scala di grigi, trasparente fuori).
+     La parte viene ricolorata moltiplicando il grigio per il
+     colore scelto: niente lettura dei pixel, quindi funziona
+     anche aprendo il file direttamente dal disco (file://).
+     Elenco generato da scripts/colore-esatto/prepara.py a partire
+     da scripts/colore-esatto/personaggi.json: per aggiungere un
+     personaggio segui scripts/colore-esatto/README.md.
+     ========================================================= */
+  const IMG_DIR = "assets/img/colore-esatto/";
+  const CHARACTERS = [
+    { nome: "Saetta McQueen", da: "Cars", parteNome: "Carrozzeria", dettaglio: "la carrozzeria", colore: "#fe2330", img: "saetta-mcqueen.webp", parte: "saetta-mcqueen-parte.webp" },
+    { nome: "il Genio", da: "Aladdin", parteNome: "Pelle", dettaglio: "la pelle", colore: "#5aa6e5", img: "genio.webp", parte: "genio-parte.webp" },
+    { nome: "il Grinch", da: "Il Grinch", parteNome: "Pelliccia", dettaglio: "la pelliccia", colore: "#a1d13a", img: "grinch.webp", parte: "grinch-parte.webp" },
+    { nome: "i Minions", da: "Cattivissimo me", parteNome: "Salopette", dettaglio: "la salopette", colore: "#2073af", img: "minions.webp", parte: "minions-parte.webp" },
+    { nome: "Nemo", da: "Alla ricerca di Nemo", parteNome: "Corpo", dettaglio: "il corpo", colore: "#eb533c", img: "nemo.webp", parte: "nemo-parte.webp" },
+    { nome: "la Pantera Rosa", da: "La Pantera Rosa", parteNome: "Pelliccia", dettaglio: "la pelliccia", colore: "#f7a3b8", img: "pantera-rosa.webp", parte: "pantera-rosa-parte.webp" },
+    { nome: "Pikachu", da: "Pokémon", parteNome: "Guance", dettaglio: "le guance", colore: "#f62d13", img: "pikachu.webp", parte: "pikachu-parte.webp" },
+    { nome: "Stitch", da: "Lilo & Stitch", parteNome: "Pelliccia", dettaglio: "la pelliccia", colore: "#5b82b4", img: "stitch.webp", parte: "stitch-parte.webp" },
+    { nome: "Winnie the Pooh", da: "Winnie the Pooh", parteNome: "Maglietta", dettaglio: "la maglietta", colore: "#f43158", img: "winnie.webp", parte: "winnie-parte.webp" },
+    { nome: "Aladdin", da: "Aladdin", parteNome: "Gilet", dettaglio: "il gilet", colore: "#824bc7", img: "aladdin.webp", parte: "aladdin-parte.webp" },
+    { nome: "Ariel", da: "La sirenetta", parteNome: "Capelli", dettaglio: "i capelli", colore: "#f32323", img: "ariel.webp", parte: "ariel-parte.webp" },
+    { nome: "Ash", da: "Pokémon", parteNome: "Cappello", dettaglio: "il cappello", colore: "#e54530", img: "ash.webp", parte: "ash-parte.webp" },
+    { nome: "Bart Simpson", da: "I Simpson", parteNome: "Maglietta", dettaglio: "la maglietta", colore: "#f14e28", img: "bart.webp", parte: "bart-parte.webp" },
+    { nome: "Biancaneve", da: "Biancaneve e i sette nani", parteNome: "Gonna", dettaglio: "la gonna", colore: "#fee884", img: "biancaneve.webp", parte: "biancaneve-parte.webp" },
+    { nome: "Charlie Brown", da: "Peanuts", parteNome: "Maglia", dettaglio: "la maglia", colore: "#ffcd32", img: "charlie-brown.webp", parte: "charlie-brown-parte.webp" },
+    { nome: "Crash Bandicoot", da: "Crash Bandicoot", parteNome: "Jeans", dettaglio: "i jeans", colore: "#3facf5", img: "crash.webp", parte: "crash-parte.webp" },
+    { nome: "Daphne", da: "Scooby-Doo", parteNome: "Vestito", dettaglio: "il vestito", colore: "#6352a3", img: "daphne.webp", parte: "daphne-parte.webp" },
+    { nome: "Dora", da: "Dora l'esploratrice", parteNome: "Maglietta", dettaglio: "la maglietta", colore: "#f36fab", img: "dora.webp", parte: "dora-parte.webp" },
+    { nome: "Doraemon", da: "Doraemon", parteNome: "Corpo", dettaglio: "il corpo", colore: "#0097e3", img: "doraemon.webp", parte: "doraemon-parte.webp" },
+    { nome: "Dory", da: "Alla ricerca di Nemo", parteNome: "Corpo", dettaglio: "il corpo", colore: "#0474dc", img: "dory.webp", parte: "dory-parte.webp" },
+    { nome: "Elsa", da: "Frozen", parteNome: "Vestito", dettaglio: "il vestito", colore: "#39beec", img: "elsa.webp", parte: "elsa-parte.webp" },
+    { nome: "Flash", da: "DC Comics", parteNome: "Costume", dettaglio: "il costume", colore: "#e1232f", img: "flash.webp", parte: "flash-parte.webp" },
+    { nome: "Fred Flintstone", da: "Gli Antenati", parteNome: "Vestito", dettaglio: "il vestito", colore: "#ff7f00", img: "fred.webp", parte: "fred-parte.webp" },
+    { nome: "Garfield", da: "Garfield", parteNome: "Pelo", dettaglio: "il pelo", colore: "#f59e36", img: "garfield.webp", parte: "garfield-parte.webp" },
+    { nome: "Hello Kitty", da: "Hello Kitty", parteNome: "Fiocco", dettaglio: "il fiocco", colore: "#e06187", img: "hello-kitty.webp", parte: "hello-kitty-parte.webp" },
+    { nome: "Homer Simpson", da: "I Simpson", parteNome: "Pantaloni", dettaglio: "i pantaloni", colore: "#70d1fe", img: "homer.webp", parte: "homer-parte.webp" },
+    { nome: "Hulk", da: "Marvel", parteNome: "Pantaloni", dettaglio: "i pantaloni", colore: "#6c5990", img: "hulk.webp", parte: "hulk-parte.webp" },
+    { nome: "Jasmine", da: "Aladdin", parteNome: "Completo", dettaglio: "il completo", colore: "#85cfce", img: "jasmine.webp", parte: "jasmine-parte.webp" },
+    { nome: "Jigglypuff", da: "Pokémon", parteNome: "Occhi", dettaglio: "gli occhi", colore: "#009ab9", img: "jigglypuff.webp", parte: "jigglypuff-parte.webp" },
+    { nome: "Lisa Simpson", da: "I Simpson", parteNome: "Vestito", dettaglio: "il vestito", colore: "#f05e2f", img: "lisa.webp", parte: "lisa-parte.webp" },
+    { nome: "Rufy", da: "One Piece", parteNome: "Camicia", dettaglio: "la camicia", colore: "#d13432", img: "luffy.webp", parte: "luffy-parte.webp" },
+    { nome: "Super Mario", da: "Super Mario", parteNome: "Salopette", dettaglio: "la salopette", colore: "#005eb7", img: "mario.webp", parte: "mario-parte.webp" },
+    { nome: "Mike Wazowski", da: "Monsters & Co.", parteNome: "Corpo", dettaglio: "il corpo", colore: "#97ea3f", img: "mike.webp", parte: "mike-parte.webp" },
+    { nome: "Naruto", da: "Naruto", parteNome: "Tuta", dettaglio: "la tuta", colore: "#f59f30", img: "naruto.webp", parte: "naruto-parte.webp" },
+    { nome: "Olaf", da: "Frozen", parteNome: "Naso", dettaglio: "il naso", colore: "#d66a37", img: "olaf.webp", parte: "olaf-parte.webp" },
+    { nome: "Patrick Stella", da: "SpongeBob", parteNome: "Pantaloncini", dettaglio: "i pantaloncini", colore: "#d6df31", img: "patrick.webp", parte: "patrick-parte.webp" },
+    { nome: "la Principessa Peach", da: "Super Mario", parteNome: "Vestito", dettaglio: "il vestito", colore: "#f177a6", img: "peach.webp", parte: "peach-parte.webp" },
+    { nome: "Piccolo", da: "Dragon Ball", parteNome: "Tuta", dettaglio: "la tuta", colore: "#5d428e", img: "piccolo.webp", parte: "piccolo-parte.webp" },
+    { nome: "Rick", da: "Rick and Morty", parteNome: "Capelli", dettaglio: "i capelli", colore: "#b2e2ff", img: "rick.webp", parte: "rick-parte.webp" },
+    { nome: "Shaggy", da: "Scooby-Doo", parteNome: "Maglia", dettaglio: "la maglia", colore: "#b8be19", img: "shaggy.webp", parte: "shaggy-parte.webp" },
+    { nome: "Shrek", da: "Shrek", parteNome: "Pelle", dettaglio: "la pelle", colore: "#dbdd23", img: "shrek.webp", parte: "shrek-parte.webp" },
+    { nome: "Sonic", da: "Sonic", parteNome: "Scarpe", dettaglio: "le scarpe", colore: "#ff183d", img: "sonic.webp", parte: "sonic-parte.webp" },
+    { nome: "Squirtle", da: "Pokémon", parteNome: "Pelle", dettaglio: "la pelle", colore: "#6ebddb", img: "squirtle.webp", parte: "squirtle-parte.webp" },
+    { nome: "Superman", da: "DC Comics", parteNome: "Mantello", dettaglio: "il mantello", colore: "#e3503d", img: "superman.webp", parte: "superman-parte.webp" },
+    { nome: "Titti", da: "Looney Tunes", parteNome: "Piume", dettaglio: "le piume", colore: "#ffe512", img: "titti.webp", parte: "titti-parte.webp" },
+    { nome: "Topolino", da: "Disney", parteNome: "Pantaloncini", dettaglio: "i pantaloncini", colore: "#d70b23", img: "topolino.webp", parte: "topolino-parte.webp" },
+    { nome: "Velma", da: "Scooby-Doo", parteNome: "Maglione", dettaglio: "il maglione", colore: "#f8991d", img: "velma.webp", parte: "velma-parte.webp" },
+    { nome: "Wario", da: "Super Mario", parteNome: "Salopette", dettaglio: "la salopette", colore: "#932188", img: "wario.webp", parte: "wario-parte.webp" },
+    { nome: "Yoshi", da: "Super Mario", parteNome: "Scarpe", dettaglio: "le scarpe", colore: "#e46007", img: "yoshi.webp", parte: "yoshi-parte.webp" },
+    { nome: "Donkey Kong", da: "Super Mario", parteNome: "Cravatta", dettaglio: "la cravatta", colore: "#e72f2c", img: "donkey-kong.webp", parte: "donkey-kong-parte.webp" },
+    { nome: "Goku", da: "Dragon Ball", parteNome: "Tuta", dettaglio: "la tuta", colore: "#ff9e17", img: "goku.webp", parte: "goku-parte.webp" },
+    { nome: "Daffy Duck", da: "Looney Tunes", parteNome: "Becco e zampe", dettaglio: "il becco e le zampe", colore: "#f7a800", img: "daffy.webp", parte: "daffy-parte.webp" }
+  ];
+
+  /* Tavolozza dei colori "sbagliati": a ogni turno se ne scelgono 8 ben
+     distinti dal colore giusto e tra loro, con una piccola variazione
+     casuale così il colore giusto non si riconosce perché "diverso" */
+  const PALETTE = [
+    ["Rosso", "#e3262f"], ["Bordeaux", "#8e1b30"], ["Arancione", "#f57c12"], ["Giallo", "#ffd21f"],
+    ["Senape", "#c9a227"], ["Lime", "#9bd13c"], ["Verde", "#2e9e44"], ["Verde scuro", "#1d5e2a"],
+    ["Turchese", "#1fb5a8"], ["Azzurro", "#45b5f2"], ["Blu", "#1f4fd1"], ["Blu notte", "#1b2580"],
+    ["Viola", "#7b2fbf"], ["Lilla", "#b49ddc"], ["Rosa", "#f591b6"], ["Fucsia", "#e61e8c"],
+    ["Marrone", "#7a4a24"], ["Beige", "#e3c9a1"], ["Nero", "#1d1d1f"], ["Bianco", "#f4f4f4"],
+    ["Pesca", "#ffb38a"], ["Verde acqua", "#7fd9c4"], ["Ocra", "#b8722c"], ["Grigio azzurro", "#7d93ab"]
+  ];
+  const IDLE_GRAY = "#c4c4c4";
+
+  /* =========================================================
+     Squadre globali (nomi/colori/punteggio impostati in
+     index.html) — stesso sistema condiviso degli altri giochi.
+     scoreBaseline tiene il punteggio già accumulato prima di
+     questa partita, così il totale di serata non si perde.
+     ========================================================= */
+  const GLOBAL_TEAMS_KEY = "homeGamesTeams";
+  const TEAM_COLORS = ["#ff2e88", "#4dd9ff", "#00e676", "#ffd600", "#a05bff", "#fb5607"];
+  let scoreBaseline = [];
+
+  function loadGlobalTeams(){
+    try {
+      const raw = localStorage.getItem(GLOBAL_TEAMS_KEY);
+      if (raw){
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.teams) && data.teams.length >= 2) return data;
+      }
+    } catch(e) { /* dati corrotti: si ignora */ }
+    return null;
+  }
+  function saveGlobalScore(index, score){
+    const data = loadGlobalTeams();
+    if (!data || !data.teams[index]) return;
+    data.teams[index].score = score;
+    localStorage.setItem(GLOBAL_TEAMS_KEY, JSON.stringify(data));
+    if (window.renderGlobalScoreWidget) window.renderGlobalScoreWidget();
+  }
+
+  function shuffle(arr){
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+  }
+  const $ = id => document.getElementById(id);
+  let toastT;
+  function toast(msg){
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2400);
+  }
+
+  /* ---- Suoni via Web Audio API: nessun file audio esterno ---- */
+  function beep(freq, duration, type, delay){
+    try{
+      const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const t0 = ctx.currentTime + (delay || 0);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.18, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    } catch(e){ /* Web Audio non disponibile: si prosegue senza audio */ }
+  }
+  const sfx = {
+    tap(){ beep(880, 0.06, "triangle"); },
+    ok(){ [523, 659, 784, 1046].forEach((f, i) => beep(f, 0.22, "triangle", i * 0.09)); },
+    ko(){ beep(180, 0.32, "sawtooth"); beep(120, 0.4, "sawtooth", 0.12); }
+  };
+
+  function confetti(colors){
+    const box = document.createElement("div");
+    box.className = "confetti";
+    const palette = colors && colors.length ? colors : ["#ffc83d", "#ff4fb8", "#3ad0ff", "#00e676"];
+    box.innerHTML = Array.from({ length: 140 }, () => {
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      return `<i style="left:${Math.random() * 100}%;background:${c};animation-duration:${2.2 + Math.random() * 2}s;animation-delay:${Math.random() * 0.6}s;--dx:${(Math.random() - 0.5) * 300}px;--rot:${Math.random() * 1080 - 540}deg;width:${6 + Math.random() * 8}px"></i>`;
+    }).join("");
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 5000);
+  }
+  function showPop(big, sub, color){
+    const pop = document.createElement("div");
+    pop.className = "pop";
+    pop.innerHTML = `<div class="pop-box" style="--c:${color}"><div class="pop-big">${big}</div><div class="pop-sub">${sub}</div></div>`;
+    document.body.appendChild(pop);
+    setTimeout(() => pop.classList.add("out"), 1500);
+    setTimeout(() => pop.remove(), 1850);
+  }
+
+  /* =========================================================
+     COLORI: distanza percettiva (CIELAB) per scegliere 8
+     colori sbagliati ben distinguibili da quello giusto
+     ========================================================= */
+  function hexToRgb(hex){ const h = hex.replace("#", ""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+  const toHex = rgb => "#" + rgb.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
+  function lab(hex){
+    const [r, g, b] = hexToRgb(hex).map(v => { v /= 255; return v > 0.04045 ? Math.pow((v + 0.055) / 1.055, 2.4) : v / 12.92; });
+    const f = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+    const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047), y = f(r * 0.2126 + g * 0.7152 + b * 0.0722), z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
+    return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+  }
+  const dE = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  function jitter(hex){
+    const k = 1 + (Math.random() - 0.5) * 0.14;   // ±7% di luminosità
+    return toHex(hexToRgb(hex).map(v => v * k + (Math.random() - 0.5) * 10));
+  }
+  function makeOptions(correct){
+    const target = lab(correct);
+    for (const [far, apart] of [[26, 18], [20, 14], [14, 10]]){
+      const picked = [];
+      for (const [, hex] of shuffle(PALETTE)){
+        const c = jitter(hex), L = lab(c);
+        if (dE(L, target) < far || picked.some(p => dE(p.L, L) < apart)) continue;
+        picked.push({ hex: c, L });
+        if (picked.length === 8) break;
+      }
+      if (picked.length === 8) return shuffle([{ hex: correct, ok: true }, ...picked.map(p => ({ hex: p.hex, ok: false }))]);
+    }
+    return shuffle([{ hex: correct, ok: true }, ...shuffle(PALETTE).slice(0, 8).map(([, h]) => ({ hex: h, ok: false }))]);
+  }
+
+  /* =========================================================
+     IMMAGINI: originale + parte grigia, ricolorata via canvas
+     (multiply del grigio per il colore, ritagliato con l'alpha
+     della parte). Nessuna getImageData → niente problemi CORS.
+     ========================================================= */
+  const imgCache = new Map();
+  function loadImg(src){
+    if (!imgCache.has(src)) imgCache.set(src, new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = () => rej(new Error(src));
+      im.src = src;
+    }));
+    return imgCache.get(src);
+  }
+  const loadChar = ch => Promise.all([loadImg(IMG_DIR + ch.img), loadImg(IMG_DIR + ch.parte)]);
+  const off = document.createElement("canvas");
+  function paint(color){
+    const r = state && state.cur;
+    if (!r || !r.imgs) return;
+    const [orig, part] = r.imgs;
+    const cv = $("cv"), w = orig.naturalWidth, h = orig.naturalHeight;
+    if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+    const ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(orig, 0, 0, w, h);
+    if (!color) return;
+    off.width = w; off.height = h;
+    const o = off.getContext("2d");
+    o.globalCompositeOperation = "source-over";
+    o.drawImage(part, 0, 0, w, h);
+    o.globalCompositeOperation = "multiply";
+    o.fillStyle = color;
+    o.fillRect(0, 0, w, h);
+    o.globalCompositeOperation = "destination-in";
+    o.drawImage(part, 0, 0, w, h);
+    ctx.drawImage(off, 0, 0);
+  }
+
+  /* =========================================================
+     STATO
+     teams: solo le squadre che giocano (gi = indice globale)
+     cur: personaggio in corso { ch, options, sel, wrong[], done }
+     ========================================================= */
+  let state = null;
+  let selectedTeams = null;
+
+  function globalList(){
+    const g = loadGlobalTeams();
+    if (!g) return null;
+    return g.teams.slice(0, Math.min(g.count || g.teams.length, 6));
+  }
+  function renderSetup(){
+    const list = globalList();
+    const teams = list || [{ name: "Squadra 1", color: TEAM_COLORS[0] }, { name: "Squadra 2", color: TEAM_COLORS[1] }];
+    if (!selectedTeams || selectedTeams.length > teams.length) selectedTeams = teams.map((_, i) => i);
+    $("teamChips").innerHTML = teams.map((t, i) => {
+      const on = selectedTeams.includes(i);
+      const col = t.color || TEAM_COLORS[i % TEAM_COLORS.length];
+      return `<button type="button" class="team-chip${on ? " on" : ""}" data-i="${i}" style="--team:${escapeHtml(col)}">
+        <span class="team-dot" style="background:${escapeHtml(col)}; color:${escapeHtml(col)}"></span>${escapeHtml(t.name)}<span class="tick">${on ? "✓" : ""}</span></button>`;
+    }).join("");
+    $("setupNote").textContent = list
+      ? "Tocca le squadre per escluderle o includerle: giocheranno a turno."
+      : "Nessuna squadra salvata nel menu principale: si gioca con due squadre di default.";
+    $("setupStats").innerHTML = `<span class="pill"><b>${CHARACTERS.length}</b> personaggi</span><span class="pill"><b>9</b> colori a turno</span><span class="pill">giusto = <b>+1</b></span>`;
+    $("startBtn").disabled = selectedTeams.length < 1;
+  }
+  $("teamChips").addEventListener("click", e => {
+    const b = e.target.closest("[data-i]");
+    if (!b) return;
+    const i = Number(b.dataset.i);
+    selectedTeams = selectedTeams.includes(i) ? selectedTeams.filter(x => x !== i) : [...selectedTeams, i].sort((a, b) => a - b);
+    sfx.tap();
+    renderSetup();
+  });
+
+  function buildTeams(){
+    const list = globalList();
+    if (list){
+      scoreBaseline = selectedTeams.map(i => list[i].score || 0);
+      return selectedTeams.map(i => ({ gi: i, name: list[i].name, color: list[i].color || TEAM_COLORS[i % TEAM_COLORS.length], local: 0, guessed: 0 }));
+    }
+    scoreBaseline = selectedTeams.map(() => 0);
+    return selectedTeams.map(i => ({ gi: -1, name: `Squadra ${i + 1}`, color: TEAM_COLORS[i], local: 0, guessed: 0 }));
+  }
+  const total = i => (scoreBaseline[i] || 0) + state.teams[i].local;
+
+  function startGame(){
+    state = { teams: buildTeams(), deck: shuffle(CHARACTERS), pos: 0, count: 0, startTeam: -1, turn: 0, cur: null };
+    showView("playView");
+    nextCharacter();
+  }
+  $("startBtn").addEventListener("click", startGame);
+
+  function showView(id){
+    ["setupView", "playView"].forEach(v => $(v).classList.toggle("active", v === id));
+    $("scoreGrid").hidden = id !== "playView";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function nextCharacter(){
+    if (state.pos >= state.deck.length){
+      state.deck = shuffle(CHARACTERS); state.pos = 0;
+      toast("🔁 Personaggi finiti: si ricomincia con un nuovo ordine!");
+    }
+    const ch = state.deck[state.pos++];
+    state.count++;
+    state.startTeam = (state.startTeam + 1) % state.teams.length;   // a ogni personaggio inizia una squadra diversa
+    state.turn = state.startTeam;
+    state.cur = { ch, options: makeOptions(ch.colore), sel: -1, wrong: [], done: false, imgs: null, winner: -1 };
+    $("counter").textContent = `Personaggio ${state.count}`;
+    $("canvasBox").classList.remove("ok", "ko");
+    $("badge").className = "badge";
+    $("badge").textContent = "🎨 Anteprima";
+    $("nextBtn").hidden = true;
+    $("confirmBtn").hidden = false;
+    renderQuestion();
+    renderSwatches();
+    renderScoreboard();
+    renderTurn();
+    updateConfirm();
+    $("loading").hidden = false;
+    $("loading").textContent = "Caricamento…";
+    const cur = state.cur;
+    loadChar(ch).then(imgs => {
+      if (state.cur !== cur) return;
+      cur.imgs = imgs;
+      $("loading").hidden = true;
+      paint(IDLE_GRAY);
+    }).catch(() => {
+      if (state.cur !== cur) return;
+      $("loading").textContent = "⚠️ Immagine non trovata: salta il personaggio dal pannello 🛠️";
+    });
+    /* precarica il prossimo personaggio */
+    if (state.deck[state.pos]) loadChar(state.deck[state.pos]).catch(() => {});
+  }
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+  function renderScoreboard(bumpIndex){
+    $("scoreGrid").innerHTML = state.teams.map((team, i) => {
+      const cls = (!state.cur.done && i === state.turn ? " turn" : "") + (i === bumpIndex ? " bump" : "");
+      return `<div class="score-card${cls}" style="--team:${escapeHtml(team.color)}">
+        <div class="team-name-row">
+          <span class="team-dot" style="background:${escapeHtml(team.color)}; color:${escapeHtml(team.color)};"></span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+        </div>
+        <div class="score-value">${total(i)}</div>
+        <div class="score-sub">🎨 ${team.guessed} indovinat${team.guessed === 1 ? "o" : "i"}</div>
+      </div>`;
+    }).join("");
+  }
+  /* "di" + articolo del nome: "il Genio" → "del Genio", "i Minions" → "dei Minions" */
+  const DI = { "il": "del", "lo": "dello", "la": "della", "i": "dei", "gli": "degli", "le": "delle" };
+  function ofName(nome){
+    const m = nome.match(/^(il|lo|la|i|gli|le) (.+)$/i);
+    if (m) return `${DI[m[1].toLowerCase()]} <em>${escapeHtml(m[2])}</em>`;
+    if (/^l'/i.test(nome)) return `dell'<em>${escapeHtml(nome.slice(2))}</em>`;
+    return `di <em>${escapeHtml(nome)}</em>`;
+  }
+  function renderQuestion(){
+    const ch = state.cur.ch;
+    $("qTags").innerHTML = `<span class="q-tag">🎬 ${escapeHtml(ch.da || "Personaggio")}</span><span class="q-tag">🎯 ${escapeHtml(ch.parteNome)}</span>`;
+    const verb = /^(le|i|gli) /i.test(ch.dettaglio) || / e (il|lo|la|i|gli|le) /i.test(ch.dettaglio) ? "sono" : "è";
+    $("qText").innerHTML = `Di che colore ${verb} ${escapeHtml(ch.dettaglio)} ${ofName(ch.nome)}?`;
+    const card = $("questionCard");
+    card.style.animation = "none"; void card.offsetWidth; card.style.animation = "";
+  }
+  function renderTurn(message, kind){
+    const b = $("turnBanner");
+    const team = state.teams[state.turn];
+    b.className = "turn-banner" + (kind ? " " + kind : "");
+    b.style.setProperty("--team", team.color);
+    b.innerHTML = message || `🎯 Tocca a <b>${escapeHtml(team.name)}</b>: provate i colori e confermate`;
+    b.style.animation = "none"; void b.offsetWidth; b.style.animation = "";
+    document.documentElement.style.setProperty("--team", team.color);
+  }
+  function renderSwatches(){
+    const r = state.cur;
+    $("swatches").innerHTML = r.options.map((o, i) => {
+      const w = r.wrong.find(x => x.i === i);
+      const cls = (w ? " wrong" : "") + (i === r.sel && !w ? " sel" : "") + (r.done && o.ok ? " right" : "");
+      return `<button type="button" class="swatch${cls}" data-i="${i}" style="--c:${o.hex}" aria-label="Colore ${i + 1}"${w || r.done ? " disabled" : ""}>${w ? `<span class="wrong-by">${escapeHtml(w.team)}</span>` : ""}</button>`;
+    }).join("");
+  }
+  function updateConfirm(){
+    const r = state.cur;
+    $("confirmBtn").disabled = r.done || r.sel < 0;
+    $("hint").textContent = r.done ? "" : r.sel < 0
+      ? `${r.wrong.length ? `Colori già esclusi: ${r.wrong.length}. ` : ""}Tocca un colore per vederlo sul personaggio.`
+      : "Ti convince? Premi Conferma, oppure prova un altro colore.";
+  }
+
+  /* =========================================================
+     AZIONI
+     ========================================================= */
+  $("swatches").addEventListener("click", e => {
+    const b = e.target.closest(".swatch");
+    const r = state && state.cur;
+    if (!b || !r || r.done || b.disabled) return;
+    r.sel = Number(b.dataset.i);
+    sfx.tap();
+    paint(r.options[r.sel].hex);
+    const cv = $("cv"); cv.classList.remove("pulse"); void cv.offsetWidth; cv.classList.add("pulse");
+    renderSwatches();
+    updateConfirm();
+  });
+
+  function award(ti, delta){
+    const t = state.teams[ti];
+    t.local += delta;
+    if (t.gi >= 0) saveGlobalScore(t.gi, total(ti));
+  }
+
+  $("confirmBtn").addEventListener("click", () => {
+    const r = state.cur;
+    if (r.done || r.sel < 0) return;
+    const team = state.teams[state.turn];
+    const opt = r.options[r.sel];
+    if (opt.ok){
+      r.done = true; r.winner = state.turn;
+      team.guessed++;
+      award(state.turn, 1);
+      sfx.ok();
+      confetti([r.ch.colore, team.color, "#ffffff", "#ffc83d"]);
+      showPop("🎉 Giusto!", `+1 punto a ${escapeHtml(team.name)}`, "#00e676");
+      finishCharacter(`✅ <b>${escapeHtml(team.name)}</b> ha indovinato! +1 punto`, "ok");
+      renderScoreboard(state.turn);
+    } else {
+      r.wrong.push({ i: r.sel, team: team.name });
+      r.sel = -1;
+      sfx.ko();
+      document.body.classList.remove("flash-ko"); void document.body.offsetWidth; document.body.classList.add("flash-ko");
+      const box = $("canvasBox"); box.classList.remove("ko"); void box.offsetWidth; box.classList.add("ko");
+      setTimeout(() => box.classList.remove("ko"), 700);
+      showPop("❌ Sbagliato!", "il turno passa", "#ff3b5c");
+      paint(IDLE_GRAY);
+      const left = r.options.filter((o, i) => !r.wrong.some(w => w.i === i)).length;
+      if (left <= 1){
+        /* resta solo il colore giusto: nessun punto, si rivela */
+        finishCharacter(`😶 Nessuno ha indovinato: era l'ultimo colore rimasto`, "ko");
+      } else {
+        passTurn();
+        renderTurn(`❌ Sbagliato! Ora tocca a <b>${escapeHtml(state.teams[state.turn].name)}</b>`, "ko");
+        setTimeout(() => { if (state.cur === r && !r.done) renderTurn(); }, 2200);
+      }
+      renderSwatches();
+      updateConfirm();
+      renderScoreboard();
+    }
+  });
+
+  function passTurn(){ state.turn = (state.turn + 1) % state.teams.length; }
+
+  /* Fine personaggio: si mostra l'immagine originale e il colore giusto */
+  function finishCharacter(message, kind){
+    const r = state.cur;
+    r.done = true;
+    r.sel = r.options.findIndex(o => o.ok);
+    paint(null);
+    $("canvasBox").classList.toggle("ok", kind === "ok");
+    $("badge").className = "badge ok";
+    $("badge").textContent = "✓ Colore originale";
+    renderTurn(message, kind);
+    renderSwatches();
+    updateConfirm();
+    renderScoreboard();
+    $("confirmBtn").hidden = true;
+    $("nextBtn").hidden = false;
+  }
+  $("nextBtn").addEventListener("click", nextCharacter);
+
+  /* =========================================================
+     PANNELLO MASTER
+     ========================================================= */
+  function renderMaster(){
+    if (!state){
+      $("mBody").innerHTML = `<p class="modal-note">Il pannello si attiva quando inizia la partita.</p>`;
+      return;
+    }
+    const r = state.cur, ch = r.ch;
+    $("mBody").innerHTML = `
+      <div class="m-section">Personaggio in corso</div>
+      <div class="m-answer"><i style="background:${ch.colore}"></i><div><b>${escapeHtml(ch.nome)}</b> · ${escapeHtml(ch.dettaglio)}<small>Colore esatto ${ch.colore.toUpperCase()}${r.done ? " · già rivelato" : ""}</small></div></div>
+      <div class="m-section">Azioni</div>
+      <div class="m-actions">
+        <button class="btn btn-ghost btn-small" data-m="reveal" type="button"${r.done ? " disabled" : ""}>👁 Rivela senza punti</button>
+        <button class="btn btn-ghost btn-small" data-m="skip" type="button">⏭ Salta personaggio</button>
+        <button class="btn btn-ghost btn-small" data-m="turn" type="button"${r.done ? " disabled" : ""}>🔄 Passa il turno</button>
+        <button class="btn btn-ghost btn-small" data-m="setup" type="button">👥 Cambia squadre</button>
+      </div>
+      <div class="m-section">Punti (vanno anche nel punteggio di serata)</div>
+      <div class="m-teams">${state.teams.map((t, i) => `
+        <div class="m-team">
+          <span class="nm"><span class="team-dot" style="background:${escapeHtml(t.color)}; color:${escapeHtml(t.color)}"></span><span>${escapeHtml(t.name)}</span></span>
+          <button class="btn btn-ghost btn-small" data-m="minus" data-t="${i}" type="button">−1</button>
+          <span class="sc">${total(i)}</span>
+          <button class="btn btn-ghost btn-small" data-m="plus" data-t="${i}" type="button">+1</button>
+          <button class="btn btn-ghost btn-small" data-m="give" data-t="${i}" type="button" title="Dai il punto di questo personaggio e rivela"${r.done ? " disabled" : ""}>🎯</button>
+        </div>`).join("")}
+      </div>
+      <p class="modal-note" style="margin:12px 0 0">🎯 = assegna il punto del personaggio a quella squadra e rivela il colore (per esempio se il Master ritiene giusta una risposta data a voce).</p>`;
+  }
+  $("masterNavBtn").addEventListener("click", () => { renderMaster(); $("masterModal").classList.add("active"); });
+  $("mClose").addEventListener("click", () => $("masterModal").classList.remove("active"));
+  $("masterModal").addEventListener("click", e => {
+    if (e.target === $("masterModal")){ $("masterModal").classList.remove("active"); return; }
+    const b = e.target.closest("[data-m]");
+    if (!b || !state) return;
+    const act = b.dataset.m, ti = Number(b.dataset.t);
+    const r = state.cur;
+    if (act === "reveal"){ finishCharacter("👁 Il Master ha rivelato il colore", ""); $("masterModal").classList.remove("active"); return; }
+    if (act === "skip"){ $("masterModal").classList.remove("active"); nextCharacter(); toast("⏭ Personaggio saltato"); return; }
+    if (act === "turn"){ passTurn(); renderTurn(); renderScoreboard(); toast(`🔄 Ora tocca a ${state.teams[state.turn].name}`); }
+    if (act === "setup"){ $("masterModal").classList.remove("active"); state = null; renderSetup(); showView("setupView"); return; }
+    if (act === "plus" || act === "minus"){ award(ti, act === "plus" ? 1 : -1); renderScoreboard(ti); }
+    if (act === "give" && !r.done){
+      state.teams[ti].guessed++;
+      award(ti, 1);
+      state.turn = ti;
+      sfx.ok(); confetti([r.ch.colore, state.teams[ti].color]);
+      finishCharacter(`✅ Punto assegnato dal Master a <b>${escapeHtml(state.teams[ti].name)}</b>`, "ok");
+      renderScoreboard(ti);
+      $("masterModal").classList.remove("active");
+      return;
+    }
+    renderMaster();
+  });
+
+  /* ---- Modal Regole ---- */
+  document.querySelectorAll(".openInfoBtn").forEach(btn => btn.addEventListener("click", () => $("infoModal").classList.add("active")));
+  $("closeInfoBtn").addEventListener("click", () => $("infoModal").classList.remove("active"));
+  $("infoModal").addEventListener("click", e => { if (e.target === $("infoModal")) $("infoModal").classList.remove("active"); });
+
+  /* ---- Se il punteggio viene cambiato dal widget flottante, si aggiorna qui ---- */
+  window.addEventListener("globalScoreChanged", () => {
+    const global = loadGlobalTeams();
+    if (!global || !state) return;
+    scoreBaseline = state.teams.map((t, i) => (t.gi >= 0 && global.teams[t.gi] ? (global.teams[t.gi].score || 0) - t.local : 0));
+    renderScoreboard();
+  });
+
+  renderSetup();
+  showView("setupView");
+</script>
+
+<!-- ============================================================
+     WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
+     la stessa chiave localStorage impostata in index.html. Non
+     dipende dalle variabili interne del gioco che lo ospita.
+     ============================================================ -->
+<div id="globalScoreWidget" class="global-score-widget"></div>
+<style>
+  .global-score-widget{
+    position: fixed; bottom: 14px; right: 14px; z-index: 99999;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    font-family: 'Inter', sans-serif; pointer-events: none;
+  }
+  .global-score-widget > *{ pointer-events: auto; }
+  .gsw-team{
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(8,10,20,0.88); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 5px 8px 5px 12px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.5); font-size: 0.76rem; color: #fff; white-space: nowrap;
+  }
+  .gsw-dot{ width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .gsw-name{ font-weight: 700; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .gsw-score{ font-weight: 900; font-family: 'Poppins', sans-serif; min-width: 18px; text-align: center; }
+  .gsw-btn{
+    width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.14); color: #fff; font-weight: 700; font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+  }
+  .gsw-reset{
+    font-size: 0.65rem; color: rgba(255,255,255,0.55); background: rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; padding: 3px 10px;
+  }
+  @media (max-width: 560px){ .global-score-widget{ bottom: 8px; right: 8px; } .gsw-name{ max-width: 72px; } }
+</style>
+<script>
+(function(){
+  var KEY = "homeGamesTeams";
+  function load(){ try{ var raw=localStorage.getItem(KEY); if(raw){var d=JSON.parse(raw); if(d&&Array.isArray(d.teams)&&d.teams.length>=2) return d;} }catch(e){} return null; }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function esc(s){ var div=document.createElement("div"); div.textContent = s==null?"":s; return div.innerHTML; }
+  window.renderGlobalScoreWidget = function(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el) return;
+    var data = load();
+    if (!data){ el.innerHTML=""; return; }
+    var n = data.count || data.teams.length;
+    var html = data.teams.slice(0,n).map(function(t,i){
+      return '<div class="gsw-team">' +
+        '<span class="gsw-dot" style="background:'+esc(t.color||"#4dd9ff")+'"></span>' +
+        '<span class="gsw-name">'+esc(t.name)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
+        '<span class="gsw-score">'+(t.score||0)+'</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="'+i+'" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+      '</div>';
+    }).join("");
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    el.innerHTML = html;
+  };
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
+    if (btn){
+      var data = load(); if (!data) return;
+      var i = Number(btn.getAttribute("data-gsw-i"));
+      var d = Number(btn.getAttribute("data-gsw-d"));
+      if (!data.teams[i]) return;
+      data.teams[i].score = Math.max(0, (data.teams[i].score||0)+d);
+      save(data);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+      return;
+    }
+    if (e.target && e.target.id === "gswResetBtn"){
+      var data2 = load(); if (!data2) return;
+      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      data2.teams.forEach(function(t){ t.score = 0; });
+      save(data2);
+      window.renderGlobalScoreWidget();
+      window.dispatchEvent(new CustomEvent("globalScoreChanged"));
+    }
+  });
+  window.renderGlobalScoreWidget();
+})();
+</script>
+</body>
+</html>
