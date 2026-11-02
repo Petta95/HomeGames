@@ -7,7 +7,8 @@ Per ogni personaggio di personaggi.json, partendo da sorgenti/<file>:
         <slug>-parte.webp  solo la parte, in scala di grigi normalizzata, trasparente fuori
   - calcola il colore esatto della parte (hex) e lo scrive in personaggi.json;
   - crea anteprime/check_<n>.jpg: originale | grigio | ricolorato col colore esatto | maschera;
-  - riscrive l'array CHARACTERS dentro colore-esatto.html con tutti i personaggi.
+  - riscrive l'array CHARACTERS dentro colore-esatto.html con tutti i personaggi;
+  - cancella dalla cartella del gioco le immagini dei personaggi tolti da personaggi.json.
 
 Uso (dalla cartella HomeGames):
   python scripts/colore-esatto/prepara.py              tutti i personaggi
@@ -160,5 +161,9 @@ if __name__ == "__main__":
     ready = [c for c in chars if c["slug"] not in failed and os.path.exists(os.path.join(IMG, c["slug"] + "-parte.webp"))]
     write_db(chars)
     write_html(ready)
+    # immagini di personaggi tolti da personaggi.json
+    keep = {c["slug"] + suf for c in chars for suf in (".webp", "-parte.webp")}
+    for f in os.listdir(IMG):
+        if f not in keep: os.remove(os.path.join(IMG, f)); print("rimossa", f)
     sheets(done)
     print(f"\n{len(done)} preparati, {len(ready)} nel gioco. Controlla le anteprime in {PREVIEW}")

@@ -71,4 +71,4 @@ Lancia i comandi dalla cartella `HomeGames`.
 
 Con `python scripts/colore-esatto/prepara.py` senza argomenti si rigenerano tutti i personaggi.
 
-Per togliere un personaggio dal gioco, cancella la sua riga e rilancia `prepara.py`. Le sue immagini restano nella cartella `assets/img/colore-esatto/` finché non le elimini a mano.
+Per togliere un personaggio dal gioco, cancella la sua riga e rilancia `prepara.py`: le sue immagini vengono rimosse da `assets/img/colore-esatto/`. L'immagine in `sorgenti/` invece resta, cancellala a mano se non ti serve più.
