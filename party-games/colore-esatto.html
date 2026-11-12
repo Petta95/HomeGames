@@ -164,6 +164,8 @@
   }
   .team-chip.on{ color: var(--text-main); border-color: var(--team); box-shadow: 0 0 18px -6px var(--team); }
   .team-chip .tick{ width: 18px; text-align: center; }
+  .diff-row{ display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .diff-label{ font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
   .setup-stats{ display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .pill{
     font-size: 0.82rem; font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,0.25);
@@ -365,10 +367,11 @@
     <p class="modal-note">Conosci davvero i colori dei personaggi che hai visto mille volte?</p>
     <ol>
       <li>Compare un <strong>personaggio</strong> con una parte in <strong>grigio</strong> (capelli, maglia, salopette, scarpe…). La domanda dice quale.</li>
-      <li>A fianco ci sono <strong>9 colori</strong>, mescolati ogni volta: solo uno è quello originale.</li>
+      <li>A fianco ci sono <strong>9 colori</strong>, mescolati ogni volta: solo uno è quello originale. In <strong>Facile</strong> sono colori diversi tra loro; in <strong>Difficile</strong> sono 9 sfumature molto simili dello stesso colore.</li>
       <li>La squadra di turno <strong>tocca un colore</strong>: la parte grigia si colora subito con quella tinta, così potete provarne quanti volete prima di decidere.</li>
       <li>Premete <strong>✅ Conferma</strong>. Se è <strong>giusto</strong> la squadra guadagna <strong>+1 punto</strong> e si passa al personaggio successivo.</li>
       <li>Se è <strong>sbagliato</strong> il colore viene barrato e il turno passa <strong>subito</strong> alla squadra seguente, che riprova con i colori rimasti.</li>
+      <li>Se nessuno sa rispondere, <strong>⏭ Passa</strong> mostra il colore giusto senza dare punti e si va al personaggio successivo.</li>
       <li>A ogni personaggio inizia una squadra diversa. I punti vanno direttamente nel <strong>punteggio di serata</strong>.</li>
       <li><strong>Pannello Master 🛠️</strong>: mostra la risposta, salta il personaggio, cambia turno o corregge i punti a mano.</li>
     </ol>
@@ -398,6 +401,10 @@
     <div class="setup-card">
       <p class="muted" id="setupNote">Tocca le squadre per escluderle o includerle: giocheranno a turno.</p>
       <div class="team-chips" id="teamChips"></div>
+      <div class="diff-row">
+        <span class="diff-label">Difficoltà</span>
+        <div class="team-chips" id="diffChips"></div>
+      </div>
       <div class="setup-stats" id="setupStats"></div>
       <button class="btn btn-primary" id="startBtn" type="button">🎨 Inizia</button>
     </div>
@@ -421,6 +428,7 @@
         <div class="hint" id="hint"></div>
         <button class="btn btn-primary" id="confirmBtn" type="button" disabled>✅ Conferma</button>
         <button class="btn btn-primary" id="nextBtn" type="button" hidden>Prossimo personaggio ➜</button>
+        <button class="btn btn-ghost" id="skipBtn" type="button">⏭ Passa al prossimo personaggio</button>
       </div>
     </div>
   </section>
@@ -681,6 +689,42 @@
     return shuffle([{ hex: correct, ok: true }, ...shuffle(PALETTE).slice(0, 8).map(([, h]) => ({ hex: h, ok: false }))]);
   }
 
+  /* Difficile: 8 sfumature vicine a quello giusto (stessa famiglia di
+     colore, luminosità e saturazione diverse). Il gruppo è centrato su un
+     punto spostato a caso, così il colore giusto non è "quello in mezzo". */
+  function labToHex([L, a, b]){
+    const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+    const inv = t => t ** 3 > 0.008856 ? t ** 3 : (t - 16 / 116) / 7.787;
+    const X = inv(fx) * 0.95047, Y = inv(fy), Z = inv(fz) * 1.08883;
+    const lin = [3.2406 * X - 1.5372 * Y - 0.4986 * Z, -0.9689 * X + 1.8758 * Y + 0.0415 * Z, 0.0557 * X - 0.2040 * Y + 1.0570 * Z];
+    if (lin.some(v => v < -0.01 || v > 1.01)) return null;   // fuori dai colori dello schermo
+    return toHex(lin.map(v => 255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(Math.max(v, 0), 1 / 2.4) - 0.055)));
+  }
+  function makeHardOptions(correct){
+    const T = lab(correct);
+    for (const [near, apart] of [[7, 6], [6, 5], [5, 4]]){
+      const cL = T[0] + (Math.random() - 0.5) * 12, ca = T[1] + (Math.random() - 0.5) * 10, cb = T[2] + (Math.random() - 0.5) * 10;
+      const C = Math.hypot(ca, cb), h = Math.atan2(cb, ca);
+      const picked = [];
+      for (let k = 0; k < 800 && picked.length < 8; k++){
+        let a, b;
+        if (C > 12){
+          const c2 = C * (0.72 + Math.random() * 0.56), h2 = h + (Math.random() - 0.5) * 0.42;   // ±12° di tinta
+          a = c2 * Math.cos(h2); b = c2 * Math.sin(h2);
+        } else {
+          a = ca + (Math.random() - 0.5) * 16; b = cb + (Math.random() - 0.5) * 16;
+        }
+        const hex = labToHex([Math.max(4, Math.min(97, cL + (Math.random() - 0.5) * 30)), a, b]);
+        if (!hex) continue;
+        const L = lab(hex), d = dE(L, T);
+        if (d < near || d > 28 || picked.some(p => dE(p.L, L) < apart)) continue;
+        picked.push({ hex, L });
+      }
+      if (picked.length === 8) return shuffle([{ hex: correct, ok: true }, ...picked.map(p => ({ hex: p.hex, ok: false }))]);
+    }
+    return makeOptions(correct);
+  }
+
   /* =========================================================
      IMMAGINI: originale + parte grigia, ricolorata via canvas
      (multiply del grigio per il colore, ritagliato con l'alpha
@@ -727,6 +771,9 @@
      ========================================================= */
   let state = null;
   let selectedTeams = null;
+  const DIFF_KEY = "coloreEsattoDifficolta";
+  let difficulty = "facile";
+  try { if (localStorage.getItem(DIFF_KEY) === "difficile") difficulty = "difficile"; } catch(e){ /* storage non disponibile */ }
 
   function globalList(){
     const g = loadGlobalTeams();
@@ -746,7 +793,9 @@
     $("setupNote").textContent = list
       ? "Tocca le squadre per escluderle o includerle: giocheranno a turno."
       : "Nessuna squadra salvata nel menu principale: si gioca con due squadre di default.";
-    $("setupStats").innerHTML = `<span class="pill"><b>${CHARACTERS.length}</b> personaggi</span><span class="pill"><b>9</b> colori a turno</span><span class="pill">giusto = <b>+1</b></span>`;
+    $("diffChips").innerHTML = [["facile", "🟢 Facile", "#00e676"], ["difficile", "🔴 Difficile", "#ff3b5c"]].map(([k, label, col]) =>
+      `<button type="button" class="team-chip${difficulty === k ? " on" : ""}" data-d="${k}" style="--team:${col}">${label}<span class="tick">${difficulty === k ? "✓" : ""}</span></button>`).join("");
+    $("setupStats").innerHTML = `<span class="pill"><b>${CHARACTERS.length}</b> personaggi</span><span class="pill"><b>9</b> ${difficulty === "difficile" ? "sfumature simili" : "colori diversi"}</span><span class="pill">giusto = <b>+1</b></span>`;
     $("startBtn").disabled = selectedTeams.length < 1;
   }
   $("teamChips").addEventListener("click", e => {
@@ -754,6 +803,15 @@
     if (!b) return;
     const i = Number(b.dataset.i);
     selectedTeams = selectedTeams.includes(i) ? selectedTeams.filter(x => x !== i) : [...selectedTeams, i].sort((a, b) => a - b);
+    sfx.tap();
+    renderSetup();
+  });
+
+  $("diffChips").addEventListener("click", e => {
+    const b = e.target.closest("[data-d]");
+    if (!b) return;
+    difficulty = b.dataset.d;
+    try { localStorage.setItem(DIFF_KEY, difficulty); } catch(e){ /* storage non disponibile */ }
     sfx.tap();
     renderSetup();
   });
@@ -791,13 +849,14 @@
     state.count++;
     state.startTeam = (state.startTeam + 1) % state.teams.length;   // a ogni personaggio inizia una squadra diversa
     state.turn = state.startTeam;
-    state.cur = { ch, options: makeOptions(ch.colore), sel: -1, wrong: [], done: false, imgs: null, winner: -1 };
+    state.cur = { ch, options: difficulty === "difficile" ? makeHardOptions(ch.colore) : makeOptions(ch.colore), sel: -1, wrong: [], done: false, imgs: null, winner: -1 };
     $("counter").textContent = `Personaggio ${state.count}`;
     $("canvasBox").classList.remove("ok", "ko");
     $("badge").className = "badge";
     $("badge").textContent = "🎨 Anteprima";
     $("nextBtn").hidden = true;
     $("confirmBtn").hidden = false;
+    $("skipBtn").hidden = false;
     renderQuestion();
     renderSwatches();
     renderScoreboard();
@@ -845,7 +904,7 @@
   }
   function renderQuestion(){
     const ch = state.cur.ch;
-    $("qTags").innerHTML = `<span class="q-tag">🎬 ${escapeHtml(ch.da || "Personaggio")}</span><span class="q-tag">🎯 ${escapeHtml(ch.parteNome)}</span>`;
+    $("qTags").innerHTML = `<span class="q-tag">🎬 ${escapeHtml(ch.da || "Personaggio")}</span><span class="q-tag">🎯 ${escapeHtml(ch.parteNome)}</span>${difficulty === "difficile" ? `<span class="q-tag">🔴 Difficile</span>` : ""}`;
     const verb = /^(le|i|gli) /i.test(ch.dettaglio) || / e (il|lo|la|i|gli|le) /i.test(ch.dettaglio) ? "sono" : "è";
     $("qText").innerHTML = `Di che colore ${verb} ${escapeHtml(ch.dettaglio)} ${ofName(ch.nome)}?`;
     const card = $("questionCard");
@@ -951,9 +1010,16 @@
     updateConfirm();
     renderScoreboard();
     $("confirmBtn").hidden = true;
+    $("skipBtn").hidden = true;
     $("nextBtn").hidden = false;
   }
   $("nextBtn").addEventListener("click", nextCharacter);
+  /* Passa: nessun punto, si mostra il colore giusto e poi si va avanti con "Prossimo personaggio" */
+  $("skipBtn").addEventListener("click", () => {
+    if (!state || state.cur.done) return;
+    sfx.tap();
+    finishCharacter("⏭ Passato: ecco il colore originale, nessun punto", "");
+  });
 
   /* =========================================================
      PANNELLO MASTER

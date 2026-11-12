@@ -198,6 +198,26 @@
     font-size: clamp(1.3rem, 3.4vw, 2.1rem); line-height: 1.25;
   }
 
+  /* ---- "i" con il significato della categoria e la fonte dei dati ---- */
+  .category-card{ position: relative; }
+  .cat-info-btn{
+    position: absolute; top: 8px; right: 8px;
+    width: 22px; height: 22px; padding: 0; border-radius: 50%;
+    border: 1px solid var(--accent); background: transparent; color: var(--accent);
+    font: italic 700 0.8rem/1 Georgia, serif; cursor: pointer;
+  }
+  .cat-info-btn:hover, .cat-info-btn[aria-expanded="true"]{ background: var(--accent); color: #0a0e1a; }
+  .cat-info-pop{
+    display: none; position: absolute; z-index: 30;
+    top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    width: min(560px, 92vw); padding: 12px 16px; border-radius: 12px; text-align: left;
+    background: #141a2e; border: 1px solid var(--accent); box-shadow: 0 12px 30px rgba(0,0,0,.55);
+    font-size: 0.9rem; line-height: 1.4;
+  }
+  .cat-info-pop.open{ display: block; }
+  .cat-info-pop p{ margin: 0; }
+  .cat-info-pop p + p{ margin-top: 6px; opacity: 0.8; font-size: 0.82rem; }
+
   /* ---- Tabellone 10 box con flip ---- */
   .board-grid{
     display: grid;
@@ -492,6 +512,8 @@
   <div class="category-card">
     <div class="category-eyebrow">Categoria</div>
     <div class="category-title" id="categoryTitle">Caricamento…</div>
+    <button class="cat-info-btn" id="catInfoBtn" type="button" title="Cosa si intende e fonte dei dati" aria-label="Cosa si intende e fonte dei dati" aria-expanded="false">i</button>
+    <div class="cat-info-pop" id="catInfoPop"><p id="catInfoCosa"></p><p id="catInfoFonte"></p></div>
   </div>
 
   <div class="board-grid" id="boardGrid"></div>
@@ -528,7 +550,8 @@
 <script>
   /* =========================================================
      DATABASE CATEGORIE — ogni voce ha id, titolo mostrato a
-     schermo e una Top 10 già ordinata dalla posizione #1
+     schermo, info (cosa si intende e fonte, senza nomi in lista
+     per non svelare le risposte) e una Top 10 già ordinata dalla posizione #1
      (10 punti) alla posizione #10 (1 punto). Ogni elemento ha
      un nome canonico "name" e un elenco opzionale di risposte
      alternative accettate "alt" (sinonimi, nomi in inglese,
@@ -539,6 +562,7 @@
     {
       id: "paesi-popolosi",
       title: "I 10 Paesi più Popolosi al Mondo",
+      info: { cosa: "Abitanti totali di ogni Paese, stima 2024.", fonte: "ONU, World Population Prospects 2024." },
       items: [
         { name: "India" },
         { name: "Cina", alt: ["Repubblica Popolare Cinese"] },
@@ -549,35 +573,37 @@
         { name: "Brasile" },
         { name: "Bangladesh" },
         { name: "Russia", alt: ["Federazione Russa"] },
-        { name: "Messico" }
+        { name: "Etiopia", alt: ["Ethiopia"] }
       ]
     },
     {
       id: "paesi-visitati",
       title: "I 10 Paesi più Visitati al Mondo",
+      info: { cosa: "Arrivi di turisti stranieri nel 2024, non i turisti interni. Mancano i Paesi che non hanno pubblicato il dato 2024.", fonte: "UN Tourism, tramite Wikipedia (World Tourism rankings)." },
       items: [
         { name: "Francia" },
         { name: "Spagna" },
         { name: "Stati Uniti", alt: ["USA", "America"] },
-        { name: "Cina" },
-        { name: "Italia" },
         { name: "Turchia" },
+        { name: "Italia" },
         { name: "Messico" },
         { name: "Regno Unito", alt: ["UK", "Inghilterra", "Gran Bretagna"] },
         { name: "Germania" },
+        { name: "Giappone", alt: ["Japan"] },
         { name: "Grecia" }
       ]
     },
     {
       id: "fiumi-lunghi",
       title: "I 10 Fiumi più Lunghi del Mondo",
+      info: { cosa: "Lunghezza dell'intero sistema fluviale, affluente più lungo compreso. Le misure variano tra le fonti.", fonte: "Wikipedia (List of river systems by length)." },
       items: [
         { name: "Nilo" },
         { name: "Rio delle Amazzoni", alt: ["Amazzoni", "Amazzonia", "Rio Amazzoni"] },
         { name: "Yangtze", alt: ["Fiume Azzurro", "Chang Jiang"] },
         { name: "Mississippi", alt: ["Mississippi-Missouri", "Missouri"] },
-        { name: "Fiume Giallo", alt: ["Huang He", "Fiume Giallo Huang He"] },
         { name: "Yenisei", alt: ["Enisei"] },
+        { name: "Fiume Giallo", alt: ["Huang He", "Fiume Giallo Huang He"] },
         { name: "Ob-Irtysh", alt: ["Ob", "Irtysh"] },
         { name: "Rio della Plata", alt: ["Parana", "Paraná"] },
         { name: "Congo", alt: ["Fiume Congo"] },
@@ -587,6 +613,7 @@
     {
       id: "montagne-alte",
       title: "Le 10 Montagne più Alte del Mondo",
+      info: { cosa: "Altezza sul livello del mare.", fonte: "Misure ufficiali delle vette, tramite Wikipedia." },
       items: [
         { name: "Everest", alt: ["Monte Everest"] },
         { name: "K2", alt: ["Chogori"] },
@@ -603,6 +630,7 @@
     {
       id: "animali-veloci",
       title: "I 10 Animali Terrestri più Veloci",
+      info: { cosa: "Velocità massima di punta sulla terraferma. Sono stime e cambiano molto tra le fonti, soprattutto nella parte bassa.", fonte: "Stime divulgative: ordine indicativo." },
       items: [
         { name: "Ghepardo", alt: ["Cheetah"] },
         { name: "Antilope Pronghorn", alt: ["Pronghorn"] },
@@ -619,38 +647,41 @@
     {
       id: "film-incasso",
       title: "I 10 Film col Maggior Incasso di Sempre",
+      info: { cosa: "Incasso mondiale in dollari, senza correggere per l'inflazione. Alcuni film erano ancora in sala a novembre 2026.", fonte: "Box Office Mojo, tramite Wikipedia (novembre 2026)." },
       items: [
         { name: "Avatar" },
         { name: "Avengers: Endgame", alt: ["Endgame"] },
+        { name: "Spider-Man: Brand New Day", alt: ["Brand New Day"] },
         { name: "Avatar: La Via dell'Acqua", alt: ["Avatar 2", "The Way of Water"] },
         { name: "Titanic" },
+        { name: "Ne Zha 2", alt: ["Nezha 2"] },
         { name: "Star Wars: Il Risveglio della Forza", alt: ["The Force Awakens", "Star Wars 7"] },
         { name: "Avengers: Infinity War", alt: ["Infinity War"] },
         { name: "Spider-Man: No Way Home", alt: ["No Way Home"] },
-        { name: "Inside Out 2" },
-        { name: "Jurassic World" },
-        { name: "Il Re Leone", alt: ["The Lion King"] }
+        { name: "Zootropolis 2", alt: ["Zootopia 2"] }
       ]
     },
     {
       id: "lingue-parlate",
       title: "Le 10 Lingue più Parlate al Mondo",
+      info: { cosa: "Totale dei parlanti, madrelingua e come seconda lingua. Per le lingue con molti dialetti conta la forma standard.", fonte: "Ethnologue, tramite Wikipedia." },
       items: [
         { name: "Inglese", alt: ["English"] },
         { name: "Cinese Mandarino", alt: ["Mandarino", "Cinese"] },
         { name: "Hindi" },
         { name: "Spagnolo", alt: ["Castigliano"] },
-        { name: "Francese" },
         { name: "Arabo", alt: ["Arabo Standard"] },
+        { name: "Francese" },
         { name: "Bengalese", alt: ["Bengali"] },
         { name: "Portoghese" },
-        { name: "Russo" },
+        { name: "Indonesiano", alt: ["Indonesian", "Bahasa"] },
         { name: "Urdu" }
       ]
     },
     {
       id: "elementi-crosta",
       title: "I 10 Elementi più Abbondanti nella Crosta Terrestre",
+      info: { cosa: "Percentuale sul peso della crosta terrestre, non sul numero di atomi.", fonte: "CRC Handbook of Chemistry and Physics." },
       items: [
         { name: "Ossigeno" },
         { name: "Silicio" },
@@ -658,8 +689,8 @@
         { name: "Ferro" },
         { name: "Calcio" },
         { name: "Sodio" },
-        { name: "Potassio" },
         { name: "Magnesio" },
+        { name: "Potassio" },
         { name: "Titanio" },
         { name: "Idrogeno" }
       ]
@@ -667,6 +698,7 @@
     {
       id: "citta-italiane-popolose",
       title: "Le 10 Città più Popolose d'Italia",
+      info: { cosa: "Abitanti del solo Comune, non dell'area metropolitana.", fonte: "ISTAT." },
       items: [
         { name: "Roma" },
         { name: "Milano" },
@@ -683,22 +715,24 @@
     {
       id: "aziende-valore",
       title: "Le 10 Aziende di Maggior Valore in Borsa",
+      info: { cosa: "Capitalizzazione di borsa, che cambia ogni giorno. Foto a fine settembre 2026.", fonte: "Wikipedia (List of public corporations by market capitalization)." },
       items: [
-        { name: "Apple" },
-        { name: "Microsoft" },
         { name: "Nvidia" },
+        { name: "Apple" },
         { name: "Alphabet", alt: ["Google"] },
+        { name: "Microsoft" },
         { name: "Amazon" },
-        { name: "Saudi Aramco", alt: ["Aramco"] },
-        { name: "Meta", alt: ["Facebook", "Meta Platforms"] },
-        { name: "Berkshire Hathaway" },
         { name: "TSMC", alt: ["Taiwan Semiconductor"] },
-        { name: "Eli Lilly" }
+        { name: "SpaceX", alt: ["Space X"] },
+        { name: "Meta", alt: ["Facebook", "Meta Platforms"] },
+        { name: "Broadcom" },
+        { name: "Tesla" }
       ]
     },
     {
       id: "corpi-sistema-solare",
       title: "I 10 Corpi Celesti più Grandi del Sistema Solare",
+      info: { cosa: "Per diametro, non per massa. Comprende stella, pianeti e lune.", fonte: "Dati NASA." },
       items: [
         { name: "Sole" },
         { name: "Giove" },
@@ -708,13 +742,14 @@
         { name: "Terra" },
         { name: "Venere" },
         { name: "Marte" },
-        { name: "Mercurio" },
-        { name: "Luna" }
+        { name: "Ganimede", alt: ["Ganymede"] },
+        { name: "Titano", alt: ["Titan"] }
       ]
     },
     {
       id: "champions-league-titoli",
       title: "Le 10 Squadre con più Titoli di Champions League",
+      info: { cosa: "Titoli vinti compresa la vecchia Coppa dei Campioni, fino al 2026. A 2 titoli ci sono altre squadre a pari merito non in lista.", fonte: "UEFA, tramite Wikipedia." },
       items: [
         { name: "Real Madrid" },
         { name: "Milan", alt: ["AC Milan"] },
@@ -731,6 +766,7 @@
     {
       id: "tennisti-slam",
       title: "I 10 Tennisti con più Titoli Slam (singolare maschile)",
+      info: { cosa: "Titoli Slam in singolare maschile, era pre-Open compresa. All'ultimo posto ci sono altri tennisti a pari merito (8 titoli).", fonte: "Wikipedia (List of Grand Slam men's singles champions)." },
       items: [
         { name: "Novak Djokovic", alt: ["Djokovic"] },
         { name: "Rafael Nadal", alt: ["Nadal"] },
@@ -747,38 +783,41 @@
     {
       id: "medaglie-olimpiche-nazioni",
       title: "Le 10 Nazioni con più Medaglie Olimpiche Estive di Sempre",
+      info: { cosa: "Totale medaglie alle Olimpiadi estive fino a Parigi 2024. Gli Stati scomparsi contano a parte, non si sommano a quelli attuali.", fonte: "Wikipedia (All-time Olympic Games medal table)." },
       items: [
         { name: "Stati Uniti", alt: ["USA", "America"] },
         { name: "Unione Sovietica", alt: ["URSS"] },
         { name: "Gran Bretagna", alt: ["Regno Unito", "UK"] },
         { name: "Francia" },
+        { name: "Cina" },
         { name: "Germania" },
         { name: "Italia" },
-        { name: "Cina" },
         { name: "Australia" },
-        { name: "Ungheria" },
-        { name: "Svezia" }
+        { name: "Giappone", alt: ["Japan"] },
+        { name: "Ungheria" }
       ]
     },
     {
       id: "deserti-grandi",
       title: "I 10 Deserti più Grandi del Mondo",
+      info: { cosa: "Vale la definizione scientifica di deserto, cioè zone con pochissime precipitazioni: contano anche quelli polari.", fonte: "Wikipedia (List of deserts by area)." },
       items: [
         { name: "Antartico", alt: ["Deserto Antartico", "Antartide"] },
         { name: "Artico", alt: ["Deserto Artico"] },
         { name: "Sahara" },
         { name: "Arabico", alt: ["Deserto Arabico", "Arabia"] },
+        { name: "Grande Deserto Australiano", alt: ["Australiano", "Great Australian"] },
         { name: "Gobi" },
         { name: "Kalahari" },
         { name: "Patagonia", alt: ["Deserto della Patagonia"] },
         { name: "Siria", alt: ["Deserto Siriano"] },
-        { name: "Grande Deserto Vittoria" },
-        { name: "Karakum", alt: ["Deserto del Karakum"] }
+        { name: "Gran Bacino", alt: ["Great Basin", "Grande Bacino"] }
       ]
     },
     {
       id: "paesi-grandi-superficie",
       title: "I 10 Paesi più Grandi del Mondo per Superficie",
+      info: { cosa: "Superficie totale, acque interne comprese. Con altri metodi il 3° e il 4° posto si invertono.", fonte: "CIA World Factbook." },
       items: [
         { name: "Russia" },
         { name: "Canada" },
@@ -795,6 +834,7 @@
     {
       id: "paesi-piccoli-superficie",
       title: "I 10 Paesi più Piccoli del Mondo per Superficie",
+      info: { cosa: "Solo Stati sovrani, dal più piccolo.", fonte: "CIA World Factbook." },
       items: [
         { name: "Città del Vaticano", alt: ["Vaticano"] },
         { name: "Monaco" },
@@ -811,6 +851,7 @@
     {
       id: "grattacieli-alti",
       title: "I 10 Grattacieli più Alti del Mondo",
+      info: { cosa: "Solo grattacieli completati, altezza architettonica (antenne escluse).", fonte: "CTBUH (Council on Tall Buildings)." },
       items: [
         { name: "Burj Khalifa" },
         { name: "Merdeka 118" },
@@ -827,38 +868,41 @@
     {
       id: "laghi-grandi",
       title: "I 10 Laghi più Grandi del Mondo per Superficie",
+      info: { cosa: "Superficie, non volume. Comprende anche specchi d'acqua chiusi chiamati mari.", fonte: "Wikipedia (List of lakes by area)." },
       items: [
         { name: "Mar Caspio", alt: ["Caspio"] },
         { name: "Lago Superiore" },
         { name: "Lago Vittoria" },
         { name: "Lago Huron" },
         { name: "Lago Michigan" },
+        { name: "Lago Tanganica" },
         { name: "Lago Baikal" },
         { name: "Grande Lago degli Orsi" },
-        { name: "Lago Tanganica" },
-        { name: "Grande Lago degli Schiavi" },
-        { name: "Lago Malawi", alt: ["Lago Niassa"] }
+        { name: "Lago Malawi", alt: ["Lago Niassa"] },
+        { name: "Grande Lago degli Schiavi" }
       ]
     },
     {
       id: "oceani-mari-grandi",
       title: "I 10 Mari e Oceani più Grandi del Mondo",
+      info: { cosa: "Superficie. Prima gli oceani, poi i mari. Le aree dei mari cambiano un po' tra le fonti.", fonte: "Wikipedia (List of seas)." },
       items: [
         { name: "Oceano Pacifico", alt: ["Pacifico"] },
         { name: "Oceano Atlantico", alt: ["Atlantico"] },
         { name: "Oceano Indiano", alt: ["Indiano"] },
         { name: "Oceano Antartico", alt: ["Oceano Meridionale", "Antartico"] },
         { name: "Oceano Artico", alt: ["Artico"] },
+        { name: "Mar delle Filippine", alt: ["Filippine", "Philippine Sea"] },
+        { name: "Mar dei Coralli", alt: ["Coralli", "Coral Sea"] },
+        { name: "Mar Arabico", alt: ["Mare Arabico", "Arabian Sea"] },
         { name: "Mar dei Sargassi", alt: ["Sargassi"] },
-        { name: "Mar Cinese Meridionale" },
-        { name: "Mar dei Caraibi", alt: ["Caraibi"] },
-        { name: "Mar Mediterraneo", alt: ["Mediterraneo"] },
-        { name: "Mar di Bering", alt: ["Bering"] }
+        { name: "Mar Cinese Meridionale" }
       ]
     },
     {
       id: "monumenti-visitati",
       title: "I 10 Monumenti più Visitati al Mondo",
+      info: { cosa: "Visitatori annui. Non esiste una classifica ufficiale e molti siti non contano gli ingressi.", fonte: "Stima: ordine indicativo." },
       items: [
         { name: "Grande Muraglia Cinese", alt: ["Muraglia Cinese"] },
         { name: "Colosseo" },
@@ -875,22 +919,24 @@
     {
       id: "animali-grandi-peso",
       title: "I 10 Animali più Grandi del Mondo per Peso",
+      info: { cosa: "Lista semplificata per dare varietà: non è la classifica scientifica, dove i primi posti sarebbero tutti dello stesso gruppo. Peso massimo stimato.", fonte: "Stime divulgative: ordine indicativo." },
       items: [
         { name: "Balenottera Azzurra", alt: ["Balena Azzurra"] },
         { name: "Balena Franca" },
         { name: "Balenottera Comune" },
         { name: "Capodoglio" },
+        { name: "Squalo Balena" },
+        { name: "Orca" },
         { name: "Elefante Africano", alt: ["Elefante"] },
-        { name: "Giraffa" },
         { name: "Ippopotamo" },
         { name: "Rinoceronte Bianco", alt: ["Rinoceronte"] },
-        { name: "Orca" },
-        { name: "Squalo Balena" }
+        { name: "Giraffa" }
       ]
     },
     {
       id: "razze-cane-diffuse",
       title: "Le 10 Razze di Cane più Diffuse al Mondo",
+      info: { cosa: "Non esiste un censimento mondiale delle razze: i dati nazionali cambiano molto da Paese a Paese.", fonte: "Stima: ordine indicativo." },
       items: [
         { name: "Labrador Retriever", alt: ["Labrador"] },
         { name: "Pastore Tedesco" },
@@ -907,6 +953,7 @@
     {
       id: "social-piu-utenti",
       title: "I 10 Social Network con più Utenti Attivi al Mondo",
+      info: { cosa: "Utenti attivi al mese dichiarati o stimati. Le app di chat contano come social.", fonte: "Wikipedia (List of social platforms), dati 2025-26." },
       items: [
         { name: "Facebook" },
         { name: "YouTube" },
@@ -916,141 +963,150 @@
         { name: "WeChat" },
         { name: "Facebook Messenger", alt: ["Messenger"] },
         { name: "Telegram" },
-        { name: "Snapchat" },
-        { name: "Pinterest" }
+        { name: "LinkedIn", alt: ["Linked In"] },
+        { name: "Snapchat" }
       ]
     },
     {
       id: "valute-forti",
       title: "Le 10 Valute più Forti al Mondo (rispetto al Dollaro USA)",
+      info: { cosa: "Quanti dollari vale 1 unità di valuta. Indica il valore nominale, non la solidità dell'economia.", fonte: "Classifica Forbes Advisor." },
       items: [
         { name: "Dinaro Kuwaitiano", alt: ["Dinaro del Kuwait"] },
         { name: "Dinaro Bahreinita", alt: ["Dinaro del Bahrein"] },
         { name: "Rial Omanita", alt: ["Rial dell'Oman"] },
         { name: "Dinaro Giordano", alt: ["Dinaro della Giordania"] },
         { name: "Sterlina Britannica", alt: ["Sterlina", "Pound"] },
-        { name: "Euro" },
+        { name: "Sterlina di Gibilterra", alt: ["Gibilterra", "Gibraltar"] },
+        { name: "Dollaro delle Cayman", alt: ["Cayman", "Dollaro Cayman"] },
         { name: "Franco Svizzero" },
-        { name: "Dollaro USA", alt: ["Dollaro Americano", "Dollaro"] },
-        { name: "Dollaro Canadese" },
-        { name: "Dollaro Australiano" }
+        { name: "Euro" },
+        { name: "Dollaro USA", alt: ["Dollaro Americano", "Dollaro"] }
       ]
     },
     {
       id: "nobel-nazioni",
       title: "Le 10 Nazioni con più Premi Nobel nella Storia",
+      info: { cosa: "Premiati per Paese. Chi ha più nazionalità può contare per più Paesi, quindi i conteggi variano tra le fonti. A pari merito 5°-6° e 7°-8°.", fonte: "Wikipedia (List of Nobel laureates by country), ottobre 2026." },
       items: [
         { name: "Stati Uniti", alt: ["USA", "America"] },
         { name: "Regno Unito", alt: ["Gran Bretagna", "UK"] },
         { name: "Germania" },
         { name: "Francia" },
+        { name: "Giappone" },
         { name: "Svezia" },
         { name: "Russia" },
-        { name: "Giappone" },
-        { name: "Svizzera" },
         { name: "Canada" },
-        { name: "Italia" }
+        { name: "Svizzera" },
+        { name: "Austria" }
       ]
     },
     {
       id: "film-animazione-incasso",
       title: "I 10 Film d'Animazione col Maggior Incasso di Sempre",
+      info: { cosa: "Incasso mondiale in dollari, senza inflazione. Include anche film in CGI fotorealistica, che non tutti considerano animazione.", fonte: "Box Office, tramite Wikipedia (novembre 2026)." },
       items: [
+        { name: "Ne Zha 2", alt: ["Nezha 2"] },
+        { name: "Zootropolis 2", alt: ["Zootopia 2"] },
         { name: "Inside Out 2" },
+        { name: "Il Re Leone (2019)", alt: ["Il Re Leone", "Re Leone", "The Lion King"] },
         { name: "Frozen II", alt: ["Frozen 2"] },
+        { name: "Super Mario Bros. - Il Film", alt: ["Super Mario", "Super Mario Bros", "Mario"] },
         { name: "Frozen", alt: ["Frozen - Il Regno di Ghiaccio"] },
         { name: "Gli Incredibili 2", alt: ["Incredibles 2"] },
-        { name: "Minions 2: Come Gru Diventa Cattivissimo", alt: ["Minions 2", "The Rise of Gru"] },
-        { name: "Toy Story 4" },
-        { name: "Alla Ricerca di Dory", alt: ["Finding Dory"] },
-        { name: "Zootropolis", alt: ["Zootopia"] },
-        { name: "Toy Story 3" },
-        { name: "Cattivissimo Me 3", alt: ["Despicable Me 3"] }
+        { name: "Minions", alt: ["I Minions"] },
+        { name: "Toy Story 5" }
       ]
     },
     {
       id: "album-venduti",
       title: "I 10 Album Musicali più Venduti di Sempre",
+      info: { cosa: "Copie dichiarate nel mondo. Sono stime, molto più alte delle copie certificate.", fonte: "Wikipedia (List of best-selling albums)." },
       items: [
         { name: "Thriller", alt: ["Michael Jackson"] },
         { name: "Back in Black", alt: ["AC/DC"] },
-        { name: "The Dark Side of the Moon", alt: ["Pink Floyd"] },
         { name: "The Bodyguard", alt: ["Whitney Houston"] },
-        { name: "Bat Out of Hell", alt: ["Meat Loaf"] },
+        { name: "The Dark Side of the Moon", alt: ["Pink Floyd"] },
         { name: "Their Greatest Hits 1971-1975", alt: ["Eagles"] },
-        { name: "Saturday Night Fever" },
-        { name: "Rumours", alt: ["Fleetwood Mac"] },
+        { name: "Hotel California" },
         { name: "Come On Over", alt: ["Shania Twain"] },
-        { name: "Appetite for Destruction", alt: ["Guns N' Roses", "Guns and Roses"] }
+        { name: "Rumours", alt: ["Fleetwood Mac"] },
+        { name: "Bat Out of Hell", alt: ["Meat Loaf"] },
+        { name: "Saturday Night Fever" }
       ]
     },
     {
       id: "alimenti-prodotti",
       title: "I 10 Alimenti più Prodotti al Mondo (in tonnellate)",
+      info: { cosa: "Tonnellate di raccolto all'anno. Solo coltivazioni: latte e carne esclusi.", fonte: "FAOSTAT (FAO), dati recenti." },
       items: [
         { name: "Canna da Zucchero" },
         { name: "Mais" },
-        { name: "Riso" },
         { name: "Grano", alt: ["Frumento"] },
+        { name: "Riso" },
+        { name: "Palma da Olio", alt: ["Olio di Palma", "Palma"] },
         { name: "Patate" },
-        { name: "Barbabietola da Zucchero" },
-        { name: "Manioca", alt: ["Cassava"] },
         { name: "Soia" },
-        { name: "Olio di Palma" },
+        { name: "Manioca", alt: ["Cassava"] },
+        { name: "Barbabietola da Zucchero" },
         { name: "Pomodoro" }
       ]
     },
     {
       id: "aeroporti-trafficati",
       title: "I 10 Aeroporti più Trafficati al Mondo",
+      info: { cosa: "Passeggeri totali nel 2024, voli interni compresi.", fonte: "ACI World, classifica 2024." },
       items: [
         { name: "Hartsfield-Jackson Atlanta", alt: ["Atlanta"] },
         { name: "Dubai International", alt: ["Dubai"] },
         { name: "Dallas/Fort Worth", alt: ["Dallas"] },
-        { name: "Denver International", alt: ["Denver"] },
-        { name: "O'Hare Chicago", alt: ["Chicago"] },
-        { name: "Los Angeles International", alt: ["LAX", "Los Angeles"] },
-        { name: "Londra Heathrow", alt: ["Heathrow", "Londra"] },
         { name: "Tokyo Haneda", alt: ["Haneda", "Tokyo"] },
+        { name: "Londra Heathrow", alt: ["Heathrow", "Londra"] },
+        { name: "Denver International", alt: ["Denver"] },
+        { name: "Istanbul Airport", alt: ["Istanbul"] },
+        { name: "O'Hare Chicago", alt: ["Chicago"] },
         { name: "Indira Gandhi Delhi", alt: ["Delhi"] },
-        { name: "Istanbul Airport", alt: ["Istanbul"] }
+        { name: "Shanghai Pudong", alt: ["Shanghai", "Pudong"] }
       ]
     },
     {
       id: "canali-youtube-iscritti",
       title: "I 10 Canali YouTube con più Iscritti al Mondo",
+      info: { cosa: "Iscritti al canale a novembre 2026, non visualizzazioni. Cambia di continuo.", fonte: "Wikipedia (List of most-subscribed YouTube channels)." },
       items: [
-        { name: "T-Series" },
         { name: "MrBeast" },
+        { name: "T-Series" },
         { name: "Cocomelon" },
         { name: "SET India" },
-        { name: "Kids Diana Show" },
-        { name: "PewDiePie" },
         { name: "Vlad and Niki" },
+        { name: "Stokes Twins", alt: ["Stokes"] },
+        { name: "Kids Diana Show" },
+        { name: "KimPro", alt: ["Kim Pro"] },
         { name: "Like Nastya" },
-        { name: "WWE" },
-        { name: "Zee Music Company" }
+        { name: "Alejo Igoa", alt: ["Alejo"] }
       ]
     },
     {
       id: "paesi-densita-popolazione",
       title: "I 10 Paesi più Densamente Popolati al Mondo",
+      info: { cosa: "Abitanti per km². Solo Stati, anche se riconosciuti in parte: esclusi territori come Macao e Hong Kong.", fonte: "Wikipedia (List of countries and dependencies by population density)." },
       items: [
         { name: "Monaco" },
         { name: "Singapore" },
+        { name: "Città del Vaticano", alt: ["Vaticano", "Vatican"] },
         { name: "Bahrein" },
-        { name: "Malta" },
         { name: "Maldive" },
+        { name: "Malta" },
         { name: "Bangladesh" },
-        { name: "Libano" },
-        { name: "Taiwan" },
-        { name: "Corea del Sud" },
-        { name: "Paesi Bassi", alt: ["Olanda"] }
+        { name: "Palestina", alt: ["Palestine"] },
+        { name: "Barbados" },
+        { name: "Taiwan" }
       ]
     },
     {
       id: "isole-grandi",
       title: "Le 10 Isole più Grandi del Mondo",
+      info: { cosa: "Superficie della sola isola. I continenti non contano.", fonte: "Wikipedia (List of islands by area)." },
       items: [
         { name: "Groenlandia" },
         { name: "Nuova Guinea" },
@@ -1058,15 +1114,16 @@
         { name: "Madagascar" },
         { name: "Isola di Baffin", alt: ["Baffin"] },
         { name: "Sumatra" },
-        { name: "Gran Bretagna", alt: ["Regno Unito"] },
         { name: "Honshu" },
         { name: "Isola di Vittoria", alt: ["Vittoria"] },
+        { name: "Gran Bretagna", alt: ["Regno Unito"] },
         { name: "Terra di Ellesmere", alt: ["Ellesmere"] }
       ]
     },
     {
       id: "paesi-produttori-petrolio",
       title: "I 10 Paesi Produttori di Petrolio più Grandi al Mondo",
+      info: { cosa: "Produzione del 2023 in barili al giorno, compresi altri liquidi petroliferi e biocarburanti.", fonte: "EIA (agenzia USA per l'energia)." },
       items: [
         { name: "Stati Uniti", alt: ["USA", "America"] },
         { name: "Arabia Saudita" },
@@ -1074,15 +1131,16 @@
         { name: "Canada" },
         { name: "Cina" },
         { name: "Iraq" },
+        { name: "Brasile" },
         { name: "Emirati Arabi Uniti", alt: ["Emirati Arabi"] },
         { name: "Iran" },
-        { name: "Brasile" },
         { name: "Kuwait" }
       ]
     },
     {
       id: "citta-popolose-mondo",
       title: "Le 10 Città più Popolose al Mondo (Area Metropolitana)",
+      info: { cosa: "Area metropolitana, non Comune. Con il nuovo metodo ONU del 2025 l'ordine cambia molto: Giacarta sarebbe prima.", fonte: "ONU, World Urbanization Prospects 2018 (stime al 2025)." },
       items: [
         { name: "Tokyo" },
         { name: "Delhi" },
@@ -1099,14 +1157,15 @@
     {
       id: "sport-piu-seguiti",
       title: "Gli Sport più Seguiti al Mondo (per tifosi stimati)",
+      info: { cosa: "Tifosi stimati nel mondo. Sono cifre approssimative, senza una misura ufficiale.", fonte: "Stime WorldAtlas: ordine indicativo." },
       items: [
         { name: "Calcio" },
         { name: "Cricket" },
-        { name: "Basket", alt: ["Pallacanestro"] },
         { name: "Hockey su Prato" },
         { name: "Tennis" },
         { name: "Pallavolo" },
         { name: "Tennis Tavolo", alt: ["Ping Pong"] },
+        { name: "Basket", alt: ["Pallacanestro"] },
         { name: "Baseball" },
         { name: "Rugby" },
         { name: "Golf" }
@@ -1115,22 +1174,24 @@
     {
       id: "auto-vendute",
       title: "Le 10 Auto più Vendute di Sempre (modelli)",
+      info: { cosa: "Modelli venduti in tutte le generazioni dello stesso nome, a livello mondiale.", fonte: "Wikipedia (List of best-selling automobiles)." },
       items: [
         { name: "Toyota Corolla", alt: ["Corolla"] },
         { name: "Ford F-Series", alt: ["Ford F-150"] },
         { name: "Volkswagen Golf", alt: ["VW Golf", "Golf"] },
-        { name: "Volkswagen Maggiolino", alt: ["VW Beetle", "Maggiolino", "Beetle"] },
-        { name: "Toyota Hilux", alt: ["Hilux"] },
+        { name: "Volkswagen Passat", alt: ["Passat"] },
         { name: "Honda Civic", alt: ["Civic"] },
         { name: "Toyota Camry", alt: ["Camry"] },
-        { name: "Ford Escort", alt: ["Escort"] },
-        { name: "Lada Riva", alt: ["Lada"] },
+        { name: "Ford Fiesta", alt: ["Fiesta"] },
+        { name: "Volkswagen Maggiolino", alt: ["VW Beetle", "Maggiolino", "Beetle"] },
+        { name: "Toyota Hilux", alt: ["Hilux"] },
         { name: "Honda Accord", alt: ["Accord"] }
       ]
     },
     {
       id: "fiumi-lunghi-italia",
       title: "I 10 Fiumi più Lunghi d'Italia",
+      info: { cosa: "Lunghezza totale del corso, anche fuori dall'Italia se il fiume nasce all'estero.", fonte: "Wikipedia (Fiumi d'Italia)." },
       items: [
         { name: "Po" },
         { name: "Adige" },
@@ -1139,46 +1200,49 @@
         { name: "Oglio" },
         { name: "Tanaro" },
         { name: "Ticino" },
-        { name: "Piave" },
         { name: "Arno" },
+        { name: "Piave" },
         { name: "Reno" }
       ]
     },
     {
       id: "vette-alte-italia",
       title: "Le 10 Vette più Alte d'Italia",
+      info: { cosa: "Una vetta per ogni grande gruppo montuoso: i 4000 italiani sono molti di più. Comprende vette di confine.", fonte: "Lista semplificata, altezze da Wikipedia." },
       items: [
         { name: "Monte Bianco" },
         { name: "Monte Rosa", alt: ["Punta Dufour"] },
         { name: "Cervino" },
         { name: "Gran Paradiso" },
         { name: "Bernina", alt: ["Pizzo Bernina"] },
-        { name: "Adamello" },
-        { name: "Presanella" },
         { name: "Ortles" },
-        { name: "Marmolada" },
-        { name: "Gran Sasso d'Italia", alt: ["Gran Sasso"] }
+        { name: "Monviso", alt: ["Monte Viso"] },
+        { name: "Presanella" },
+        { name: "Adamello" },
+        { name: "Marmolada" }
       ]
     },
     {
       id: "isole-italiane-grandi",
       title: "Le 10 Isole Italiane più Grandi",
+      info: { cosa: "Superficie della singola isola.", fonte: "Wikipedia (Isole d'Italia)." },
       items: [
         { name: "Sicilia" },
         { name: "Sardegna" },
         { name: "Elba", alt: ["Isola d'Elba"] },
         { name: "Sant'Antioco" },
-        { name: "Isola di San Pietro", alt: ["San Pietro"] },
         { name: "Pantelleria" },
+        { name: "Isola di San Pietro", alt: ["San Pietro"] },
         { name: "Ischia", alt: ["Isola d'Ischia"] },
+        { name: "Lipari" },
         { name: "Salina", alt: ["Isola di Salina"] },
-        { name: "Vulcano", alt: ["Isola di Vulcano"] },
-        { name: "Favignana", alt: ["Isola di Favignana"] }
+        { name: "Vulcano", alt: ["Isola di Vulcano"] }
       ]
     },
     {
       id: "paesi-piu-isole",
       title: "I 10 Paesi con il Maggior Numero di Isole",
+      info: { cosa: "Conteggio stimato: dipende da cosa si considera isola, e alcune fonti danno numeri diversi.", fonte: "Stime WorldAtlas: ordine indicativo." },
       items: [
         { name: "Svezia" },
         { name: "Norvegia" },
@@ -1195,6 +1259,7 @@
     {
       id: "alimenti-consumati-volume",
       title: "I 10 Alimenti più Consumati al Mondo per Volume",
+      info: { cosa: "Quantità mangiate o usate nel mondo. Non c'è una classifica ufficiale unica.", fonte: "Stima: ordine indicativo." },
       items: [
         { name: "Riso" },
         { name: "Grano", alt: ["Frumento"] },
@@ -1211,6 +1276,7 @@
     {
       id: "alimenti-piu-caloriche",
       title: "I 10 Alimenti con più Calorie (Kcal per 100g)",
+      info: { cosa: "Kcal per 100 g. È una selezione di alimenti comuni, non l'elenco completo: esistono altri grassi e frutta secca altrettanto calorici.", fonte: "USDA FoodData Central." },
       items: [
         { name: "Lardo" },
         { name: "Olio d'Oliva", alt: ["Olio Vegetale", "Olio"] },
@@ -1227,6 +1293,7 @@
     {
       id: "marcatori-prolifici-calcio",
       title: "I 10 Marcatori più Prolifici della Storia del Calcio",
+      info: { cosa: "Gol ufficiali in carriera tra club e nazionale, amichevoli escluse. I totali storici sono discussi.", fonte: "Wikipedia (List of footballers with 500 or more goals)." },
       items: [
         { name: "Cristiano Ronaldo" },
         { name: "Lionel Messi" },
@@ -1243,6 +1310,7 @@
     {
       id: "musei-piu-visitati",
       title: "I 10 Musei più Visitati al Mondo",
+      info: { cosa: "Visitatori in un anno, 2024 o 2025 secondo l'ultimo dato. Esclusi i siti storici come la Città Proibita, che altre classifiche contano.", fonte: "Wikipedia (List of most-visited museums)." },
       items: [
         { name: "Louvre", alt: ["Museo del Louvre"] },
         { name: "Museo Nazionale della Cina" },
@@ -1250,15 +1318,16 @@
         { name: "Museo di Shenzhen" },
         { name: "Museo Nazionale della Corea" },
         { name: "British Museum" },
+        { name: "Museo della Scienza e Tecnologia di Pechino", alt: ["China Science and Technology Museum", "Museo della Scienza di Pechino"] },
         { name: "Natural History Museum", alt: ["Museo di Storia Naturale di Londra"] },
         { name: "Metropolitan Museum of Art", alt: ["Met"] },
-        { name: "Museo di Nanchino" },
-        { name: "American Museum of Natural History" }
+        { name: "Museo di Nanchino" }
       ]
     },
     {
       id: "artisti-rinascimento-italiano",
       title: "I 10 Artisti Simbolo del Rinascimento Italiano",
+      info: { cosa: "Non è una misura: è una scelta degli artisti più rappresentativi, compresi alcuni precursori.", fonte: "Scelta soggettiva." },
       items: [
         { name: "Leonardo da Vinci", alt: ["Leonardo"] },
         { name: "Michelangelo Buonarroti", alt: ["Michelangelo"] },
@@ -1275,6 +1344,7 @@
     {
       id: "franchise-piu-redditizi",
       title: "I 10 Franchise Mediatici più Redditizi della Storia",
+      info: { cosa: "Ricavi totali stimati: film, giochi, giocattoli e merchandising.", fonte: "Wikipedia (List of highest-grossing media franchises): stime." },
       items: [
         { name: "Pokémon", alt: ["Pokemon"] },
         { name: "Hello Kitty" },
@@ -1291,6 +1361,7 @@
     {
       id: "strumenti-orchestra-sinfonica",
       title: "I 10 Strumenti più Usati nelle Orchestre Sinfoniche",
+      info: { cosa: "Numero tipico di musicisti in un'orchestra sinfonica. Nella seconda metà l'ordine è spesso a pari merito.", fonte: "Organico classico: ordine indicativo." },
       items: [
         { name: "Violino" },
         { name: "Viola" },
@@ -1307,6 +1378,7 @@
     {
       id: "unesco-patrimoni",
       title: "I 10 Paesi con più Siti Patrimonio dell'UNESCO",
+      info: { cosa: "Siti nella Lista del Patrimonio Mondiale, a luglio 2025. Nel 2026 ne sono stati aggiunti altri 25.", fonte: "UNESCO World Heritage Centre." },
       items: [
         { name: "Italia" },
         { name: "Cina" },
@@ -1323,22 +1395,24 @@
     {
       id: "f1-costruttori-titoli",
       title: "Le 10 Scuderie con più Titoli Costruttori in Formula 1",
+      info: { cosa: "Mondiali Costruttori, dal 1958 a fine 2025. In fondo ci sono altre scuderie a pari merito con un titolo.", fonte: "FIA, tramite Wikipedia." },
       items: [
         { name: "Ferrari" },
-        { name: "Williams" },
         { name: "McLaren" },
+        { name: "Williams" },
         { name: "Mercedes" },
         { name: "Lotus" },
         { name: "Red Bull Racing", alt: ["Red Bull"] },
-        { name: "Renault" },
         { name: "Brabham" },
         { name: "Cooper" },
+        { name: "Renault" },
         { name: "Benetton" }
       ]
     },
     {
       id: "serie-a-scudetti",
       title: "Le 10 Squadre più Titolate della Serie A (Scudetti)",
+      info: { cosa: "Scudetti ufficiali fino al 2025-26, anche di prima della Serie A a girone unico.", fonte: "Albo d'oro FIGC." },
       items: [
         { name: "Juventus" },
         { name: "Inter", alt: ["Inter Milan", "Internazionale"] },
@@ -1347,14 +1421,15 @@
         { name: "Torino" },
         { name: "Bologna" },
         { name: "Pro Vercelli" },
-        { name: "Roma", alt: ["AS Roma"] },
         { name: "Napoli" },
+        { name: "Roma", alt: ["AS Roma"] },
         { name: "Fiorentina" }
       ]
     },
     {
       id: "cani-piu-intelligenti",
       title: "I 10 Cani più Intelligenti al Mondo (per razza)",
+      info: { cosa: "Facilità di addestramento e obbedienza, secondo un sondaggio tra giudici. Non è l'intelligenza in generale.", fonte: "Stanley Coren, The Intelligence of Dogs." },
       items: [
         { name: "Border Collie" },
         { name: "Barbone", alt: ["Poodle"] },
@@ -1365,28 +1440,30 @@
         { name: "Labrador Retriever", alt: ["Labrador"] },
         { name: "Papillon" },
         { name: "Rottweiler" },
-        { name: "Cane da Pastore Australiano", alt: ["Australian Cattle Dog"] }
+        { name: "Bovaro Australiano", alt: ["Australian Cattle Dog", "Cattle Dog", "Cane da Pastore Australiano", "Pastore Australiano"] }
       ]
     },
     {
       id: "metalli-preziosi-costosi",
       title: "I 10 Metalli più Preziosi al Mondo (per grammo)",
+      info: { cosa: "Prezzo al grammo a fine ottobre 2026, che cambia spesso. Gli ultimi posti non hanno tutti una quotazione ufficiale.", fonte: "Listino Umicore (26/10/2026); ultimi posti indicativi." },
       items: [
-        { name: "Rodio" },
-        { name: "Palladio" },
-        { name: "Oro" },
-        { name: "Platino" },
         { name: "Iridio" },
-        { name: "Osmio" },
+        { name: "Rodio" },
+        { name: "Oro" },
         { name: "Rutenio" },
+        { name: "Platino" },
+        { name: "Palladio" },
+        { name: "Osmio" },
         { name: "Renio" },
-        { name: "Indio" },
-        { name: "Argento" }
+        { name: "Argento" },
+        { name: "Indio" }
       ]
     },
     {
       id: "pallone-oro-vittorie",
       title: "I 10 Calciatori con più Palloni d'Oro Vinti",
+      info: { cosa: "Palloni d'Oro vinti fino al 2025. Da 2 vittorie in giù è un pari merito.", fonte: "France Football." },
       items: [
         { name: "Lionel Messi" },
         { name: "Cristiano Ronaldo" },
@@ -1403,14 +1480,15 @@
     {
       id: "nomi-maschili-2024",
       title: "I 10 Nomi Maschili più Dati in Italia nel 2024",
+      info: { cosa: "Nomi scelti per i bambini nati nel 2024, non i più diffusi tra tutti gli italiani.", fonte: "ISTAT, Natalità e fecondità (ottobre 2025)." },
       items: [
         { name: "Leonardo" },
-        { name: "Francesco" },
-        { name: "Tommaso" },
         { name: "Edoardo" },
-        { name: "Alessandro" },
-        { name: "Lorenzo" },
+        { name: "Tommaso" },
         { name: "Mattia" },
+        { name: "Alessandro" },
+        { name: "Francesco" },
+        { name: "Lorenzo" },
         { name: "Gabriele" },
         { name: "Riccardo" },
         { name: "Andrea" }
@@ -1419,6 +1497,7 @@
     {
       id: "nomi-femminili-2024",
       title: "I 10 Nomi Femminili più Dati in Italia nel 2024",
+      info: { cosa: "Nomi scelti per le bambine nate nel 2024, non i più diffusi tra tutte le italiane.", fonte: "ISTAT, Natalità e fecondità (ottobre 2025)." },
       items: [
         { name: "Sofia", alt: ["Sophia"] },
         { name: "Aurora" },
@@ -1427,14 +1506,15 @@
         { name: "Giulia" },
         { name: "Beatrice" },
         { name: "Ludovica" },
+        { name: "Matilde" },
         { name: "Alice" },
-        { name: "Emma" },
-        { name: "Matilde" }
+        { name: "Emma" }
       ]
     },
     {
       id: "cognomi-italia",
       title: "I 10 Cognomi più Diffusi in Italia",
+      info: { cosa: "Numero di persone o famiglie con quel cognome. L'ordine cambia un po' tra le fonti.", fonte: "Stime da elenchi anagrafici: ordine indicativo." },
       items: [
         { name: "Rossi" },
         { name: "Russo" },
@@ -1451,38 +1531,41 @@
     {
       id: "videogiochi-venduti",
       title: "I 10 Videogiochi più Venduti di Sempre",
+      info: { cosa: "Copie vendute di un singolo gioco, tutte le piattaforme. Il dato del 1° e 2° posto è contestato perché dipende dalle versioni contate.", fonte: "Wikipedia (List of best-selling video games)." },
       items: [
         { name: "Minecraft" },
-        { name: "Grand Theft Auto V", alt: ["GTA V", "GTA 5", "GTA", "Grand Theft Auto 5"] },
         { name: "Tetris" },
-        { name: "Wii Sports" },
+        { name: "Grand Theft Auto V", alt: ["GTA V", "GTA 5", "GTA", "Grand Theft Auto 5"] },
         { name: "Red Dead Redemption 2", alt: ["RDR2", "Red Dead Redemption", "Red Dead"] },
+        { name: "Wii Sports" },
         { name: "Mario Kart 8 Deluxe", alt: ["Mario Kart 8", "Mario Kart"] },
         { name: "PUBG: Battlegrounds", alt: ["PUBG", "PlayerUnknown's Battlegrounds"] },
         { name: "Terraria" },
         { name: "The Witcher 3", alt: ["Witcher 3", "The Witcher", "Witcher"] },
-        { name: "Super Mario Bros.", alt: ["Super Mario Bros", "Super Mario"] }
+        { name: "The Elder Scrolls V: Skyrim", alt: ["Skyrim", "Elder Scrolls"] }
       ]
     },
     {
       id: "serie-netflix",
-      title: "Le 10 Serie Netflix più Viste di Sempre (in inglese, per stagione)",
+      title: "Le 10 Serie Netflix più Viste di Sempre (per stagione)",
+      info: { cosa: "Visualizzazioni nei primi 91 giorni, stagione per stagione, in tutte le lingue.", fonte: "Netflix Top 10, tramite Wikipedia." },
       items: [
+        { name: "Squid Game (Stagione 1)", alt: ["Squid Game"] },
         { name: "Mercoledì (Stagione 1)", alt: ["Mercoledì", "Wednesday", "Mercoledi"] },
+        { name: "Squid Game (Stagione 2)", alt: ["Squid Game"] },
+        { name: "Squid Game (Stagione 3)", alt: ["Squid Game"] },
+        { name: "Adolescence" },
         { name: "Stranger Things (Stagione 4)", alt: ["Stranger Things"] },
+        { name: "Stranger Things (Stagione 5)", alt: ["Stranger Things"] },
+        { name: "Mercoledì (Stagione 2)", alt: ["Mercoledì", "Wednesday", "Mercoledi"] },
         { name: "Dahmer - Mostro: La storia di Jeffrey Dahmer", alt: ["Dahmer", "Monster", "Mostro"] },
-        { name: "Bridgerton (Stagione 1)", alt: ["Bridgerton"] },
-        { name: "La Regina degli Scacchi", alt: ["The Queen's Gambit", "Queen's Gambit"] },
-        { name: "The Night Agent (Stagione 1)", alt: ["The Night Agent", "Night Agent"] },
-        { name: "Stranger Things (Stagione 3)", alt: ["Stranger Things"] },
-        { name: "Bridgerton (Stagione 2)", alt: ["Bridgerton"] },
-        { name: "The Witcher (Stagione 1)", alt: ["The Witcher", "Witcher"] },
-        { name: "Fool Me Once (Un inganno di troppo)", alt: ["Fool Me Once", "Un inganno di troppo"] }
+        { name: "Bridgerton (Stagione 1)", alt: ["Bridgerton"] }
       ]
     },
     {
       id: "auto-vendute-italia",
       title: "Le 10 Marche di Auto più Vendute in Italia",
+      info: { cosa: "Auto nuove immatricolate in un anno recente, non da sempre. Il 1° posto è confermato per il 2025, il resto dell'ordine è indicativo.", fonte: "UNRAE; classifica completa per marca non verificata." },
       items: [
         { name: "Fiat" },
         { name: "Volkswagen", alt: ["VW"] },
@@ -1499,6 +1582,7 @@
     {
       id: "f1-gp-vinti",
       title: "I 10 Piloti di Formula 1 con più GP Vinti",
+      info: { cosa: "Vittorie in carriera fino a fine 2025, Sprint escluse. All'ultimo posto c'è un altro pilota a pari merito.", fonte: "FIA, tramite Wikipedia." },
       items: [
         { name: "Lewis Hamilton", alt: ["Hamilton"] },
         { name: "Michael Schumacher", alt: ["Schumacher"] },
@@ -1515,6 +1599,7 @@
     {
       id: "fobie-comuni",
       title: "Le 10 Fobie più Comuni",
+      info: { cosa: "Non esiste una classifica mondiale ufficiale: gli studi misurano cose diverse.", fonte: "Stima: ordine indicativo." },
       items: [
         { name: "Aracnofobia", alt: ["Ragni", "Paura dei ragni", "Aracnidi"] },
         { name: "Ofiofobia", alt: ["Ofidiofobia", "Serpenti", "Paura dei serpenti"] },
@@ -1531,6 +1616,7 @@
     {
       id: "gusti-gelato",
       title: "I 10 Gusti di Gelato Preferiti dagli Italiani",
+      info: { cosa: "Non esiste una classifica ufficiale. I sondaggi cambiano di anno in anno.", fonte: "Stima: ordine indicativo." },
       items: [
         { name: "Cioccolato" },
         { name: "Nocciola" },
@@ -1546,23 +1632,25 @@
     },
     {
       id: "app-scaricate",
-      title: "Le 10 App più Scaricate al Mondo",
+      title: "Le 10 App più Scaricate al Mondo (2025)",
+      info: { cosa: "Download stimati nel 2025 su App Store e Google Play, non gli utenti attivi.", fonte: "AppTweak, report 2025." },
       items: [
-        { name: "TikTok" },
+        { name: "ChatGPT", alt: ["Chat GPT"] },
         { name: "Instagram" },
+        { name: "TikTok" },
         { name: "WhatsApp" },
         { name: "CapCut" },
-        { name: "Telegram" },
-        { name: "Temu" },
+        { name: "TikTok Lite", alt: ["TikTok"] },
+        { name: "Netflix" },
         { name: "Facebook" },
-        { name: "Threads" },
-        { name: "Spotify" },
-        { name: "Messenger", alt: ["Facebook Messenger"] }
+        { name: "Temu" },
+        { name: "Snapchat" }
       ]
     },
     {
       id: "pokemon-popolari",
       title: "I 10 Pokémon più Votati di Sempre (Pokémon of the Year)",
+      info: { cosa: "Voti dei fan al sondaggio ufficiale Pokémon of the Year del 2020.", fonte: "The Pokémon Company." },
       items: [
         { name: "Greninja" },
         { name: "Lucario" },
@@ -1579,6 +1667,7 @@
     {
       id: "stati-usa-grandi",
       title: "I 10 Stati USA più Grandi (superficie)",
+      info: { cosa: "Superficie totale, acque comprese.", fonte: "US Census Bureau." },
       items: [
         { name: "Alaska" },
         { name: "Texas" },
@@ -1595,6 +1684,7 @@
     {
       id: "stati-usa-piccoli",
       title: "I 10 Stati USA più Piccoli (superficie, dal più piccolo)",
+      info: { cosa: "Superficie totale, acque comprese. Dal più piccolo.", fonte: "US Census Bureau." },
       items: [
         { name: "Rhode Island" },
         { name: "Delaware" },
@@ -1611,6 +1701,7 @@
     {
       id: "stati-usa-popolosi",
       title: "I 10 Stati USA più Popolosi",
+      info: { cosa: "Residenti, stima 2024.", fonte: "US Census Bureau." },
       items: [
         { name: "California" },
         { name: "Texas" },
@@ -1627,6 +1718,7 @@
     {
       id: "regioni-popolose",
       title: "Le 10 Regioni Italiane più Popolose",
+      info: { cosa: "Residenti in ciascuna regione.", fonte: "ISTAT." },
       items: [
         { name: "Lombardia" },
         { name: "Lazio" },
@@ -1643,6 +1735,7 @@
     {
       id: "regioni-grandi",
       title: "Le 10 Regioni Italiane più Grandi (superficie)",
+      info: { cosa: "Superficie in km².", fonte: "ISTAT." },
       items: [
         { name: "Sicilia" },
         { name: "Piemonte" },
@@ -1659,6 +1752,7 @@
     {
       id: "capoluoghi-popolosi",
       title: "I 10 Capoluoghi di Regione più Popolosi",
+      info: { cosa: "Solo capoluoghi di regione: abitanti del Comune.", fonte: "ISTAT." },
       items: [
         { name: "Roma" },
         { name: "Milano" },
@@ -1675,6 +1769,7 @@
     {
       id: "ue-popolosi",
       title: "I 10 Paesi dell'Unione Europea più Popolosi",
+      info: { cosa: "Solo Stati dell'Unione Europea, residenti.", fonte: "Eurostat." },
       items: [
         { name: "Germania" },
         { name: "Francia" },
@@ -1691,6 +1786,7 @@
     {
       id: "europa-grandi",
       title: "I 10 Paesi più Grandi d'Europa (esclusa la Russia)",
+      info: { cosa: "Superficie in Europa, senza territori d'oltremare. Esclusi i Paesi soprattutto asiatici. Alcune misure cambiano con le isole artiche.", fonte: "CIA World Factbook." },
       items: [
         { name: "Ucraina" },
         { name: "Francia" },
@@ -1707,6 +1803,7 @@
     {
       id: "africa-grandi",
       title: "I 10 Paesi più Grandi dell'Africa",
+      info: { cosa: "Superficie totale.", fonte: "CIA World Factbook." },
       items: [
         { name: "Algeria" },
         { name: "Repubblica Democratica del Congo", alt: ["Congo", "RD Congo", "Congo Kinshasa"] },
@@ -1723,6 +1820,7 @@
     {
       id: "sudamerica-grandi",
       title: "I 10 Paesi più Grandi del Sud America",
+      info: { cosa: "Superficie totale, solo Stati sovrani.", fonte: "CIA World Factbook." },
       items: [
         { name: "Brasile" },
         { name: "Argentina" },
@@ -1739,6 +1837,7 @@
     {
       id: "pil-paesi",
       title: "I 10 Paesi con il PIL più Alto (2024)",
+      info: { cosa: "PIL nominale 2024 in dollari, non a parità di potere d'acquisto.", fonte: "Fondo Monetario Internazionale." },
       items: [
         { name: "Stati Uniti", alt: ["USA", "America"] },
         { name: "Cina" },
@@ -1755,6 +1854,7 @@
     {
       id: "isole-mediterraneo",
       title: "Le 10 Isole più Grandi del Mediterraneo",
+      info: { cosa: "Superficie della singola isola.", fonte: "Wikipedia (Isole del Mediterraneo)." },
       items: [
         { name: "Sicilia" },
         { name: "Sardegna" },
@@ -1771,6 +1871,7 @@
     {
       id: "laghi-italiani",
       title: "I 10 Laghi Italiani più Grandi",
+      info: { cosa: "Superficie. Comprende laghi condivisi con la Svizzera e lagune costiere chiamate lago.", fonte: "Wikipedia (Laghi d'Italia)." },
       items: [
         { name: "Lago di Garda", alt: ["Garda", "Benaco"] },
         { name: "Lago Maggiore", alt: ["Maggiore", "Verbano"] },
@@ -1787,6 +1888,7 @@
     {
       id: "lune-grandi",
       title: "Le 10 Lune più Grandi del Sistema Solare",
+      info: { cosa: "Per diametro, non per massa.", fonte: "Dati NASA." },
       items: [
         { name: "Ganimede" },
         { name: "Titano" },
@@ -1803,6 +1905,7 @@
     {
       id: "costellazioni-grandi",
       title: "Le 10 Costellazioni più Grandi",
+      info: { cosa: "Area nel cielo secondo i confini ufficiali delle 88 costellazioni.", fonte: "Unione Astronomica Internazionale." },
       items: [
         { name: "Idra", alt: ["Hydra"] },
         { name: "Vergine" },
@@ -1819,6 +1922,7 @@
     {
       id: "elementi-leggeri",
       title: "I 10 Elementi Chimici più Leggeri",
+      info: { cosa: "Massa atomica, cioè l'ordine della tavola periodica. Non è la densità.", fonte: "Tavola periodica IUPAC." },
       items: [
         { name: "Idrogeno", alt: ["H"] },
         { name: "Elio", alt: ["He"] },
@@ -1835,6 +1939,7 @@
     {
       id: "elementi-corpo-umano",
       title: "I 10 Elementi più Abbondanti nel Corpo Umano (per massa)",
+      info: { cosa: "Percentuale sul peso del corpo.", fonte: "Testi di biochimica, dati standard." },
       items: [
         { name: "Ossigeno" },
         { name: "Carbonio" },
@@ -1851,6 +1956,7 @@
     {
       id: "lettere-italiano",
       title: "Le 10 Lettere più Usate nella Lingua Italiana",
+      info: { cosa: "Frequenza media delle lettere nei testi in italiano, non le iniziali delle parole.", fonte: "Wikipedia (Frequenza delle lettere)." },
       items: [
         { name: "E" },
         { name: "A" },
@@ -1867,24 +1973,27 @@
     {
       id: "pixar-incassi",
       title: "I 10 Film Pixar col Maggior Incasso",
+      info: { cosa: "Incasso mondiale in dollari, senza inflazione.", fonte: "Box Office, tramite Wikipedia (novembre 2026)." },
       items: [
         { name: "Inside Out 2" },
         { name: "Gli Incredibili 2", alt: ["Incredibles 2", "Incredibili 2"] },
+        { name: "Toy Story 5" },
         { name: "Toy Story 4" },
         { name: "Toy Story 3" },
         { name: "Alla ricerca di Dory", alt: ["Dory", "Finding Dory"] },
         { name: "Alla ricerca di Nemo", alt: ["Nemo", "Finding Nemo"] },
         { name: "Inside Out" },
         { name: "Coco" },
-        { name: "Monsters University" },
-        { name: "Up" }
+        { name: "Monsters University" }
       ]
     },
     {
       id: "marvel-incassi",
       title: "I 10 Film Marvel col Maggior Incasso",
+      info: { cosa: "Solo film del Marvel Cinematic Universe, incasso mondiale in dollari.", fonte: "Box Office, tramite Wikipedia (novembre 2026)." },
       items: [
         { name: "Avengers: Endgame", alt: ["Endgame"] },
+        { name: "Spider-Man: Brand New Day", alt: ["Brand New Day"] },
         { name: "Avengers: Infinity War", alt: ["Infinity War"] },
         { name: "Spider-Man: No Way Home", alt: ["No Way Home"] },
         { name: "The Avengers", alt: ["Avengers"] },
@@ -1892,13 +2001,13 @@
         { name: "Black Panther" },
         { name: "Deadpool & Wolverine", alt: ["Deadpool e Wolverine"] },
         { name: "Iron Man 3" },
-        { name: "Captain America: Civil War", alt: ["Civil War"] },
-        { name: "Captain Marvel" }
+        { name: "Captain America: Civil War", alt: ["Civil War"] }
       ]
     },
     {
       id: "sondaggio-spiaggia",
       title: "Sondaggio: cosa si porta in spiaggia?",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Asciugamano", alt: ["Telo", "Telo mare"] },
         { name: "Crema solare", alt: ["Crema", "Protezione solare"] },
@@ -1915,6 +2024,7 @@
     {
       id: "sondaggio-sveglia",
       title: "Sondaggio: la prima cosa che si fa appena svegli",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Guardare il telefono", alt: ["Telefono", "Cellulare"] },
         { name: "Andare in bagno", alt: ["Bagno", "Pipì"] },
@@ -1931,6 +2041,7 @@
     {
       id: "sondaggio-ritardo",
       title: "Sondaggio: una scusa per arrivare in ritardo",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Traffico", alt: ["Coda", "Incidente"] },
         { name: "La sveglia non ha suonato", alt: ["Sveglia"] },
@@ -1947,6 +2058,7 @@
     {
       id: "sondaggio-grigliata",
       title: "Sondaggio: cosa non può mancare a una grigliata?",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Salsicce", alt: ["Salsiccia"] },
         { name: "Costine", alt: ["Costolette"] },
@@ -1963,6 +2075,7 @@
     {
       id: "sondaggio-frigo-studente",
       title: "Sondaggio: cosa c'è nel frigo di uno studente?",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Birra" },
         { name: "Uova" },
@@ -1979,6 +2092,7 @@
     {
       id: "sondaggio-litigi-coppia",
       title: "Sondaggio: un motivo per litigare in coppia",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Soldi", alt: ["Spese"] },
         { name: "Gelosia" },
@@ -1995,6 +2109,7 @@
     {
       id: "sondaggio-valigia",
       title: "Sondaggio: cosa porti in vacanza e poi non usi?",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Vestiti eleganti", alt: ["Vestito elegante", "Vestiti"] },
         { name: "Libri", alt: ["Libro"] },
@@ -2011,6 +2126,7 @@
     {
       id: "sondaggio-capodanno",
       title: "Sondaggio: cosa si fa a Capodanno allo scoccare della mezzanotte?",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Brindare", alt: ["Brindisi", "Spumante", "Stappare"] },
         { name: "Baciarsi", alt: ["Bacio"] },
@@ -2027,6 +2143,7 @@
     {
       id: "sondaggio-supermercato",
       title: "Sondaggio: cosa compri sempre al supermercato?",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Pane" },
         { name: "Latte" },
@@ -2043,6 +2160,7 @@
     {
       id: "sondaggio-volante",
       title: "Sondaggio: cosa fa arrabbiare al volante?",
+      info: { cosa: "Domanda di gioco, non un vero sondaggio: le risposte sono quelle più probabili.", fonte: "Nessuna fonte: classifica inventata per il gioco." },
       items: [
         { name: "Chi non mette la freccia", alt: ["Freccia", "Frecce"] },
         { name: "Traffico", alt: ["Coda"] },
@@ -2200,6 +2318,8 @@
   const scoreGrid = document.getElementById("scoreGrid");
   const turnBanner = document.getElementById("turnBanner");
   const categoryTitle = document.getElementById("categoryTitle");
+  const catInfoBtn = document.getElementById("catInfoBtn");
+  const catInfoPop = document.getElementById("catInfoPop");
   const boardGrid = document.getElementById("boardGrid");
   const gmFeedback = document.getElementById("gmFeedback");
   const answerInput = document.getElementById("answerInput");
@@ -2303,6 +2423,19 @@
     startGame(names, colors);
   })();
 
+  /* ---- Info categoria: si apre sopra il tabellone senza spostare il layout ---- */
+  function setCatInfoOpen(open){
+    catInfoPop.classList.toggle("open", open);
+    catInfoBtn.setAttribute("aria-expanded", open);
+  }
+  catInfoBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setCatInfoOpen(!catInfoPop.classList.contains("open"));
+  });
+  document.addEventListener("click", (e) => {
+    if (catInfoPop.classList.contains("open") && !catInfoPop.contains(e.target)) setCatInfoOpen(false);
+  });
+
   /* ---- Caricamento categoria ---- */
   function loadCategory(){
     if (state.queuePos >= state.queue.length){
@@ -2314,6 +2447,9 @@
     state.roundComplete = false;
 
     categoryTitle.textContent = state.category.title;
+    document.getElementById("catInfoCosa").textContent = state.category.info.cosa;
+    document.getElementById("catInfoFonte").textContent = "Fonte: " + state.category.info.fonte;
+    setCatInfoOpen(false);
     counter.textContent = `Turno ${state.round}`;
     renderBoard();
     roundCompleteOverlay.classList.remove("active");

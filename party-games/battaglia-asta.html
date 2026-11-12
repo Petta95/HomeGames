@@ -163,9 +163,10 @@
       <li>Due giocatori (o squadre) partono con un budget di <strong class="text-white">20€</strong> ciascuno e devono aggiudicarsi <strong class="text-white">esattamente 5 elementi</strong>.</li>
       <li>Ad ogni turno viene mostrato un elemento della categoria scelta: i giocatori <strong class="text-white">rilanciano ad alta voce</strong>, Petta usa i pulsanti rapidi (+1€/+2€/+5€) o l'importo personalizzato per far salire l'offerta.</li>
       <li>Quando nessuno rilancia più, Petta clicca <strong class="text-cyan-neon">"Aggiudica a Giocatore 1"</strong> o <strong class="text-pink-neon">"Aggiudica a Giocatore 2"</strong>: il budget viene scalato e l'elemento aggiunto alla rosa.</li>
-      <li>Se nessuno fa offerte, si preme <strong class="text-white">"Passa"</strong> e l'elemento viene scartato.</li>
-      <li>Non si può offrire più del proprio budget residuo. Un giocatore che ha già i suoi 5 elementi non può più offrire: se l'altro ha ancora slot liberi, il "Passa" si disattiva e l'elemento gli spetta cliccando "Aggiudica", finché non arriva anche lui a 5: alla fine avrete sempre 5 elementi a testa.</li>
-      <li>Dopo 10 elementi mostrati (o a rose complete) si apre il <strong class="text-white">Resoconto Finale</strong>: confrontate le rose e votate ad alta voce il vincitore della manche. Il punteggio si accumula per le sfide successive. Clicca su un'immagine in qualsiasi momento per vederla a schermo intero.</li>
+      <li>Se nessuno fa offerte, si preme <strong class="text-white">"Passa"</strong>: l'elemento viene messo da parte e potrà tornare più avanti.</li>
+      <li>Non si può offrire più del proprio budget residuo. Chi ha finito i soldi può ancora ricevere elementi, ma a 0€.</li>
+      <li>Quando un giocatore arriva a <strong class="text-white">5 elementi</strong>, l'altro è <strong class="text-gold-neon">obbligato</strong> a prendere gli elementi successivi, uno dopo l'altro e gratis, senza poter passare, finché non arriva anche lui a 5.</li>
+      <li>La partita finisce <strong class="text-white">solo quando entrambi hanno 5 elementi</strong>: a quel punto si apre il <strong class="text-white">Resoconto Finale</strong>. Confrontate le rose e votate ad alta voce il vincitore della manche. Il punteggio si accumula per le sfide successive. Clicca su un'immagine in qualsiasi momento per vederla a schermo intero.</li>
     </ol>
     <button id="closeInfoBtn" class="mt-6 w-full py-3 rounded-xl bg-gold-neon text-[#1a1200] font-display font-bold hover:brightness-110 transition">Ho Capito, si Gioca! ▶</button>
   </div>
@@ -281,7 +282,7 @@
             Aggiudica a <span id="assignBNameLabel"></span>
           </button>
         </div>
-        <p id="forcedNote" class="hidden text-[0.75rem] sm:text-sm text-gold-neon font-bold text-center animate-pulse">⚡ Un giocatore ha già 5 elementi: l'oggetto deve andare all'altro, clicca "Aggiudica" per assegnarlo (non si può passare).</p>
+        <p id="forcedNote" class="hidden text-[0.75rem] sm:text-sm text-gold-neon font-bold text-center animate-pulse"></p>
         <p id="lastActionNote" class="text-[0.7rem] sm:text-xs text-white/40 text-center"></p>
       </div>
     </div>
@@ -1644,7 +1645,6 @@ const CATEGORIES = [
 ];
 
 const STARTING_BUDGET = 20;
-const ITEMS_PER_SESSION = 10;
 const SLOTS_PER_TEAM = 5;
 const STORAGE_KEY = "homeGamesTeams"; // squadre globali condivise, impostate in index.html
 
@@ -1915,7 +1915,7 @@ document.getElementById("startBtn").addEventListener("click", () => {
   state.teamB.name = document.getElementById("teamBInput").value.trim() || "Giocatore 2";
   state.teamA.budget = STARTING_BUDGET; state.teamA.items = [];
   state.teamB.budget = STARTING_BUDGET; state.teamB.items = [];
-  state.pool = shuffle(category.items).slice(0, ITEMS_PER_SESSION);
+  state.pool = shuffle(category.items);   // gli elementi passati tornano in coda: si va avanti finché entrambi hanno 5 elementi
   state.index = 0;
   state.offer = 1;
   state.log = [];
@@ -1936,6 +1936,21 @@ function currentItem(){ return state.pool[state.index]; }
 
 function bothFull(){
   return state.teamA.items.length >= SLOTS_PER_TEAM && state.teamB.items.length >= SLOTS_PER_TEAM;
+}
+
+/* Se uno solo dei due ha già 5 elementi, l'altro deve prendersi per forza
+   (e gratis) gli elementi successivi finché non arriva anche lui a 5. */
+function forcedTeam(){
+  const aFull = state.teamA.items.length >= SLOTS_PER_TEAM;
+  const bFull = state.teamB.items.length >= SLOTS_PER_TEAM;
+  if (aFull === bFull) return null;
+  return aFull ? state.teamB : state.teamA;
+}
+
+/* Si può aggiudicare se c'è posto e l'offerta sta nel budget; chi è rimasto
+   a 0€ può ancora ricevere elementi, gratis. */
+function canAssign(team){
+  return team.items.length < SLOTS_PER_TEAM && (state.offer <= team.budget || team.budget === 0);
 }
 
 function renderBoards(){
@@ -1975,12 +1990,19 @@ function updateActionButtons(){
   const assignB = document.getElementById("assignBBtn");
   const passBtn = document.getElementById("passBtn");
 
-  assignA.disabled = aFull || state.offer > state.teamA.budget;
-  assignB.disabled = bFull || state.offer > state.teamB.budget;
+  assignA.disabled = !canAssign(state.teamA);
+  assignB.disabled = !canAssign(state.teamB);
 
-  const forced = aFull !== bFull; // esattamente una delle due è piena: l'altra deve cliccare "Aggiudica" per forza, niente Passa
-  passBtn.disabled = forced;
-  document.getElementById("forcedNote").classList.toggle("hidden", !forced);
+  const forced = forcedTeam();
+  passBtn.disabled = !!forced;
+  document.querySelectorAll(".bid-btn, #customOfferInput").forEach(el => { el.disabled = !!forced; });
+  const note = document.getElementById("forcedNote");
+  note.classList.toggle("hidden", !forced);
+  if (forced){
+    const full = forced === state.teamA ? state.teamB : state.teamA;
+    const left = SLOTS_PER_TEAM - forced.items.length;
+    note.textContent = `⚡ ${full.name} ha già 5 elementi: ${forced.name} deve prendere gratis ${left === 1 ? "quest'ultimo elemento" : `i prossimi ${left} elementi`}, senza poter passare.`;
+  }
 
   document.getElementById("assignANameLabel").textContent = state.teamA.name;
   document.getElementById("assignBNameLabel").textContent = state.teamB.name;
@@ -1991,21 +2013,22 @@ function renderLastAction(){
   if (state.log.length === 0){ note.textContent = ""; return; }
   const entry = state.log[state.log.length - 1];
   if (entry.type === "pass"){
-    note.textContent = `Scartato: ${entry.emoji} ${entry.name}`;
+    note.textContent = `Passato (tornerà più avanti): ${entry.emoji} ${entry.name}`;
   } else {
     note.textContent = `Ultima: ${entry.emoji} ${entry.name} → ${entry.teamName} (${entry.price}€)`;
   }
 }
 
 function renderCurrentItem(){
-  if (state.index >= state.pool.length || bothFull()){
+  if (bothFull()){
     finishAuction();
     return;
   }
   const item = currentItem();
-  state.offer = 1;
+  state.offer = forcedTeam() ? 0 : 1;
 
-  document.getElementById("itemCounter").textContent = `Elemento ${state.index + 1} di ${state.pool.length}`;
+  const missing = 2 * SLOTS_PER_TEAM - state.teamA.items.length - state.teamB.items.length;
+  document.getElementById("itemCounter").textContent = `Elemento ${state.index + 1} · ne mancano ${missing} per finire`;
   document.getElementById("itemCategoryLabel").textContent = CATEGORIES.find(c => c.key === state.categoryKey).label;
   document.getElementById("itemName").textContent = item.name;
   document.getElementById("itemImageWrap").innerHTML = mainItemImageHTML(item);
@@ -2019,6 +2042,7 @@ function renderCurrentItem(){
 
 document.querySelectorAll("[data-add]").forEach(btn => {
   btn.addEventListener("click", () => {
+    if (forcedTeam()) return;
     state.offer += parseInt(btn.dataset.add, 10);
     if (state.offer > 99) state.offer = 99;
     renderOffer();
@@ -2029,7 +2053,7 @@ document.querySelectorAll("[data-add]").forEach(btn => {
 document.getElementById("setCustomBtn").addEventListener("click", () => {
   const input = document.getElementById("customOfferInput");
   const val = parseInt(input.value, 10);
-  if (!isNaN(val) && val >= 1){
+  if (!isNaN(val) && val >= 1 && !forcedTeam()){
     state.offer = val;
     renderOffer();
     updateActionButtons();
@@ -2038,6 +2062,7 @@ document.getElementById("setCustomBtn").addEventListener("click", () => {
 });
 
 document.getElementById("resetOfferBtn").addEventListener("click", () => {
+  if (forcedTeam()) return;
   state.offer = 1;
   renderOffer();
   updateActionButtons();
@@ -2045,12 +2070,13 @@ document.getElementById("resetOfferBtn").addEventListener("click", () => {
 
 function assign(teamKey){
   const team = teamKey === "A" ? state.teamA : state.teamB;
-  if (team.items.length >= SLOTS_PER_TEAM || state.offer > team.budget) return;
+  if (!canAssign(team)) return;
 
   const item = currentItem();
-  team.budget -= state.offer;
-  team.items.push({ ...item, price: state.offer });
-  state.log.push({ type: "assign", name: item.name, emoji: item.emoji, team: teamKey, teamName: team.name, price: state.offer });
+  const price = Math.min(state.offer, team.budget);
+  team.budget -= price;
+  team.items.push({ ...item, price });
+  state.log.push({ type: "assign", name: item.name, emoji: item.emoji, team: teamKey, teamName: team.name, price });
   state.index++;
   renderCurrentItem();
 }
@@ -2061,6 +2087,7 @@ document.getElementById("passBtn").addEventListener("click", () => {
   if (document.getElementById("passBtn").disabled) return;
   const item = currentItem();
   state.log.push({ type: "pass", name: item.name, emoji: item.emoji });
+  state.pool.push(item);   // torna in coda: potrà essere rimesso all'asta più avanti
   state.index++;
   renderCurrentItem();
 });
