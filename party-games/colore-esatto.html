@@ -372,7 +372,7 @@
       <li>Premete <strong>✅ Conferma</strong>. Se è <strong>giusto</strong> la squadra guadagna <strong>+1 punto</strong> e si passa al personaggio successivo.</li>
       <li>Se è <strong>sbagliato</strong> il colore viene barrato e il turno passa <strong>subito</strong> alla squadra seguente, che riprova con i colori rimasti.</li>
       <li>Se nessuno sa rispondere, <strong>⏭ Passa</strong> mostra il colore giusto senza dare punti e si va al personaggio successivo.</li>
-      <li>A ogni personaggio inizia una squadra diversa. I punti vanno direttamente nel <strong>punteggio di serata</strong>.</li>
+      <li>Dopo ogni scelta, giusta o sbagliata, tocca alla squadra seguente, anche al personaggio successivo: la stessa squadra non gioca mai due volte di fila. I punti vanno direttamente nel <strong>punteggio di serata</strong>.</li>
       <li><strong>Pannello Master 🛠️</strong>: mostra la risposta, salta il personaggio, cambia turno o corregge i punti a mano.</li>
     </ol>
     <button class="btn btn-primary" id="closeInfoBtn" style="width:100%;">Ho Capito, si Gioca! ▶</button>
@@ -828,7 +828,7 @@
   const total = i => (scoreBaseline[i] || 0) + state.teams[i].local;
 
   function startGame(){
-    state = { teams: buildTeams(), deck: shuffle(CHARACTERS), pos: 0, count: 0, startTeam: -1, turn: 0, cur: null };
+    state = { teams: buildTeams(), deck: shuffle(CHARACTERS), pos: 0, count: 0, lastPlayed: -1, turn: 0, cur: null };
     showView("playView");
     nextCharacter();
   }
@@ -847,8 +847,9 @@
     }
     const ch = state.deck[state.pos++];
     state.count++;
-    state.startTeam = (state.startTeam + 1) % state.teams.length;   // a ogni personaggio inizia una squadra diversa
-    state.turn = state.startTeam;
+    /* inizia la squadra dopo l'ultima che ha confermato un colore: nessuno gioca due volte di fila.
+       Se il personaggio è stato passato senza scelte, resta il turno di chi doveva giocare. */
+    if (state.lastPlayed >= 0) state.turn = (state.lastPlayed + 1) % state.teams.length;
     state.cur = { ch, options: difficulty === "difficile" ? makeHardOptions(ch.colore) : makeOptions(ch.colore), sel: -1, wrong: [], done: false, imgs: null, winner: -1 };
     $("counter").textContent = `Personaggio ${state.count}`;
     $("canvasBox").classList.remove("ok", "ko");
@@ -963,6 +964,7 @@
     const opt = r.options[r.sel];
     if (opt.ok){
       r.done = true; r.winner = state.turn;
+      state.lastPlayed = state.turn;
       team.guessed++;
       award(state.turn, 1);
       sfx.ok();
@@ -972,6 +974,7 @@
       renderScoreboard(state.turn);
     } else {
       r.wrong.push({ i: r.sel, team: team.name });
+      state.lastPlayed = state.turn;
       r.sel = -1;
       sfx.ko();
       document.body.classList.remove("flash-ko"); void document.body.offsetWidth; document.body.classList.add("flash-ko");
@@ -1069,6 +1072,7 @@
       state.teams[ti].guessed++;
       award(ti, 1);
       state.turn = ti;
+      state.lastPlayed = ti;
       sfx.ok(); confetti([r.ch.colore, state.teams[ti].color]);
       finishCharacter(`✅ Punto assegnato dal Master a <b>${escapeHtml(state.teams[ti].name)}</b>`, "ok");
       renderScoreboard(ti);
