@@ -115,6 +115,11 @@
   }
 
   .cat-card{ transition: all .2s ease; }
+  .cat-card:hover{ border-color: rgba(34,211,238,0.6); transform: translateY(-2px); }
+  .cat-section-title{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.95rem;
+    color: rgba(255,255,255,0.75); margin: 0 0 10px 4px; letter-spacing: 0.02em;
+  }
   .cat-card.selected{ border-color:#22d3ee; box-shadow:0 0 25px -6px rgba(34,211,238,0.6); background:rgba(34,211,238,0.08); }
 
   .bid-btn:active{ transform:scale(0.94); }
@@ -184,7 +189,7 @@
 </div>
 
 <!-- ===================== SETUP VIEW ===================== -->
-<main id="setupView" class="max-w-4xl mx-auto px-5 pb-24 flex flex-col items-center gap-8 pt-4">
+<main id="setupView" class="max-w-5xl mx-auto px-5 pb-24 flex flex-col items-center gap-8 pt-4">
   <div class="text-center">
     <h1 class="font-display font-black text-4xl sm:text-5xl uppercase tracking-wide">
       <span class="bg-gradient-to-r from-cyan-neon to-pink-neon bg-clip-text text-transparent">Battaglia all'Asta</span>
@@ -213,11 +218,11 @@
 
   <!-- Categorie -->
   <div class="w-full">
-    <p class="text-white/60 text-sm font-semibold mb-3 text-center">Scegli la Categoria</p>
-    <div id="categoryGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+    <p class="text-white/60 text-sm font-semibold mb-3 text-center">Scegli la Categoria: l'asta parte subito</p>
+    <div id="categoryGrid" class="flex flex-col gap-6"></div>
   </div>
 
-  <button id="startBtn" disabled
+  <button id="startBtn" disabled hidden style="display:none"
     class="font-display font-extrabold text-lg px-10 py-4 rounded-full bg-white/10 text-white/40 cursor-not-allowed transition
            disabled:cursor-not-allowed">
     <i data-lucide="gavel" class="w-5 h-5 inline -mt-1 mr-1"></i> INIZIA L'ASTA
@@ -1641,6 +1646,235 @@ const CATEGORIES = [
       { name: "ChatGPT", file: "chatgpt.jpg", emoji: "🤖" },
       { name: "Il nonno che sa tutto", file: "il_nonno_che_sa_tutto.jpg", emoji: "👴" }
     ]
+  },
+  {
+    key: "natura", label: "Squadra per Sopravvivere in Natura", icon: "🏕️",
+    items: [
+      { name: "Bear Grylls", file: "bear_grylls.jpg", emoji: "🧗" },
+      { name: "Rambo", file: "rambo.jpg", emoji: "🔪" },
+      { name: "MacGyver", file: "macgyver.jpg", emoji: "🧰" },
+      { name: "Les Stroud", file: "les_stroud.jpg", emoji: "🎥" },
+      { name: "Ray Mears", file: "ray_mears.jpg", emoji: "🪵" },
+      { name: "Tarzan", file: "tarzan.jpg", emoji: "🐒" },
+      { name: "Mowgli", file: "mowgli.jpg", emoji: "🐻" },
+      { name: "Crocodile Dundee", file: "crocodile_dundee.jpg", emoji: "🐊" },
+      { name: "Chuck Noland (Cast Away)", file: "chuck_noland.jpg", emoji: "🏐" },
+      { name: "Hugh Glass (Revenant)", file: "hugh_glass.jpg", emoji: "🐻" },
+      { name: "Katniss Everdeen", file: "katniss.jpg", emoji: "🏹" },
+      { name: "Robinson Crusoe", file: "robinson_crusoe.jpg", emoji: "🏝️" },
+      { name: "Indiana Jones", file: "indiana_jones.jpg", emoji: "🤠" },
+      { name: "Lara Croft", file: "lara_croft.jpg", emoji: "🗺️" },
+      { name: "Reinhold Messner", file: "reinhold_messner.jpg", emoji: "🏔️" },
+      { name: "Steve Irwin", file: "steve_irwin.jpg", emoji: "🦎" },
+      { name: "Aragorn", file: "aragorn.jpg", emoji: "⚔️" },
+      { name: "Davy Crockett", file: "davy_crockett.jpg", emoji: "🦝" },
+      { name: "Ed Stafford", file: "ed_stafford.jpg", emoji: "🌿" },
+      { name: "Mark Watney (The Martian)", file: "mark_watney.jpg", emoji: "🥔" },
+      { name: "Christopher McCandless (Into the Wild)", file: "into_the_wild.jpg", emoji: "🚌" },
+      { name: "Pocahontas", file: "pocahontas.jpg", emoji: "🍃" }
+    ]
+  },
+  {
+    key: "festa", label: "Organizzatori della Festa Perfetta", icon: "🎉",
+    items: [
+      { name: "DJ: David Guetta", file: "david_guetta.jpg", emoji: "🎧" },
+      { name: "DJ: Martin Garrix", file: "martin_garrix.jpg", emoji: "🎧" },
+      { name: "DJ: Bob Sinclar", file: "bob_sinclar.jpg", emoji: "🎧" },
+      { name: "Cuoco: Gordon Ramsay", file: "gordon_ramsay.jpg", emoji: "👨‍🍳" },
+      { name: "Cuoco: Carlo Cracco", file: "carlo_cracco.jpg", emoji: "👨‍🍳" },
+      { name: "Pizzaiolo: Gino Sorbillo", file: "gino_sorbillo.jpg", emoji: "🍕" },
+      { name: "Pasticcere: Iginio Massari", file: "iginio_massari.jpg", emoji: "🎂" },
+      { name: "Animatore: Fiorello", file: "fiorello.jpg", emoji: "🎤" },
+      { name: "Animatore: Jim Carrey", file: "jim_carrey.jpg", emoji: "🤪" },
+      { name: "Buttafuori: The Rock", file: "the_rock.jpg", emoji: "💪" },
+      { name: "Buttafuori: Mike Tyson", file: "mike_tyson.jpg", emoji: "🥊" },
+      { name: "Fotografo: Annie Leibovitz", file: "annie_leibovitz.jpg", emoji: "📸" },
+      { name: "Barman: Tom Cruise (Cocktail)", file: "tom_cruise.jpg", emoji: "🍸" },
+      { name: "Padrone di Casa: Il Grande Gatsby", file: "gatsby.jpg", emoji: "🥂" },
+      { name: "Cantante dal Vivo: Freddie Mercury", file: "freddie_mercury.jpg", emoji: "👑" },
+      { name: "Cantante dal Vivo: Bruno Mars", file: "bruno_mars.jpg", emoji: "🎶" },
+      { name: "Presentatore: Amadeus", file: "amadeus.jpg", emoji: "🎙️" },
+      { name: "Comico: Checco Zalone", file: "checco_zalone.jpg", emoji: "😂" },
+      { name: "Ballerino: Roberto Bolle", file: "roberto_bolle.jpg", emoji: "🩰" },
+      { name: "Mago: David Copperfield", file: "david_copperfield.jpg", emoji: "🎩" },
+      { name: "Party Planner: Enzo Miccio", file: "enzo_miccio.jpg", emoji: "💐" },
+      { name: "Sommelier: Luca Gardini", file: "luca_gardini.jpg", emoji: "🍷" }
+    ]
+  },
+  {
+    key: "coinquilini", label: "Coinquilini Ideali", icon: "🛋️",
+    items: [
+      { name: "Joey Tribbiani", file: "joey_tribbiani.jpg", emoji: "🍕" },
+      { name: "Monica Geller", file: "monica_geller.jpg", emoji: "🧽" },
+      { name: "Phoebe Buffay", file: "phoebe_buffay.jpg", emoji: "🎸" },
+      { name: "Sheldon Cooper", file: "sheldon_cooper.jpg", emoji: "🛋️" },
+      { name: "Barney Stinson", file: "barney_stinson.jpg", emoji: "🤵" },
+      { name: "Ted Mosby", file: "ted_mosby.jpg", emoji: "🏛️" },
+      { name: "Homer Simpson", file: "homer_simpson.jpg", emoji: "🍩" },
+      { name: "SpongeBob", file: "spongebob.jpg", emoji: "🧽" },
+      { name: "Mr. Bean", file: "mr_bean.jpg", emoji: "🧸" },
+      { name: "Hermione Granger", file: "hermione.jpg", emoji: "📚" },
+      { name: "Ron Weasley", file: "ron_weasley.jpg", emoji: "🍗" },
+      { name: "Sherlock Holmes", file: "sherlock_holmes.jpg", emoji: "🔍" },
+      { name: "Dr. House", file: "dr_house.jpg", emoji: "💊" },
+      { name: "Michael Scott", file: "michael_scott.jpg", emoji: "☕" },
+      { name: "Dwight Schrute", file: "dwight_schrute.jpg", emoji: "🥬" },
+      { name: "Jess Day (New Girl)", file: "jess_day.jpg", emoji: "🎀" },
+      { name: "Nick Miller (New Girl)", file: "nick_miller.jpg", emoji: "🍺" },
+      { name: "Cosmo Kramer", file: "kramer.jpg", emoji: "🚪" },
+      { name: "Jack Sparrow", file: "jack_sparrow.jpg", emoji: "🏴‍☠️" },
+      { name: "Shrek", file: "shrek.jpg", emoji: "🧅" },
+      { name: "Ciuchino", file: "ciuchino.jpg", emoji: "🫏" },
+      { name: "Paddington", file: "paddington.jpg", emoji: "🧸" },
+      { name: "Mary Poppins", file: "mary_poppins.jpg", emoji: "☂️" },
+      { name: "Walter White", file: "walter_white.jpg", emoji: "⚗️" }
+    ]
+  },
+  {
+    key: "mostri", label: "Mostri Classici", icon: "👹",
+    items: [
+      { name: "Dracula", file: "dracula.jpg", emoji: "🧛" },
+      { name: "Godzilla", file: "godzilla.jpg", emoji: "🦖" },
+      { name: "King Kong", file: "king_kong.jpg", emoji: "🦍" },
+      { name: "Mostro di Frankenstein", file: "frankenstein.jpg", emoji: "🧟" },
+      { name: "Kraken", file: "kraken.jpg", emoji: "🦑" },
+      { name: "Lupo Mannaro", file: "lupo_mannaro.jpg", emoji: "🐺" },
+      { name: "La Mummia", file: "mummia.jpg", emoji: "🧻" },
+      { name: "Medusa", file: "medusa.jpg", emoji: "🐍" },
+      { name: "Minotauro", file: "minotauro.jpg", emoji: "🐂" },
+      { name: "Idra di Lerna", file: "idra.jpg", emoji: "🐉" },
+      { name: "Ciclope", file: "ciclope.jpg", emoji: "👁️" },
+      { name: "Yeti", file: "yeti.jpg", emoji: "❄️" },
+      { name: "Bigfoot", file: "bigfoot.jpg", emoji: "🦶" },
+      { name: "Mostro di Loch Ness", file: "loch_ness.jpg", emoji: "🦕" },
+      { name: "Alien (Xenomorfo)", file: "xenomorfo.jpg", emoji: "👽" },
+      { name: "Predator", file: "predator.jpg", emoji: "🎯" },
+      { name: "Chupacabra", file: "chupacabra.jpg", emoji: "🐐" },
+      { name: "Basilisco", file: "basilisco.jpg", emoji: "🐍" },
+      { name: "Mothra", file: "mothra.jpg", emoji: "🦋" },
+      { name: "Gremlins", file: "gremlins.jpg", emoji: "😈" },
+      { name: "Il Mostro della Laguna Nera", file: "laguna_nera.jpg", emoji: "🐟" },
+      { name: "Cerbero", file: "cerbero.jpg", emoji: "🐕" }
+    ]
+  },
+  {
+    key: "poteriinutili", label: "Superpoteri Inutili", icon: "🤡",
+    items: [
+      { name: "Il letto si rifà da solo", file: "letto.jpg", emoji: "🛏️" },
+      { name: "Il frigo non si svuota mai", file: "frigo.jpg", emoji: "🧊" },
+      { name: "Zero code alle Poste", file: "poste.jpg", emoji: "📮" },
+      { name: "Teletrasporto, ma ogni volta te la fai addosso", file: "teletrasporto.jpg", emoji: "💩" },
+      { name: "Volare, ma solo fino a 5 metri d'altezza", file: "volare.jpg", emoji: "🪶" },
+      { name: "Invisibilità, ma solo quando nessuno ti guarda", file: "invisibile.jpg", emoji: "🫥" },
+      { name: "Leggere nel pensiero, ma solo dei piccioni", file: "piccioni.jpg", emoji: "🐦" },
+      { name: "Parlare con gli animali, ma rispondono solo le zanzare", file: "zanzare.jpg", emoji: "🦟" },
+      { name: "Super velocità, ma solo camminando all'indietro", file: "indietro.jpg", emoji: "⏪" },
+      { name: "Super forza, ma solo per aprire i barattoli", file: "barattoli.jpg", emoji: "🫙" },
+      { name: "Respirare sott'acqua, ma solo nella vasca da bagno", file: "vasca.jpg", emoji: "🛁" },
+      { name: "Trovare sempre parcheggio, ma a 2 km di distanza", file: "parcheggio.jpg", emoji: "🅿️" },
+      { name: "Telefono sempre al 100%, ma lo schermo è in bianco e nero", file: "batteria.jpg", emoji: "🔋" },
+      { name: "Prevedere il futuro, ma solo 3 secondi prima", file: "futuro.jpg", emoji: "🔮" },
+      { name: "Immortale, ma col raffreddore per sempre", file: "raffreddore.jpg", emoji: "🤧" },
+      { name: "Mai più sbornie, ma l'alcol sa di acqua", file: "sbornie.jpg", emoji: "🍺" },
+      { name: "I calzini non si spaiano mai", file: "calzini.jpg", emoji: "🧦" },
+      { name: "Wi-Fi gratis ovunque, ma a 1 Mbps", file: "wifi.jpg", emoji: "📶" },
+      { name: "Mangi quanto vuoi senza ingrassare, ma tutto sa di broccoli", file: "broccoli.jpg", emoji: "🥦" },
+      { name: "Memoria perfetta, soprattutto delle figuracce", file: "figuracce.jpg", emoji: "😳" },
+      { name: "Telecinesi, ma sposti gli oggetti solo di 10 centimetri", file: "telecinesi.jpg", emoji: "📦" },
+      { name: "Vista a raggi X, ma solo attraverso il pane", file: "raggix.jpg", emoji: "🍞" },
+      { name: "Semafori sempre verdi, ma solo quando vai a piedi", file: "semafori.jpg", emoji: "🚦" },
+      { name: "Canti benissimo, ma solo sotto la doccia", file: "doccia.jpg", emoji: "🚿" },
+      { name: "Non perdi mai le chiavi, ma perdi sempre l'ombrello", file: "ombrello.jpg", emoji: "☂️" }
+    ]
+  },
+  {
+    key: "lavorisogno", label: "Lavori dei Sogni", icon: "💼",
+    items: [
+      { name: "Assaggiatore di Gelato", file: "gelato.jpg", emoji: "🍨" },
+      { name: "Tester di Videogiochi", file: "videogiochi.jpg", emoji: "🎮" },
+      { name: "Guardiano di un'Isola Tropicale", file: "isola.jpg", emoji: "🏝️" },
+      { name: "Tester di Materassi", file: "materassi.jpg", emoji: "🛏️" },
+      { name: "Critico Gastronomico", file: "critico.jpg", emoji: "🍽️" },
+      { name: "Sommelier", file: "sommelier.jpg", emoji: "🍷" },
+      { name: "Recensore di Hotel di Lusso", file: "hotel.jpg", emoji: "🏨" },
+      { name: "Pilota di Formula 1", file: "f1.jpg", emoji: "🏎️" },
+      { name: "Astronauta", file: "astronauta.jpg", emoji: "🚀" },
+      { name: "Fotografo del National Geographic", file: "natgeo.jpg", emoji: "📷" },
+      { name: "Streamer / YouTuber", file: "streamer.jpg", emoji: "🎥" },
+      { name: "Calciatore di Serie A", file: "calciatore.jpg", emoji: "⚽" },
+      { name: "Rockstar in Tour Mondiale", file: "rockstar.jpg", emoji: "🎸" },
+      { name: "Chef Stellato", file: "chef.jpg", emoji: "👨‍🍳" },
+      { name: "Tester di Scivoli d'Acqua", file: "scivoli.jpg", emoji: "🛝" },
+      { name: "Coccolatore di Panda", file: "panda.jpg", emoji: "🐼" },
+      { name: "Pilota di Jet Privati", file: "jet.jpg", emoji: "✈️" },
+      { name: "Istruttore di Sub alle Maldive", file: "sub.jpg", emoji: "🤿" },
+      { name: "Agente Segreto", file: "agente.jpg", emoji: "🕶️" },
+      { name: "Mastro Birraio", file: "birraio.jpg", emoji: "🍺" },
+      { name: "Doppiatore di Cartoni Animati", file: "doppiatore.jpg", emoji: "🎙️" },
+      { name: "Travel Influencer", file: "influencer.jpg", emoji: "🌍" },
+      { name: "Cioccolatiere", file: "cioccolatiere.jpg", emoji: "🍫" },
+      { name: "Babbo Natale (a tempo pieno)", file: "babbo_natale.jpg", emoji: "🎅" }
+    ]
+  },
+  {
+    key: "colazioni", label: "Colazioni", icon: "🥐",
+    items: [
+      { name: "Cornetto e Cappuccino", file: "cornetto_cappuccino.jpg", emoji: "🥐" },
+      { name: "Croissant Francese", file: "croissant.jpg", emoji: "🥐" },
+      { name: "Pain au Chocolat", file: "pain_au_chocolat.jpg", emoji: "🍫" },
+      { name: "Pancake con Sciroppo d'Acero", file: "pancake.jpg", emoji: "🥞" },
+      { name: "English Breakfast", file: "english_breakfast.jpg", emoji: "🍳" },
+      { name: "Maritozzo con la Panna", file: "maritozzo.jpg", emoji: "🍞" },
+      { name: "Waffle", file: "waffle.jpg", emoji: "🧇" },
+      { name: "French Toast", file: "french_toast.jpg", emoji: "🍞" },
+      { name: "Uova Benedict", file: "eggs_benedict.jpg", emoji: "🥚" },
+      { name: "Avocado Toast", file: "avocado_toast.jpg", emoji: "🥑" },
+      { name: "Bagel con Salmone", file: "bagel.jpg", emoji: "🥯" },
+      { name: "Porridge", file: "porridge.jpg", emoji: "🥣" },
+      { name: "Yogurt e Granola", file: "granola.jpg", emoji: "🥣" },
+      { name: "Pane, Burro e Marmellata", file: "pane_marmellata.jpg", emoji: "🍓" },
+      { name: "Bombolone alla Crema", file: "bombolone.jpg", emoji: "🍩" },
+      { name: "Granita e Brioche col Tuppo", file: "granita_brioche.jpg", emoji: "🍧" },
+      { name: "Churros con Cioccolata", file: "churros.jpg", emoji: "🍫" },
+      { name: "Smoothie Bowl", file: "smoothie_bowl.jpg", emoji: "🍓" },
+      { name: "Shakshuka", file: "shakshuka.jpg", emoji: "🍅" },
+      { name: "Cereali con il Latte", file: "cereali.jpg", emoji: "🥣" },
+      { name: "Fette Biscottate e Nutella", file: "nutella.jpg", emoji: "🍫" },
+      { name: "Crêpes", file: "crepes.jpg", emoji: "🥞" },
+      { name: "Cinnamon Roll", file: "cinnamon_roll.jpg", emoji: "🌀" },
+      { name: "Colazione Giapponese", file: "colazione_giapponese.jpg", emoji: "🍱" },
+      { name: "Biscotti Inzuppati nel Latte", file: "biscotti_latte.jpg", emoji: "🥛" }
+    ]
+  },
+  {
+    key: "esperienze", label: "Esperienze da Fare una Volta nella Vita", icon: "🌌",
+    items: [
+      { name: "Vedere l'Aurora Boreale", file: "aurora.jpg", emoji: "🌌" },
+      { name: "Safari in Africa", file: "safari.jpg", emoji: "🦒" },
+      { name: "Mongolfiera in Cappadocia", file: "cappadocia.jpg", emoji: "🎈" },
+      { name: "Finale di Champions League dal Vivo", file: "champions.jpg", emoji: "🏆" },
+      { name: "Immersione nella Grande Barriera Corallina", file: "barriera.jpg", emoji: "🐠" },
+      { name: "Lancio col Paracadute", file: "paracadute.jpg", emoji: "🪂" },
+      { name: "Machu Picchu all'Alba", file: "machu_picchu.jpg", emoji: "⛰️" },
+      { name: "Camminare sulla Muraglia Cinese", file: "muraglia.jpg", emoji: "🧱" },
+      { name: "Volo nello Spazio", file: "spazio.jpg", emoji: "🚀" },
+      { name: "Concerto a Wembley", file: "wembley.jpg", emoji: "🎤" },
+      { name: "Notte in un Igloo di Vetro in Lapponia", file: "igloo.jpg", emoji: "❄️" },
+      { name: "Gran Premio di Monza", file: "monza.jpg", emoji: "🏁" },
+      { name: "Nuotare con le Balene", file: "balene.jpg", emoji: "🐋" },
+      { name: "Bungee Jumping", file: "bungee.jpg", emoji: "🪢" },
+      { name: "Cascate di Iguazú", file: "iguazu.jpg", emoji: "💦" },
+      { name: "Capodanno a Times Square", file: "times_square.jpg", emoji: "🎆" },
+      { name: "Carnevale di Rio", file: "rio.jpg", emoji: "💃" },
+      { name: "Oktoberfest a Monaco", file: "oktoberfest.jpg", emoji: "🍺" },
+      { name: "Fioritura dei Ciliegi in Giappone", file: "hanami.jpg", emoji: "🌸" },
+      { name: "On the Road sulla Route 66", file: "route66.jpg", emoji: "🛣️" },
+      { name: "Eclissi Totale di Sole", file: "eclissi.jpg", emoji: "🌑" },
+      { name: "Super Bowl dal Vivo", file: "super_bowl.jpg", emoji: "🏈" },
+      { name: "Viaggio sull'Orient Express", file: "orient_express.jpg", emoji: "🚂" },
+      { name: "Grand Canyon in Elicottero", file: "grand_canyon.jpg", emoji: "🚁" },
+      { name: "Scalare il Kilimangiaro", file: "kilimangiaro.jpg", emoji: "🏔️" }
+    ]
   }
 ];
 
@@ -1880,20 +2114,48 @@ document.getElementById("zoomModal").addEventListener("click", (e) => {
 /* =========================================================
    SETUP VIEW
    ========================================================= */
+/* Sezioni della schermata di scelta: ogni categoria compare nella sua sezione;
+   quelle non elencate finiscono in "Altro". */
+const CATEGORY_SECTIONS = [
+  { title: "🎬 Cinema, TV & Personaggi", keys: ["villain", "celebrita", "attoriitaliani", "pelati", "serietv", "film", "animazione", "supereroi", "simpson", "sitcom", "anime", "nana", "hpsda", "mostri", "coinquilini"] },
+  { title: "⚔️ Combattimento & Squadre", keys: ["animali", "medievale", "futuristico", "zombie", "natura", "rapina", "quiz", "colleghi", "festa"] },
+  { title: "✨ Fantasia & Curiosità", keys: ["superpoteri", "poteriinutili", "oggettimagici", "freeforlife", "trio"] },
+  { title: "🍽️ Cibo & Bevande", keys: ["colazioni", "pizze", "piattiregionali", "cibocasuale", "dolci", "scontrigusto", "cocktail", "chef", "ristorantimodena"] },
+  { title: "🌴 Viaggi & Stile di Vita", keys: ["viaggi", "vacanzaperfetta", "nostrevacanze", "esperienze", "cittaitaliane", "dreamhouse", "statodeisogni", "autosogni", "isoladeserta", "lavorisogno", "moda", "natale", "doveri"] },
+  { title: "🎤 Musica, Sport & Giochi", keys: ["cantanti", "cantantiitaliani", "calciatori", "calciologhi", "videogiochi", "giochitavolo", "app"] }
+];
+
 function renderCategoryGrid(){
   const grid = document.getElementById("categoryGrid");
-  grid.innerHTML = CATEGORIES.map(cat => `
-    <button data-cat="${cat.key}" class="cat-card glass rounded-2xl p-4 flex flex-col items-center gap-1.5 border border-white/10">
+  const byKey = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
+  const used = new Set();
+  const sections = CATEGORY_SECTIONS.map(sec => {
+    const cats = sec.keys.map(k => byKey[k]).filter(Boolean);
+    cats.forEach(c => used.add(c.key));
+    return { title: sec.title, cats };
+  });
+  const rest = CATEGORIES.filter(c => !used.has(c.key));
+  if (rest.length) sections.push({ title: "🎲 Altro", cats: rest });
+
+  const card = cat => `
+    <button data-cat="${cat.key}" class="cat-card glass rounded-2xl p-3 sm:p-4 flex flex-col items-center gap-1.5 border border-white/10">
       <span class="text-3xl">${cat.icon}</span>
-      <span class="font-display font-bold text-sm text-center">${cat.label}</span>
-    </button>
+      <span class="font-display font-bold text-xs sm:text-sm text-center leading-tight">${cat.label}</span>
+    </button>`;
+  grid.innerHTML = sections.filter(sec => sec.cats.length).map(sec => `
+    <section class="cat-section">
+      <h3 class="cat-section-title">${sec.title}</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">${sec.cats.map(card).join("")}</div>
+    </section>
   `).join("");
+
+  // un click sulla categoria fa partire subito l'asta
   grid.querySelectorAll("[data-cat]").forEach(btn => {
     btn.addEventListener("click", () => {
       grid.querySelectorAll(".cat-card").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       state.categoryKey = btn.dataset.cat;
-      updateStartButton();
+      startAuction();
     });
   });
 }
@@ -1907,7 +2169,9 @@ function updateStartButton(){
     : "font-display font-extrabold text-lg px-10 py-4 rounded-full bg-white/10 text-white/40 cursor-not-allowed transition";
 }
 
-document.getElementById("startBtn").addEventListener("click", () => {
+document.getElementById("startBtn").addEventListener("click", startAuction);
+
+function startAuction(){
   if (!state.categoryKey) return;
   const category = CATEGORIES.find(c => c.key === state.categoryKey);
 
@@ -1926,8 +2190,9 @@ document.getElementById("startBtn").addEventListener("click", () => {
   document.getElementById("finalView").classList.add("hidden");
   document.getElementById("auctionView").classList.remove("hidden");
   document.body.classList.add("auction-mode");
+  window.scrollTo(0, 0);
   renderCurrentItem();
-});
+}
 
 /* =========================================================
    AUCTION VIEW
