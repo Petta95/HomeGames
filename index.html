@@ -445,7 +445,12 @@
     transition: all 0.2s ease;
   }
   .team-score-btns button:hover{ border-color: var(--team-color, var(--accent)); color: var(--team-color, var(--accent)); }
-  .teams-panel-actions{ display: flex; justify-content: flex-end; }
+  .team-score-label{ font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-left: 4px; }
+  .team-score-row.game-row .team-score-value{ font-size: 1.25rem; color: #ffc247; }
+  .team-score-row.game-row .team-score-btns button:hover{ border-color: #ffc247; color: #ffc247; }
+  .teams-panel-actions{ display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+  .reset-scores-btn.reset-game-btn{ background: rgba(255,194,71,0.12); border-color: #ffc247; color: #ffc247; }
+  .reset-scores-btn.reset-game-btn:hover{ background: #ffc247; color: #06090f; }
   .reset-scores-btn{
     font-family: 'Inter', sans-serif;
     font-weight: 600;
@@ -474,12 +479,13 @@
 <section class="teams-panel" id="teamsPanel">
   <div class="teams-panel-head">
     <h2>🏆 Le Tue Squadre</h2>
-    <p>Imposta nomi, colori e punteggio una volta sola: verranno usati automaticamente in Battaglia all'Asta, Numero Esatto, Nomi Cose Città Speed, Family Feud e Ordina, senza doverli richiedere di nuovo ad ogni partita.</p>
+    <p>Imposta nomi, colori e punteggio una volta sola: verranno usati automaticamente in Battaglia all'Asta, Numero Esatto, Nomi Cose Città Speed, Family Feud e Ordina, senza doverli richiedere di nuovo ad ogni partita. I punti match valgono solo dentro un gioco e si azzerano quando ne esci; a fine gioco premi "🏁 Termina Partita" (in basso a destra in ogni gioco) e chi ha più punti match prende 🏆 1 punto gioco; puoi correggerlo anche a mano.</p>
   </div>
   <div class="teams-count-row" id="teamsCountRow"></div>
   <div class="teams-grid" id="teamsGrid"></div>
   <div class="teams-panel-actions">
-    <button class="reset-scores-btn" id="resetScoresBtn" type="button">🔄 Azzera Punteggi</button>
+    <button class="reset-scores-btn" id="resetScoresBtn" type="button">🔄 Azzera Punti Match</button>
+    <button class="reset-scores-btn reset-game-btn" id="resetGamePointsBtn" type="button">🏆 Azzera Punti Gioco</button>
   </div>
 </section>
 
@@ -574,10 +580,17 @@
           <input type="text" value="${escapeAttr(team.name)}" maxlength="20" data-i="${i}" class="team-name-input" placeholder="Nome squadra">
         </div>
         <div class="team-score-row">
-          <span class="team-score-value">${team.score} pt</span>
+          <span class="team-score-value">${team.score || 0} pt<span class="team-score-label">match</span></span>
           <div class="team-score-btns">
-            <button type="button" data-i="${i}" data-delta="-1" title="Togli un punto">−</button>
-            <button type="button" data-i="${i}" data-delta="1" title="Aggiungi un punto">+</button>
+            <button type="button" data-i="${i}" data-delta="-1" title="Togli un punto match">−</button>
+            <button type="button" data-i="${i}" data-delta="1" title="Aggiungi un punto match">+</button>
+          </div>
+        </div>
+        <div class="team-score-row game-row">
+          <span class="team-score-value" title="1 punto alla squadra che vince un gioco">🏆 ${team.gamePoints || 0}<span class="team-score-label">punti gioco</span></span>
+          <div class="team-score-btns">
+            <button type="button" data-i="${i}" data-game-delta="-1" title="Togli un punto gioco">−</button>
+            <button type="button" data-i="${i}" data-game-delta="1" title="Aggiungi un punto gioco">+</button>
           </div>
         </div>
       `;
@@ -604,23 +617,52 @@
   });
 
   document.getElementById("teamsGrid").addEventListener("click", (e) => {
+    const gameBtn = e.target.closest("button[data-game-delta]");
+    if (gameBtn){
+      const gi = Number(gameBtn.dataset.i);
+      teamsState.teams[gi].gamePoints = Math.max(0, (teamsState.teams[gi].gamePoints || 0) + Number(gameBtn.dataset.gameDelta));
+      saveTeamsState();
+      renderTeamsGrid();
+      return;
+    }
     const btn = e.target.closest("button[data-delta]");
     if (!btn) return;
     const i = Number(btn.dataset.i);
     const delta = Number(btn.dataset.delta);
-    teamsState.teams[i].score = Math.max(0, teamsState.teams[i].score + delta);
+    teamsState.teams[i].score = Math.max(0, (teamsState.teams[i].score || 0) + delta);
     saveTeamsState();
     renderTeamsGrid();
   });
 
   document.getElementById("resetScoresBtn").addEventListener("click", () => {
-    if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
-    teamsState.teams.forEach(t => t.score = 0);
+    if (!confirm("Azzerare i punti match di tutte le squadre? (i punti gioco 🏆 restano)")) return;
+    teamsState.teams.forEach(t => { t.score = 0; });
     saveTeamsState();
     renderTeamsGrid();
   });
 
+  document.getElementById("resetGamePointsBtn").addEventListener("click", () => {
+    if (!confirm("Azzerare i punti gioco 🏆 di tutte le squadre? Si ricomincia la serata da zero.")) return;
+    teamsState.teams.forEach(t => { t.gamePoints = 0; });
+    saveTeamsState();
+    renderTeamsGrid();
+  });
+
+  /* fuori dai giochi i punti match ripartono da zero: ogni sfida è a sé */
+  function resetMatchPoints(){
+    let changed = false;
+    teamsState.teams.forEach(t => { if (t.score){ t.score = 0; changed = true; } });
+    if (changed) saveTeamsState();
+  }
+  resetMatchPoints();
+
   renderTeamsPanel();
+
+  /* tornando dalla pagina di un gioco (anche col tasto indietro) rilegge
+     punti match e punti gioco aggiornati lì, senza sovrascriverli */
+  function reloadTeamsFromStorage(resetMatch){ teamsState = loadTeamsState(); if (resetMatch) resetMatchPoints(); renderTeamsPanel(); }
+  window.addEventListener("pageshow", (e) => { if (e.persisted) reloadTeamsFromStorage(true); });
+  window.addEventListener("storage", (e) => { if (e.key === TEAMS_KEY) reloadTeamsFromStorage(); });
 
   /* =========================================================
      DATI DEI GIOCHI

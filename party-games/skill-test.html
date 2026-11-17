@@ -207,6 +207,31 @@
     padding: 5px 14px; border-radius: 999px;
   }
 
+  .category-bar-right{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .hover-toggle{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.04em;
+    padding: 5px 14px; border-radius: 999px; cursor: pointer;
+    color: var(--text-muted); background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border);
+    transition: all 0.18s ease;
+  }
+  .hover-toggle.on{ color: #06090f; background: #00e676; border-color: #00e676; box-shadow: 0 0 14px rgba(0,230,118,0.45); }
+
+  /* ---- Anteprima grande al passaggio del mouse (HOVER ON) ---- */
+  .hover-preview{
+    position: fixed; z-index: 900; pointer-events: none;
+    top: 50%; transform: translateY(-50%) scale(0.96);
+    opacity: 0; transition: opacity 0.12s ease, transform 0.12s ease;
+    border-radius: 16px; overflow: hidden;
+    border: 3px solid var(--accent2);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.65);
+    background: #0b0f1a;
+  }
+  .hover-preview.show{ opacity: 1; transform: translateY(-50%) scale(1); }
+  .hover-preview img{ display: block; max-width: 46vw; max-height: 86vh; width: auto; height: auto; }
+  .hover-preview.left{ left: 2vw; }
+  .hover-preview.right{ right: 2vw; }
+
   /* ---- Banner obiettivo ---- */
   .target-banner{
     width: 100%; text-align: center;
@@ -448,8 +473,12 @@
 
   <div class="category-bar">
     <span class="category-bar-title" id="categoryTitle"></span>
-    <span class="category-bar-progress" id="categoryProgress"></span>
+    <div class="category-bar-right">
+      <button type="button" class="hover-toggle" id="hoverToggle" title="Se ON, passando il mouse sopra un'immagine la vedi ingrandita">HOVER OFF</button>
+      <span class="category-bar-progress" id="categoryProgress"></span>
+    </div>
   </div>
+  <div class="hover-preview" id="hoverPreview"><img id="hoverPreviewImg" src="" alt=""></div>
 
   <div class="target-banner">
     <div class="target-banner-label">🔎 Trova nella griglia</div>
@@ -1193,26 +1222,26 @@
       titolo: "Locandine di Film Senza Titolo",
       icona: "🎬",
       items: [
-        { id: "alien", nome: "Alien", imageUrl: "https://upload.wikimedia.org/wikipedia/en/c/c3/Alien_movie_poster.jpg" },
-        { id: "the_shining", nome: "Shining", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/1/1d/The_Shining_%281980%29_U.K._release_poster_-_The_tide_of_terror_that_swept_America_IS_HERE.jpg/500px-The_Shining_%281980%29_U.K._release_poster_-_The_tide_of_terror_that_swept_America_IS_HERE.jpg" },
-        { id: "psycho", nome: "Psyco", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Psycho_%281960%29_theatrical_poster_%28retouched%29.jpg/500px-Psycho_%281960%29_theatrical_poster_%28retouched%29.jpg" },
-        { id: "jaws", nome: "Lo Squalo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Jaws_movie_poster.jpg/500px-Jaws_movie_poster.jpg" },
-        { id: "exorcist", nome: "L'Esorcista", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7b/Exorcist_ver2.jpg/500px-Exorcist_ver2.jpg" },
-        { id: "halloween", nome: "Halloween", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/a/af/Halloween_%281978%29_theatrical_poster.jpg/500px-Halloween_%281978%29_theatrical_poster.jpg" },
-        { id: "nightmare_elm_street", nome: "Nightmare - Dal Profondo della Notte", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/f/fa/A_Nightmare_on_Elm_Street_%281984%29_theatrical_poster.jpg/500px-A_Nightmare_on_Elm_Street_%281984%29_theatrical_poster.jpg" },
-        { id: "hereditary", nome: "Hereditary - Le Radici del Male", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d9/Hereditary.png/500px-Hereditary.png" },
-        { id: "get_out", nome: "Scappa - Get Out", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a3/Get_Out_poster.png/500px-Get_Out_poster.png" },
-        { id: "2001_space_odyssey", nome: "2001: Odissea nello Spazio", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/1/11/2001_A_Space_Odyssey_%281968%29.png/500px-2001_A_Space_Odyssey_%281968%29.png" },
-        { id: "blade_runner", nome: "Blade Runner", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Blade_Runner_%281982_poster%29.png/500px-Blade_Runner_%281982_poster%29.png" },
-        { id: "et", nome: "E.T. l'Extra-Terrestre", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/6/66/E_t_the_extra_terrestrial_ver3.jpg/500px-E_t_the_extra_terrestrial_ver3.jpg" },
-        { id: "arrival", nome: "Arrival", imageUrl: "https://upload.wikimedia.org/wikipedia/en/d/df/Arrival%2C_Movie_Poster.jpg" },
-        { id: "interstellar", nome: "Interstellar", imageUrl: "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg" },
-        { id: "moon", nome: "Moon", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/a/af/Moon_%282009_film%29.jpg/500px-Moon_%282009_film%29.jpg" },
-        { id: "ex_machina", nome: "Ex Machina", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/b/ba/Ex-machina-uk-poster.jpg/500px-Ex-machina-uk-poster.jpg" },
-        { id: "up", nome: "Up", imageUrl: "https://upload.wikimedia.org/wikipedia/en/0/05/Up_%282009_film%29.jpg" },
-        { id: "spirited_away", nome: "La Città Incantata", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/db/Spirited_Away_Japanese_poster.png/500px-Spirited_Away_Japanese_poster.png" },
-        { id: "wall_e", nome: "WALL-E", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/WALL-E_poster.jpg/500px-WALL-E_poster.jpg" },
-        { id: "coco", nome: "Coco", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/9/98/Coco_%282017_film%29_poster.jpg/500px-Coco_%282017_film%29_poster.jpg" }
+        { id: "alien", nome: "Alien", imageUrl: "assets/img/skill-test/locandine/alien.jpg" },
+        { id: "the_shining", nome: "Shining", imageUrl: "assets/img/skill-test/locandine/the_shining.jpg" },
+        { id: "psycho", nome: "Psyco", imageUrl: "assets/img/skill-test/locandine/psycho.jpg" },
+        { id: "jaws", nome: "Lo Squalo", imageUrl: "assets/img/skill-test/locandine/jaws.jpg" },
+        { id: "exorcist", nome: "L'Esorcista", imageUrl: "assets/img/skill-test/locandine/exorcist.jpg" },
+        { id: "halloween", nome: "Halloween", imageUrl: "assets/img/skill-test/locandine/halloween.jpg" },
+        { id: "nightmare_elm_street", nome: "Nightmare - Dal Profondo della Notte", imageUrl: "assets/img/skill-test/locandine/nightmare_elm_street.jpg" },
+        { id: "hereditary", nome: "Hereditary - Le Radici del Male", imageUrl: "assets/img/skill-test/locandine/hereditary.jpg" },
+        { id: "get_out", nome: "Scappa - Get Out", imageUrl: "assets/img/skill-test/locandine/get_out.jpg" },
+        { id: "2001_space_odyssey", nome: "2001: Odissea nello Spazio", imageUrl: "assets/img/skill-test/locandine/2001_space_odyssey.jpg" },
+        { id: "blade_runner", nome: "Blade Runner", imageUrl: "assets/img/skill-test/locandine/blade_runner.jpg" },
+        { id: "et", nome: "E.T. l'Extra-Terrestre", imageUrl: "assets/img/skill-test/locandine/et.jpg" },
+        { id: "arrival", nome: "Arrival", imageUrl: "assets/img/skill-test/locandine/arrival.jpg" },
+        { id: "interstellar", nome: "Interstellar", imageUrl: "assets/img/skill-test/locandine/interstellar.jpg" },
+        { id: "moon", nome: "Moon", imageUrl: "assets/img/skill-test/locandine/moon.jpg" },
+        { id: "ex_machina", nome: "Ex Machina", imageUrl: "assets/img/skill-test/locandine/ex_machina.jpg" },
+        { id: "up", nome: "Up", imageUrl: "assets/img/skill-test/locandine/up.jpg" },
+        { id: "spirited_away", nome: "La Città Incantata", imageUrl: "assets/img/skill-test/locandine/spirited_away.jpg" },
+        { id: "wall_e", nome: "WALL-E", imageUrl: "assets/img/skill-test/locandine/wall_e.jpg" },
+        { id: "coco", nome: "Coco", imageUrl: "assets/img/skill-test/locandine/coco.jpg" }
       ]
     },
     {
@@ -2008,6 +2037,7 @@
   const zoomCloseBtn = document.getElementById("zoomCloseBtn");
 
   function openZoom(url, altText){
+    hideHoverPreview();
     zoomImage.src = url;
     zoomImage.alt = altText || "";
     zoomModal.classList.add("active");
@@ -2165,7 +2195,41 @@
     pickNewTarget();
   }
 
+  /* ---- HOVER ON/OFF: anteprima ingrandita al passaggio del mouse ---- */
+  const HOVER_KEY = "skillTestHoverZoom";
+  const hoverToggle = document.getElementById("hoverToggle");
+  const hoverPreview = document.getElementById("hoverPreview");
+  const hoverPreviewImg = document.getElementById("hoverPreviewImg");
+  let hoverZoomOn = false;
+  try { hoverZoomOn = localStorage.getItem(HOVER_KEY) === "1"; } catch(e){}
+  function renderHoverToggle(){
+    hoverToggle.textContent = hoverZoomOn ? "HOVER ON" : "HOVER OFF";
+    hoverToggle.classList.toggle("on", hoverZoomOn);
+    hoverToggle.setAttribute("aria-pressed", hoverZoomOn ? "true" : "false");
+  }
+  hoverToggle.addEventListener("click", () => {
+    hoverZoomOn = !hoverZoomOn;
+    try { localStorage.setItem(HOVER_KEY, hoverZoomOn ? "1" : "0"); } catch(e){}
+    if (!hoverZoomOn) hideHoverPreview();
+    renderHoverToggle();
+  });
+  function showHoverPreview(item, card){
+    if (!hoverZoomOn) return;
+    if (!window.matchMedia("(hover: hover)").matches) return;   // niente anteprima su touch
+    if (card.querySelector(".img-broken")) return;
+    hoverPreviewImg.src = item.imageUrl;
+    // mostra l'anteprima nella metà dello schermo opposta alla card, così non la copre
+    const r = card.getBoundingClientRect();
+    const cardOnLeft = (r.left + r.width / 2) < window.innerWidth / 2;
+    hoverPreview.classList.toggle("right", cardOnLeft);
+    hoverPreview.classList.toggle("left", !cardOnLeft);
+    hoverPreview.classList.add("show");
+  }
+  function hideHoverPreview(){ hoverPreview.classList.remove("show"); }
+  renderHoverToggle();
+
   function renderGrid(){
+    hideHoverPreview();
     itemsGrid.innerHTML = "";
     gridOrder.forEach(item => {
       const card = document.createElement("div");
@@ -2191,6 +2255,10 @@
           handleCardClick(item, card);
         }
       });
+
+      // HOVER ON: passando sopra la card mostra l'immagine grande (nessun click)
+      card.addEventListener("mouseenter", () => showHoverPreview(item, card));
+      card.addEventListener("mouseleave", hideHoverPreview);
 
       // Click sul pulsante zoom = solo ingrandimento, NON conta come tentativo
       const zoomBtn = card.querySelector(".zoom-btn");
@@ -2365,6 +2433,7 @@
     });
 
     switchView("final");
+
   }
 
   newGameBtn.addEventListener("click", startGame);
@@ -2378,6 +2447,11 @@
      WIDGET PUNTEGGIO GLOBALE — visibile in ogni gioco, legge/scrive
      la stessa chiave localStorage impostata in index.html. Non
      dipende dalle variabili interne del gioco che lo ospita.
+     Per ogni squadra: punti match (score, sommati dai giochi) e
+     punti gioco 🏆 (gamePoints). I punti gioco aumentano SOLO col
+     pulsante "🏁 Termina Partita" (+1 a chi ha più punti match) oppure
+     a mano con + / −. I punti match si azzerano tornando al menu;
+     "azzera punti match" azzera solo quelli, mai i punti gioco.
      ============================================================ -->
 <div id="globalScoreWidget" class="global-score-widget"></div>
 <style>
@@ -2405,12 +2479,61 @@
     transition: background 0.15s ease;
   }
   .gsw-btn:hover{ background: rgba(255,255,255,0.32); }
+  .gsw-game{
+    display: flex; align-items: center; gap: 4px;
+    margin-left: 2px; padding: 2px 4px 2px 7px; border-radius: 999px;
+    background: rgba(255,194,71,0.14); border: 1px solid rgba(255,194,71,0.45);
+  }
+  .gsw-game .gsw-score{ color: #ffc247; min-width: 14px; }
+  .gsw-game .gsw-btn{ background: rgba(255,194,71,0.22); color: #ffd98a; }
+  .gsw-game .gsw-btn:hover{ background: rgba(255,194,71,0.5); color: #fff; }
+  .gsw-game-ico{ font-size: 0.78rem; line-height: 1; }
   .gsw-reset{
     font-size: 0.65rem; color: rgba(255,255,255,0.55);
     background: rgba(8,10,20,0.7); border: 1px solid rgba(255,255,255,0.12);
     border-radius: 999px; cursor: pointer; padding: 3px 10px;
   }
   .gsw-reset:hover{ color: #fff; border-color: rgba(255,255,255,0.3); }
+  .gsw-end{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.02em;
+    color: #fff; background: linear-gradient(135deg, #ff3b5c, #ff8a3d);
+    border: none; border-radius: 999px; padding: 7px 14px; cursor: pointer;
+    box-shadow: 0 6px 18px -4px rgba(255,59,92,0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .gsw-end:hover{ transform: translateY(-1px) scale(1.03); box-shadow: 0 8px 22px -4px rgba(255,59,92,0.8); }
+  .gsw-end-overlay{
+    position: fixed; inset: 0; z-index: 100000;
+    display: none; align-items: center; justify-content: center; padding: 16px;
+    background: rgba(4,6,14,0.78); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    font-family: 'Inter', sans-serif; color: #fff;
+  }
+  .gsw-end-overlay.show{ display: flex; }
+  .gsw-end-card{
+    width: min(440px, 100%); text-align: center;
+    background: #0d1222; border: 1px solid rgba(255,194,71,0.5); border-radius: 22px;
+    padding: 26px 22px 20px; box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+  }
+  .gsw-end-trophy{ font-size: 3.4rem; line-height: 1; filter: drop-shadow(0 0 20px rgba(255,194,71,0.6)); }
+  .gsw-end-title{ font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.45rem; margin: 10px 0 4px; }
+  .gsw-end-sub{ color: #ffc247; font-weight: 700; font-size: 0.95rem; }
+  .gsw-end-list{ margin: 16px 0 18px; display: flex; flex-direction: column; gap: 6px; }
+  .gsw-end-row{
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 8px 12px; font-weight: 700; font-size: 0.9rem;
+  }
+  .gsw-end-row.win{ border-color: rgba(255,194,71,0.7); background: rgba(255,194,71,0.1); }
+  .gsw-end-row > span:last-child{ font-family: 'Poppins', sans-serif; font-weight: 800; color: rgba(255,255,255,0.8); }
+  .gsw-end-actions{ display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .gsw-end-actions a, .gsw-end-actions button{
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.88rem;
+    border-radius: 999px; padding: 10px 18px; cursor: pointer; text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff;
+  }
+  .gsw-end-actions a{ background: #ffc247; color: #06090f; border-color: #ffc247; }
+  .gsw-flash{ animation: gswFlash 0.7s ease; }
+  @keyframes gswFlash{ 0%{ box-shadow: 0 0 0 0 rgba(255,194,71,0.9); } 100%{ box-shadow: 0 0 0 12px rgba(255,194,71,0); } }
   @media (max-width: 560px){
     .global-score-widget{ bottom: 8px; right: 8px; }
     .gsw-name{ max-width: 72px; }
@@ -2435,6 +2558,7 @@
     div.textContent = s == null ? "" : s;
     return div.innerHTML;
   }
+  var flashIndex = -1;
   window.renderGlobalScoreWidget = function(){
     var el = document.getElementById("globalScoreWidget");
     if (!el) return;
@@ -2445,13 +2569,22 @@
       return '<div class="gsw-team">' +
         '<span class="gsw-dot" style="background:' + esc(t.color || "#4dd9ff") + '"></span>' +
         '<span class="gsw-name">' + esc(t.name) + '</span>' +
-        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="-1" aria-label="Togli un punto">−</button>' +
-        '<span class="gsw-score">' + (t.score || 0) + '</span>' +
-        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="1" aria-label="Aggiungi un punto">+</button>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="-1" aria-label="Togli un punto match">−</button>' +
+        '<span class="gsw-score" title="Punti match">' + (t.score || 0) + '</span>' +
+        '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-d="1" aria-label="Aggiungi un punto match">+</button>' +
+        '<span class="gsw-game' + (i === flashIndex ? ' gsw-flash' : '') + '" title="Punti gioco: 1 punto alla squadra che vince un gioco">' +
+          '<span class="gsw-game-ico">🏆</span>' +
+          '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-g="-1" aria-label="Togli un punto gioco">−</button>' +
+          '<span class="gsw-score">' + (t.gamePoints || 0) + '</span>' +
+          '<button type="button" class="gsw-btn" data-gsw-i="' + i + '" data-gsw-g="1" aria-label="Aggiungi un punto gioco">+</button>' +
+        '</span>' +
       '</div>';
     }).join("");
-    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punteggi</button>';
+    html += '<button type="button" class="gsw-reset" id="gswResetBtn">azzera punti match</button>';
+    if (!el.hasAttribute("data-gsw-hub"))
+      html = '<button type="button" class="gsw-end" id="gswEndBtn">🏁 Termina Partita</button>' + html;
     el.innerHTML = html;
+    flashIndex = -1;
   };
   document.addEventListener("click", function(e){
     var btn = e.target.closest ? e.target.closest(".gsw-btn") : null;
@@ -2459,24 +2592,94 @@
       var data = load();
       if (!data) return;
       var i = Number(btn.getAttribute("data-gsw-i"));
-      var d = Number(btn.getAttribute("data-gsw-d"));
       if (!data.teams[i]) return;
-      data.teams[i].score = Math.max(0, (data.teams[i].score || 0) + d);
+      if (btn.hasAttribute("data-gsw-g")){
+        var g = Number(btn.getAttribute("data-gsw-g"));
+        data.teams[i].gamePoints = Math.max(0, (data.teams[i].gamePoints || 0) + g);
+        if (g > 0) flashIndex = i;
+      } else {
+        var d = Number(btn.getAttribute("data-gsw-d"));
+        data.teams[i].score = Math.max(0, (data.teams[i].score || 0) + d);
+      }
       save(data);
       window.renderGlobalScoreWidget();
       window.dispatchEvent(new CustomEvent("globalScoreChanged"));
       return;
     }
+    if (e.target && e.target.id === "gswEndBtn"){ terminaPartita(); return; }
+    if (e.target && e.target.id === "gswEndStay"){ document.getElementById("gswEndOverlay").classList.remove("show"); return; }
     if (e.target && e.target.id === "gswResetBtn"){
       var data2 = load();
       if (!data2) return;
-      if (!confirm("Azzerare il punteggio di tutte le squadre?")) return;
+      if (!confirm("Azzerare i punti match di tutte le squadre? (i punti gioco 🏆 restano)")) return;
       data2.teams.forEach(function(t){ t.score = 0; });
       save(data2);
       window.renderGlobalScoreWidget();
       window.dispatchEvent(new CustomEvent("globalScoreChanged"));
     }
   });
+  /* 🏁 Termina Partita: +1 punto gioco a chi ha più punti match (a tutti i primi se pari) */
+  function terminaPartita(){
+    var data = load();
+    if (!data) return;
+    var n = data.count || data.teams.length;
+    var teams = data.teams.slice(0, n);
+    var top = Math.max.apply(null, teams.map(function(t){ return t.score || 0; }));
+    if (top <= 0){ flashEndBtn("Nessun punto match ancora"); return; }
+    var winners = [];
+    teams.forEach(function(t, i){
+      if ((t.score || 0) === top){ t.gamePoints = (t.gamePoints || 0) + 1; winners.push(i); flashIndex = i; }
+    });
+    save(data);
+    window.renderGlobalScoreWidget();
+    showEndOverlay(teams, winners, top);
+    window.dispatchEvent(new CustomEvent("gameTerminated", { detail: { winners: winners } }));
+  }
+  window.terminaPartita = terminaPartita;
+  function flashEndBtn(msg){
+    var b = document.getElementById("gswEndBtn");
+    if (!b) return;
+    b.textContent = msg;
+    setTimeout(function(){ var b2 = document.getElementById("gswEndBtn"); if (b2) b2.textContent = "🏁 Termina Partita"; }, 1800);
+  }
+  function showEndOverlay(teams, winners, top){
+    var ov = document.getElementById("gswEndOverlay");
+    if (!ov){
+      ov = document.createElement("div");
+      ov.id = "gswEndOverlay"; ov.className = "gsw-end-overlay";
+      document.body.appendChild(ov);
+    }
+    var names = winners.map(function(i){ return esc(teams[i].name); });
+    var order = teams.map(function(t, i){ return i; }).sort(function(a, b){ return (teams[b].score || 0) - (teams[a].score || 0); });
+    ov.innerHTML = '<div class="gsw-end-card">' +
+      '<div class="gsw-end-trophy">🏆</div>' +
+      '<div class="gsw-end-title">' + (names.length > 1 ? names.join(" e ") + " vincono a pari merito!" : names[0] + " vince la partita!") + '</div>' +
+      '<div class="gsw-end-sub">+1 punto gioco 🏆 · con ' + top + ' punti match</div>' +
+      '<div class="gsw-end-list">' + order.map(function(i){
+        var t = teams[i];
+        return '<div class="gsw-end-row' + (winners.indexOf(i) >= 0 ? ' win' : '') + '">' +
+          '<span><span class="gsw-dot" style="display:inline-block;margin-right:8px;background:' + esc(t.color || "#4dd9ff") + '"></span>' + esc(t.name) + '</span>' +
+          '<span>' + (t.score || 0) + ' pt · 🏆 ' + (t.gamePoints || 0) + '</span></div>';
+      }).join("") + '</div>' +
+      '<div class="gsw-end-actions">' +
+        '<a href="menu.html">← Torna al Menu</a>' +
+        '<button type="button" id="gswEndStay">Resta qui</button>' +
+      '</div></div>';
+    ov.classList.add("show");
+  }
+  /* nel menu (fuori dai giochi) i punti match ripartono da zero */
+  function resetMatchIfHub(){
+    var el = document.getElementById("globalScoreWidget");
+    if (!el || !el.hasAttribute("data-gsw-hub")) return;
+    var data = load();
+    if (!data) return;
+    var changed = false;
+    data.teams.forEach(function(t){ if (t.score){ t.score = 0; changed = true; } });
+    if (changed) save(data);
+  }
+  resetMatchIfHub();
+  window.addEventListener("pageshow", function(e){ if (e.persisted){ resetMatchIfHub(); window.renderGlobalScoreWidget(); } });
+  window.addEventListener("storage", function(e){ if (e.key === KEY) window.renderGlobalScoreWidget(); });
   window.renderGlobalScoreWidget();
 })();
 </script>
